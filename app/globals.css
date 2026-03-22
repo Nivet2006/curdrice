@@ -261,3 +261,24 @@ body {
 [data-theme="dark"] .border-green-300 {
   border-color: #166534 !important;
 }
+/* ── Granted badge dark mode ── */
+[data-theme="dark"] .bg-\[\#f0fdf4\] {
+  background-color: #052e16 !important;
+}
+[data-theme="dark"] .text-\[\#166534\] {
+  color: #4ade80 !important;
+}
+[data-theme="dark"] .border-\[\#bbf7d0\] {
+  border-color: #166534 !important;
+}
+
+/* ── Pending badge dark mode ── */
+[data-theme="dark"] .bg-\[\#fefce8\] {
+  background-color: #1c1500 !important;
+}
+[data-theme="dark"] .text-\[\#854d0e\] {
+  color: #fbbf24 !important;
+}
+[data-theme="dark"] .border-\[\#fef08a\] {
+  border-color: #854d0e !important;
+}
