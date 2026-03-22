@@ -115,3 +115,15 @@ Successfully verified and explicitly applied the architectural internal data-fet
   - **Legibility**: Shifted bright red error backgrounds to deep muted tones (`#3d0a0a`) with vibrant red text (`#ff6b6b`) to prevent visual "vibrancy" eye strain in dark mode while maintaining the critical nature of the alert.
 - **Reset**: Full system rebuild (`taskkill`) executed.
 
+### Mobile-Friendly Navbar & Sidebar (March 22, 2026)
+- **Action**: Modified `components/shared/Navbar.tsx`.
+- **Implemented Logic**:
+  - **Responsive Layout**: Replaced the static horizontal Navbar with a responsive hybrid. Navigation links are now hidden on mobile devices (<768px).
+  - **Hamburger Menu**: Added a circular hamburger button (`Menu` icon) for mobile users to trigger the sidebar.
+  - **Slide-in Sidebar Panel**: Created a `fixed` slide-in panel with `backdrop-blur-sm` overlay for all mobile navigation and account controls.
+  - **Role-Based Links**: Dynamically generates high-density navigation items (Dashboard, Events, Users, Scanner, Attendance, Backup) with matching icons based on the `role` prop.
+  - **Theme Support**: Fully integrated with the `var(--bg)` and `var(--fg)` system for seamless dark mode support.
+- **UI/UX**:
+  - **Path Highlighting**: Integrated `usePathname` for real-time `active` state styling in the sidebar.
+  - **Footer Logout**: Dedicated Red (`#eb4b4b`) logout button in the sidebar footer for quick access.
+- **Reset**: Full environment purge (`rm -rf .next`) and Next.js dev server restart performed to rebuild the responsive CSS bundle.
