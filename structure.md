@@ -1,0 +1,126 @@
+# Project Structure
+
+```
+Curdrice
+├── .agents
+│   └── workflows
+│       └── 22-03-2026
+│           └── EventHub-Comprehensive-Handoff.md
+├── app
+│   ├── (auth)
+│   │   ├── login
+│   │   │   └── page.tsx
+│   │   └── register
+│   │       └── page.tsx
+│   ├── admin
+│   │   ├── attendance
+│   │   │   ├── [id]
+│   │   │   │   └── page.tsx
+│   │   │   └── page.tsx
+│   │   ├── backup
+│   │   │   └── page.tsx
+│   │   ├── dashboard
+│   │   │   └── page.tsx
+│   │   ├── events
+│   │   │   └── page.tsx
+│   │   ├── scanner
+│   │   │   └── page.tsx
+│   │   ├── users
+│   │   │   └── page.tsx
+│   │   └── layout.tsx
+│   ├── api
+│   │   └── backup
+│   │       └── route.ts
+│   ├── fonts
+│   │   ├── GeistMonoVF.woff
+│   │   └── GeistVF.woff
+│   ├── manager
+│   │   ├── dashboard
+│   │   │   └── page.tsx
+│   │   ├── events
+│   │   │   ├── [id]
+│   │   │   │   ├── edit
+│   │   │   │   │   └── page.tsx
+│   │   │   │   └── page.tsx
+│   │   │   └── create
+│   │   │       └── page.tsx
+│   │   ├── scanner
+│   │   │   └── page.tsx
+│   │   └── layout.tsx
+│   ├── student
+│   │   ├── dashboard
+│   │   │   └── page.tsx
+│   │   ├── events
+│   │   │   ├── [id]
+│   │   │   │   └── page.tsx
+│   │   │   └── page.tsx
+│   │   └── layout.tsx
+│   ├── favicon.ico
+│   ├── globals.css
+│   ├── layout.tsx
+│   └── page.tsx
+├── assets
+│   ├── Browse_Events.png
+│   ├── Event_Details__Registration.png
+│   ├── EventHub__Login.png
+│   ├── EventHub__QR_Modal.png
+│   ├── EventHub__Register.png
+│   └── Student_Dashboard.png
+├── components
+│   ├── admin
+│   │   ├── AttendanceManager.tsx
+│   │   ├── CreateUserModal.tsx
+│   │   ├── UserExportMenu.tsx
+│   │   └── UserTable.tsx
+│   ├── manager
+│   │   ├── EditEventForm.tsx
+│   │   ├── QRScanner.tsx
+│   │   └── RegistrationExportMenu.tsx
+│   ├── shared
+│   │   ├── BrandMark.tsx
+│   │   ├── Navbar.tsx
+│   │   └── ThemeToggle.tsx
+│   ├── student
+│   │   ├── DashboardEventTabs.tsx
+│   │   ├── EventCard.tsx
+│   │   ├── QRButton.tsx
+│   │   ├── QRDisplay.tsx
+│   │   └── RegisterButton.tsx
+│   └── ui
+│       ├── Badge.tsx
+│       ├── Button.tsx
+│       ├── Card.tsx
+│       └── Input.tsx
+├── ERROR
+│   ├── FEATURE_ELIGIBILITY_20260322_160419.md
+│   ├── FEATURE_QR_UPGRADE_20260322_162849.md
+│   ├── FEATURE_USER_VERIFICATION_20260322_163820.md
+│   ├── FEATURE_THEME_20260322_184836.md
+│   ├── FEATURE_UI_CONSISTENCY_20260322_190600.md
+│   ├── FEATURE_USERTABLE_SYNC_20260322_192355.md
+│   ├── FEATURE_USER_EDITING_20260322_192926.md
+│   ├── FEATURE_THEME_REFINEMENT_20260322_193844.md
+│   ├── FEATURE_THEME_RED_ALERT_20260322_194306.md
+│   ├── ERROR_1_20260321_222343
+│   ├── ERROR_2...ERROR_22 (historical logs)
+├── lib
+│   ├── actions
+│   │   ├── admin.ts
+│   │   ├── auth.ts
+│   │   ├── events.ts
+│   │   └── manager.ts
+│   ├── supabase
+│   │   ├── client.ts
+│   │   └── server.ts
+│   ├── qr.ts
+│   └── types.ts
+├── supabase
+│   └── migrations
+│       ├── 0000_initial_schema.sql
+│       └── 0001_rls_policies.sql
+├── handoff.md
+├── PLANNING.md
+├── package.json
+├── tailwind.config.ts
+└── tsconfig.json
+```

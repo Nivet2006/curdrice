@@ -1,0 +1,99 @@
+import { createClient as createAdminClient } from '@supabase/supabase-js'
+import { Card } from '@/components/ui/Card'
+import { DownloadCloud, Archive, History } from 'lucide-react'
+import { Button } from '@/components/ui/Button'
+import { Badge } from '@/components/ui/Badge'
+
+export const dynamic = 'force-dynamic'
+
+export default async function BackupPage() {
+  const supabaseAdmin = createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    {
+      auth: { persistSession: false },
+      global: {
+        fetch: (url, options) => fetch(url, { ...options, cache: 'no-store' })
+      }
+    }
+  )
+
+  const { data: rawLogs } = await supabaseAdmin
+    .from('backup_logs')
+    .select('*')
+    .limit(20)
+
+  // Fix: column is admin_id not performed_by
+  const adminIds = (rawLogs || []).map((l: { admin_id: string }) => l.admin_id)
+
+  const { data: profiles } = await supabaseAdmin
+    .from('profiles')
+    .select('id, full_name')
+    .in('id', adminIds.length ? adminIds : ['00000000-0000-0000-0000-000000000000'])
+
+  const logs = (rawLogs || []).map((log: { id: string; admin_id: string; created_at: string; file_name: string }) => ({
+    ...log,
+    profiles: profiles?.find(p => p.id === log.admin_id) || { full_name: 'Unknown Admin' }
+  }))
+
+  return (
+    <div className="w-full">
+      <div className="mb-8">
+        <h1 className="text-3xl font-black tracking-tight mb-2 text-[#0a0a0a]">System Backup</h1>
+        <p className="font-mono text-sm text-[#555555]">Securely archive database state to a standalone snapshot.</p>
+      </div>
+      
+      <Card className="p-8 mb-12 flex flex-col md:flex-row items-center justify-between gap-6 border-[#0a0a0a] border-2 bg-[#f9f9f9]">
+        <div className="flex items-start gap-4">
+          <Archive size={40} className="text-[#0a0a0a]" />
+          <div>
+            <h3 className="text-lg font-bold">Generate Absolute Backup</h3>
+            <p className="text-xs font-mono text-[#555555] max-w-[600px] mt-2 leading-relaxed">
+              Generates an instant ZIP containing standardized Excel (.xlsx) snapshots of all tables (profiles, events, constraints, registrations) bypassing standard API constraints. The action is recorded in the immutable audit log below.
+            </p>
+          </div>
+        </div>
+        <form action="/api/backup" method="GET">
+           <Button type="submit" variant="primary" className="bg-[#0a0a0a] flex items-center gap-2 whitespace-nowrap px-6 py-3">
+             <DownloadCloud size={16} /> Download .zip
+           </Button>
+        </form>
+      </Card>
+
+      <h2 className="text-xl font-bold mb-6 flex items-center gap-2"><History size={20}/> Audit Log</h2>
+      <div className="border border-[#e0e0e0] rounded-2xl overflow-hidden bg-white shadow-sm">
+        <table className="w-full text-left font-sans text-sm">
+          <thead className="bg-[#f5f5f5] text-[#555555] font-mono text-xs uppercase tracking-widest border-b border-[#e0e0e0]">
+            <tr>
+              <th className="px-6 py-4 font-normal">Timestamp</th>
+              <th className="px-6 py-4 font-normal">Admin</th>
+              <th className="px-6 py-4 font-normal">Filename (Hash)</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-[#e0e0e0]">
+            {(logs || []).map((log) => (
+              <tr key={log.id} className="hover:bg-[#fafafa]">
+                <td className="px-6 py-4 font-mono text-xs text-[#555555]">
+                  {new Date(log.created_at).toLocaleString()}
+                </td>
+                <td className="px-6 py-4 font-bold text-[#0a0a0a]">
+                  {(log.profiles as { full_name: string }).full_name}
+                </td>
+                <td className="px-6 py-4 font-mono text-xs text-[#999999]">
+                  {log.file_name}
+                </td>
+              </tr>
+            ))}
+            {(!logs || logs.length === 0) && (
+              <tr>
+                <td colSpan={3} className="px-6 py-12 text-center font-mono text-sm text-[#999999]">
+                  No backups have been generated yet.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
