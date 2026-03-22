@@ -11,6 +11,8 @@ export interface Profile {
   year: number
   role: Role
   created_at: string
+  username: string | null
+  profile_edited: boolean
 }
 
 export type EventStatus = 'upcoming' | 'ongoing' | 'completed'

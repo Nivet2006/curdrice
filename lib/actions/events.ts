@@ -224,3 +224,61 @@ export async function registerForEvent(eventId: string) {
   revalidatePath(`/student/events/${eventId}`)
   return { success: true }
 }
+
+export async function updateStudentProfile(data: {
+  full_name: string
+  username: string
+  department: string
+  semester: number
+  year: number
+}) {
+  try {
+    const { revalidatePath } = await import('next/cache')
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Unauthorized' }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('profile_edited')
+      .eq('id', user.id)
+      .single()
+
+    if (profile?.profile_edited) {
+      return { error: 'Profile already edited. Contact admin to make changes.' }
+    }
+
+    if (data.username) {
+      const { data: existing } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('username', data.username.toLowerCase().trim())
+        .neq('id', user.id)
+        .single()
+
+      if (existing) {
+        return { error: 'Username already taken. Choose a different one.' }
+      }
+    }
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        full_name: data.full_name.trim(),
+        username: data.username.toLowerCase().trim() || null,
+        department: data.department,
+        semester: data.semester,
+        year: data.year,
+        profile_edited: true
+      })
+      .eq('id', user.id)
+
+    if (error) return { error: error.message }
+
+    revalidatePath('/student/profile')
+    return { success: true }
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : 'Unknown error'
+    return { error: errorMsg || 'Failed to update profile' }
+  }
+}
