@@ -153,3 +153,37 @@ body {
 [data-theme="dark"] .border-\[\#eb4b4b\] {
   border-color: #7f1d1d !important;
 }
+
+
+/* ── Semantic colors dark mode ── */
+[data-theme="dark"] .text-green-600,
+[data-theme="dark"] .text-green-500 {
+  color: #4ade80 !important;
+}
+
+[data-theme="dark"] .bg-green-50 {
+  background-color: #052e16 !important;
+}
+
+[data-theme="dark"] .border-green-300,
+[data-theme="dark"] .border-green-200 {
+  border-color: #166534 !important;
+}
+
+[data-theme="dark"] .text-green-700 {
+  color: #86efac !important;
+}
+
+/* Mute ALL other Tailwind named colors in dark mode */
+[data-theme="dark"] [class*="text-blue-"] { filter: brightness(0.75) !important; }
+[data-theme="dark"] [class*="text-yellow-"] { filter: brightness(0.7) !important; }
+[data-theme="dark"] [class*="text-orange-"] { filter: brightness(0.7) !important; }
+[data-theme="dark"] [class*="text-purple-"] { filter: brightness(0.75) !important; }
+[data-theme="dark"] [class*="text-pink-"] { filter: brightness(0.75) !important; }
+[data-theme="dark"] [class*="text-indigo-"] { filter: brightness(0.75) !important; }
+[data-theme="dark"] [class*="bg-blue-"] { filter: brightness(0.3) !important; }
+[data-theme="dark"] [class*="bg-yellow-"] { filter: brightness(0.25) !important; }
+[data-theme="dark"] [class*="bg-orange-"] { filter: brightness(0.25) !important; }
+[data-theme="dark"] [class*="bg-purple-"] { filter: brightness(0.3) !important; }
+[data-theme="dark"] [class*="bg-pink-"] { filter: brightness(0.3) !important; }
+[data-theme="dark"] [class*="bg-indigo-"] { filter: brightness(0.3) !important; }

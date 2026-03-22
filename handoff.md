@@ -127,3 +127,16 @@ Successfully verified and explicitly applied the architectural internal data-fet
   - **Path Highlighting**: Integrated `usePathname` for real-time `active` state styling in the sidebar.
   - **Footer Logout**: Dedicated Red (`#eb4b4b`) logout button in the sidebar footer for quick access.
 - **Reset**: Full environment purge (`rm -rf .next`) and Next.js dev server restart performed to rebuild the responsive CSS bundle.
+
+### Student Profile & One-Time Edit (March 22, 2026)
+- **Database Logic**:
+  - Added `username` (TEXT, UNIQUE) and `profile_edited` (BOOLEAN) to the `profiles` table.
+  - Performed `pg_notify` for schema reload to ensure PostgREST recognizes the changes.
+- **Implemented Features**:
+  - **One-Time Edit System**: Added a `profile_edited` flag that allows students to refine their profile details exactly once.
+  - **Unique Username Setup**: Implemented lowercase-normalized username verification in the `updateStudentProfile` server action.
+  - **Live Counters**: Profile page now fetches and displays total `registrations` and `attended` (checked-in) counts.
+  - **Permissions**: Students can only edit their own profile if they haven't already modified it.
+- **Navigation**:
+  - Integrated a dedicated `Profile` link with the `UserCircle` icon into the student's Navbar.
+- **Components**: Created `StudentProfileClient.tsx` (Interactive) and `app/student/profile/page.tsx` (Data Fetching).
