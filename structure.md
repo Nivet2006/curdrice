@@ -91,7 +91,7 @@ Curdrice
 │       ├── Button.tsx
 │       ├── Card.tsx
 │       └── Input.tsx
-├── ERROR
+├── Updates
 │   ├── FEATURE_ELIGIBILITY_20260322_160419.md
 │   ├── FEATURE_QR_UPGRADE_20260322_162849.md
 │   ├── FEATURE_USER_VERIFICATION_20260322_163820.md
@@ -103,8 +103,9 @@ Curdrice
 │   ├── FEATURE_THEME_RED_ALERT_20260322_194306.md
 │   ├── FEATURE_MOBILE_NAVBAR_20260322_212800.md
 │   ├── FEATURE_STUDENT_PROFILE_20260322_221800.md
-│   ├── ERROR_1_20260321_222343
-│   ├── ERROR_2...ERROR_22 (historical logs)
+│   ├── UPDATE_DASHBOARD_SKELETONS_20260322_222600.md
+│   ├── UPDATE_1_20260321_222343
+│   ├── UPDATE_2...UPDATE_22 (historical logs)
 ├── lib
 │   ├── actions
 │   │   ├── admin.ts

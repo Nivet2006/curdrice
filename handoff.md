@@ -140,3 +140,26 @@ Successfully verified and explicitly applied the architectural internal data-fet
 - **Navigation**:
   - Integrated a dedicated `Profile` link with the `UserCircle` icon into the student's Navbar.
 - **Components**: Created `StudentProfileClient.tsx` (Interactive) and `app/student/profile/page.tsx` (Data Fetching).
+
+### Admin Dashboard & Skeleton States (March 22, 2026)
+- **Implemented Features**:
+  - **Metrics**: Added real-time user, event, and registration/attendance metrics to the Admin Dashboard.
+  - **Quick Actions**: Integrated a high-intent navigation grid for managers and admins.
+  - **Skeleton Loaders**: Implemented `loading.tsx` root files for all roles.
+  - **Shared Library**: Upgraded `components/shared/SkeletonLoader.tsx` to handle responsive theme variables (`var(--border)`, `var(--bg-card)`).
+- **Maintenance**: All historical logs have been moved from `ERROR/` to `Updates/` and prefixed with `UPDATE_` for better clarity.
+
+### Shield Loader Authentication UI (March 23, 2026)
+- **Action**: Modified `app/(auth)/login/page.tsx`.
+- **Implemented Logic**:
+  - **Full-Screen Shield Overlay**: Replaced the legacy inline button spinner with a high-fidelity, `fixed` position overlay (`ShieldLoader`) at `zIndex: 9998` with `6px` backdrop blur.
+  - **Theme Synchronicity**: Dynamic background (`rgba(10,10,10,0.92)` or `rgba(255,255,255,0.92)`) based on the project's `data-theme` system.
+  - **Interactive 4-Step Sequence**: Integrated a timed `useEffect` that auto-advances through 4 security checkpoints (Credentials, Integrity, Session, Profile) every 900ms.
+  - **Animation Orchestration**:
+    - **Shield Pulse**: 1.12x scale pulse at 1.4s intervals for the primary SVG shield.
+    - **Checkmark Draw**: Green checkmark using native `strokeDasharray/strokeDashoffset` draw animation on mount.
+    - **Step Transitions**: Custom `stepFadeIn` and `stepPulse` animations for the active authentication step.
+  - **State Integration**:
+    - `loading` state now triggers the global overlay instead of the button spinner.
+    - **Session Handover**: Loader remains visible during the Next.js redirect to ensure a seamless "handshake" feeling, only dismissing if a login error is returned.
+- **Reset**: Full environment purge (`taskkill`) and `.next` folder deletion executed to refresh the login runtime with the new animation bundle.
