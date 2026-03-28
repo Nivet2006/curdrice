@@ -1,6 +1,6 @@
-
-
 export type Role = 'student' | 'manager' | 'admin' | 'deleted'
+
+export type EventStatus = 'upcoming' | 'ongoing' | 'completed' | 'cancelled'
 
 export interface Profile {
   id: string
@@ -14,8 +14,6 @@ export interface Profile {
   username: string | null
   profile_edited: boolean
 }
-
-export type EventStatus = 'upcoming' | 'ongoing' | 'completed'
 
 export interface Event {
   id: string

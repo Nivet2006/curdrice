@@ -16,8 +16,12 @@ export async function login(email: string, pass: string) {
     return { error: error.message }
   }
 
-  // Determine role and redirect
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', data.user.id).single()
+  // Determine role
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', data.user.id)
+    .single()
   
   if (profile?.role === 'deleted') {
     await supabase.auth.signOut()
@@ -25,7 +29,10 @@ export async function login(email: string, pass: string) {
   }
 
   const role = profile?.role || 'student'
-  redirect(`/${role}/dashboard`)
+  
+  // ✅ Return success with role instead of redirecting
+  // This allows the client to show the loader during redirect
+  return { success: true, role }
 }
 
 const registerSchema = z.object({
@@ -83,5 +90,6 @@ export async function registerProfile(formData: FormData) {
     }
   }
 
-  redirect('/student/dashboard')
+  // ✅ Return success instead of redirecting
+  return { success: true, role: 'student' }
 }

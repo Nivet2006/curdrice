@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { EventCard } from '@/components/student/EventCard'
-import { DashboardEventTabs } from '@/components/student/DashboardEventTabs'
+import { RealtimeDashboard } from '@/components/student/RealtimeDashboard'
 import type { Event } from '@/lib/types'
 
 export default async function StudentDashboard() {
@@ -44,7 +44,7 @@ export default async function StudentDashboard() {
           You're Going
           <span className="bg-[#0a0a0a] text-white font-mono text-xs px-2 py-0.5 rounded-full">{registeredEvents.length}</span>
         </h2>
-        
+
         {registeredEvents.length === 0 ? (
           <p className="font-mono text-xs text-[#999999] p-8 border border-dashed border-[#e0e0e0] rounded-2xl text-center">No registered events yet.</p>
         ) : (
@@ -54,9 +54,9 @@ export default async function StudentDashboard() {
               if (!event) return null
               return (
                 <div key={event.id} className="min-w-[300px] w-[350px]">
-                  <EventCard 
-                    event={event} 
-                    isRegistered={true} 
+                  <EventCard
+                    event={event}
+                    isRegistered={true}
                     qrToken={reg.qr_token}
                     studentName={profile?.full_name}
                     usn={profile?.usn}
@@ -69,10 +69,10 @@ export default async function StudentDashboard() {
       </div>
 
       <div>
-        <DashboardEventTabs 
-          initialEvents={events} 
-          registrations={registrations || []} 
-          profile={profile} 
+        <RealtimeDashboard
+          initialEvents={events}
+          registrations={registrations || []}
+          profile={profile}
         />
       </div>
     </div>

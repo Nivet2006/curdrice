@@ -39,6 +39,12 @@ body {
   color: var(--fg);
 }
 
+/* ── Never filter images ── */
+img {
+  filter: none !important;
+  -webkit-filter: none !important;
+}
+
 /* ── Override hardcoded Tailwind hex values in dark mode ── */
 
 [data-theme="dark"] .bg-white,
@@ -118,7 +124,7 @@ body {
   border-color: var(--border) !important;
 }
 
-/* Red/Green semantic colors */
+/* ── Red/Green semantic colors ── */
 [data-theme="dark"] .bg-green-50 {
   background-color: #052e16 !important;
 }
@@ -143,7 +149,7 @@ body {
   color: #4ade80 !important;
 }
 
-[data-theme="dark"] .text-[#166534] {
+[data-theme="dark"] [class*="text-[#166534]"] {
   color: #4ade80 !important;
 }
 
@@ -160,7 +166,7 @@ body {
   color: var(--fg) !important;
 }
 
-[data-theme="dark"] button[class*="border"][class*="bg-white"],
+[data-theme="dark"] button[class*="border"][class*="bg-white"]:not([class*="border-[#eb4b4b]"]),
 [data-theme="dark"] button[class*="border-[#e0e0e0]"] {
   background-color: var(--bg-subtle) !important;
   color: var(--fg) !important;
@@ -181,15 +187,10 @@ body {
   border-color: #7f1d1d !important;
 }
 
-
 /* ── Semantic colors dark mode ── */
 [data-theme="dark"] .text-green-600,
 [data-theme="dark"] .text-green-500 {
   color: #4ade80 !important;
-}
-
-[data-theme="dark"] .bg-green-50 {
-  background-color: #052e16 !important;
 }
 
 [data-theme="dark"] .border-green-300,
@@ -199,55 +200,6 @@ body {
 
 [data-theme="dark"] .text-green-700 {
   color: #86efac !important;
-}
-
-/* Mute ALL other Tailwind named colors in dark mode */
-[data-theme="dark"] [class*="text-blue-"] {
-  filter: brightness(0.75) !important;
-}
-
-[data-theme="dark"] [class*="text-yellow-"] {
-  filter: brightness(0.7) !important;
-}
-
-[data-theme="dark"] [class*="text-orange-"] {
-  filter: brightness(0.7) !important;
-}
-
-[data-theme="dark"] [class*="text-purple-"] {
-  filter: brightness(0.75) !important;
-}
-
-[data-theme="dark"] [class*="text-pink-"] {
-  filter: brightness(0.75) !important;
-}
-
-[data-theme="dark"] [class*="text-indigo-"] {
-  filter: brightness(0.75) !important;
-}
-
-[data-theme="dark"] [class*="bg-blue-"] {
-  filter: brightness(0.3) !important;
-}
-
-[data-theme="dark"] [class*="bg-yellow-"] {
-  filter: brightness(0.25) !important;
-}
-
-[data-theme="dark"] [class*="bg-orange-"] {
-  filter: brightness(0.25) !important;
-}
-
-[data-theme="dark"] [class*="bg-purple-"] {
-  filter: brightness(0.3) !important;
-}
-
-[data-theme="dark"] [class*="bg-pink-"] {
-  filter: brightness(0.3) !important;
-}
-
-[data-theme="dark"] [class*="bg-indigo-"] {
-  filter: brightness(0.3) !important;
 }
 
 [data-theme="dark"] .bg-green-100 {
@@ -261,6 +213,21 @@ body {
 [data-theme="dark"] .border-green-300 {
   border-color: #166534 !important;
 }
+
+/* ── Mute Tailwind named colors in dark mode (never applied to images) ── */
+[data-theme="dark"] [class*="text-blue-"]:not(img) { filter: brightness(0.75) !important; }
+[data-theme="dark"] [class*="text-yellow-"]:not(img) { filter: brightness(0.7) !important; }
+[data-theme="dark"] [class*="text-orange-"]:not(img) { filter: brightness(0.7) !important; }
+[data-theme="dark"] [class*="text-purple-"]:not(img) { filter: brightness(0.75) !important; }
+[data-theme="dark"] [class*="text-pink-"]:not(img) { filter: brightness(0.75) !important; }
+[data-theme="dark"] [class*="text-indigo-"]:not(img) { filter: brightness(0.75) !important; }
+[data-theme="dark"] [class*="bg-blue-"]:not(img) { filter: brightness(0.3) !important; }
+[data-theme="dark"] [class*="bg-yellow-"]:not(img) { filter: brightness(0.25) !important; }
+[data-theme="dark"] [class*="bg-orange-"]:not(img) { filter: brightness(0.25) !important; }
+[data-theme="dark"] [class*="bg-purple-"]:not(img) { filter: brightness(0.3) !important; }
+[data-theme="dark"] [class*="bg-pink-"]:not(img) { filter: brightness(0.3) !important; }
+[data-theme="dark"] [class*="bg-indigo-"]:not(img) { filter: brightness(0.3) !important; }
+
 /* ── Granted badge dark mode ── */
 [data-theme="dark"] .bg-\[\#f0fdf4\] {
   background-color: #052e16 !important;

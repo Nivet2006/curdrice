@@ -57,7 +57,7 @@ export default async function ManagerEventDetails({ params }: { params: { id: st
             'use server'
             await deleteEvent(event.id)
           }}>
-            <Button type="submit" variant="ghost" className="flex items-center gap-2 text-[#eb4b4b] border border-[#eb4b4b] bg-white font-semibold hover:bg-[#eb4b4b] hover:text-white">
+            <Button type="submit" variant="ghost" className="flex items-center gap-2 text-[#eb4b4b] border border-[#eb4b4b] bg-white font-semibold hover:bg-[#ffeded]">
               <Trash2 size={16} /> Delete Event
             </Button>
           </form>

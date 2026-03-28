@@ -9,6 +9,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import type { Role } from '@/lib/types'
 import { ThemeToggle } from '@/components/shared/ThemeToggle'
 import { BrandMark } from '@/components/shared/BrandMark'
+import { ShieldLoader } from '@/components/shared/ShieldLoader'
 
 export function Navbar({ role, name }: { role?: Role; name?: string }) {
   const router = useRouter()
@@ -18,22 +19,25 @@ export function Navbar({ role, name }: { role?: Role; name?: string }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const handleLogout = async () => {
+    setSidebarOpen(false)
     setLoading(true)
     await supabase.auth.signOut()
+    // ✅ Wait for all 4 loader steps to complete before redirecting
+    await new Promise(r => setTimeout(r, 4 * 800))
     router.push('/login')
   }
 
   const navLinks = role ? [
     { href: `/${role}/dashboard`, label: 'Dashboard', icon: LayoutDashboard },
-    { href: `/${role}/events`,    label: 'Events',    icon: Calendar },
+    { href: `/${role}/events`, label: 'Events', icon: Calendar },
     ...(role === 'admin' ? [
-      { href: '/admin/users',      label: 'Users',      icon: Users },
-      { href: '/admin/scanner',    label: 'Scanner',    icon: ScanLine },
+      { href: '/admin/users', label: 'Users', icon: Users },
+      { href: '/admin/scanner', label: 'Scanner', icon: ScanLine },
       { href: '/admin/attendance', label: 'Attendance', icon: ClipboardList },
-      { href: '/admin/backup',     label: 'Backup',     icon: Database },
+      { href: '/admin/backup', label: 'Backup', icon: Database },
     ] : []),
     ...(role === 'manager' ? [
-      { href: '/manager/scanner',  label: 'Scanner',    icon: ScanLine },
+      { href: '/manager/scanner', label: 'Scanner', icon: ScanLine },
     ] : []),
     ...(role === 'student' ? [
       { href: '/student/profile', label: 'Profile', icon: UserCircle },
@@ -42,10 +46,21 @@ export function Navbar({ role, name }: { role?: Role; name?: string }) {
 
   return (
     <>
+      {loading && (
+        <ShieldLoader
+          message="Signing you out"
+          steps={[
+            "Terminating session",
+            "Clearing local data",
+            "Revoking access tokens",
+            "Redirecting to login"
+          ]}
+        />
+      )}
       {/* ── Top Navbar ── */}
       <div className="border-b border-[#e0e0e0] bg-white sticky top-0 z-50">
         <nav className="h-[60px] flex items-center justify-between px-4 md:px-8 w-full max-w-[1280px] mx-auto">
-          
+
           {/* Left: Logo + desktop nav */}
           <div className="flex items-center gap-8">
             <div className="flex items-center gap-2">
@@ -81,7 +96,7 @@ export function Navbar({ role, name }: { role?: Role; name?: string }) {
                 <button
                   onClick={handleLogout}
                   disabled={loading}
-                  className="rounded-full w-9 h-9 border border-[#e0e0e0] bg-transparent hover:bg-[#f2f2f2] hidden md:flex items-center justify-center text-[#555] hover:text-black transition-colors"
+                  className="rounded-full w-9 h-9 border border-[#e0e0e0] bg-transparent hover:bg-[#f2f2f2] hidden md:flex items-center justify-center text-[#555] hover:text-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <LogOut size={16} />
                 </button>
@@ -163,7 +178,7 @@ export function Navbar({ role, name }: { role?: Role; name?: string }) {
           <button
             onClick={handleLogout}
             disabled={loading}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-sans text-[#eb4b4b] hover:bg-[#ffeded] transition-colors"
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-sans text-[#eb4b4b] hover:bg-[#ffeded] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <LogOut size={17} />
             {loading ? 'Signing out...' : 'Sign Out'}

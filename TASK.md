@@ -33,6 +33,8 @@
 - [x] Fix Admin/Manager Attendance Roster UI returning blank student names and `manualCheckIn` failing by explicitly escalating the Server Components to the Edge Service Role Key, effortlessly bypassing Postgres RLS blocks. (See `ERROR/ERROR_16_20260322_010200/summary.md`)
 - [x] Fix empty table rows perpetually rendering after DB repairs due to NextJS 14 aggressively persisting stale Server Component fetch caches by surgically passing `cache: 'no-store'` into the global Supabase Edge Client. (See `ERROR/ERROR_17_20260322_010800/summary.md`)
 - [x] Fix Admin Attendance page `Registered (0)` crash caused by requesting an invalid `email` column inherently missing from the PostgREST `profiles` layout payload. (See `ERROR/ERROR_18_20260322_012200/summary.md`)
+- [x] Extract and refine the `ShieldLoader` into a reusable component to handle both Login and Logout flows with custom timed sequences and theme detection. (See `Updates/FEATURE_LOGOUT_LOADER_20260328_223500.md`)
+
 
 ## Generated Designs
 

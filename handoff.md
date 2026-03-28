@@ -162,4 +162,18 @@ Successfully verified and explicitly applied the architectural internal data-fet
   - **State Integration**:
     - `loading` state now triggers the global overlay instead of the button spinner.
     - **Session Handover**: Loader remains visible during the Next.js redirect to ensure a seamless "handshake" feeling, only dismissing if a login error is returned.
-- **Reset**: Full environment purge (`taskkill`) and `.next` folder deletion executed to refresh the login runtime with the new animation bundle.
+### Reusable Shield Loader & Logout Integration (March 28, 2026)
+- **Action**: Created `components/shared/ShieldLoader.tsx`, modified `app/(auth)/login/page.tsx`, and modified `components/shared/Navbar.tsx`.
+- **Implemented Logic**:
+  - **Component Extraction**: Successfully refactored the hardcoded `ShieldLoader` from the login page into a globally reusable, prop-driven component.
+  - **Universal Support**: The loader now supports custom `message` and `steps` props to handle different authentication contexts (Login vs. Logout).
+  - **Logout Flow Alignment**:
+    - Integrated the `ShieldLoader` into the global `Navbar` with specialized logout steps (Terminating session, Clearing local data, etc.).
+    - Forced immediate mobile sidebar closure when logout is triggered to ensure the full-screen overlay visibility.
+    - Added global `loading` state to both desktop and mobile logout buttons with `disabled` interaction guards and opacity styling.
+  - **Visual Polishing**:
+    - Standardized error reporting on the login page with high-contrast, themed alert boxes.
+    - Improved theme detection using a `MutationObserver` to ensure the loader accurately reflects the system's `data-theme` even if it changes during the loading state.
+    - Optimized pulse and draw animations for consistent cross-browser performance.
+- **Reset**: Full environment rebuild (`taskkill` and `.next` purge) executed to activate the shared component architecture.
+

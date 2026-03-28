@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { CalendarView } from '@/components/student/CalendarView'
+import { RealtimeCalendarView } from '@/components/student/RealtimeCalendarView'
 import type { Event } from '@/lib/types'
 
 export const dynamic = 'force-dynamic'
@@ -32,8 +32,8 @@ export default async function StudentEventsPage() {
   const events = (allEvents as Event[]) || []
 
   return (
-    <CalendarView
-      events={events}
+    <RealtimeCalendarView
+      initialEvents={events}
       registrationMap={registrationMap}
       studentName={profile?.full_name || ''}
       studentUsn={profile?.usn || ''}
