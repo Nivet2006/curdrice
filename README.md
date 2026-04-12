@@ -1,108 +1,81 @@
-# System Handbook
+# Club Eve | Event Management System
 
-## GOAT Orchestrator
+![Club Eve Banner](https://img.shields.io/badge/Next.js-14-black?style=for-the-badge&logo=next.js)
+![Supabase](https://img.shields.io/badge/Supabase-Database%20%26%20Auth-green?style=for-the-badge&logo=supabase)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-Modern_UI-blue?style=for-the-badge&logo=tailwind-css)
 
-- **Goals (goals/)** — Process definitions (what needs to happen)
-- **Orchestration** — The AI manager (you) that coordinates execution
-- **Tools (tools/)** — Deterministic scripts that do the actual work
-- **Context (context/)** — Reference material and domain knowledge
-- **Hard Prompts (hardprompts/)** — Reusable instruction templates
-- **Args (args/)** — Behavior settings that shape how the system acts
-
-> LLMs are probabilistic. Business logic is deterministic.
-> You make smart decisions. Tools execute perfectly.
+Club Eve is a premium, full-stack event management platform designed for college clubs and student organizations. It features a robust 3-tier role system, branded QR-based attendance tracking, and high-fidelity aesthetics.
 
 ---
 
-# File Structure
+## 🚀 Key Features
 
-- **goals/** — Process definitions → `goals/manifest.md` for index
-- **tools/** — Execution scripts → `tools/manifest.md` for index
-- **args/** — Behavior settings (YAML/JSON)
-- **context/** — Domain knowledge (static reference material)
-- **hardprompts/** — Instruction templates
-- **.tmp/** — Disposable scratch work. Never store important data here.
-- **.env** — API keys + environment variables
+### 👤 Role-Based Experience
+*   **Students**: Browse events, check eligibility (semester/dept/year), register in one click, and receive a **unique branded QR code** for check-ins.
+*   **Managers**: Create and manage events, set registration constraints, track real-time registration counts, and scan QR codes for attendance.
+*   **Admins**: Full system oversight, user role management (verification/promotions/suspensions), combined attendance exports, and **site-wide backups**.
 
----
+### 📱 Sophisticated Attendance Engine
+*   **Branded QR Tokens**: Every student registration generates a unique QR code watermarked with the `|||··||` brand mark.
+*   **In-Browser Scanning**: Multi-role scanner supporting mobile check-ins without extra apps.
+*   **Real-time Analytics**: Instant feedback on registration numbers and attendance percentages.
 
-# How to Operate
+### 💎 Premium Modern Design
+*   **Glassmorphism & Patterns**: Dynamic background pattern system with consistent glass architectures.
+*   **ShieldLoader**: Custom, theme-aware login/logout animations for a seamless session flow.
+*   **Mobile Optimized**: Fully responsive navbar and interactive layouts for on-the-go club management.
 
-- Read **PLANNING.md** at the start of a conversation for architecture, goals, style, and constraints.
-- Check **TASK.md** before starting work. Add new tasks with today's date. Mark tasks done immediately after finishing. ADD SCREENSHOTS OF THE WORK DONE IN THE TASK.MD FILE.
-- Check **goals/manifest.md** for an existing workflow before starting a task. If one exists, follow it.
-- Check **tools/manifest.md** before writing new code. If a tool exists, use it. If you create one, add it to the manifest.
-- Use **tsx** or **ts-node** for all TypeScript execution, including tests.
-- Use **dotenv** and `dotenv.config()` for environment variables.
-- Never modify or create goals without explicit permission.
-- Add all discovered sub-tasks to **TASK.md** under **"Discovered During Work"**.
-
----
-
-# When Tools Fail — Continuous Improvement Loop
-
-- Read the error and stack trace carefully.
-- Update the tool to handle the issue (ask if API credits are required).
-- Test until it works reliably.
-- Add what you learned to the goal (rate limits, batching rules, timing quirks).
-- If a goal exceeds a reasonable length, propose splitting it.
-- **Always log significant errors to the `ERROR/` directory and update tracking documents.** (e.g., `Module not found` tsconfig mapping issue).
+### 🛡️ Secure & Scalable
+*   **Supabase SSR**: Middleware-level route protection ensured by Supabase Auth and Server Side Rendering.
+*   **Row Level Security (RLS)**: Hardened database access ensuring users only see what they are authorized to.
+*   **Data Backups**: Admin-only feature to export the entire system state as a structured ZIP (XLSX + Meta).
 
 ---
 
-# When Stuck
+## 🛠️ Tech Stack
 
-- Explain what's missing and what you need.
-- Do not guess or invent capabilities.
-
----
-
-# Guardrails — Learned Behaviors
-
-- Verify tool output format before chaining into another tool.
-- Don't assume APIs support batch operations — check first.
-- When a workflow fails mid-execution, preserve intermediate outputs before retrying.
-- Read the full goal before starting a task — don't skim.
-
-*(Add new guardrails as mistakes happen. Keep under 15 items.)*
+*   **Framework**: Next.js 14 (App Router)
+*   **Database & Auth**: Supabase (Postgres, RLS, Storage)
+*   **Styling**: Vanilla CSS + Tailwind CSS (Portfolio Aesthetic)
+*   **QR System**: `qrcode` (Generation) & `html5-qrcode` (Scanning)
+*   **Exports**: `ExcelJS` & `SheetJS` (Attendance Reports)
+*   **Validation**: Zod + React Hook Form
 
 ---
 
-# Tone and Behavior
+## 📂 Project Structure
 
-- Criticism is welcome. Tell me when I'm wrong or when there's a better approach.
-- Be skeptical.
-- Be concise. No flattery. No extended breakdowns unless working through plan details.
-- Ask questions when in doubt. Don't guess intent. Never assume missing context.
-- Never hallucinate libraries or functions.
-- Confirm file paths and module names exist before referencing them.
-- Never delete or overwrite existing code unless explicitly instructed or part of a TASK.md task.
+*   `/app`: Next.js App Router (Auth, Admin, Manager, Student portals)
+*   `/components`: Reusable UI components and role-specific views
+*   `/lib`: Core logic including Supabase clients, server actions, and QR engines
+*   `/supabase`: Database migrations and RLS policies
+*   `/assets`: Branding assets and generated UI designs
 
 ---
 
-# Code Style & Conventions
+## 🏁 Getting Started
 
-- **TypeScript** as the primary language. Use **strict mode**, enforce **ESLint** with recommended rules, format with **Prettier**.
-- **Zod** for data validation. **Hono** or **Express** for APIs. **Prisma** or **Drizzle** for ORM.
-- **JSDoc** comments for every function.
-- Never create a file longer than **500 lines**. Split into modules when approaching the limit.
-- Prefer **ES modules** (`import`/`export`). No `require()` unless interfacing with legacy CJS.
-- Always define explicit return types on functions. Avoid `any` — use `unknown` and narrow.
-
-### Organize by feature/responsibility (For agents)
-
-- `agent.ts` — Main agent definition and execution
-- `tools.ts` — Tool functions
-- `prompts.ts` — System prompts
-
-- Prefer **relative imports within packages**.
+1.  **Clone the repository**
+2.  **Install dependencies**:
+    ```bash
+    npm install
+    ```
+3.  **Setup Environment**: Create a `.env.local` file with:
+    ```env
+    NEXT_PUBLIC_SUPABASE_URL=your_url
+    NEXT_PUBLIC_SUPABASE_ANON_KEY=your_key
+    SUPABASE_SERVICE_ROLE_KEY=your_service_key
+    ```
+4.  **Run migrations**: Apply the SQL schemas in your Supabase dashboard.
+5.  **Start development**:
+    ```bash
+    npm run dev
+    ```
 
 ---
 
-# Testing
+## 🎨 Branding: The `|||··||` Mark
+The `|||··||` mark is the core identity of Club Eve. It appears on every authentication page, in navigational footers, and is embedded into every generated QR code to ensure authenticity.
 
-- **Vitest** for all new features. Tests live in `/tests` mirroring app structure.
-- Minimum per feature:
-  - 1 expected use
-  - 1 edge case
-  - 1 failure case
+---
+© 2026 Club Eve Labs. Built for impact.
