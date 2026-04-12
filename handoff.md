@@ -184,3 +184,11 @@ Successfully verified and explicitly applied the architectural internal data-fet
   - **Graceful Termination**: Added `await supabase.auth.signOut()` within the middleware to explicitly clear bad auth cookies before redirecting to login.
   - **Clean Redirects**: Standardized the redirect flow to prevent infinite loops in cases of session expiration.
 
+
+### Combined Attendance Sheet (April 12, 2026)
+- **Action**: Created \pp/api/admin/combined-sheet/route.ts\ and \components/admin/CombinedSheetButton.tsx\.
+- **Implemented Logic**: 
+  - **Multi-Semester Export**: Generates a single \.xlsx\ with 8 sheets (one per semester) and a Summary dashboard.
+  - **High Fidelity**: Freezes USN/Name columns for better horizontal scrolling and includes live \COUNTIF\ summary formulas.
+  - **Specialized Loading**: Implemented a \ExcelOverlay\ that visualizes the spreadsheet generation process in real-time.
+

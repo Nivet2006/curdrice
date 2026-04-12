@@ -29,6 +29,9 @@ Curdrice
 │   │   │   └── page.tsx
 │   │   └── layout.tsx
 │   ├── api
+│   │   ├── admin
+│   │   │   └── combined-sheet
+│   │   │       └── route.ts
 │   │   └── backup
 │   │       └── route.ts
 │   ├── fonts
@@ -71,6 +74,7 @@ Curdrice
 ├── components
 │   ├── admin
 │   │   ├── AttendanceManager.tsx
+│   │   ├── CombinedSheetButton.tsx
 │   │   ├── CreateUserModal.tsx
 │   │   ├── UserExportMenu.tsx
 │   │   └── UserTable.tsx
@@ -109,6 +113,7 @@ Curdrice
 │   ├── FEATURE_STUDENT_PROFILE_20260322_221800.md
 │   ├── UPDATE_DASHBOARD_SKELETONS_20260322_222600.md
 │   ├── FEATURE_ROBUST_AUTH_20260412_150200.md
+│   ├── FEATURE_COMBINED_SHEET_20260412_163000.md
 │   ├── UPDATE_1_20260321_222343
 │   ├── UPDATE_2...UPDATE_22 (historical logs)
 ├── lib
