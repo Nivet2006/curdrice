@@ -34,8 +34,8 @@ export async function GET() {
 
         supabaseAdmin
             .from('events')
-            .select('id, title, date, location')
-            .order('date', { ascending: true }),
+            .select('id, title, event_date, location')
+            .order('event_date', { ascending: true }),
 
         supabaseAdmin
             .from('event_constraints')
@@ -43,7 +43,7 @@ export async function GET() {
 
         supabaseAdmin
             .from('registrations')
-            .select('user_id, event_id, checked_in'),
+            .select('student_id, event_id, checked_in'),
     ])
 
     const profiles = profilesRes.data ?? []
@@ -52,12 +52,12 @@ export async function GET() {
     const registrations = registrationsRes.data ?? []
 
     // ── Build lookup maps ────────────────────────────────────────────────────────
-    // userId → Set of event_ids where checked_in = true
+    // studentId → Set of event_ids where checked_in = true
     const attendanceMap = new Map<string, Set<string>>()
     for (const reg of registrations) {
         if (reg.checked_in) {
-            if (!attendanceMap.has(reg.user_id)) attendanceMap.set(reg.user_id, new Set())
-            attendanceMap.get(reg.user_id)!.add(reg.event_id)
+            if (!attendanceMap.has(reg.student_id)) attendanceMap.set(reg.student_id, new Set())
+            attendanceMap.get(reg.student_id)!.add(reg.event_id)
         }
     }
 
@@ -89,7 +89,7 @@ export async function GET() {
         const semStudents = profiles.filter(p => p.semester === sem)
         if (semStudents.length === 0) continue
 
-        // Events eligible for this semester
+        // Events (past, present, or future) eligible for this semester
         const eligibleEvents = events.filter(e => {
             const allowed = constraintsMap.get(e.id)
             if (!allowed || allowed.length === 0) return true // no constraint → open to all
@@ -114,7 +114,7 @@ export async function GET() {
             'Student Name',
             'USN',
             ...eligibleEvents.map(e => {
-                const d = e.date ? new Date(e.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: '2-digit' }) : ''
+                const d = e.event_date ? new Date(e.event_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: '2-digit' }) : ''
                 return `${e.title}\n(${d})`
             }),
         ]
