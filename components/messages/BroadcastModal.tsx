@@ -115,7 +115,7 @@ export default function BroadcastModal({ open, onClose, adminId }: BroadcastModa
             <div className="flex justify-end gap-3 pt-2">
               <Button 
                 type="button" 
-                variant="outline" 
+                variant="ghost" 
                 onClick={onClose}
                 className="border-zinc-700 text-zinc-300 hover:bg-zinc-800"
               >
