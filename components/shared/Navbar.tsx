@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { LogOut, Menu, X, LayoutDashboard, Calendar, Users, ScanLine, ClipboardList, Database, UserCircle } from 'lucide-react'
 import { Badge } from '../ui/Badge'
@@ -11,6 +11,8 @@ import { ThemeToggle } from '@/components/shared/ThemeToggle'
 import PatternPicker from "./PatternPicker";
 import { BrandMark } from '@/components/shared/BrandMark'
 import { ShieldLoader } from '@/components/shared/ShieldLoader'
+import MessagesPanel from '../messages/MessagesPanel'
+import { getUnreadNotificationsCount } from '@/lib/actions/messages'
 
 export function Navbar({ role, name }: { role?: Role; name?: string }) {
   const router = useRouter()
@@ -18,6 +20,21 @@ export function Navbar({ role, name }: { role?: Role; name?: string }) {
   const supabase = createClient()
   const [loading, setLoading] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [messagesOpen, setMessagesOpen] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
+  const [userId, setUserId] = useState<string | null>(null)
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        setUserId(user.id)
+        const count = await getUnreadNotificationsCount(user.id)
+        setUnreadCount(count)
+      }
+    }
+    checkUser()
+  }, [])
 
   const handleLogout = async () => {
     setSidebarOpen(false)
@@ -94,7 +111,18 @@ export function Navbar({ role, name }: { role?: Role; name?: string }) {
             {role && (
               <>
                 <Badge variant={role}>{role}</Badge>
-                <span className="font-mono text-sm hidden sm:inline">{name}</span>
+                <button
+                  onClick={() => setMessagesOpen(true)}
+                  className="relative flex items-center gap-2 px-3 py-1.5 rounded-lg border border-zinc-200 hover:border-black text-sm text-[#0a0a0a] transition-all bg-white shadow-sm"
+                >
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-black text-white text-[10px] rounded-full flex items-center justify-center border-2 border-white font-bold animate-bounce">
+                      {unreadCount}
+                    </span>
+                  )}
+                  <span className="font-mono hidden sm:inline">{name}</span>
+                  <UserCircle size={16} className="text-zinc-400 group-hover:text-black" />
+                </button>
                 <button
                   onClick={handleLogout}
                   disabled={loading}
@@ -187,6 +215,11 @@ export function Navbar({ role, name }: { role?: Role; name?: string }) {
           </button>
         </div>
       </div>
+      <MessagesPanel 
+        open={messagesOpen} 
+        onClose={() => setMessagesOpen(false)} 
+        userId={userId || undefined} 
+      />
     </>
   )
 }
