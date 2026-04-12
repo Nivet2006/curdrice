@@ -416,6 +416,60 @@ img {
   background-attachment: fixed;
 }
 
+/* DIAMONDS */
+[data-pattern="diamonds"] html,
+[data-pattern="diamonds"] body {
+  background-image:
+    linear-gradient(45deg, var(--grid-color) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--grid-color) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--grid-color) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--grid-color) 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+  background-attachment: fixed;
+}
+
+/* CIRCUIT */
+[data-pattern="circuit"] html,
+[data-pattern="circuit"] body {
+  background-image:
+    linear-gradient(var(--grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px),
+    radial-gradient(circle, var(--grid-color-2) 1.5px, transparent 1.5px);
+  background-size: 24px 24px, 24px 24px, 24px 24px;
+  background-position: 0 0, 0 0, 12px 12px;
+  background-attachment: fixed;
+}
+
+/* POLKA */
+[data-pattern="polka"] html,
+[data-pattern="polka"] body {
+  background-image: radial-gradient(circle, var(--grid-color) 2px, transparent 2px);
+  background-size: 18px 18px;
+  background-attachment: fixed;
+}
+
+/* SCALES */
+[data-pattern="scales"] html,
+[data-pattern="scales"] body {
+  background-image: radial-gradient(circle at 50% 0%, transparent 60%, var(--grid-color) 60%);
+  background-size: 20px 12px;
+  background-attachment: fixed;
+}
+
+/* ZIGZAG */
+[data-pattern="zigzag"] html,
+[data-pattern="zigzag"] body {
+  background-image:
+    linear-gradient(135deg, var(--grid-color) 25%, transparent 25%),
+    linear-gradient(225deg, var(--grid-color) 25%, transparent 25%),
+    linear-gradient(315deg, var(--grid-color) 25%, transparent 25%),
+    linear-gradient(45deg, var(--grid-color) 25%, transparent 25%);
+  background-size: 16px 16px;
+  background-position: 0 0, 8px 0, 8px -8px, 0 8px;
+  background-attachment: fixed;
+}
+
 /* ── Pattern swatch previews in the picker dropdown ── */
 
 .pattern-swatch-none {
@@ -483,4 +537,36 @@ img {
     linear-gradient(60deg, var(--grid-color-2) 25%, transparent 25.5%, transparent 75%, var(--grid-color-2) 75%, var(--grid-color-2)) !important;
   background-size: 12px 20px !important;
   background-position: 0 0, 0 0, 6px 10px !important;
+}
+.pattern-swatch-diamonds {
+  background-image:
+    linear-gradient(45deg, var(--grid-color) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--grid-color) 25%, transparent 25%) !important;
+  background-size: 10px 10px !important;
+}
+
+.pattern-swatch-circuit {
+  background-image:
+    linear-gradient(var(--grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px),
+    radial-gradient(circle, var(--grid-color-2) 1px, transparent 1px) !important;
+  background-size: 10px 10px, 10px 10px, 10px 10px !important;
+  background-position: 0 0, 0 0, 5px 5px !important;
+}
+
+.pattern-swatch-polka {
+  background-image: radial-gradient(circle, var(--grid-color) 1.5px, transparent 1.5px) !important;
+  background-size: 6px 6px !important;
+}
+
+.pattern-swatch-scales {
+  background-image: radial-gradient(circle at 50% 0%, transparent 60%, var(--grid-color) 60%) !important;
+  background-size: 10px 6px !important;
+}
+
+.pattern-swatch-zigzag {
+  background-image:
+    linear-gradient(135deg, var(--grid-color) 25%, transparent 25%),
+    linear-gradient(225deg, var(--grid-color) 25%, transparent 25%) !important;
+  background-size: 8px 8px !important;
 }

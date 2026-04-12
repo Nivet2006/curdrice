@@ -9,7 +9,12 @@ export type PatternId =
     | "cross"
     | "diagonal"
     | "waves"
-    | "hexagon";
+    | "hexagon"
+    | "diamonds"
+    | "circuit"
+    | "polka"
+    | "scales"
+    | "zigzag";
 
 interface PatternContextValue {
     pattern: PatternId;

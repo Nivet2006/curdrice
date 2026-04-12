@@ -39,6 +39,31 @@ const PATTERNS: { id: PatternId; label: string; preview: string }[] = [
         label: "Hex",
         preview: "pattern-preview-hexagon",
     },
+    {
+        id: "diamonds",
+        label: "Diamonds",
+        preview: "pattern-preview-diamonds",
+    },
+    {
+        id: "circuit",
+        label: "Circuit",
+        preview: "pattern-preview-circuit",
+    },
+    {
+        id: "polka",
+        label: "Polka",
+        preview: "pattern-preview-polka",
+    },
+    {
+        id: "scales",
+        label: "Scales",
+        preview: "pattern-preview-scales",
+    },
+    {
+        id: "zigzag",
+        label: "Zigzag",
+        preview: "pattern-preview-zigzag",
+    },
 ];
 
 export default function PatternPicker() {

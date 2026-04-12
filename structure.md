@@ -54,6 +54,8 @@ Curdrice
 │   │   │   ├── [id]
 │   │   │   │   └── page.tsx
 │   │   │   └── page.tsx
+│   │   ├── profile
+│   │   │   └── page.tsx
 │   │   └── layout.tsx
 │   ├── favicon.ico
 │   ├── globals.css
@@ -79,6 +81,8 @@ Curdrice
 │   ├── shared
 │   │   ├── BrandMark.tsx
 │   │   ├── Navbar.tsx
+│   │   ├── PatternPicker.tsx
+│   │   ├── PatternProvider.tsx
 │   │   └── ThemeToggle.tsx
 │   ├── student
 │   │   ├── DashboardEventTabs.tsx
@@ -104,6 +108,7 @@ Curdrice
 │   ├── FEATURE_MOBILE_NAVBAR_20260322_212800.md
 │   ├── FEATURE_STUDENT_PROFILE_20260322_221800.md
 │   ├── UPDATE_DASHBOARD_SKELETONS_20260322_222600.md
+│   ├── FEATURE_ROBUST_AUTH_20260412_150200.md
 │   ├── UPDATE_1_20260321_222343
 │   ├── UPDATE_2...UPDATE_22 (historical logs)
 ├── lib
@@ -123,6 +128,7 @@ Curdrice
 │       └── 0001_rls_policies.sql
 ├── handoff.md
 ├── PLANNING.md
+├── middleware.ts
 ├── package.json
 ├── tailwind.config.ts
 └── tsconfig.json
