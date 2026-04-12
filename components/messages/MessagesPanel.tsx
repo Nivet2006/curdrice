@@ -27,6 +27,7 @@ export default function MessagesPanel({ open, onClose, userId }: MessagesPanelPr
   const [activeTab, setActiveTab] = useState<'notifications' | 'inbox'>('notifications')
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [messages, setMessages] = useState<any[]>([])
+  const [profile, setProfile] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [selectedQR, setSelectedQR] = useState<{ token: string; name: string } | null>(null)
 
@@ -38,8 +39,18 @@ export default function MessagesPanel({ open, onClose, userId }: MessagesPanelPr
   const [dmSent, setDmSent] = useState<string | null>(null)
 
   useEffect(() => {
-    if (open && userId) loadData()
+    if (open && userId) {
+      loadData()
+      fetchProfile()
+    }
   }, [open, userId, activeTab])
+
+  const fetchProfile = async () => {
+    const { createClient } = await import('@/lib/supabase/client')
+    const supabase = createClient()
+    const { data } = await supabase.from('profiles').select('full_name, usn').eq('id', userId!).single()
+    if (data) setProfile(data)
+  }
 
   const loadData = async () => {
     setLoading(true)
@@ -274,26 +285,15 @@ export default function MessagesPanel({ open, onClose, userId }: MessagesPanelPr
           )}
         </div>
 
-        {/* QR overlay */}
+        {/* QR Display - QRDisplay already includes its own fixed overlay */}
         {selectedQR && (
-          <div 
-            className="absolute inset-0 z-[110] flex items-center justify-center p-6 backdrop-blur-md"
-            style={{ background: 'rgba(0,0,0,0.5)' }}
-          >
-            <div 
-              className="border p-6 rounded-2xl shadow-2xl relative max-w-sm w-full"
-              style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}
-            >
-              <button
-                onClick={() => setSelectedQR(null)}
-                className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-[#f2f2f2] dark:hover:bg-zinc-800 transition-colors"
-                style={{ color: 'var(--fg-muted)' }}
-              >
-                <X size={18} />
-              </button>
-              <QRDisplay token={selectedQR.token} studentName={selectedQR.name} />
-            </div>
-          </div>
+          <QRDisplay 
+            token={selectedQR.token} 
+            studentName={profile?.full_name || 'Student'} 
+            usn={profile?.usn || ''}
+            eventName={selectedQR.name}
+            onClose={() => setSelectedQR(null)}
+          />
         )}
       </div>
     </div>
