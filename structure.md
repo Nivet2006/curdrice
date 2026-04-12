@@ -1,7 +1,7 @@
 # Project Structure
 
 ```
-Curdrice
+Club Eve
 ├── .agents
 │   └── workflows
 │       └── 22-03-2026

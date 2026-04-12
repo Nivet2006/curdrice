@@ -2,7 +2,7 @@
 
 **Date:** 2026-03-22
 **Status:** In Progress
-**Project:** CurdRice (formerly EventHub)
+**Project:** Club Eve (formerly EventHub)
 
 ## Pre-deployment Checklist
 - [ ] .gitignore verified (ignoring .env and .next)

@@ -13,7 +13,7 @@ and control who can register. Admins have full system control including site-wid
 Design language mirrors [nived.work](https://nived.work) — minimal, monospace accents, clean white,
 with the `|||··||` brand mark appearing on auth pages **and** inside every QR code.
 
-**Live reference:** `https://curdrice.nivet2006.in/login`
+**Live reference:** `https://Club Eve.nivet2006.in/login`
 
 ---
 

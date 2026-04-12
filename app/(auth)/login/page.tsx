@@ -45,7 +45,7 @@ export default function LoginPage() {
       {loading && <ShieldLoader />}
 
       <div className="absolute top-6 left-8 font-mono font-bold text-lg">
-        {'>'} CurdRice
+        {'>'} Club Eve
       </div>
       <div className="absolute top-6 right-8 flex items-center gap-3">
         <ThemeToggle />
@@ -56,7 +56,7 @@ export default function LoginPage() {
         <div className="w-14 h-14 rounded-2xl bg-[#f5f5f5] flex items-center justify-center mb-1 overflow-hidden border border-[#e0e0e0]">
           <img src="/favicon.ico" alt="logo" className="w-10 h-10 object-contain" />
         </div>
-        <h1 className="text-2xl font-black tracking-tight mt-3">CurdRice</h1>
+        <h1 className="text-2xl font-black tracking-tight mt-3">Club Eve</h1>
         <p className="text-sm font-mono text-[#555555] mt-1 text-center font-bold">Mini Project Sem 4</p>
 
         <hr className="w-full border-[#e0e0e0] my-6" />

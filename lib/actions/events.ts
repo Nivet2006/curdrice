@@ -9,36 +9,36 @@ export async function createEvent(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Unauthorized' }
 
-  const title       = (formData.get('title') as string)?.trim()
-  const club_name   = (formData.get('clubName') as string)?.trim()
-  const status      = formData.get('status') as string
+  const title = (formData.get('title') as string)?.trim()
+  const club_name = (formData.get('clubName') as string)?.trim()
+  const status = formData.get('status') as string
   const description = (formData.get('description') as string)?.trim()
-  const location    = (formData.get('location') as string)?.trim()
-  const event_date  = formData.get('eventDate') as string
+  const location = (formData.get('location') as string)?.trim()
+  const event_date = formData.get('eventDate') as string
   const deadlineStr = formData.get('deadline') as string
-  const banner_url  = (formData.get('bannerUrl') as string)?.trim() || null
-  const capStr      = formData.get('capacity') as string
+  const banner_url = (formData.get('bannerUrl') as string)?.trim() || null
+  const capStr = formData.get('capacity') as string
   const max_capacity = capStr && parseInt(capStr) > 0 ? parseInt(capStr) : null
 
-  if (!title)       return { error: 'Event Title is required.' }
-  if (!club_name)   return { error: 'Club / Host Identity is required.' }
+  if (!title) return { error: 'Event Title is required.' }
+  if (!club_name) return { error: 'Club / Host Identity is required.' }
   if (!description) return { error: 'Description is required.' }
-  if (!location)    return { error: 'Physical Location is required.' }
-  if (!event_date)  return { error: 'Event Date & Time is required.' }
+  if (!location) return { error: 'Physical Location is required.' }
+  if (!event_date) return { error: 'Event Date & Time is required.' }
   if (!deadlineStr) return { error: 'Registration Hard Deadline is required.' }
-  if (!banner_url)  return { error: 'Poster / Banner Image URL is required.' }
+  if (!banner_url) return { error: 'Poster / Banner Image URL is required.' }
 
-  const eventDt    = new Date(event_date)
+  const eventDt = new Date(event_date)
   const deadlineDt = new Date(deadlineStr)
 
-  if (isNaN(eventDt.getTime()))    return { error: 'Invalid Event Date & Time.' }
+  if (isNaN(eventDt.getTime())) return { error: 'Invalid Event Date & Time.' }
   if (isNaN(deadlineDt.getTime())) return { error: 'Invalid Registration Deadline.' }
-  if (deadlineDt >= eventDt)       return { error: 'Registration deadline must be before the Event Date & Time.' }
+  if (deadlineDt >= eventDt) return { error: 'Registration deadline must be before the Event Date & Time.' }
 
-  const semStr  = formData.get('semesters') as string
+  const semStr = formData.get('semesters') as string
   const yearStr = formData.get('years') as string
   const deptStr = formData.get('departments') as string
-  const sems  = JSON.parse(semStr  || '[]')
+  const sems = JSON.parse(semStr || '[]')
   const years = JSON.parse(yearStr || '[]')
   const depts = JSON.parse(deptStr || '[]')
 
@@ -70,41 +70,41 @@ export async function updateEvent(eventId: string, formData: FormData) {
   if (!user) return { error: 'Unauthorized' }
 
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  const { data: event }   = await supabase.from('events').select('created_by').eq('id', eventId).single()
+  const { data: event } = await supabase.from('events').select('created_by').eq('id', eventId).single()
 
   if (!event) return { error: 'Event not found' }
   if (event.created_by !== user.id && profile?.role !== 'admin') return { error: 'Unauthorized' }
 
-  const title       = (formData.get('title') as string)?.trim()
-  const club_name   = (formData.get('clubName') as string)?.trim()
-  const status      = formData.get('status') as string
+  const title = (formData.get('title') as string)?.trim()
+  const club_name = (formData.get('clubName') as string)?.trim()
+  const status = formData.get('status') as string
   const description = (formData.get('description') as string)?.trim()
-  const location    = (formData.get('location') as string)?.trim()
-  const event_date  = formData.get('eventDate') as string
+  const location = (formData.get('location') as string)?.trim()
+  const event_date = formData.get('eventDate') as string
   const deadlineStr = formData.get('deadline') as string
-  const banner_url  = (formData.get('bannerUrl') as string)?.trim() || null
-  const capStr      = formData.get('capacity') as string
+  const banner_url = (formData.get('bannerUrl') as string)?.trim() || null
+  const capStr = formData.get('capacity') as string
   const max_capacity = capStr && parseInt(capStr) > 0 ? parseInt(capStr) : null
 
-  if (!title)       return { error: 'Event Title is required.' }
-  if (!club_name)   return { error: 'Club / Host Identity is required.' }
+  if (!title) return { error: 'Event Title is required.' }
+  if (!club_name) return { error: 'Club / Host Identity is required.' }
   if (!description) return { error: 'Description is required.' }
-  if (!location)    return { error: 'Physical Location is required.' }
-  if (!event_date)  return { error: 'Event Date & Time is required.' }
+  if (!location) return { error: 'Physical Location is required.' }
+  if (!event_date) return { error: 'Event Date & Time is required.' }
   if (!deadlineStr) return { error: 'Registration Hard Deadline is required.' }
-  if (!banner_url)  return { error: 'Poster / Banner Image URL is required.' }
+  if (!banner_url) return { error: 'Poster / Banner Image URL is required.' }
 
-  const eventDt    = new Date(event_date)
+  const eventDt = new Date(event_date)
   const deadlineDt = new Date(deadlineStr)
 
-  if (isNaN(eventDt.getTime()))    return { error: 'Invalid Event Date & Time.' }
+  if (isNaN(eventDt.getTime())) return { error: 'Invalid Event Date & Time.' }
   if (isNaN(deadlineDt.getTime())) return { error: 'Invalid Registration Deadline.' }
-  if (deadlineDt >= eventDt)       return { error: 'Registration deadline must be before the Event Date & Time.' }
+  if (deadlineDt >= eventDt) return { error: 'Registration deadline must be before the Event Date & Time.' }
 
-  const semStr  = formData.get('semesters') as string
+  const semStr = formData.get('semesters') as string
   const yearStr = formData.get('years') as string
   const deptStr = formData.get('departments') as string
-  const sems  = JSON.parse(semStr  || '[]')
+  const sems = JSON.parse(semStr || '[]')
   const years = JSON.parse(yearStr || '[]')
   const depts = JSON.parse(deptStr || '[]')
 
@@ -146,6 +146,10 @@ export async function deleteEvent(eventId: string) {
 
   const { error } = await supabase.from('events').delete().eq('id', eventId)
   if (error) return { error: error.message }
+
+  if (profile?.role === 'admin') {
+    redirect('/admin/events')
+  }
 
   redirect('/manager/dashboard')
 }

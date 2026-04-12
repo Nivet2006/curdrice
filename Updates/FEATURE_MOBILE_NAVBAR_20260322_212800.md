@@ -8,7 +8,7 @@ Replaced the traditional horizontal Navbar with a responsive hybrid system. Inte
 ### 1. Responsive Navigation (Navbar.tsx)
 - **Desktop (md+)**: Main navigation links (`Dashboard`, `Events`, `Users`, etc.) are displayed inline for accessibility.
 - **Mobile (<md)**: Navigation links are hidden. A circular hamburger menu button (`Menu` icon) triggers the sidebar.
-- **Brand Identity**: `BrandMark` and `CurdRice` logo are synchronized and visible across all breakpoints.
+- **Brand Identity**: `BrandMark` and `Club Eve` logo are synchronized and visible across all breakpoints.
 
 ### 2. Slide-in Sidebar Panel
 - **Animation**: Implemented with Tailwind's `translate-x` utilities and `transition-transform duration-300` for 60fps performance.

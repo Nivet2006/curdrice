@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const jsonPath = 'C:/Users/nived/.gemini/antigravity/brain/fc987427-e51a-4f03-adf1-7f3396e89c69/.system_generated/steps/58/output.txt';
-const assetsDir = 'c:/codingprojects/Curdrice/assets';
+const assetsDir = 'c:/codingprojects/Club Eve/assets';
 
 if (!fs.existsSync(assetsDir)) {
   fs.mkdirSync(assetsDir, { recursive: true });
@@ -28,7 +28,7 @@ async function main() {
     }
   }
   
-  const taskPath = 'c:/codingprojects/Curdrice/TASK.md';
+  const taskPath = 'c:/codingprojects/Club Eve/TASK.md';
   // Check if ## Generated Designs already exists
   const taskContent = fs.readFileSync(taskPath, 'utf8');
   if (!taskContent.includes('## Generated Designs')) {

@@ -38,11 +38,11 @@ export function UserExportMenu({ users }: { users: Profile[] }) {
     XLSX.utils.book_append_sheet(wb, ws, "Users")
 
     if (format === 'xlsx') {
-      XLSX.writeFile(wb, "curdrice_users.xlsx")
+      XLSX.writeFile(wb, "Club Eve_users.xlsx")
     } else if (format === 'csv') {
-      XLSX.writeFile(wb, "curdrice_users.csv", { bookType: 'csv' })
+      XLSX.writeFile(wb, "Club Eve_users.csv", { bookType: 'csv' })
     } else if (format === 'txt') {
-      XLSX.writeFile(wb, "curdrice_users.txt", { bookType: 'txt' })
+      XLSX.writeFile(wb, "Club Eve_users.txt", { bookType: 'txt' })
     }
     setIsOpen(false)
   }

@@ -66,7 +66,7 @@ export function Navbar({ role, name }: { role?: Role; name?: string }) {
           <div className="flex items-center gap-8">
             <div className="flex items-center gap-2">
               <Link href="/" className="font-mono font-bold text-[#0a0a0a]">
-                {'>'} CurdRice
+                {'>'} Club Eve
               </Link>
               <BrandMark />
             </div>

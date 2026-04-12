@@ -109,7 +109,7 @@ function ExcelOverlay({ visible }: { visible: boolean }) {
                         <span key={c} style={{ width: 9, height: 9, borderRadius: '50%', background: c, display: 'inline-block' }} />
                     ))}
                     <span style={{ color: '#a7f3d0', fontSize: 11, fontFamily: 'monospace', marginLeft: 8, opacity: .85 }}>
-                        CurdRice_Attendance.xlsx
+                        Club Eve_Attendance.xlsx
                     </span>
                 </div>
 
@@ -260,7 +260,7 @@ export default function CombinedSheetButton() {
             const url = URL.createObjectURL(blob)
             const a = document.createElement('a')
             a.href = url
-            a.download = `CurdRice_Attendance_${new Date().toISOString().split('T')[0]}.xlsx`
+            a.download = `Club Eve_Attendance_${new Date().toISOString().split('T')[0]}.xlsx`
             document.body.appendChild(a)
             a.click()
             a.remove()
