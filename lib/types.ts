@@ -57,3 +57,57 @@ export interface BackupLog {
   row_counts: Record<string, number>
   created_at: string
 }
+
+export type ConversationType = 'dm' | 'group'
+export type InviteStatus = 'pending' | 'accepted' | 'declined'
+export type MemberRole = 'member' | 'admin'
+
+export interface Conversation {
+  id: string
+  type: ConversationType
+  name: string | null
+  created_by: string
+  created_at: string
+  status: 'pending' | 'active'
+}
+
+export interface ConversationMember {
+  id: string
+  conversation_id: string
+  account_id: string
+  role: MemberRole
+  joined_at: string
+  invite_status: InviteStatus
+}
+
+export interface Message {
+  id: string
+  conversation_id: string
+  sender_id: string
+  body: string
+  created_at: string
+  is_archived: boolean
+  is_deleted: boolean
+}
+
+export type NotificationType = 'event_registration' | 'dm_invite' | 'group_invite' | 'broadcast' | 'system'
+
+export interface Notification {
+  id: string
+  account_id: string
+  type: NotificationType
+  title: string
+  body: string | null
+  metadata: any
+  is_read: boolean
+  is_archived: boolean
+  created_at: string
+}
+
+export interface Broadcast {
+  id: string
+  sender_id: string
+  subject: string
+  body: string
+  sent_at: string
+}

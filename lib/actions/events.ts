@@ -218,16 +218,21 @@ export async function registerForEvent(eventId: string) {
     }
   }
 
+  const qrToken = crypto.randomUUID()
   const { error } = await supabase.from('registrations').insert({
     event_id: eventId,
     student_id: user.id,
-    qr_token: crypto.randomUUID()
+    qr_token: qrToken
   })
 
   if (error) {
     if (error.code === '23505') return { error: 'You are already registered for this event.' }
     return { error: error.message }
   }
+
+  // Trigger notification
+  const { createEventNotification } = await import('@/lib/actions/messages')
+  await createEventNotification(user.id, eventId, qrToken)
 
   revalidatePath(`/student/events/${eventId}`)
   return { success: true }
