@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import * as React from 'react'
 import Link from 'next/link'
 import { LogOut, Menu, X, LayoutDashboard, Calendar, Users, ScanLine, ClipboardList, Database, UserCircle } from 'lucide-react'
 import { Badge } from '../ui/Badge'
@@ -18,13 +18,13 @@ export function Navbar({ role, name }: { role?: Role; name?: string }) {
   const router = useRouter()
   const pathname = usePathname()
   const supabase = createClient()
-  const [loading, setLoading] = useState(false)
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [messagesOpen, setMessagesOpen] = useState(false)
-  const [unreadCount, setUnreadCount] = useState(0)
-  const [userId, setUserId] = useState<string | null>(null)
+  const [loading, setLoading] = React.useState(false)
+  const [sidebarOpen, setSidebarOpen] = React.useState(false)
+  const [messagesOpen, setMessagesOpen] = React.useState(false)
+  const [unreadCount, setUnreadCount] = React.useState(0)
+  const [userId, setUserId] = React.useState<string | null>(null)
 
-  useEffect(() => {
+  React.useEffect(() => {
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
