@@ -1,11 +1,11 @@
 # Handoff Summary: PostgREST Fix Validation (March 22, 2026)
 
 ## Overview
-Successfully verified and explicitly applied the architectural internal data-fetching workaround across the EventHub component `app/admin/attendance/[id]/page.tsx`. This explicit resolution functionally terminates the persistent 0-record Attendance Roster edge case caused actively by the PostgREST embedded join engine array drop.
+Successfully verified and explicitly applied the architectural internal data-fetching workaround across the EventHub component `app/admin/attendance/[id]/page.tsx`. This explicit resolution functionally terminates the persistent 0-record Attendance List edge case caused actively by the PostgREST embedded join engine array drop.
 
 ## Executed Patch Deployment
 
-### Bug: Attendance Roster (Silent Array Drop)
+### Bug: Attendance List (Silent Array Drop)
 - **Diagnosis**: Native checks confirmed all SQL logic structures and physical row instances natively existed accurately inside the database infrastructure. An isolated PostgREST library quirk strictly refused to structurally output explicit `.select('*, profiles(...)')` embedded joins correctly, actively mimicking zero-array behavior while internally yielding valid 200 responses safely over the network.
 - **Executed Fix**:
   - Permanently decoupled the PostgREST data request architecture exactly mimicking the proven `admin/users/page.tsx` implementation.

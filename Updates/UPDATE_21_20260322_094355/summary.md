@@ -1,14 +1,14 @@
 # FIX SUMMARY: ERROR 21 - Stale Route Compilation & Explicit Schema Mapping
 
 **Date:** 2026-03-22
-**Components:** Admin Attendance Roster (`app/admin/attendance/[id]/page.tsx`), Backup Audit Log (`app/admin/backup/page.tsx`, `app/api/backup/route.ts`)
+**Components:** Admin Attendance List (`app/admin/attendance/[id]/page.tsx`), Backup Audit Log (`app/admin/backup/page.tsx`, `app/api/backup/route.ts`)
 
 ## The Problems
-1. **Attendance Roster 0 Records**: The Supabase data query silently yielded empty arrays on the Admin Attendance UI despite existing records inside the PostgREST dataset, driven heavily by aggressive static route caching within Next.js.
+1. **Attendance List 0 Records**: The Supabase data query silently yielded empty arrays on the Admin Attendance UI despite existing records inside the PostgREST dataset, driven heavily by aggressive static route caching within Next.js.
 2. **Audit Log Missing Admin Names & Inserts Failing**: The API handler strictly passed `filename`, but the internal database column anticipated `file_name`. The frontend UI attempted to read internal backup logs through an unauthorized anon client causing complete silent RLS projection failures.
 
 ## Root Cause Analysis
-1. **Attendance Roster Cache Stagnation**: Even with `.next` cache purging, the Next.js router systematically retained the default static render parameters for the dynamic route. The Next fetch hook lacked internal strict parameters to explicitly dump cache chunks dynamically.
+1. **Attendance List Cache Stagnation**: Even with `.next` cache purging, the Next.js router systematically retained the default static render parameters for the dynamic route. The Next fetch hook lacked internal strict parameters to explicitly dump cache chunks dynamically.
 2. **Backup Log Payload Mismatch & RLS Blocks**: The PostgREST API seamlessly swallowed insertion objects missing `file_name`. The visual frontend utilized `createClient()` (anon auth) rendering invisible datasets due to strict internal RLS constraints blocking non-elevated readers.
 
 ## The Solutions

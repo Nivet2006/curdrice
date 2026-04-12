@@ -6,6 +6,7 @@ import { Calendar, MapPin, Edit3, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { deleteEvent } from '@/lib/actions/events'
 import { RegistrationExportMenu } from '@/components/manager/RegistrationExportMenu'
+import { DeleteEventButton } from '@/components/manager/DeleteEventButton'
 
 export default async function ManagerEventDetails({ params }: { params: { id: string } }) {
   const supabase = createClient()
@@ -53,14 +54,11 @@ export default async function ManagerEventDetails({ params }: { params: { id: st
               <Edit3 size={16} /> Edit Details
             </Button>
           </Link>
-          <form action={async () => {
-            'use server'
-            await deleteEvent(event.id)
-          }}>
-            <Button type="submit" variant="ghost" className="flex items-center gap-2 text-[#eb4b4b] border border-[#eb4b4b] bg-white font-semibold hover:bg-[#ffeded]">
-              <Trash2 size={16} /> Delete Event
-            </Button>
-          </form>
+          <DeleteEventButton
+            eventId={event.id}
+            eventTitle={event.title}
+            registrationCount={registrations.length}
+          />
         </div>
       </div>
 
@@ -94,7 +92,7 @@ export default async function ManagerEventDetails({ params }: { params: { id: st
           <Card className="p-0 overflow-hidden border-[#e0e0e0]">
             <h3 className="font-bold text-lg p-6 pb-4 flex justify-between tracking-tight items-center border-b border-[#e0e0e0]">
               <div className="flex items-center gap-4">
-                <span className="text-[#0a0a0a]">Roster</span>
+                <span className="text-[#0a0a0a]">List</span>
                 <span className="font-mono text-xs text-[#0a0a0a] bg-[#f5f5f5] px-3 py-1.5 rounded-md border border-[#d0d0d0]">
                   Checked In: {checkedInCount} / {registrations.length}
                 </span>

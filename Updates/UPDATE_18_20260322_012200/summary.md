@@ -1,10 +1,10 @@
 # FIX SUMMARY: ERROR 18 - PostgREST Silently Dropping Arrays on Invalid Join Selectors
 
 **Date:** 2026-03-22
-**Component:** Admin Attendance Roster (`app/admin/attendance/[id]/page.tsx`)
+**Component:** Admin Attendance List (`app/admin/attendance/[id]/page.tsx`)
 
 ## The Problem
-During an automated End-to-End headless browser diagnostic session, the Admin Attendance Roster failed to render entries (`"No records found"`), completely contradicting the Node API test scripts that natively retrieved the array structures flawlessly moments earlier. The Attendance Portal successfully counted the users natively, but the specific ID page perpetually refused to serve them payloads to the DOM Client.
+During an automated End-to-End headless browser diagnostic session, the Admin Attendance List failed to render entries (`"No records found"`), completely contradicting the Node API test scripts that natively retrieved the array structures flawlessly moments earlier. The Attendance Portal successfully counted the users natively, but the specific ID page perpetually refused to serve them payloads to the DOM Client.
 
 ## Root Cause Analysis
 The edge PostgREST query in `app/admin/attendance/[id]/page.tsx` was formulated as:

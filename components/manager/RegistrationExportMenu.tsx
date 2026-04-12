@@ -47,11 +47,11 @@ export function RegistrationExportMenu({ registrations, eventTitle }: { registra
     const safeTitle = eventTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()
 
     if (format === 'xlsx') {
-      XLSX.writeFile(wb, `${safeTitle}_roster.xlsx`)
+      XLSX.writeFile(wb, `${safeTitle}_list.xlsx`)
     } else if (format === 'csv') {
-      XLSX.writeFile(wb, `${safeTitle}_roster.csv`, { bookType: 'csv' })
+      XLSX.writeFile(wb, `${safeTitle}_list.csv`, { bookType: 'csv' })
     } else if (format === 'txt') {
-      XLSX.writeFile(wb, `${safeTitle}_roster.txt`, { bookType: 'txt' })
+      XLSX.writeFile(wb, `${safeTitle}_list.txt`, { bookType: 'txt' })
     }
     setIsOpen(false)
   }
@@ -63,14 +63,14 @@ export function RegistrationExportMenu({ registrations, eventTitle }: { registra
 
   return (
     <div className="relative" ref={menuRef}>
-      <Button 
-        variant="ghost" 
+      <Button
+        variant="ghost"
         className="flex items-center gap-2 bg-white border border-[#e0e0e0] text-[#0a0a0a] h-8 px-3 text-xs"
         onClick={() => setIsOpen(!isOpen)}
         type="button"
       >
         <Download size={14} />
-        Export Roster
+        Export
         <ChevronDown size={14} />
       </Button>
 

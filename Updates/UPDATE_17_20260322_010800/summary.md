@@ -1,7 +1,7 @@
 # FIX SUMMARY: ERROR 17 - NextJS Server Component Aggressive `fetch` Caching
 
 **Date:** 2026-03-22
-**Component:** Admin and Manager Event Rosters (`app/admin/attendance/[id]/page.tsx`, `app/manager/events/[id]/page.tsx`)
+**Component:** Admin and Manager Event Lists (`app/admin/attendance/[id]/page.tsx`, `app/manager/events/[id]/page.tsx`)
 
 ## The Problem
 Immediately after resolving the PostgREST Ambiguous Embedding error involving redundant `student_id` mapping constraints in Postgres, the Admin UI continued to exhibit "Loaded (2)" entries but rendered missing database fields (Names, USNs, and Departments remained strictly as `-` or blank). Diagnostic console logs confirmed Supabase natively returned the complete profile JSON structures securely via the Edge Key without error — meaning the framework itself was failing to pipe the active data correctly to the DOM.

@@ -118,7 +118,7 @@ export default async function AdminDashboard() {
           {
             href: '/admin/attendance',
             title: 'Attendance Portal →',
-            desc: 'View rosters and issue manual check-in overrides.',
+            desc: 'View attendee list and issue manual check-in overrides.',
           },
           {
             href: '/admin/events',

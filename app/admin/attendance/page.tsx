@@ -17,7 +17,7 @@ export default async function AdminAttendanceDirectory() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
         <div>
           <h1 className="text-3xl font-black tracking-tight text-[#0a0a0a] mb-2">Attendance Portal</h1>
-          <p className="font-mono text-sm text-[#555555]">Select an event to view rosters, monitor real-time check-ins, or issue manual overrides.</p>
+          <p className="font-mono text-sm text-[#555555]">Select an event to view attendee list, monitor real-time check-ins, or issue manual overrides.</p>
         </div>
         <CombinedSheetButton />
       </div>

@@ -15,7 +15,7 @@ Upgraded the core platform entry points (Admin, Manager, and Student dashboards)
   - **Event Velocity**: Total vs. Active (Upcoming/Ongoing) events.
   - **Platform Throughput**: Global registration and check-in (attendance) counts.
   - **Conversion**: Real-time attendance rate calculation.
-- **Quick Actions Grid**: Implemented direct navigation links to high-intent administrative tools (User Management, Attendance, Roster, Scanner, Backup).
+- **Quick Actions Grid**: Implemented direct navigation links to high-intent administrative tools (User Management, Attendance, List, Scanner, Backup).
 
 ### 3. Shared Skeleton Library
 - **Component**: `components/shared/SkeletonLoader.tsx`.

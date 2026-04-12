@@ -4,16 +4,17 @@ import type { Event } from '@/lib/types'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { Plus } from 'lucide-react'
+import { DeleteEventButton } from '@/components/manager/DeleteEventButton'
 
 export default async function AdminEventsPage() {
   const supabase = createClient()
-  
+
   const { data: allEvents } = await supabase
     .from('events')
-    .select('*')
+    .select('*, registrations(count)')
     .order('event_date', { ascending: false })
 
-  const events = (allEvents as Event[]) || []
+  const events = (allEvents as (Event & { registrations: { count: number }[] })[]) || []
 
   return (
     <div className="w-full">
@@ -31,16 +32,27 @@ export default async function AdminEventsPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {events.length === 0 ? (
-            <p className="col-span-full font-mono text-xs text-[#999999] p-8 border border-dashed border-[#e0e0e0] rounded-2xl text-center">No events found in the system.</p>
+          <p className="col-span-full font-mono text-xs text-[#999999] p-8 border border-dashed border-[#e0e0e0] rounded-2xl text-center">No events found in the system.</p>
         ) : (
-            events.map((event) => (
-              <EventCard 
-                key={event.id} 
-                event={event} 
-                isEligible={true} 
-                hrefOverride={`/manager/events/${event.id}`} 
+          events.map((event) => {
+            const count = event.registrations?.[0]?.count || 0
+            return (
+              <EventCard
+                key={event.id}
+                event={event}
+                isEligible={true}
+                hrefOverride={`/manager/events/${event.id}`}
+                registeredCount={count}
+                adminActions={
+                  <DeleteEventButton
+                    eventId={event.id}
+                    eventTitle={event.title}
+                    registrationCount={count}
+                  />
+                }
               />
-            ))
+            )
+          })
         )}
       </div>
     </div>

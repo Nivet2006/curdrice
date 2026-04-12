@@ -1,10 +1,10 @@
 # FIX SUMMARY: ERROR 20 - System Cache Invalidation & Schema Drift
 
 **Date:** 2026-03-22
-**Components:** Admin Attendance Roster (`app/admin/attendance/[id]/page.tsx`), Backup Audit Log (`app/admin/backup/page.tsx`, Postgres DB)
+**Components:** Admin Attendance List (`app/admin/attendance/[id]/page.tsx`), Backup Audit Log (`app/admin/backup/page.tsx`, Postgres DB)
 
 ## The Problems
-1. **Attendance Roster Stale Cache Loop**: The Attendance Roster consistently rendered "Registered (0)" entirely irrespective of functional backend registrations. A comprehensive database constraint validation physically confirmed NO duplicate or ambiguous foreign keys existed for `registrations.student_id`. The application actively suffered from Next.js payload cache staleness.
+1. **Attendance List Stale Cache Loop**: The Attendance List consistently rendered "Registered (0)" entirely irrespective of functional backend registrations. A comprehensive database constraint validation physically confirmed NO duplicate or ambiguous foreign keys existed for `registrations.student_id`. The application actively suffered from Next.js payload cache staleness.
 2. **Backup Log Column Drift**: The explicit UI log structure failed to render Admin Usernames, actively surfacing `System Admin`. The API generator (`route.ts`) inserted telemetry via the parameter `admin_id`, but the physical database rigidly defined the column as `performed_by`.
 
 ## Root Cause Analysis

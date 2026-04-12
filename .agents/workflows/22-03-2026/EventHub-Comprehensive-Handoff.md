@@ -47,7 +47,7 @@ Today was heavily focused on fixing deep architectural bugs relating to Next.js 
 4. **Postgres ENUM Rejections:** Admin "Suspend User" failed because `'deleted'` was blocked by the ENUM type. We ran SQL to `ALTER TYPE user_role ADD VALUE 'deleted'` and forced a PostgREST schema reload.
 5. **UUID Constraint Violations:** Form actions failed because `qr_token` was strictly `NOT NULL`. Fixed by dynamically injecting `crypto.randomUUID()` during the Server Action schema parse.
 6. **Supabase Silently Dropping Relational Arrays (The Nightmare Bug):** 
-    * *The Symptom:* The Student Dashboard UI (`isRegistered`) and Admin Attendance Roster UI (Student Names) failed silently and vanished.
+    * *The Symptom:* The Student Dashboard UI (`isRegistered`) and Admin Attendance List UI (Student Names) failed silently and vanished.
     * *The Cause:* The database queries used `.select('*, profiles(full_name)')`. Because there was either a missing Foreign Key, OR a duplicate redundant Foreign Key mapping `student_id` to `profiles`, the Supabase PostgREST API triggered an `Ambiguous Embedding` error, safely dropping the payload entirely without crashing the screen.
     * *The Fix:* We executed `ALTER TABLE public.registrations DROP CONSTRAINT registrations_student_id_profile_fkey;` natively in SQL.
 7. **Aggressive Next.js `fetch` Caching Stating:**
@@ -61,7 +61,7 @@ Today was heavily focused on fixing deep architectural bugs relating to Next.js 
 ---
 
 ## 🔒 5. Architecture Law: Bypassing Postgres RLS on the Edge
-If you write a Server Action (e.g., `manualCheckIn` or `Admin Roster Fetch`) and the data is returning `null` or throwing `new row violates row-level security policy`:
+If you write a Server Action (e.g., `manualCheckIn` or `Admin List Fetch`) and the data is returning `null` or throwing `new row violates row-level security policy`:
 **DO NOT** weaken the Postgres SQL RLS configuration natively.
 
 **DO THIS INSTEAD:**
@@ -84,7 +84,7 @@ const supabaseAdmin = createSupabaseClient(
 
 ## 📸 6. Current Feature Completion
 * **Student Pipeline:** Registration, Validations, Event Browsing, Tab filtering, Dynamic Branded QR Code Generation (via HTML5 Canvas).
-* **Manager Pipeline:** Event Creation, Modification, Registration Constraint checking, Roster Export (XLSX).
-* **Admin Pipeline:** God-mode Database Roster, Manual Check-In Overrides, Cross-Event Attendance, Native Postgres System Backup Generator (.zip).
+* **Manager Pipeline:** Event Creation, Modification, Registration Constraint checking, List Export (XLSX).
+* **Admin Pipeline:** God-mode Database List, Manual Check-In Overrides, Cross-Event Attendance, Native Postgres System Backup Generator (.zip).
 
 You are clear to begin. Study the `PLANNING.md` structure, spin up `npm run dev`, and hack away!

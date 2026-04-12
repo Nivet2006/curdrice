@@ -1,10 +1,10 @@
 # FIX SUMMARY: ERROR 22 - PostgREST Embedded Join Silent Array Drop
 
 **Date:** 2026-03-22
-**Components:** Admin Attendance Roster (`app/admin/attendance/[id]/page.tsx`)
+**Components:** Admin Attendance List (`app/admin/attendance/[id]/page.tsx`)
 
 ## The Problem
-The primary Attendance Roster failed to render internal attendee datasets natively displaying "Registered (0)", despite database connections confirming physical valid relationships directly across `registrations` and `profiles`. The framework accurately avoided Next.js caching barriers entirely yet still encountered an architectural mapping anomaly natively.
+The primary Attendance List failed to render internal attendee datasets natively displaying "Registered (0)", despite database connections confirming physical valid relationships directly across `registrations` and `profiles`. The framework accurately avoided Next.js caching barriers entirely yet still encountered an architectural mapping anomaly natively.
 
 ## Root Cause Analysis
 The Supabase JavaScript SDK explicitly used embedded join syntax:
