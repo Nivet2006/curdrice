@@ -1,53 +1,63 @@
 # 🗺️ Club Eve Development Roadmap
-> Future features, enhancements, and long-term vision for the ultimate event management ecosystem.
+> Future features, enhancements, and the long-term vision for a campus-wide event management ecosystem.
 
 ---
 
-## ⚡ Upcoming Enhancements (High Priority)
+## 🏛️ Academic & Operational Excellence
+*Focus on college-wide scalability and administrative efficiency.*
 
-### 📩 Real-Time Communications
-*   **Automatic Reminders**: Email or SMS notifications 24 hours before an event starts.
-*   **Announcement Broadcasts**: Allow managers to send push notifications or group emails to all registered students for location changes or urgent updates.
-*   **Calendar Sync**: One-click "Add to Google/Apple Calendar" for all registrations.
-
-### 📜 Automated Certification
-*   **Participation Certificates**: Automatically generate PDF certificates (using the student's name and USN) once they have been checked in via QR.
-*   **Custom Branding**: Allow clubs to upload their own certificate templates for specific workshops.
-
-### 📊 Advanced Data Analytics
-*   **Registration Trends**: Visual charts for admins showing which clubs or types of events are most popular.
-*   **Attendance Funnels**: Track the drop-off between registration and actual attendance to improve event engagement.
+*   **Central College Dashboard**: A unified feed showing all clubs, all events, and campus-wide highlights.
+*   **Venue & Hall Booking System**: Integrated management to prevent multiple events at the same venue and time.
+*   **Event Calendar View**: Interactive monthly/weekly calendar to help organizers avoid scheduling clashes.
+*   **Department Analytics**: Visual reports for faculty showing participation trends across different departments.
+*   **Audit Logs**: Comprehensive tracking of all admin and manager actions for security and accountability.
+*   **Bulk User Import (CSV)**: Ability to upload entire student batches directly into the system for instant onboarding.
 
 ---
 
-## 🚀 Advanced Features (Mid-Term)
+## 🎓 Student Growth & Career Impact
+*Features designed to provide tangible value to the student's academic profile.*
 
-### 🎟️ Smart Waitlist System
-*   **Automated Queue**: When an event hits max capacity, students are added to a waitlist.
-*   **Auto-Bump**: If someone cancels their registration, the next person on the waitlist is automatically registered and notified.
-
-### 🏆 Gamification & Engagement
-*   **Student Leaderboard**: Points awarded for attending events, completing feedback, or organizing events.
-*   **Club Badges**: "Top Club of the Month" recognized on the student dashboard.
-*   **Event Ratings**: Post-event feedback system with star ratings and comments for managers to review.
-
-### 🤖 AI-Powered Operations
-*   **Smart Descriptions**: Integrated AI (LLM) to help managers write professional event descriptions and titles based on a few keywords.
-*   **Predictive Attendance**: Estimating the expected number of actual attendees based on historical data.
+*   **Participation History**: A detailed personal record in the student profile showing every event attended.
+*   **Automated Certificate Generation (PDF)**: Instant, branded participation certificates generated as soon as attendance is marked.
+*   **Resume / Co-curricular Export**: One-click download of a "Participation Record" that can be attached to resumes or submitted for academic credits.
+*   **Points & Credits System**: Awarding "Event Credits" based on attendance, which can be used for internal college incentives.
 
 ---
 
-## 🌐 Ecosystem Expansion (Long-Term)
+## 📢 Communication & Global Reach
+*Boosting awareness and engagement across the campus.*
 
-### 📱 Progressive Web App (PWA)
-*   **Offline Scanning**: Enable the attendance scanner to work even during poor network conditions by queuing check-ins locally.
-*   **Home Screen Access**: Installable app icon for students to access their QR codes instantly.
+*   **Global Announcements**: Admin-to-student broadcast system for urgent campus-wide updates.
+*   **Dynamic Poster Gallery**: Dedicated section for event posters with generated "Share Links" for WhatsApp/Instagram.
+*   **Event Highlights Gallery**: Post-event storage for photos and videos to showcase successes and build future interest.
+*   **Event Reminder Notifications**: automated email and push alerts 24 hours before a student's registered event.
 
-### 🛰️ Interactive Campus Maps
-*   **Indoor Wayfinding**: Integration with campus maps to show the exact room/building location of an event with directions.
+---
 
-### 💬 In-App Micro-Communities
-*   **Discussion Boards**: Temporary group chats for each event where students can ask questions and managers can provide quick answers.
+## 🧠 Smart System Intelligence
+*Advanced logic to handle complex scheduling and eligibility rules.*
+
+*   **Automated Clash Detection**: Real-time warnings if two major events overlap or if a student registers for two events at the same time.
+*   **Enhanced Eligibility Auto-Check**: Expanded rules including CGPA requirements, prerequisite event attendance, or specific student group access.
+*   **Waitlist + Auto-Fill**: Automated queue management when capacity is reached; users are bumped into active slots when cancellations occur.
+*   **Live Event Mode**: Real-time dashboard showing live check-in counts and attendee statistics during an event.
+
+---
+
+## 🏆 Engagement & Gamification
+*Encouraging a vibrant and active student community.*
+
+*   **Campus Leaderboards**: Showcasing the most active students and the most successful clubs on the homepage.
+*   **Feedback & Rating System**: 5-star rating and comment system for students to review events and help managers improve.
+*   **Multi-College Mode**: Future-proof architecture to support multiple campuses or external university collaborations.
+
+---
+
+## 💡 Top 3 Priority Features (High Impact)
+1.  **Certificate Generation (PDF)**: Immediate reward for students, highly impressive practically.
+2.  **Hall Booking + Clash Detection**: Solves the most common operational headache for college faculty.
+3.  **Resume / Participation Export**: Directly links club activities to student career outcomes.
 
 ---
 *Last updated: 2026-04-12*
