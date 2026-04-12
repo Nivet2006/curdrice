@@ -92,6 +92,48 @@ export async function createEventNotification(
    INBOX / MESSAGES
 ───────────────────────────────────────── */
 
+export async function getConversations(userId: string) {
+  const supabase = createClient()
+  
+  // Get all conversations user is a member of (accepted)
+  const { data, error } = await supabase
+    .from('conversation_members')
+    .select(`
+      invite_status,
+      conversation:conversations(
+        id, type, name, status, created_at,
+        members:conversation_members(
+          invite_status,
+          profile:profiles(id, full_name, usn)
+        )
+      )
+    `)
+    .eq('user_id', userId)
+    .eq('invite_status', 'accepted')
+  
+  if (error) { console.error(error); return [] }
+  
+  return (data || [])
+    .map(d => d.conversation)
+    .filter(Boolean)
+    .filter((c: any) => c.status === 'active')
+}
+
+export async function getMessages(conversationId: string) {
+  const supabase = createClient()
+  const { data } = await supabase
+    .from('messages')
+    .select(`
+      id, body, created_at, sender_id,
+      sender:profiles!messages_sender_id_fkey(full_name)
+    `)
+    .eq('conversation_id', conversationId)
+    .eq('is_deleted', false)
+    .order('created_at', { ascending: true })
+    .limit(100)
+  return data || []
+}
+
 export async function getInbox(userId: string) {
   const supabase = createClient()
   // Get all conversations the user is an active member of
