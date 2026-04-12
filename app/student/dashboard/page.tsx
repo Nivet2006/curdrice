@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { EventCard } from '@/components/student/EventCard'
 import { RealtimeDashboard } from '@/components/student/RealtimeDashboard'
 import type { Event } from '@/lib/types'
+import { Radio } from 'lucide-react'
+import Link from 'next/link'
 
 export default async function StudentDashboard() {
   const supabase = createClient()
@@ -32,10 +34,19 @@ export default async function StudentDashboard() {
           <h1 className="text-3xl font-black tracking-tight mb-2 text-[#0a0a0a]">Welcome, {profile?.full_name}</h1>
           <p className="font-mono text-sm text-[#555555]">{profile?.usn}</p>
         </div>
-        <div className="flex gap-2">
-          <span className="bg-[#f5f5f5] px-3 py-1 font-mono text-xs text-[#999999] rounded-full border border-[#e0e0e0]">{profile?.department}</span>
-          <span className="bg-[#f5f5f5] px-3 py-1 font-mono text-xs text-[#999999] rounded-full border border-[#e0e0e0]">Sem {profile?.semester}</span>
-          <span className="bg-[#f5f5f5] px-3 py-1 font-mono text-xs text-[#999999] rounded-full border border-[#e0e0e0]">Year {profile?.year}</span>
+        <div className="flex items-center gap-4">
+          <Link
+            href="/student/messages"
+            className="flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 text-sm rounded-lg transition-all"
+          >
+            <Radio className="w-4 h-4" />
+            Messages
+          </Link>
+          <div className="flex gap-2">
+            <span className="bg-[#f5f5f5] px-3 py-1 font-mono text-xs text-[#999999] rounded-full border border-[#e0e0e0]">{profile?.department}</span>
+            <span className="bg-[#f5f5f5] px-3 py-1 font-mono text-xs text-[#999999] rounded-full border border-[#e0e0e0]">Sem {profile?.semester}</span>
+            <span className="bg-[#f5f5f5] px-3 py-1 font-mono text-xs text-[#999999] rounded-full border border-[#e0e0e0]">Year {profile?.year}</span>
+          </div>
         </div>
       </div>
 
