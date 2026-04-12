@@ -33,7 +33,7 @@ export async function GET() {
 
   const zip = new JSZip()
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 15)
-  const filename = `Club Eve_backup_${timestamp}.zip`
+  const filename = `Club-Eve_backup_${timestamp}.zip`
 
   const addToZip = (data: unknown[], name: string) => {
     if (!data || data.length === 0) return
@@ -49,7 +49,7 @@ export async function GET() {
   addToZip(registrations || [], 'registrations')
   addToZip(constraints || [], 'constraints')
 
-  zip.file('backup_readme.txt', `Club Eve Absolute Backup Database Snapshot\nGenerated: ${new Date().toISOString()}\nExported by Admin: ${user.id}`)
+  zip.file('backup_readme.txt', `Club-Eve Absolute Backup Database Snapshot\nGenerated: ${new Date().toISOString()}\nExported by Admin: ${user.id}`)
 
   const zipBuffer = await zip.generateAsync({ type: 'arraybuffer' })
 

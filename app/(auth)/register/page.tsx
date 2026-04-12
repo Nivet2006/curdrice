@@ -26,7 +26,7 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 relative">
       <div className="absolute top-6 left-8 font-mono font-bold text-lg">
-        {'>'} Club Eve
+        {'>'} Club-Eve
       </div>
       <div className="absolute top-6 right-8 flex items-center gap-3">
         <ThemeToggle />

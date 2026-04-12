@@ -69,7 +69,7 @@ export async function GET() {
 
     // ── Build workbook ───────────────────────────────────────────────────────────
     const wb = new ExcelJS.Workbook()
-    wb.creator = 'Club Eve'
+    wb.creator = 'Club-Eve'
     wb.created = new Date()
 
     const HEADER_BG = '1A1A2E'   // dark navy
@@ -243,7 +243,7 @@ export async function GET() {
     return new NextResponse(buffer as ArrayBuffer, {
         headers: {
             'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'Content-Disposition': `attachment; filename="Club Eve_Attendance_${date}.xlsx"`,
+            'Content-Disposition': `attachment; filename="Club-Eve_Attendance_${date}.xlsx"`,
         },
     })
 }

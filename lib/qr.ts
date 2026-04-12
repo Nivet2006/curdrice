@@ -6,9 +6,9 @@ export async function generateBrandedQR(
 ): Promise<string> {
   const canvas = document.createElement('canvas')
   canvas.width = 300
-  canvas.height = 340 
+  canvas.height = 340
 
-  await QRCode.toCanvas(canvas, `Club Eve://checkin?token=${token}`, {
+  await QRCode.toCanvas(canvas, `Club-Eve://checkin?token=${token}`, {
     width: 300,
     margin: 2,
     color: { dark: '#0a0a0a', light: '#ffffff' },

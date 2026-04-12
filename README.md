@@ -1,10 +1,10 @@
-# Club Eve | Event Management System
+# Club-Eve | Event Management System
 
-![Club Eve Banner](https://img.shields.io/badge/Next.js-14-black?style=for-the-badge&logo=next.js)
+![Club-Eve Banner](https://img.shields.io/badge/Next.js-14-black?style=for-the-badge&logo=next.js)
 ![Supabase](https://img.shields.io/badge/Supabase-Database%20%26%20Auth-green?style=for-the-badge&logo=supabase)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-Modern_UI-blue?style=for-the-badge&logo=tailwind-css)
 
-Club Eve is a premium, full-stack event management platform designed for college clubs and student organizations. It features a robust 3-tier role system, branded QR-based attendance tracking, and high-fidelity aesthetics.
+Club-Eve is a premium, full-stack event management platform designed for college clubs and student organizations. It features a robust 3-tier role system, branded QR-based attendance tracking, and high-fidelity aesthetics.
 
 ---
 
@@ -75,7 +75,7 @@ Club Eve is a premium, full-stack event management platform designed for college
 ---
 
 ## 🎨 Branding: The `|||··||` Mark
-The `|||··||` mark is the core identity of Club Eve. It appears on every authentication page, in navigational footers, and is embedded into every generated QR code to ensure authenticity.
+The `|||··||` mark is the core identity of Club-Eve. It appears on every authentication page, in navigational footers, and is embedded into every generated QR code to ensure authenticity.
 
 ---
-© 2026 Club Eve Labs. Built for impact.
+© 2026 Club-Eve Labs. Built for impact.

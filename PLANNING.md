@@ -1,4 +1,4 @@
-# PLANNING.md — EventHub: Club Event Management System
+# PLANNING.md — EventHub: Club-Event Management System
 > Architecture, goals, style, and constraints for the full-stack build.
 > Last updated: 2026-03-21
 
@@ -6,14 +6,14 @@
 
 ## 1. Project Overview
 
-A college club event management web app with **three roles** — **Admin**, **Manager**, and **Student**.
+A college Club-Event management web app with **three roles** — **Admin**, **Manager**, and **Student**.
 Students register for events and receive a branded QR code (with `|||··||` embedded). Managers run events
 and control who can register. Admins have full system control including site-wide backups.
 
 Design language mirrors [nived.work](https://nived.work) — minimal, monospace accents, clean white,
 with the `|||··||` brand mark appearing on auth pages **and** inside every QR code.
 
-**Live reference:** `https://Club Eve.nivet2006.in/login`
+**Live reference:** `https://Club-Eve.nivet2006.in/login`
 
 ---
 

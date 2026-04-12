@@ -1,4 +1,4 @@
-# 🗺️ Club Eve Development Roadmap
+# 🗺️ Club-Eve Development Roadmap
 > Future features, enhancements, and the long-term vision for a campus-wide event management ecosystem.
 
 ---
@@ -61,3 +61,4 @@
 
 ---
 *Last updated: 2026-04-12*
+THEMES:
