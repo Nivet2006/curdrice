@@ -177,3 +177,10 @@ Successfully verified and explicitly applied the architectural internal data-fet
     - Optimized pulse and draw animations for consistent cross-browser performance.
 - **Reset**: Full environment rebuild (`taskkill` and `.next` purge) executed to activate the shared component architecture.
 
+### Robust Auth Error Handling (April 12, 2026)
+- **Action**: Modified `middleware.ts`.
+- **Implemented Logic**:
+  - **Stale Session Purge**: Integrated explicit check for "Refresh Token Not Found" errors.
+  - **Graceful Termination**: Added `await supabase.auth.signOut()` within the middleware to explicitly clear bad auth cookies before redirecting to login.
+  - **Clean Redirects**: Standardized the redirect flow to prevent infinite loops in cases of session expiration.
+

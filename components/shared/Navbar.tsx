@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter, usePathname } from 'next/navigation'
 import type { Role } from '@/lib/types'
 import { ThemeToggle } from '@/components/shared/ThemeToggle'
+import PatternPicker from "./PatternPicker";
 import { BrandMark } from '@/components/shared/BrandMark'
 import { ShieldLoader } from '@/components/shared/ShieldLoader'
 
@@ -88,6 +89,7 @@ export function Navbar({ role, name }: { role?: Role; name?: string }) {
           {/* Right: Theme + user info + hamburger */}
           <div className="flex items-center gap-3">
             <ThemeToggle />
+            <PatternPicker />
 
             {role && (
               <>

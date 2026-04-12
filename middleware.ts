@@ -32,37 +32,19 @@ export async function middleware(request: NextRequest) {
   try {
     const { data, error } = await supabase.auth.getUser()
 
-    // Handle refresh token errors gracefully
     if (error) {
-      if (error.message?.includes('refresh_token_not_found') ||
-        error.message?.includes('Invalid Refresh Token')) {
-        // Clear all auth cookies to prevent repeated errors
-        const response = NextResponse.next()
-        const cookiesToClear = request.cookies.getAll().filter(cookie =>
-          cookie.name.startsWith('sb-') || cookie.name.includes('auth-token')
-        )
-
-        cookiesToClear.forEach(cookie => {
-          response.cookies.delete(cookie.name)
-        })
-
-        // Only redirect to login if not already on auth page
-        const isAuthPage = request.nextUrl.pathname.startsWith('/login') ||
-          request.nextUrl.pathname.startsWith('/register')
-
-        if (!isAuthPage && request.nextUrl.pathname !== '/') {
-          const url = request.nextUrl.clone()
-          url.pathname = '/login'
-          return NextResponse.redirect(url)
-        }
-
-        return response
+      // Clear the bad session and redirect to login cleanly
+      if (
+        error.message?.includes('Refresh Token Not Found') ||
+        error.message?.includes('refresh_token_not_found') ||
+        error.message?.includes('Invalid Refresh Token')
+      ) {
+        await supabase.auth.signOut() // Wipes the stale cookie
+        const loginUrl = request.nextUrl.clone()
+        loginUrl.pathname = '/login'
+        return NextResponse.redirect(loginUrl)
       }
-
-      // Log other auth errors in development
-      if (process.env.NODE_ENV === 'development') {
-        console.warn('[Middleware] Auth error:', error.message)
-      }
+      console.error('[Middleware] Auth error:', error.message)
     }
 
     user = data?.user || null

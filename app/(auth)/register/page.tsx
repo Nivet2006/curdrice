@@ -24,8 +24,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 relative"
-      style={{ background: 'var(--bg)', color: 'var(--fg)' }}>
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 relative">
       <div className="absolute top-6 left-8 font-mono font-bold text-lg">
         {'>'} CurdRice
       </div>
@@ -40,7 +39,7 @@ export default function RegisterPage() {
 
         <form action={handleSubmit} className="w-full flex flex-col gap-4">
           <Input label="Full Name" name="fullName" type="text" required placeholder="Nived Shaji" />
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input label="USN" name="usn" type="text" required placeholder="1GD24CSXXX" className="font-mono uppercase" />
             <div className="w-full flex flex-col gap-1">
@@ -72,7 +71,7 @@ export default function RegisterPage() {
           </div>
 
           <Input label="Email" name="email" type="email" required placeholder="student@example.com" />
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input label="Password" name="password" type="password" required placeholder="••••••••" minLength={6} />
             <Input label="Confirm Password" name="confirmPassword" type="password" required placeholder="••••••••" minLength={6} />

@@ -6,7 +6,6 @@ export default function NotFound() {
   return (
     <div
       className="min-h-screen flex flex-col items-center justify-center px-4 overflow-hidden"
-      style={{ background: 'var(--bg)' }}
     >
       <style>{`
         @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-16px)} }
@@ -32,83 +31,87 @@ export default function NotFound() {
       <svg width="100%" viewBox="0 0 680 380" style={{ maxWidth: 600 }}>
 
         <circle className="nf-ring1" cx="340" cy="180" r="160"
-          fill="none" stroke="#e0e0e0" strokeWidth="1"/>
+          fill="none" stroke="#e0e0e0" strokeWidth="1" />
         <circle className="nf-ring2" cx="340" cy="180" r="110"
-          fill="none" stroke="#e8e8e8" strokeWidth="0.5"/>
+          fill="none" stroke="#e8e8e8" strokeWidth="0.5" />
 
-        <circle className="nf-dot1" cx="100" cy="80"  r="5" fill="#d0d0d0"/>
-        <circle className="nf-dot2" cx="580" cy="100" r="4" fill="#d8d8d8"/>
-        <circle className="nf-dot3" cx="80"  cy="300" r="6" fill="#e0e0e0"/>
-        <circle className="nf-dot4" cx="600" cy="280" r="4" fill="#d0d0d0"/>
+        <circle className="nf-dot1" cx="100" cy="80" r="5" fill="#d0d0d0" />
+        <circle className="nf-dot2" cx="580" cy="100" r="4" fill="#d8d8d8" />
+        <circle className="nf-dot3" cx="80" cy="300" r="6" fill="#e0e0e0" />
+        <circle className="nf-dot4" cx="600" cy="280" r="4" fill="#d0d0d0" />
         <circle className="nf-dot1" cx="180" cy="340" r="3" fill="#d8d8d8"
-          style={{animationDelay:'2s'}}/>
+          style={{ animationDelay: '2s' }} />
         <circle className="nf-dot2" cx="500" cy="340" r="5" fill="#e0e0e0"
-          style={{animationDelay:'4s'}}/>
+          style={{ animationDelay: '4s' }} />
 
         <g className="nf-gear1" transform="translate(90,70)">
-          <circle r="26" cx="0" cy="0" fill="none" stroke="#c8c8c8" strokeWidth="2.5"/>
-          <circle r="10" cx="0" cy="0" fill="#f5f5f5" stroke="#c8c8c8" strokeWidth="2"/>
-          {[0,45,90,135,180,225,270,315].map((a,i) => (
+          <circle r="26" cx="0" cy="0" fill="none" stroke="#c8c8c8" strokeWidth="2.5" />
+          <circle r="10" cx="0" cy="0" fill="#f5f5f5" stroke="#c8c8c8" strokeWidth="2" />
+          {[0, 45, 90, 135, 180, 225, 270, 315].map((a, i) => (
             <rect key={i} x="-4" y="-32" width="8" height="12" rx="2"
               fill="#c8c8c8"
-              transform={`rotate(${a})`}/>
+              transform={`rotate(${a})`} />
           ))}
         </g>
 
         <g className="nf-gear2" transform="translate(590,90)">
-          <circle r="20" cx="0" cy="0" fill="none" stroke="#cccccc" strokeWidth="2"/>
-          <circle r="8" cx="0" cy="0" fill="#f5f5f5" stroke="#cccccc" strokeWidth="1.5"/>
-          {[0,60,120,180,240,300].map((a,i) => (
+          <circle r="20" cx="0" cy="0" fill="none" stroke="#cccccc" strokeWidth="2" />
+          <circle r="8" cx="0" cy="0" fill="#f5f5f5" stroke="#cccccc" strokeWidth="1.5" />
+          {[0, 60, 120, 180, 240, 300].map((a, i) => (
             <rect key={i} x="-3" y="-25" width="6" height="10" rx="2"
               fill="#cccccc"
-              transform={`rotate(${a})`}/>
+              transform={`rotate(${a})`} />
           ))}
         </g>
 
         <g className="nf-gear3" transform="translate(120,320)">
-          <circle r="18" cx="0" cy="0" fill="none" stroke="#d0d0d0" strokeWidth="2"/>
-          <circle r="7" cx="0" cy="0" fill="#f5f5f5" stroke="#d0d0d0" strokeWidth="1.5"/>
-          {[0,60,120,180,240,300].map((a,i) => (
+          <circle r="18" cx="0" cy="0" fill="none" stroke="#d0d0d0" strokeWidth="2" />
+          <circle r="7" cx="0" cy="0" fill="#f5f5f5" stroke="#d0d0d0" strokeWidth="1.5" />
+          {[0, 60, 120, 180, 240, 300].map((a, i) => (
             <rect key={i} x="-2.5" y="-22" width="5" height="9" rx="2"
               fill="#d0d0d0"
-              transform={`rotate(${a})`}/>
+              transform={`rotate(${a})`} />
           ))}
         </g>
 
         <g className="nf-gear4" transform="translate(570,320)">
-          <circle r="30" cx="0" cy="0" fill="none" stroke="#c4c4c4" strokeWidth="2.5"/>
-          <circle r="12" cx="0" cy="0" fill="#f5f5f5" stroke="#c4c4c4" strokeWidth="2"/>
-          {[0,45,90,135,180,225,270,315].map((a,i) => (
+          <circle r="30" cx="0" cy="0" fill="none" stroke="#c4c4c4" strokeWidth="2.5" />
+          <circle r="12" cx="0" cy="0" fill="#f5f5f5" stroke="#c4c4c4" strokeWidth="2" />
+          {[0, 45, 90, 135, 180, 225, 270, 315].map((a, i) => (
             <rect key={i} x="-4" y="-36" width="8" height="13" rx="2"
               fill="#c4c4c4"
-              transform={`rotate(${a})`}/>
+              transform={`rotate(${a})`} />
           ))}
         </g>
 
         <g className="nf-float">
           <text x="340" y="230" textAnchor="middle"
-            style={{fontSize:'160px',fontWeight:900,fontFamily:'monospace',
-              fill:'#0a0a0a',opacity:0.06,userSelect:'none'}}>
+            style={{
+              fontSize: '160px', fontWeight: 900, fontFamily: 'monospace',
+              fill: '#0a0a0a', opacity: 0.06, userSelect: 'none'
+            }}>
             404
           </text>
           <text x="340" y="225" textAnchor="middle"
-            style={{fontSize:'130px',fontWeight:900,fontFamily:'monospace',
-              fill:'#0a0a0a',letterSpacing:'-4px',userSelect:'none'}}>
+            style={{
+              fontSize: '130px', fontWeight: 900, fontFamily: 'monospace',
+              fill: '#0a0a0a', letterSpacing: '-4px', userSelect: 'none'
+            }}>
             404
           </text>
         </g>
 
         <g className="nf-drift" transform="translate(200,60)">
           <rect x="-20" y="-6" width="40" height="12" rx="3"
-            fill="none" stroke="#d8d8d8" strokeWidth="1.5"/>
+            fill="none" stroke="#d8d8d8" strokeWidth="1.5" />
         </g>
-        <g className="nf-drift" transform="translate(470,50)" style={{animationDelay:'2s'}}>
+        <g className="nf-drift" transform="translate(470,50)" style={{ animationDelay: '2s' }}>
           <rect x="-14" y="-5" width="28" height="10" rx="3"
-            fill="none" stroke="#e0e0e0" strokeWidth="1"/>
+            fill="none" stroke="#e0e0e0" strokeWidth="1" />
         </g>
-        <g className="nf-drift" transform="translate(480,310)" style={{animationDelay:'4s'}}>
+        <g className="nf-drift" transform="translate(480,310)" style={{ animationDelay: '4s' }}>
           <rect x="-18" y="-5" width="36" height="10" rx="3"
-            fill="none" stroke="#d8d8d8" strokeWidth="1.5"/>
+            fill="none" stroke="#d8d8d8" strokeWidth="1.5" />
         </g>
       </svg>
 

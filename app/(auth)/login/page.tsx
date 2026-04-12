@@ -40,9 +40,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 relative"
-      style={{ background: 'var(--bg)', color: 'var(--fg)' }}>
-      
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 relative">
+
       {loading && <ShieldLoader />}
 
       <div className="absolute top-6 left-8 font-mono font-bold text-lg">
@@ -63,26 +62,26 @@ export default function LoginPage() {
         <hr className="w-full border-[#e0e0e0] my-6" />
 
         <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
-          <Input 
-            label="Email" 
-            name="email" 
-            type="email" 
-            required 
-            placeholder="student@example.com" 
-            disabled={loading} 
+          <Input
+            label="Email"
+            name="email"
+            type="email"
+            required
+            placeholder="student@example.com"
+            disabled={loading}
           />
-          
+
           <div className="relative w-full">
-            <Input 
-              label="Password" 
-              name="password" 
-              type={showPassword ? "text" : "password"} 
-              required 
+            <Input
+              label="Password"
+              name="password"
+              type={showPassword ? "text" : "password"}
+              required
               placeholder="••••••••"
               disabled={loading}
             />
-            <button 
-              type="button" 
+            <button
+              type="button"
               className="absolute right-3 top-[32px] text-[#999999] hover:text-[#0a0a0a] disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={() => setShowPassword(!showPassword)}
               disabled={loading}
