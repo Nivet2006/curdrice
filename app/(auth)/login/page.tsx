@@ -63,11 +63,11 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
           <Input
-            label="Email"
+            label="USN"
             name="email"
-            type="email"
+            type="text"
             required
-            placeholder="student@example.com"
+            placeholder="1GD24CSXXX"
             disabled={loading}
           />
 

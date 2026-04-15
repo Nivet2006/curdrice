@@ -5,7 +5,36 @@ import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { z } from 'zod'
 import { redirect } from 'next/navigation'
 
-export async function login(email: string, pass: string) {
+export async function login(identifier: string, pass: string) {
+  let email = identifier;
+
+  // If the identifier doesn't look like an email, assume it's a USN
+  if (!identifier.includes('@')) {
+    const supabaseAdmin = createSupabaseClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      { auth: { persistSession: false } }
+    )
+
+    const { data: profile } = await supabaseAdmin
+      .from('profiles')
+      .select('id')
+      .ilike('usn', identifier)
+      .single()
+
+    if (!profile) {
+      return { error: 'Invalid Credentials' }
+    }
+
+    const { data: authData } = await supabaseAdmin.auth.admin.getUserById(profile.id)
+    
+    if (!authData.user?.email) {
+      return { error: 'Invalid Credentials' }
+    }
+    
+    email = authData.user.email
+  }
+
   const supabase = createClient()
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
