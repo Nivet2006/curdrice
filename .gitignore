@@ -39,3 +39,30 @@ tmp/
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# custom
+.agents/
+.next/
+assets/
+deployments/
+supabase/
+TEST/
+tmp/
+Updates/
+handoff.md
+.eslintrc.json
+middleware.ts
+next-env.d.ts
+vercel.json
+Z.MD
+tsconfig.json
+TASK.md
+package.json
+next.config.mjs
+package-lock.json
+tailwind.config.ts
+structure.md
+seed.ts
+postcss.config.mjs
+ROADMAP.md
+PLANNING.md
