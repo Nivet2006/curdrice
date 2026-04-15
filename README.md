@@ -30,7 +30,52 @@ Club-Eve is a premium, full-stack event management platform designed for college
 *   **Row Level Security (RLS)**: Hardened database access ensuring users only see what they are authorized to.
 *   **Data Backups**: Admin-only feature to export the entire system state as a structured ZIP (XLSX + Meta).
 
+---
 
+## 🛠️ Tech Stack
+
+*   **Framework**: Next.js 14 (App Router)
+*   **Database & Auth**: Supabase (Postgres, RLS, Storage)
+*   **Styling**: Vanilla CSS + Tailwind CSS (Portfolio Aesthetic)
+*   **QR System**: `qrcode` (Generation) & `html5-qrcode` (Scanning)
+*   **Exports**: `ExcelJS` & `SheetJS` (Attendance Reports)
+*   **Validation**: Zod + React Hook Form
+
+---
+
+## 📂 Project Structure
+
+*   `/app`: Next.js App Router (Auth, Admin, Manager, Student portals)
+*   `/components`: Reusable UI components and role-specific views
+*   `/lib`: Core logic including Supabase clients, server actions, and QR engines
+*   `/supabase`: Database migrations and RLS policies
+*   `/assets`: Branding assets and generated UI designs
+
+---
+
+## 🏁 Getting Started
+
+1.  **Clone the repository**
+2.  **Install dependencies**:
+    ```bash
+    npm install
+    ```
+3.  **Setup Environment**: Create a `.env.local` file with:
+    ```env
+    NEXT_PUBLIC_SUPABASE_URL=your_url
+    NEXT_PUBLIC_SUPABASE_ANON_KEY=your_key
+    SUPABASE_SERVICE_ROLE_KEY=your_service_key
+    ```
+4.  **Run migrations**: Apply the SQL schemas in your Supabase dashboard.
+5.  **Start development**:
+    ```bash
+    npm run dev
+    ```
+
+---
+
+## 🎨 Branding: The `|||··||` Mark
+The `|||··||` mark is the core identity of Club-Eve. It appears on every authentication page, in navigational footers, and is embedded into every generated QR code to ensure authenticity.
 
 ---
 © 2026 Club-Eve Labs. Built for impact.
