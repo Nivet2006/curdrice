@@ -50,6 +50,8 @@ Club-Eve
 │   │   ├── scanner
 │   │   │   └── page.tsx
 │   │   └── layout.tsx
+│   ├── status
+│   │   └── page.tsx
 │   ├── student
 │   │   ├── dashboard
 │   │   │   └── page.tsx
