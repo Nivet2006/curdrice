@@ -29,12 +29,9 @@ export const BrandMark = ({ className = '', role = '' }: { className?: string, r
       {showDenied && (
         <div className="fixed inset-0 z-[9999] bg-red-950/60 backdrop-blur-xl flex items-center justify-center animate-in fade-in duration-300">
           <div className="text-center animate-in zoom-in-95 duration-300">
-            <h1 className="text-6xl md:text-9xl font-black text-red-600 tracking-tighter mb-4 italic uppercase">
+            <h1 className="text-6xl md:text-9xl font-black text-red-600 tracking-tighter italic uppercase">
               Access Denied
             </h1>
-            <p className="font-mono text-red-500/50 text-xs md:text-sm uppercase tracking-[0.5em] animate-pulse">
-              Unauthorized Security Breach Detected
-            </p>
           </div>
         </div>
       )}
