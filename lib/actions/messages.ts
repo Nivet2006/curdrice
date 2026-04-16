@@ -105,7 +105,7 @@ export async function getConversations(userId: string) {
         id, type, name, status, created_at,
         members:conversation_members(
           invite_status,
-          profile:profiles(id, full_name, usn)
+          profile:profiles(id, full_name, usn, role)
         )
       )
     `)

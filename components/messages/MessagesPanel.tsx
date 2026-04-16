@@ -3,7 +3,8 @@
 import React, { useState, useEffect, useRef } from 'react'
 import {
   X, Inbox, Bell, Archive, Trash2, QrCode,
-  Plus, Search, UserPlus, Check, Ban, MessageSquare, Radio, ArrowLeft, Send
+  Plus, Search, UserPlus, Check, Ban, MessageSquare, Radio, ArrowLeft, Send,
+  CalendarDays, Users
 } from 'lucide-react'
 import {
   getNotifications,
@@ -247,22 +248,79 @@ export default function MessagesPanel({ open, onClose, userId }: MessagesPanelPr
               ) : (
                 chatMessages.map((msg) => {
                   const isMe = msg.sender_id === userId
+                  let isEventCard = false
+                  let eventData: any = null
+                  let displayBody = msg.body
+                  
+                  if (msg.body.startsWith('[EVENT_CARD]')) {
+                    isEventCard = true
+                    try {
+                      eventData = JSON.parse(msg.body.replace('[EVENT_CARD]', ''))
+                    } catch (e) {}
+                  }
+
                   return (
                     <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                      <div 
-                        className={`max-w-[85%] px-4 py-2.5 rounded-2xl text-sm shadow-sm ${
-                          isMe 
-                            ? 'rounded-br-sm' 
-                            : 'rounded-bl-sm'
-                        }`}
-                        style={
-                          isMe 
-                            ? { background: 'var(--bg)', color: 'var(--fg)', border: '1px solid var(--border)' }
-                            : { background: 'var(--fg)', color: 'var(--bg)' }
-                        }
-                      >
-                        {msg.body}
-                      </div>
+                      {isEventCard && eventData ? (
+                        <div className="max-w-[85%] flex flex-col gap-1">
+                          <a 
+                            href={`/student/events/${eventData.id}?invitedBy=${encodeURIComponent(msg.sender?.full_name || 'A friend')}`}
+                            className="block w-[260px] p-4 rounded-[2rem] text-sm shadow-xl border relative overflow-hidden group transition-all hover:-translate-y-1 active:scale-[0.98]"
+                            style={{ 
+                              background: 'linear-gradient(135deg, var(--bg) 0%, var(--bg-subtle) 100%)',
+                              borderColor: 'var(--border)' 
+                            }}
+                          >
+                            <div className="absolute top-0 right-0 p-4 opacity-5 translate-x-2 -translate-y-2 group-hover:opacity-10 transition-opacity">
+                              <Radio size={80} />
+                            </div>
+                            
+                            <div className="relative z-10">
+                              <div className="flex items-center gap-2 mb-3">
+                                <div className="p-1.5 bg-[#0a0a0a] text-white rounded-lg">
+                                  <Radio size={12} />
+                                </div>
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: 'var(--fg-muted)' }}>Invitation</span>
+                              </div>
+                              
+                              <h4 className="font-extrabold text-base mb-1.5 line-clamp-2 leading-[1.2] tracking-tight" style={{ color: 'var(--fg)' }}>
+                                {eventData.title}
+                              </h4>
+                              
+                              <div className="flex flex-col gap-2 mt-4">
+                                <div className="flex items-center gap-2 text-[10px] font-bold" style={{ color: 'var(--fg-muted)' }}>
+                                  <Users size={12} />
+                                  <span>{eventData.club}</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-[10px] font-bold" style={{ color: 'var(--fg-muted)' }}>
+                                  <CalendarDays size={12} />
+                                  <span>{new Date(eventData.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                                </div>
+                              </div>
+
+                              <div className="mt-5 flex items-center justify-between">
+                                <span className="text-[9px] font-black uppercase tracking-wider px-2 py-1 rounded-full bg-black text-white dark:bg-white dark:text-black">
+                                  View Details
+                                </span>
+                                <ArrowLeft className="rotate-180" size={12} style={{ color: 'var(--fg)' }} />
+                              </div>
+                            </div>
+                          </a>
+                        </div>
+                      ) : (
+                        <div 
+                          className={`max-w-[85%] px-4 py-2.5 rounded-2xl text-sm shadow-sm ${
+                            isMe ? 'rounded-br-sm' : 'rounded-bl-sm'
+                          }`}
+                          style={
+                            isMe 
+                              ? { background: 'var(--bg)', color: 'var(--fg)', border: '1px solid var(--border)' }
+                              : { background: 'var(--fg)', color: 'var(--bg)' }
+                          }
+                        >
+                          {displayBody}
+                        </div>
+                      )}
                       <p className="text-[10px] font-mono mt-1 opacity-50 px-1" style={{ color: 'var(--fg-muted)' }}>
                         {!isMe && `${msg.sender?.full_name?.split(' ')[0]} · `}
                         {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

@@ -7,12 +7,20 @@ import type { Event } from '@/lib/types'
 import { RegisterButton } from '@/components/student/RegisterButton'
 import { registerForEvent } from '@/lib/actions/events'
 import { QRButton } from '@/components/student/QRButton'
+import { ShareEventButton } from '@/components/student/ShareEventButton'
 import { withDynamicSingleEventStatus } from '@/lib/event-utils'
 import { EventStatusBadge } from '@/components/ui/EventStatusBadge'
 
-export default async function EventDetailPage({ params }: { params: { id: string } }) {
+export default async function EventDetailPage({ 
+  params,
+  searchParams
+}: { 
+  params: { id: string },
+  searchParams: { invitedBy?: string }
+}) {
   const supabase = createClient()
   const { id } = params
+  const invitedBy = searchParams.invitedBy
   const { data: { user } } = await supabase.auth.getUser()
 
   const { data } = await supabase.from('events').select('*').eq('id', id).single()
@@ -27,7 +35,7 @@ export default async function EventDetailPage({ params }: { params: { id: string
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('full_name, usn')
+    .select('full_name, usn, role')
     .eq('id', user?.id)
     .single()
 
@@ -90,6 +98,11 @@ export default async function EventDetailPage({ params }: { params: { id: string
 
         <div className="w-full lg:w-[320px] shrink-0">
           <div className="sticky top-24 rounded-2xl border border-[#e0e0e0] p-6 bg-white shadow-sm">
+            {invitedBy && (
+              <p className="font-mono text-[10px] uppercase tracking-tighter text-[#0a0a0a] mb-5 border-b pb-2">
+                {invitedBy} invites you to join this event
+              </p>
+            )}
             <p className="font-mono text-sm text-[#555555] mb-3">{regCount} / {event.max_capacity || '∞'} registered</p>
             <div className="w-full h-1.5 bg-[#f5f5f5] rounded-full overflow-hidden">
               <div className="h-full bg-[#0a0a0a]" style={{ width: `${progressPct}%` }} />
@@ -115,6 +128,17 @@ export default async function EventDetailPage({ params }: { params: { id: string
                 <p className="text-xs font-mono text-[#555555]">You are not eligible for this event based on the current constraints.</p>
               </div>
             )}
+            
+            <div className="mt-4 pt-4 border-t border-[#e0e0e0]">
+              <ShareEventButton 
+                eventId={id} 
+                eventName={event.title} 
+                clubName={event.club_name} 
+                eventDate={event.event_date} 
+                userId={user?.id || ''} 
+                userRole={profile?.role || ''}
+              />
+            </div>
           </div>
         </div>
       </div>
