@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { CheckCircle2, AlertCircle, Clock, ExternalLink, Activity, ShieldCheck, Database, Zap } from 'lucide-react'
 import Link from 'next/link'
+import { Navbar } from '@/components/shared/Navbar'
+import type { Role } from '@/lib/types'
 
 async function getDeployments() {
   const token = process.env.VERCEL_API_TOKEN
@@ -22,6 +24,14 @@ async function getDeployments() {
 
 export default async function StatusPage() {
   const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  let profile = null
+  if (user) {
+    const { data } = await supabase.from('profiles').select('full_name, role').eq('id', user.id).single()
+    profile = data
+  }
+
   const deployments = await getDeployments()
 
   // Simple DB Check
@@ -43,40 +53,44 @@ export default async function StatusPage() {
   const isAllGood = systems.every(s => s.status === 'operational')
 
   return (
-    <div className="min-h-screen bg-[#fafafa] dark:bg-[#050505] text-[#0a0a0a] dark:text-white font-sans selection:bg-black selection:text-white p-6 md:p-12">
-      <div className="max-w-3xl mx-auto">
-        
+    <div className="min-h-screen flex flex-col font-sans" style={{ background: 'var(--bg)' }}>
+      <Navbar 
+        role={profile?.role as Role} 
+        name={profile?.full_name} 
+      />
+      
+      <main className="flex-1 w-full max-w-[1280px] mx-auto px-6 md:px-8 py-10 md:py-16">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
           <div>
-            <Link href="/" className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 hover:opacity-100 transition-opacity mb-4 block">
-              ← Return to CurdRice
-            </Link>
-            <h1 className="text-4xl font-black tracking-tighter">System Status</h1>
-            <p className="text-zinc-500 font-mono text-xs mt-2 uppercase tracking-widest">Real-time infrastructure health</p>
+            <div className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-2">System Diagnostics</div>
+            <h1 className="text-4xl font-black tracking-tighter" style={{ color: 'var(--fg)' }}>Status Dashboard</h1>
+            <p className="font-mono text-xs mt-2 uppercase tracking-widest opacity-60" style={{ color: 'var(--fg)' }}>Real-time infrastructure health</p>
           </div>
           
-          <div className={`px-4 py-2 rounded-full border flex items-center gap-2 animate-in fade-in slide-in-from-right-4 duration-700 ${
-            isAllGood ? 'bg-green-50 border-green-200 text-green-700 dark:bg-green-500/10 dark:border-green-500/20 dark:text-green-400' : 'bg-amber-50 border-amber-200 text-amber-700'
+          <div className={`px-4 py-2 rounded-xl border flex items-center gap-2 animate-in fade-in slide-in-from-right-4 duration-700 ${
+            isAllGood 
+            ? 'bg-green-50 border-green-200 text-green-700 dark:bg-green-500/10 dark:border-green-500/20 dark:text-green-400' 
+            : 'bg-amber-50 border-amber-200 text-amber-700'
           }`}>
             <div className={`w-2 h-2 rounded-full animate-pulse ${isAllGood ? 'bg-green-500' : 'bg-amber-500'}`} />
-            <span className="text-xs font-bold uppercase tracking-wider">
+            <span className="text-[11px] font-black uppercase tracking-wider">
               {isAllGood ? 'All Systems Operational' : 'Partial Service Disruption'}
             </span>
           </div>
         </div>
 
         {/* System Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-16">
           {systems.map((system) => (
-            <div key={system.name} className="p-5 rounded-2xl border bg-white dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 flex items-center justify-between shadow-sm">
+            <div key={system.name} className="p-5 rounded-2xl border flex items-center justify-between shadow-sm transition-all hover:translate-y-[-2px]" style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}>
               <div className="flex items-center gap-4">
-                <div className="p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700">
-                  <system.icon className="w-4 h-4 text-zinc-500" />
+                <div className="p-2.5 rounded-xl border" style={{ backgroundColor: 'var(--bg-subtle)', borderColor: 'var(--border)' }}>
+                  <system.icon className="w-4 h-4" style={{ color: 'var(--fg)' }} />
                 </div>
-                <span className="text-sm font-bold tracking-tight">{system.name}</span>
+                <span className="text-sm font-bold tracking-tight" style={{ color: 'var(--fg)' }}>{system.name}</span>
               </div>
-              <span className={`text-[10px] font-black uppercase tracking-widest ${
+              <span className={`text-[9px] font-black uppercase tracking-widest ${
                 system.status === 'operational' ? 'text-green-600 dark:text-green-400' : 'text-amber-500'
               }`}>
                 {system.status}
@@ -87,40 +101,46 @@ export default async function StatusPage() {
 
         {/* Deployments Section */}
         <section className="animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-200">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-black tracking-tight">Recent Deployments</h2>
-            <div className="h-[1px] flex-1 mx-6 bg-zinc-100 dark:bg-zinc-800" />
-            <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest">Vercel API V6</span>
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-xl font-black tracking-tight" style={{ color: 'var(--fg)' }}>Recent Deployments</h2>
+            <div className="h-[1px] flex-1 mx-6 opacity-10" style={{ backgroundColor: 'var(--fg)' }} />
+            <span className="text-[10px] font-mono opacity-40 uppercase tracking-widest" style={{ color: 'var(--fg)' }}>Vercel API V6</span>
           </div>
 
           {!deployments ? (
-            <div className="p-12 rounded-3xl border border-dashed border-zinc-200 dark:border-zinc-800 text-center">
-              <AlertCircle className="w-8 h-8 mx-auto text-zinc-300 mb-4" />
-              <p className="text-sm text-zinc-400 font-medium">Connect Vercel API Token to view live deployment history.</p>
-              <p className="text-[10px] font-mono mt-2 text-zinc-500">Add VERCEL_API_TOKEN to environment variables.</p>
+            <div className="p-16 rounded-[2rem] border border-dashed text-center" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg-subtle)' }}>
+              <AlertCircle className="w-8 h-8 mx-auto mb-4 opacity-20" style={{ color: 'var(--fg)' }} />
+              <p className="text-sm font-bold" style={{ color: 'var(--fg)' }}>API Token Required</p>
+              <p className="text-[11px] font-mono mt-2 opacity-60 max-w-xs mx-auto" style={{ color: 'var(--fg)' }}>Add `VERCEL_API_TOKEN` to your environment settings to see live deployment history.</p>
             </div>
           ) : (
             <div className="space-y-3">
               {deployments.map((d: any) => (
-                <div key={d.uid} className="group p-4 rounded-2xl border bg-white dark:bg-zinc-900/30 border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 transition-all flex items-center justify-between">
-                  <div className="flex items-center gap-4">
+                <div key={d.uid} className="group p-5 rounded-2xl border transition-all flex items-center justify-between" style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}>
+                  <div className="flex items-center gap-5">
                     <div className="relative">
                        {d.state === 'READY' ? (
-                         <CheckCircle2 className="w-5 h-5 text-green-500" />
+                         <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center">
+                           <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                         </div>
                        ) : d.state === 'ERROR' ? (
-                         <AlertCircle className="w-5 h-5 text-red-500" />
+                         <div className="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center">
+                           <AlertCircle className="w-3.5 h-3.5 text-white" />
+                         </div>
                        ) : (
-                         <Clock className="w-5 h-5 text-zinc-400 animate-spin" />
+                         <div className="w-5 h-5 text-zinc-400 rotate-180">
+                           <Clock className="w-5 h-5 animate-spin" />
+                         </div>
                        )}
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold leading-none">{d.name}</span>
-                        <span className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-zinc-100 dark:bg-zinc-800 text-zinc-500">
+                        <span className="text-sm font-extrabold leading-none" style={{ color: 'var(--fg)' }}>{d.name}</span>
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-[#0a0a0a] text-white dark:bg-white dark:text-[#0a0a0a]">
                           {d.meta?.githubCommitRef || 'main'}
                         </span>
                       </div>
-                      <p className="text-[10px] text-zinc-400 font-mono mt-1 uppercase tracking-tight">
+                      <p className="text-[10px] font-mono mt-1.5 uppercase tracking-tight opacity-50" style={{ color: 'var(--fg)' }}>
                         {new Date(d.createdAt).toLocaleString()} • {d.creator?.username}
                       </p>
                     </div>
@@ -129,9 +149,9 @@ export default async function StatusPage() {
                     href={`https://${d.url}`} 
                     target="_blank" 
                     rel="noreferrer"
-                    className="p-2 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-lg"
+                    className="p-2 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg"
                   >
-                    <ExternalLink className="w-4 h-4 text-zinc-400" />
+                    <ExternalLink className="w-4 h-4 opacity-50" style={{ color: 'var(--fg)' }} />
                   </a>
                 </div>
               ))}
@@ -140,11 +160,11 @@ export default async function StatusPage() {
         </section>
 
         {/* Footer */}
-        <div className="mt-20 pt-8 border-t border-zinc-100 dark:border-zinc-900 flex justify-between items-center opacity-30 italic font-serif text-sm">
-          <span>CurdRice Core Engine</span>
-          <span>Build: Public Stable 1.0</span>
+        <div className="mt-24 pt-8 border-t flex justify-between items-center opacity-20 italic font-mono text-[10px] uppercase tracking-widest" style={{ borderColor: 'var(--border)', color: 'var(--fg)' }}>
+          <span>CurdRice Infrastructure Hub</span>
+          <span>© 2026 Public Release</span>
         </div>
-      </div>
+      </main>
     </div>
   )
 }
