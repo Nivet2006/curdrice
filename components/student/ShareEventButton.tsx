@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { createClient } from '@/utils/supabase/client'
+import { createClient } from '@/lib/supabase/client'
 import { Share2, X, Check, Users } from 'lucide-react'
 import { getConversations, sendMessage } from '@/lib/actions/messages'
 
