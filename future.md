@@ -76,6 +76,12 @@ A long-term hardware integration to replace manual stamps or paper-based campus 
 *   **How it works:** Implementation of rewritable physical ID cards with embedded QR/Barcodes. Data can be saved and rewritten locally for visitor pass functionality.
 *   **Budgetary Note:** This is a high-budget physical expansion. It prevents the need for physical stamps/signatures at college events by acting as a digital identity token.
 
+### 13. 🎓 Interactive AI Onboarding Tour
+A high-converting walkthrough system for first-time authenticated users to ensure feature discoverability.
+
+*   **How it works:** Upon the first login detect (via a `tour_completed` profile flag), Eve Bot automatically initiates a "Feature Spotlight" sequence.
+*   **Result:** The UI dims, and specific components (QR Pass, Event Explorer, Messaging) are highlighted sequentially with guided tooltips narrated by Eve, ensuring every student knows exactly how to navigate the platform.
+
 ---
 
 ## ✅ Successfully Implemented

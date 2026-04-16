@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 
-export function EasterEggComma() {
+export function EasterEggComma({ children }: { children: React.ReactNode }) {
   const [clickCount, setClickCount] = useState(0)
   const [isPastelActive, setIsPastelActive] = useState(false)
 
@@ -59,22 +59,8 @@ export function EasterEggComma() {
 
           html:not(.dark).pastel-mode * {
              --bg: var(--pastel-bg) !important;
-             --fg: var(--pastel-fg) !important;
              --bg-subtle: var(--pastel-bg-subtle) !important;
              --border: var(--pastel-border) !important;
-          }
-
-          html:not(.dark).pastel-mode .text-\\[\\#0a0a0a\\],
-          html:not(.dark).pastel-mode .text-\\[\\#555555\\],
-          html:not(.dark).pastel-mode .text-zinc-500,
-          html:not(.dark).pastel-mode .text-zinc-600,
-          html:not(.dark).pastel-mode .text-black,
-          html:not(.dark).pastel-mode p,
-          html:not(.dark).pastel-mode h1,
-          html:not(.dark).pastel-mode h2,
-          html:not(.dark).pastel-mode h3,
-          html:not(.dark).pastel-mode span {
-            color: var(--pastel-fg) !important;
           }
         `}} />
       )}
@@ -82,7 +68,7 @@ export function EasterEggComma() {
         className="cursor-default select-none"
         onClick={handleClick}
       >
-        ,
+        {children}
       </span>
     </>
   )

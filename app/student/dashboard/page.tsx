@@ -33,7 +33,7 @@ export default async function StudentDashboard() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-4">
         <div>
           <h1 className="text-3xl font-black tracking-tight mb-2 text-[#0a0a0a]">
-            Welcome<EasterEggComma /> {profile?.full_name}
+            Welcome, {profile?.full_name}
           </h1>
           <p className="font-mono text-sm text-[#555555]">{profile?.usn}</p>
         </div>
@@ -49,7 +49,11 @@ export default async function StudentDashboard() {
       <div className="mb-12">
         <h2 className="flex items-center gap-3 text-xl font-bold mb-6 text-[#0a0a0a]">
           You're Going
-          <span className="bg-[#0a0a0a] text-white font-mono text-xs px-2 py-0.5 rounded-full">{registeredEvents.length}</span>
+          <EasterEggComma>
+            <span className="bg-[#0a0a0a] text-white font-mono text-xs px-2 py-0.5 rounded-full cursor-default">
+              {registeredEvents.length}
+            </span>
+          </EasterEggComma>
         </h2>
 
         {registeredEvents.length === 0 ? (
