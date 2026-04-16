@@ -39,7 +39,33 @@ async function getWorkflowRuns() {
       next: { revalidate: 60 }
     })
     const data = await res.json()
-    return data.workflow_runs
+    const runs = data.workflow_runs
+
+    // Fetch jobs for each run to find detailed warnings/failures
+    const runsWithDetails = await Promise.all(runs.map(async (run: any) => {
+      const jobsRes = await fetch(run.jobs_url, {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Accept': 'application/vnd.github.v3+json'
+        },
+        next: { revalidate: 60 }
+      })
+      const jobsData = await jobsRes.json()
+      
+      const issues = jobsData.jobs.flatMap((job: any) => 
+        job.steps
+          .filter((step: any) => step.conclusion === 'failure' || step.conclusion === 'timed_out')
+          .map((step: any) => ({
+            job: job.name,
+            step: step.name,
+            conclusion: step.conclusion
+          }))
+      )
+
+      return { ...run, issues }
+    }))
+
+    return runsWithDetails
   } catch (e) {
     return null
   }
@@ -160,6 +186,16 @@ export default async function StatusPage() {
                   </div>
                   
                   <p className="text-sm font-bold truncate mb-2" style={{ color: 'var(--fg)' }}>{run.display_title}</p>
+                  
+                  {run.issues && run.issues.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mb-3">
+                      {run.issues.map((issue: any, i: number) => (
+                        <div key={i} className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-red-500/10 text-[8px] font-bold uppercase tracking-wider text-red-500 border border-red-500/20">
+                          <AlertCircle size={8} /> {issue.step}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   
                   <div className="flex items-center gap-3 opacity-50 font-mono text-[9px] uppercase tracking-tighter" style={{ color: 'var(--fg)' }}>
                      <span>{new Date(run.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
