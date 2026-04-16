@@ -82,18 +82,24 @@ Club-Eve
 │   │   ├── EditEventForm.tsx
 │   │   ├── QRScanner.tsx
 │   │   └── RegistrationExportMenu.tsx
+│   ├── messages
+│   │   └── MessagesPanel.tsx
 │   ├── shared
 │   │   ├── BrandMark.tsx
 │   │   ├── Navbar.tsx
 │   │   ├── PatternPicker.tsx
 │   │   ├── PatternProvider.tsx
+│   │   ├── ShieldLoader.tsx
+│   │   ├── SkeletonLoader.tsx
 │   │   └── ThemeToggle.tsx
 │   ├── student
 │   │   ├── DashboardEventTabs.tsx
+│   │   ├── EasterEggComma.tsx
 │   │   ├── EventCard.tsx
 │   │   ├── QRButton.tsx
 │   │   ├── QRDisplay.tsx
-│   │   └── RegisterButton.tsx
+│   │   ├── RegisterButton.tsx
+│   │   └── ShareEventButton.tsx
 │   └── ui
 │       ├── Badge.tsx
 │       ├── Button.tsx
@@ -121,7 +127,8 @@ Club-Eve
 │   │   ├── admin.ts
 │   │   ├── auth.ts
 │   │   ├── events.ts
-│   │   └── manager.ts
+│   │   ├── manager.ts
+│   │   └── messages.ts
 │   ├── supabase
 │   │   ├── client.ts
 │   │   └── server.ts
