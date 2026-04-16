@@ -83,9 +83,11 @@ Club-Eve
 │   │   ├── QRScanner.tsx
 │   │   └── RegistrationExportMenu.tsx
 │   ├── messages
+│   │   ├── BroadcastModal.tsx
 │   │   └── MessagesPanel.tsx
 │   ├── shared
 │   │   ├── BrandMark.tsx
+│   │   ├── EveBot.tsx
 │   │   ├── Navbar.tsx
 │   │   ├── PatternPicker.tsx
 │   │   ├── PatternProvider.tsx
@@ -93,13 +95,17 @@ Club-Eve
 │   │   ├── SkeletonLoader.tsx
 │   │   └── ThemeToggle.tsx
 │   ├── student
+│   │   ├── CalendarView.tsx
 │   │   ├── DashboardEventTabs.tsx
-│   │   ├── EasterEggComma.tsx
+│   │   ├── EasterEggBADGE.tsx
 │   │   ├── EventCard.tsx
 │   │   ├── QRButton.tsx
 │   │   ├── QRDisplay.tsx
+│   │   ├── RealtimeCalendarView.tsx
+│   │   ├── RealtimeDashboard.tsx
 │   │   ├── RegisterButton.tsx
-│   │   └── ShareEventButton.tsx
+│   │   ├── ShareEventButton.tsx
+│   │   └── StudentProfileClient.tsx
 │   └── ui
 │       ├── Badge.tsx
 │       ├── Button.tsx
@@ -126,18 +132,23 @@ Club-Eve
 │   ├── actions
 │   │   ├── admin.ts
 │   │   ├── auth.ts
+│   │   ├── eve-bot.ts
 │   │   ├── events.ts
 │   │   ├── manager.ts
 │   │   └── messages.ts
 │   ├── supabase
 │   │   ├── client.ts
 │   │   └── server.ts
+│   ├── event-utils.ts
+│   ├── menu-utils.ts
 │   ├── qr.ts
 │   └── types.ts
 ├── supabase
 │   └── migrations
 │       ├── 0000_initial_schema.sql
 │       └── 0001_rls_policies.sql
+├── EveBot-Commands.md
+├── future.md
 ├── handoff.md
 ├── PLANNING.md
 ├── middleware.ts

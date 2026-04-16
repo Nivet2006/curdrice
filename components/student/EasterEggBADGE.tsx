@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 
-export function EasterEggComma({ children }: { children: React.ReactNode }) {
+export function EasterEggBADGE({ children }: { children: React.ReactNode }) {
   const [clickCount, setClickCount] = useState(0)
   const [isPastelActive, setIsPastelActive] = useState(false)
 
@@ -38,9 +38,12 @@ export function EasterEggComma({ children }: { children: React.ReactNode }) {
           html:not(.dark).pastel-mode body,
           html:not(.dark).pastel-mode .bg-white,
           html:not(.dark).pastel-mode .bg-zinc-50,
-          html:not(.dark).pastel-mode .bg-\\[\\#f5f5f5\\],
-          html:not(.dark).pastel-mode .bg-\\[\\#0a0a0a\\] {
+          html:not(.dark).pastel-mode .bg-\\[\\#f5f5f5\\] {
             background-color: var(--pastel-bg) !important;
+          }
+
+          html:not(.dark).pastel-mode .bg-\\[\\#0a0a0a\\] {
+            background-color: var(--pastel-fg) !important;
           }
 
           html:not(.dark).pastel-mode #theme-toggler {
