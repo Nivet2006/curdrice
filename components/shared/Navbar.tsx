@@ -86,7 +86,7 @@ export function Navbar({ role, name }: { role?: Role; name?: string }) {
               <Link href="/" className="font-mono font-bold text-[#0a0a0a]">
                 {'>'} Club-Eve
               </Link>
-              <BrandMark />
+              <BrandMark role={role} />
             </div>
 
             {role && (
