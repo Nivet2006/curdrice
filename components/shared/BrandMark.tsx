@@ -27,7 +27,7 @@ export const BrandMark = ({ className = '', role = '' }: { className?: string, r
   return (
     <>
       {showDenied && (
-        <div className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-xl flex items-center justify-center animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-[9999] bg-red-950/60 backdrop-blur-xl flex items-center justify-center animate-in fade-in duration-300">
           <div className="text-center animate-in zoom-in-95 duration-300">
             <h1 className="text-6xl md:text-9xl font-black text-red-600 tracking-tighter mb-4 italic uppercase">
               Access Denied
