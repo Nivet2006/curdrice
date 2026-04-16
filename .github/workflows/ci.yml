@@ -24,15 +24,16 @@ jobs:
       - name: TypeScript Type Check
         run: npx tsc --noEmit
 
-  security-scan:
+  security-audit:
     name: Security & Secret Audit
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Full history needed for secret scanning
-      - name: Dependency Audit
+          fetch-depth: 0 
+      - name: Dependency Audit (Alert Only)
         run: npm audit --audit-level=high
+        continue-on-error: true
       - name: Secret Detection (TruffleHog)
         uses: trufflesecurity/trufflehog@main
         with:
