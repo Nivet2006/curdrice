@@ -120,47 +120,63 @@ export default async function StatusPage() {
               <p className="text-[11px] font-mono mt-2 opacity-60 max-w-xs mx-auto" style={{ color: 'var(--fg)' }}>Add `VERCEL_API_TOKEN` to your environment settings to see live deployment history.</p>
             </div>
           ) : (
-            <div className="space-y-3">
-              {deployments.map((d: any) => (
-                <div key={d.uid} className="group p-5 rounded-2xl border transition-all flex items-center justify-between" style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}>
-                  <div className="flex items-center gap-5">
-                    <div className="relative">
-                       {d.state === 'READY' ? (
-                         <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center">
-                           <CheckCircle2 className="w-3.5 h-3.5 text-white" />
-                         </div>
-                       ) : d.state === 'ERROR' ? (
-                         <div className="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center">
-                           <AlertCircle className="w-3.5 h-3.5 text-white" />
-                         </div>
-                       ) : (
-                         <div className="w-5 h-5 text-zinc-400 rotate-180">
-                           <Clock className="w-5 h-5 animate-spin" />
-                         </div>
-                       )}
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-extrabold leading-none" style={{ color: 'var(--fg)' }}>{d.name}</span>
-                        <span className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-[#0a0a0a] text-white dark:bg-white dark:text-[#0a0a0a]">
-                          {d.meta?.githubCommitRef || 'main'}
-                        </span>
+            <div className="space-y-4">
+              {deployments.map((d: any) => {
+                const duration = d.ready && d.createdAt ? Math.round((d.ready - d.createdAt) / 1000) : null
+                const commitMsg = d.meta?.githubCommitMessage || 'Manual Deployment'
+                
+                return (
+                  <div key={d.uid} className="group p-5 rounded-2xl border transition-all flex items-start justify-between" style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}>
+                    <div className="flex gap-5">
+                      <div className="pt-1">
+                         {d.state === 'READY' ? (
+                           <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center">
+                             <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                           </div>
+                         ) : d.state === 'ERROR' ? (
+                           <div className="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center">
+                             <AlertCircle className="w-3.5 h-3.5 text-white" />
+                           </div>
+                         ) : (
+                           <div className="w-5 h-5 text-zinc-400">
+                             <Clock className="w-5 h-5 animate-spin" />
+                           </div>
+                         )}
                       </div>
-                      <p className="text-[10px] font-mono mt-1.5 uppercase tracking-tight opacity-50" style={{ color: 'var(--fg)' }}>
-                        {new Date(d.createdAt).toLocaleString()} • {d.creator?.username}
-                      </p>
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-sm font-extrabold leading-none capitalize" style={{ color: 'var(--fg)' }}>
+                            {commitMsg.length > 60 ? commitMsg.substring(0, 60) + '...' : commitMsg}
+                          </span>
+                          <span className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-[#0a0a0a] text-white dark:bg-white dark:text-[#0a0a0a]">
+                            {d.meta?.githubCommitRef || 'main'}
+                          </span>
+                        </div>
+                        
+                        <div className="flex items-center gap-3 mt-2 opacity-50 font-mono text-[9px] uppercase tracking-tighter" style={{ color: 'var(--fg)' }}>
+                           <span>{new Date(d.createdAt).toLocaleDateString()} {new Date(d.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                           <span>•</span>
+                           <span>{d.creator?.username}</span>
+                           {duration && (
+                             <>
+                               <span>•</span>
+                               <span className="flex items-center gap-1"><Clock size={10} /> {duration}s build</span>
+                             </>
+                           )}
+                        </div>
+                      </div>
                     </div>
+                    <a 
+                      href={`https://${d.url}`} 
+                      target="_blank" 
+                      rel="noreferrer"
+                      className="p-2 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg flex-shrink-0"
+                    >
+                      <ExternalLink className="w-4 h-4 opacity-50" style={{ color: 'var(--fg)' }} />
+                    </a>
                   </div>
-                  <a 
-                    href={`https://${d.url}`} 
-                    target="_blank" 
-                    rel="noreferrer"
-                    className="p-2 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg"
-                  >
-                    <ExternalLink className="w-4 h-4 opacity-50" style={{ color: 'var(--fg)' }} />
-                  </a>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </section>
