@@ -5,6 +5,7 @@ import type { Event } from '@/lib/types'
 import { withDynamicEventStatus } from '@/lib/event-utils'
 import { Radio } from 'lucide-react'
 import Link from 'next/link'
+import { EasterEggComma } from '@/components/student/EasterEggComma'
 
 export default async function StudentDashboard() {
   const supabase = createClient()
@@ -31,7 +32,9 @@ export default async function StudentDashboard() {
     <div className="w-full">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-4">
         <div>
-          <h1 className="text-3xl font-black tracking-tight mb-2 text-[#0a0a0a]">Welcome, {profile?.full_name}</h1>
+          <h1 className="text-3xl font-black tracking-tight mb-2 text-[#0a0a0a]">
+            Welcome<EasterEggComma /> {profile?.full_name}
+          </h1>
           <p className="font-mono text-sm text-[#555555]">{profile?.usn}</p>
         </div>
         <div className="flex items-center gap-4">

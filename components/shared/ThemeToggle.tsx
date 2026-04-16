@@ -96,6 +96,7 @@ export function ThemeToggle() {
 
   return (
     <button
+      id="theme-toggler"
       onClick={toggle}
       disabled={spinning}
       aria-label="Toggle theme"
