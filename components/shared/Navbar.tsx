@@ -13,6 +13,7 @@ import { BrandMark } from '@/components/shared/BrandMark'
 import { ShieldLoader } from '@/components/shared/ShieldLoader'
 import MessagesPanel from '../messages/MessagesPanel'
 import { getUnreadNotificationsCount } from '@/lib/actions/messages'
+import { EveBot } from '@/components/shared/EveBot'
 
 export function Navbar({ role, name }: { role?: Role; name?: string }) {
   const router = useRouter()
@@ -220,6 +221,7 @@ export function Navbar({ role, name }: { role?: Role; name?: string }) {
         onClose={() => setMessagesOpen(false)} 
         userId={userId || undefined} 
       />
+      <EveBot userId={userId || undefined} />
     </>
   )
-}
+}
