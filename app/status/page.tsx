@@ -15,10 +15,31 @@ async function getDeployments() {
   try {
     const res = await fetch(`https://api.vercel.com/v6/deployments?projectId=${projectId}&limit=5`, {
       headers: { Authorization: `Bearer ${token}` },
-      next: { revalidate: 60 } // Cache for 1 minute
+      next: { revalidate: 60 }
     })
     const data = await res.json()
     return data.deployments
+  } catch (e) {
+    return null
+  }
+}
+
+async function getWorkflowRuns() {
+  const token = process.env.GITHUB_TOKEN
+  const repo = "Nivet2006/curdrice"
+  
+  if (!token) return null
+
+  try {
+    const res = await fetch(`https://api.github.com/repos/${repo}/actions/runs?per_page=5`, {
+      headers: { 
+        Authorization: `Bearer ${token}`,
+        'Accept': 'application/vnd.github.v3+json'
+      },
+      next: { revalidate: 60 }
+    })
+    const data = await res.json()
+    return data.workflow_runs
   } catch (e) {
     return null
   }
@@ -35,10 +56,11 @@ export default async function StatusPage() {
   const { data: profile } = await supabase.from('profiles').select('full_name, role').eq('id', user.id).single()
   
   if (!profile || profile.role !== 'admin') {
-    redirect('/login') // Or you could redirect to dashboard, but login is safer for unauthorized access
+    redirect('/login')
   }
 
   const deployments = await getDeployments()
+  const workflowRuns = await getWorkflowRuns()
 
   // Simple DB Check
   let dbStatus = 'operational'
@@ -104,6 +126,55 @@ export default async function StatusPage() {
             </div>
           ))}
         </div>
+
+        {/* Guardian Pipeline Section */}
+        <section className="mb-16 animate-in fade-in slide-in-from-bottom-6 duration-1000">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-xl font-black tracking-tight" style={{ color: 'var(--fg)' }}>Guardian Pipeline</h2>
+            <div className="h-[1px] flex-1 mx-6 opacity-10" style={{ backgroundColor: 'var(--fg)' }} />
+            <span className="text-[10px] font-mono opacity-40 uppercase tracking-widest" style={{ color: 'var(--fg)' }}>GitHub Actions CI</span>
+          </div>
+
+          {!workflowRuns ? (
+            <div className="p-16 rounded-[2rem] border border-dashed text-center" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg-subtle)' }}>
+              <ShieldCheck className="w-8 h-8 mx-auto mb-4 opacity-20" style={{ color: 'var(--fg)' }} />
+              <p className="text-sm font-bold" style={{ color: 'var(--fg)' }}>Security Automation Offline</p>
+              <p className="text-[11px] font-mono mt-2 opacity-60 max-w-xs mx-auto" style={{ color: 'var(--fg)' }}>Connect `GITHUB_TOKEN` to monitor security scans and type-checks.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {workflowRuns.map((run: any) => (
+                <div key={run.id} className="p-5 rounded-2xl border transition-all" style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                       {run.status === 'completed' ? (
+                          run.conclusion === 'success' ? <CheckCircle2 className="w-4 h-4 text-green-500" /> : <AlertCircle className="w-4 h-4 text-red-500" />
+                       ) : (
+                          <Clock className="w-4 h-4 text-zinc-400 animate-spin" />
+                       )}
+                       <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--fg)' }}>
+                        {run.name}
+                       </span>
+                    </div>
+                    <span className="text-[9px] font-mono opacity-40">{run.run_number}</span>
+                  </div>
+                  
+                  <p className="text-sm font-bold truncate mb-2" style={{ color: 'var(--fg)' }}>{run.display_title}</p>
+                  
+                  <div className="flex items-center gap-3 opacity-50 font-mono text-[9px] uppercase tracking-tighter" style={{ color: 'var(--fg)' }}>
+                     <span>{new Date(run.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                     <span>•</span>
+                     <span className={`px-1.5 py-0.5 rounded ${
+                       run.conclusion === 'success' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'
+                     }`}>
+                       {run.conclusion || run.status}
+                     </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
 
         {/* Deployments Section */}
         <section className="animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-200">
