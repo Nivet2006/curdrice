@@ -1,27 +1,50 @@
 import { createClient } from '@/lib/supabase/server'
-import { CalendarDays, Users, CheckCircle, Percent } from 'lucide-react'
+import { CalendarDays, Users, CheckCircle, Percent, MapPin } from 'lucide-react'
 import Link from 'next/link'
+import { Card } from '@/components/ui/Card'
+import { withDynamicEventStatus } from '@/lib/event-utils'
+import { EventStatusBadge } from '@/components/ui/EventStatusBadge'
+import type { Event as EventType } from '@/lib/types'
+
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 export default async function ManagerDashboard() {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { data: events } = await supabase
+  // Query 1: just events (no nested join)
+  const { data: events, error: eventsError } = await supabase
     .from('events')
-    .select('id, title, event_date, status, max_capacity, registrations(id, checked_in)')
-    .eq('created_by', user?.id)
+    .select('*')
+    .order('event_date', { ascending: false })
 
-  const myEvents = events || []
+  console.log('DEBUG DASHBOARD - EVENTS ERROR:', eventsError)
+  console.log('DEBUG DASHBOARD - EVENTS DATA:', JSON.stringify(events, null, 2))
+  console.log('DEBUG DASHBOARD - USER ID:', user?.id)
+
+  const myEvents = withDynamicEventStatus((events || []) as EventType[])
+  const eventIds = myEvents.map(e => e.id)
+
+  // Query 2: registrations separately (avoids RLS join issue)
+  const { data: registrations, error: registrationsError } = eventIds.length > 0
+    ? await supabase
+        .from('registrations')
+        .select('id, event_id, checked_in')
+        .in('event_id', eventIds)
+    : { data: [], error: null }
+
+  console.log('DEBUG DASHBOARD - REGISTRATIONS ERROR:', registrationsError)
+  console.log('DEBUG DASHBOARD - REGISTRATIONS DATA:', JSON.stringify(registrations, null, 2))
+
+  const regs = registrations || []
+
   const totalEvents = myEvents.length
-  let totalRegistrations = 0
-  let totalCheckedIn = 0
-
-  myEvents.forEach(e => {
-    totalRegistrations += e.registrations?.length || 0
-    totalCheckedIn += e.registrations?.filter(r => r.checked_in).length || 0
-  })
-
-  const attendanceRate = totalRegistrations > 0 ? Math.round((totalCheckedIn / totalRegistrations) * 100) : 0
+  const totalRegistrations = regs.length
+  const totalCheckedIn = regs.filter(r => r.checked_in).length
+  const attendanceRate = totalRegistrations > 0
+    ? Math.round((totalCheckedIn / totalRegistrations) * 100)
+    : 0
 
   return (
     <div className="w-full">
@@ -80,18 +103,31 @@ export default async function ManagerDashboard() {
             <Link href="/manager/events/create" className="inline-block mt-4 text-[#0a0a0a] underline">Create your first event</Link>
           </div>
         ) : (
-          <div className="grid border border-[#e0e0e0] rounded-2xl overflow-hidden divide-y divide-[#e0e0e0]">
-            {myEvents.slice(0, 5).map(event => (
-              <div key={event.id} className="p-4 flex justify-between items-center hover:bg-[#f9f9f9] transition-colors">
-                <div>
-                  <h4 className="font-bold text-[#0a0a0a]">{event.title}</h4>
-                  <p className="text-xs font-mono text-[#555555] mt-1">{new Date(event.event_date).toLocaleDateString()}</p>
-                </div>
-                <div className="text-right">
-                  <span className="bg-[#0a0a0a] text-white text-xs font-mono px-2 py-0.5 rounded-full capitalize">{event.status}</span>
-                </div>
-              </div>
-            ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {myEvents.slice(0, 5).map(event => {
+              const count = regs.filter((r: any) => r.event_id === event.id).length
+              return (
+                <Link key={event.id} href={`/manager/events/${event.id}`}>
+                  <Card className="p-6 h-full flex flex-col hover:border-[#0a0a0a] transition-all bg-white group cursor-pointer relative overflow-hidden">
+                    <div className="flex justify-between items-start mb-4">
+                      {event.club_name ? (
+                        <div className="font-mono text-xs text-[#0a0a0a] border border-[#0a0a0a] rounded-full px-2 py-0.5">{event.club_name}</div>
+                      ) : (
+                        <div></div>
+                      )}
+                      <EventStatusBadge status={event.status} />
+                    </div>
+                    <h3 className="text-lg font-bold text-[#0a0a0a] mb-3 line-clamp-2">{event.title}</h3>
+
+                    <div className="mt-auto space-y-2 font-mono text-xs text-[#555555]">
+                      <div className="flex items-center gap-2"><CalendarDays size={14} />{new Date(event.event_date).toLocaleDateString()}</div>
+                      <div className="flex items-center gap-2"><MapPin size={14} />{event.location || 'TBA'}</div>
+                      <div className="flex items-center gap-2 text-[#0a0a0a] font-bold"><Users size={14} />{count} Registered</div>
+                    </div>
+                  </Card>
+                </Link>
+              )
+            })}
           </div>
         )}
       </div>

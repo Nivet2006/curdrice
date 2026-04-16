@@ -19,14 +19,12 @@ ON events FOR INSERT WITH CHECK (
 
 CREATE POLICY "Managers can update own events." 
 ON events FOR UPDATE USING (
-  created_by = auth.uid() OR 
-  EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+  EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role IN ('manager', 'admin'))
 );
 
 CREATE POLICY "Managers can delete own events." 
 ON events FOR DELETE USING (
-  created_by = auth.uid() OR 
-  EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+  EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role IN ('manager', 'admin'))
 );
 
 -- Event Constraints
@@ -35,22 +33,14 @@ ON event_constraints FOR SELECT USING (true);
 
 CREATE POLICY "Managers can manage constraints for own events." 
 ON event_constraints FOR ALL USING (
-  EXISTS (
-    SELECT 1 FROM events 
-    WHERE events.id = event_constraints.event_id 
-    AND (events.created_by = auth.uid() OR EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'))
-  )
+  EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role IN ('manager', 'admin'))
 );
 
 -- Registrations
 CREATE POLICY "Users can view own registrations." 
 ON registrations FOR SELECT USING (
   student_id = auth.uid() OR 
-  EXISTS (
-    SELECT 1 FROM events 
-    WHERE events.id = registrations.event_id 
-    AND (events.created_by = auth.uid() OR EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'))
-  )
+  EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role IN ('manager', 'admin'))
 );
 
 CREATE POLICY "Users can insert own registrations." 
@@ -58,11 +48,7 @@ ON registrations FOR INSERT WITH CHECK (student_id = auth.uid());
 
 CREATE POLICY "Managers can update registrations for own events." 
 ON registrations FOR UPDATE USING (
-  EXISTS (
-    SELECT 1 FROM events 
-    WHERE events.id = registrations.event_id 
-    AND (events.created_by = auth.uid() OR EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'))
-  )
+  EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role IN ('manager', 'admin'))
 );
 
 -- Backup Logs

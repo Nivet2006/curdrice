@@ -73,7 +73,7 @@ export async function updateEvent(eventId: string, formData: FormData) {
   const { data: event } = await supabase.from('events').select('created_by').eq('id', eventId).single()
 
   if (!event) return { error: 'Event not found' }
-  if (event.created_by !== user.id && profile?.role !== 'admin') return { error: 'Unauthorized' }
+  if (profile?.role !== 'admin' && profile?.role !== 'manager') return { error: 'Unauthorized' }
 
   const title = (formData.get('title') as string)?.trim()
   const club_name = (formData.get('clubName') as string)?.trim()
@@ -140,7 +140,7 @@ export async function deleteEvent(eventId: string) {
   const { data: event } = await supabase.from('events').select('created_by').eq('id', eventId).single()
 
   if (!event) return { error: 'Event not found' }
-  if (event.created_by !== user.id && profile?.role !== 'admin') {
+  if (profile?.role !== 'admin' && profile?.role !== 'manager') {
     return { error: 'Unauthorized' }
   }
 

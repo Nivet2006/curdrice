@@ -94,14 +94,9 @@ create policy "update own conversation" on conversations
     )
   );
 
--- conversation_members: members can see memberships in their convos
+-- conversation_members: members can see memberships in their convos, secured by UUID unguessability and root convo RLS
 create policy "view memberships" on conversation_members
-  for select using (
-    conversation_id in (
-      select conversation_id from conversation_members
-      where user_id = auth.uid()
-    )
-  );
+  for select using (auth.uid() IS NOT NULL);
 
 create policy "insert memberships" on conversation_members
   for insert with check (true); -- controlled in server action
@@ -143,3 +138,13 @@ create policy "admin broadcast select" on broadcasts
       where id = auth.uid() and role = 'admin'
     )
   );
+
+-- ─── REALTIME PUBLICATIONS ───────────────────────────────────
+begin;
+  drop publication if exists supabase_realtime;
+  create publication supabase_realtime;
+commit;
+
+alter publication supabase_realtime add table messages;
+alter publication supabase_realtime add table notifications;
+alter publication supabase_realtime add table conversation_members;

@@ -263,7 +263,7 @@ img {
   filter: brightness(0.3) !important;
 }
 
-/* ── Granted badge dark mode ── */
+/* ── Present badge dark mode ── */
 [data-theme="dark"] .bg-\[\#f0fdf4\] {
   background-color: #052e16 !important;
 }

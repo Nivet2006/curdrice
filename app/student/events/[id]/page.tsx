@@ -7,6 +7,8 @@ import type { Event } from '@/lib/types'
 import { RegisterButton } from '@/components/student/RegisterButton'
 import { registerForEvent } from '@/lib/actions/events'
 import { QRButton } from '@/components/student/QRButton'
+import { withDynamicSingleEventStatus } from '@/lib/event-utils'
+import { EventStatusBadge } from '@/components/ui/EventStatusBadge'
 
 export default async function EventDetailPage({ params }: { params: { id: string } }) {
   const supabase = createClient()
@@ -14,7 +16,7 @@ export default async function EventDetailPage({ params }: { params: { id: string
   const { data: { user } } = await supabase.auth.getUser()
 
   const { data } = await supabase.from('events').select('*').eq('id', id).single()
-  const event = data as Event
+  const event = withDynamicSingleEventStatus(data as Event)
 
   if (!event) return <div>Event not found</div>
 
@@ -60,7 +62,7 @@ export default async function EventDetailPage({ params }: { params: { id: string
         <div className="flex-1">
           <div className="flex gap-3 mb-4">
             <span className="border-[1.5px] border-[#0a0a0a] text-[#0a0a0a] font-mono rounded-full px-3 py-1 text-xs">{event.club_name}</span>
-            <span className="bg-[#0a0a0a] text-white font-mono rounded-full px-3 py-1 text-xs capitalize">{event.status}</span>
+            <EventStatusBadge status={event.status} className="px-3 py-1 text-xs rounded-full" />
           </div>
           
           <h1 className="text-3xl font-black text-[#0a0a0a] mb-6">{event.title}</h1>

@@ -1,28 +1,47 @@
 import { createClient } from '@/lib/supabase/server'
 import { EventCard } from '@/components/student/EventCard'
 import type { Event } from '@/lib/types'
-import { withDynamicEventStatus } from '@/lib/event-utils'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { Plus } from 'lucide-react'
 import { DeleteEventButton } from '@/components/manager/DeleteEventButton'
+import { withDynamicEventStatus } from '@/lib/event-utils'
+import type { Event as EventType } from '@/lib/types'
 
-export default async function AdminEventsPage() {
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
+export default async function ManagerEventsPage() {
   const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
   const { data: allEvents } = await supabase
     .from('events')
-    .select('*, registrations(count)')
+    .select('*')
     .order('event_date', { ascending: false })
 
-  const events = withDynamicEventStatus((allEvents as (Event & { registrations: { count: number }[] })[]) || [])
+  const baseEvents = withDynamicEventStatus((allEvents || []) as EventType[])
+  const eventIds = baseEvents.map(e => e.id)
+
+  const { data: rawRegistrations } = eventIds.length > 0
+    ? await supabase.from('registrations').select('event_id').in('event_id', eventIds)
+    : { data: [] }
+    
+  const registrations = rawRegistrations || []
+
+  const events = baseEvents.map(event => ({
+    ...event,
+    registrations: [{ 
+      count: registrations.filter(r => r.event_id === event.id).length 
+    }]
+  })) as (Event & { registrations: { count: number }[] })[]
 
   return (
     <div className="w-full">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-black tracking-tight mb-2 text-[#0a0a0a]">All Events</h1>
-          <p className="font-mono text-sm text-[#555555]">System-wide event oversight</p>
+          <h1 className="text-3xl font-black tracking-tight mb-2 text-[#0a0a0a]">Manage Events</h1>
+          <p className="font-mono text-sm text-[#555555]">Create, edit, and oversee your events</p>
         </div>
         <Link href="/manager/events/create">
           <Button variant="primary" className="bg-[#0a0a0a] flex items-center gap-2">
@@ -33,7 +52,7 @@ export default async function AdminEventsPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {events.length === 0 ? (
-          <p className="col-span-full font-mono text-xs text-[#999999] p-8 border border-dashed border-[#e0e0e0] rounded-2xl text-center">No events found in the system.</p>
+          <p className="col-span-full font-mono text-xs text-[#999999] p-8 border border-dashed border-[#e0e0e0] rounded-2xl text-center">No events found. Create your first event!</p>
         ) : (
           events.map((event) => {
             const count = event.registrations?.[0]?.count || 0

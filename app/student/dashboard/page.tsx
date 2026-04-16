@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { EventCard } from '@/components/student/EventCard'
 import { RealtimeDashboard } from '@/components/student/RealtimeDashboard'
 import type { Event } from '@/lib/types'
+import { withDynamicEventStatus } from '@/lib/event-utils'
 import { Radio } from 'lucide-react'
 import Link from 'next/link'
 
@@ -16,16 +17,15 @@ export default async function StudentDashboard() {
     .select('event_id, qr_token, events(*)')
     .eq('student_id', user?.id)
 
-  const registeredEvents = (registrations || []).map(r => r.events as unknown as Event).filter(Boolean)
+  const registeredEvents = withDynamicEventStatus((registrations || []).map(r => r.events as unknown as Event).filter(Boolean))
 
   const { data: allEvents } = await supabase
     .from('events')
     .select('*')
-    .eq('status', 'upcoming')
     .order('event_date', { ascending: true })
-    .limit(6)
 
-  const events = (allEvents as Event[]) || []
+  const dynamicEvents = withDynamicEventStatus((allEvents as Event[]) || [])
+  const events = dynamicEvents.filter(e => e.status === 'upcoming').slice(0, 6)
 
   return (
     <div className="w-full">
@@ -60,9 +60,9 @@ export default async function StudentDashboard() {
           <p className="font-mono text-xs text-[#999999] p-8 border border-dashed border-[#e0e0e0] rounded-2xl text-center">No registered events yet.</p>
         ) : (
           <div className="flex gap-6 overflow-x-auto pb-4">
-            {(registrations || []).map((reg) => {
-              const event = reg.events as unknown as Event
-              if (!event) return null
+            {registeredEvents.map((event) => {
+              const reg = registrations?.find(r => r.event_id === event.id)
+              if (!event || !reg) return null
               return (
                 <div key={event.id} className="min-w-[300px] w-[350px]">
                   <EventCard

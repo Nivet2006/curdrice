@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { supabaseAdmin } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 
 /* ─────────────────────────────────────────
@@ -185,7 +186,7 @@ export async function sendMessage(
 
   if (!membership) return { error: 'Not a member of this conversation' }
 
-  const { error } = await supabase.from('messages').insert({
+  const { error } = await supabaseAdmin.from('messages').insert({
     conversation_id: conversationId,
     sender_id: senderId,
     body,
@@ -203,7 +204,7 @@ export async function sendDMInvite(fromId: string, toId: string) {
   const supabase = createClient()
 
   // Create conversation
-  const { data: conv, error: convErr } = await supabase
+  const { data: conv, error: convErr } = await supabaseAdmin
     .from('conversations')
     .insert({ type: 'dm', status: 'pending', created_by: fromId })
     .select('id')
@@ -212,7 +213,7 @@ export async function sendDMInvite(fromId: string, toId: string) {
   if (convErr || !conv) return { error: convErr?.message || 'Failed to create conversation' }
 
   // Add both members
-  await supabase.from('conversation_members').insert([
+  await supabaseAdmin.from('conversation_members').insert([
     { conversation_id: conv.id, user_id: fromId, role: 'admin', invite_status: 'accepted' },
     { conversation_id: conv.id, user_id: toId, role: 'member', invite_status: 'pending' },
   ])
@@ -225,7 +226,7 @@ export async function sendDMInvite(fromId: string, toId: string) {
     .single()
 
   // Notify the recipient
-  await supabase.from('notifications').insert({
+  await supabaseAdmin.from('notifications').insert({
     user_id: toId,
     type: 'dm_invite',
     title: `${sender?.full_name || 'Someone'} wants to message you`,
@@ -339,7 +340,7 @@ export async function sendBroadcast(
 
   // Insert in batches of 100 to avoid payload limits
   for (let i = 0; i < notifications.length; i += 100) {
-    await supabase.from('notifications').insert(notifications.slice(i, i + 100))
+    await supabaseAdmin.from('notifications').insert(notifications.slice(i, i + 100))
   }
 
   return { success: true }

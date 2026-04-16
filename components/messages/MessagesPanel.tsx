@@ -50,7 +50,8 @@ export default function MessagesPanel({ open, onClose, userId }: MessagesPanelPr
 
   useEffect(() => {
     if (open && userId) {
-      loadData()
+      setLoading(true)
+      refreshBackground().finally(() => setLoading(false))
       fetchProfile()
     }
   }, [open, userId, activeTab])
@@ -67,22 +68,41 @@ export default function MessagesPanel({ open, onClose, userId }: MessagesPanelPr
     if (data) setProfile(data)
   }
 
-  const loadData = async () => {
-    setLoading(true)
+  const refreshBackground = async () => {
+    if (!userId) return
     try {
-      if (activeTab === 'notifications') {
-        const data = await getNotifications(userId!)
-        setNotifications(data || [])
-      } else {
-        const data = await getConversations(userId!)
-        setConversations(data || [])
-      }
+      const [notifs, convos] = await Promise.all([
+        getNotifications(userId),
+        getConversations(userId)
+      ])
+      setNotifications(notifs || [])
+      setConversations(convos || [])
     } catch (e) {
       console.error(e)
-    } finally {
-      setLoading(false)
     }
   }
+
+  const loadData = async () => {
+    setLoading(true)
+    await refreshBackground()
+    setLoading(false)
+  }
+
+  // Global Auto-Refresh Listener
+  useEffect(() => {
+    if (!open || !userId) return
+
+    const supabase = createClient()
+    const globalChannel = supabase.channel(`global-updates-${userId}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => refreshBackground())
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` }, () => refreshBackground())
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'conversation_members', filter: `user_id=eq.${userId}` }, () => refreshBackground())
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(globalChannel)
+    }
+  }, [open, userId])
 
   // Realtime Subscription for Chat
   useEffect(() => {
@@ -121,12 +141,22 @@ export default function MessagesPanel({ open, onClose, userId }: MessagesPanelPr
     const text = newMessage.trim()
     setNewMessage('')
     
+    // Optimistic Update
+    const optimisticMsg = {
+      id: crypto.randomUUID(),
+      body: text,
+      created_at: new Date().toISOString(),
+      sender_id: userId,
+      sender: { full_name: profile?.full_name || 'Me' }
+    }
+    setChatMessages(prev => [...prev, optimisticMsg])
+    
     try {
       const res = await sendMessage(openConversation.id, userId, text)
-      if (res.error) console.error(res.error)
-      // Realtime will handle the update
+      if (res.error) console.error("Send Error:", res.error)
+      // Realtime will handle the confirmed update
     } catch (err) {
-      console.error(err)
+      console.error("Crash:", err)
     } finally {
       setSendingMsg(false)
     }
@@ -222,10 +252,14 @@ export default function MessagesPanel({ open, onClose, userId }: MessagesPanelPr
                       <div 
                         className={`max-w-[85%] px-4 py-2.5 rounded-2xl text-sm shadow-sm ${
                           isMe 
-                            ? 'bg-[#0a0a0a] text-white rounded-br-sm' 
+                            ? 'rounded-br-sm' 
                             : 'rounded-bl-sm'
                         }`}
-                        style={!isMe ? { background: 'var(--bg-subtle)', color: 'var(--fg)', border: '1px solid var(--border)' } : {}}
+                        style={
+                          isMe 
+                            ? { background: 'var(--bg)', color: 'var(--fg)', border: '1px solid var(--border)' }
+                            : { background: 'var(--fg)', color: 'var(--bg)' }
+                        }
                       >
                         {msg.body}
                       </div>

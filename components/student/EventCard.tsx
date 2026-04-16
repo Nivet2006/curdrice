@@ -1,6 +1,7 @@
 import React from 'react'
 import { Card } from '../ui/Card'
 import { Badge } from '../ui/Badge'
+import { EventStatusBadge } from '../ui/EventStatusBadge'
 import { CalendarDays, MapPin, QrCode } from 'lucide-react'
 import Link from 'next/link'
 import type { Event } from '@/lib/types'
@@ -50,7 +51,7 @@ export function EventCard({ event, registeredCount = 0, isRegistered = false, is
           ) : (
             <div className="w-full h-full flex items-center justify-center font-mono text-[#999] text-xs">NO BANNER</div>
           )}
-          <Badge variant="status" className="absolute top-3 left-3 capitalize">{event.status}</Badge>
+          <EventStatusBadge status={event.status} className="absolute top-3 left-3" />
           <div className="absolute top-3 right-3 bg-white border border-[#e0e0e0] rounded-full text-xs font-mono px-2 py-0.5 text-[#0a0a0a]">
             {event.club_name}
           </div>

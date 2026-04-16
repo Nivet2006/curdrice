@@ -7,17 +7,21 @@ import Link from 'next/link'
 import { deleteEvent } from '@/lib/actions/events'
 import { RegistrationExportMenu } from '@/components/manager/RegistrationExportMenu'
 import { DeleteEventButton } from '@/components/manager/DeleteEventButton'
+import { withDynamicSingleEventStatus } from '@/lib/event-utils'
+import { EventStatusBadge } from '@/components/ui/EventStatusBadge'
 
 export default async function ManagerEventDetails({ params }: { params: { id: string } }) {
   const supabase = createClient()
 
-  const { data: event } = await supabase
+  const { data: rawEvent } = await supabase
     .from('events')
     .select('*')
     .eq('id', params.id)
     .single()
 
-  if (!event) return <div className="p-8 text-center font-mono text-[#555555] border-2 border-dashed rounded-2xl">Event not found in the system.</div>
+  if (!rawEvent) return <div className="p-8 text-center font-mono text-[#555555] border-2 border-dashed rounded-2xl">Event not found in the system.</div>
+  
+  const event = withDynamicSingleEventStatus(rawEvent)
 
   const { createClient: createSupabaseClient } = await import('@supabase/supabase-js')
   const supabaseAdmin = createSupabaseClient(
@@ -43,7 +47,7 @@ export default async function ManagerEventDetails({ params }: { params: { id: st
     <div className="w-full flex-1 pb-32">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
         <div>
-          <Badge variant="status" className="mb-4">{event.status}</Badge>
+          <EventStatusBadge status={event.status} className="mb-4 text-xs px-3 py-1" />
           <h1 className="text-3xl font-black tracking-tight mb-2 text-[#0a0a0a]">{event.title}</h1>
           <p className="font-mono text-sm text-[#555555]">By {event.club_name}</p>
         </div>
@@ -121,7 +125,7 @@ export default async function ManagerEventDetails({ params }: { params: { id: st
                       </td>
                       <td className="px-6 py-3 text-right">
                         {reg.checked_in
-                          ? <span className="text-[10px] font-mono bg-[#f0fdf4] text-[#166534] px-2.5 py-1 rounded-sm border border-[#bbf7d0]">Granted</span>
+                          ? <span className="text-[10px] font-mono bg-[#f0fdf4] text-[#166534] px-2.5 py-1 rounded-sm border border-[#bbf7d0]">Present</span>
                           : <span className="text-[10px] font-mono bg-[#fefce8] text-[#854d0e] px-2.5 py-1 rounded-sm border border-[#fef08a]">Pending</span>
                         }
                       </td>
