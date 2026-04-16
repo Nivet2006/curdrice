@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { Navbar } from '@/components/shared/Navbar'
 import type { Role } from '@/lib/types'
 
+import { redirect } from 'next/navigation'
+
 async function getDeployments() {
   const token = process.env.VERCEL_API_TOKEN
   const projectId = process.env.VERCEL_PROJECT_ID
@@ -26,10 +28,14 @@ export default async function StatusPage() {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   
-  let profile = null
-  if (user) {
-    const { data } = await supabase.from('profiles').select('full_name, role').eq('id', user.id).single()
-    profile = data
+  if (!user) {
+    redirect('/login')
+  }
+
+  const { data: profile } = await supabase.from('profiles').select('full_name, role').eq('id', user.id).single()
+  
+  if (!profile || profile.role !== 'admin') {
+    redirect('/login') // Or you could redirect to dashboard, but login is safer for unauthorized access
   }
 
   const deployments = await getDeployments()
