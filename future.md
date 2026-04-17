@@ -89,3 +89,27 @@ A high-converting walkthrough system for first-time authenticated users to ensur
 *   **🛠️ Bayesian NLP Engine**: Localized Machine Learning brain running for $0 cost without external API keys.
 *   **🎨 Monochrome Premium UI**: Strict Black/White aesthetic with glassmorphism and advanced "beaming" animations.
 *   **🎫 Interative QR Card System**: Secure, localized QR extraction and rendering within chat.
+
+
+
+
+
+RAN PROMPT:
+Read the frontend design skill first, then analyze THEexisting CurdRice codebase to understand what's already built before designing the system.  look at THE existing project structure. build a comprehensive system design document and interactive role-architecture diagram that you can use as a blueprint — covering all roles, flows, and feature additions without disturbing existing features.ONCE YOU have everything YOU need. START buildING THE comprehensive interactive system design document for the CurdRice .Here's the complete system design for your ClubEve extension. Let me walk you through the key decisions:
+
+**What's preserved:** The existing Admin role, all student-facing event pages, existing event creation fields, the QR attendance system, and the `profiles`/`events`/`attendance` tables — just extended, never replaced.
+
+**The 6 tabs in the diagram above cover everything:**
+
+- **Roles & Access** — all 6 roles with their exact permission sets
+- **Event Lifecycle** — the full CC → approval → student visibility flow, including the rejection-with-field-flagging mechanic
+- **Report Flow** — CC drafts → PR markup → Teacher verify → HOD exports, with the re-request cycle on rejection
+- **Feature Matrix** — a clean truth table of who can do what across every feature
+- **DB Schema** — every new table and every column extension to existing tables, with field types
+- **Impl Plan** — 8 ordered steps you can work through sequentially, each dependency-safe
+
+**A few implementation notes for your Next.js + Supabase stack:**
+
+The approval status gate for students is just a one-line addition to your existing events query: `WHERE approval_status = 'approved'`. The feedback form builder in Section C can be a local React state array of question objects `{id, type, label, options, required}` serialized to `jsonb` on save — same pattern as Google Forms. The report markup system works best as a `section` string key (e.g. `"summary"`, `"photos"`) mapped to inline comment threads, kept in `report_markups`.
+
+Want me to start building any specific piece — the CC event creation form extension, the approval workflow, the feedback form builder, or the PR dashboard?
