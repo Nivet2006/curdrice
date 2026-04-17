@@ -1,7 +1,7 @@
 import React from 'react'
 
 type BadgeProps = React.HTMLAttributes<HTMLSpanElement> & {
-  variant?: 'admin' | 'manager' | 'student' | 'deleted'
+  variant?: 'admin' | 'manager' | 'student' | 'deleted' | 'cc' | 'pr' | 'teacher' | 'hod'
   children: React.ReactNode
 }
 
@@ -13,7 +13,13 @@ export function Badge({ variant = 'student', children, className = '', ...props 
       styleClasses = 'bg-[#0a0a0a] text-white font-mono rounded-full px-3 py-1 text-xs'
       break;
     case 'manager':
+    case 'cc':
+    case 'pr':
       styleClasses = 'border-[1.5px] border-[#0a0a0a] text-[#0a0a0a] font-mono rounded-full px-3 py-1 text-xs bg-transparent'
+      break;
+    case 'teacher':
+    case 'hod':
+      styleClasses = 'bg-[#0a0a0a] text-white font-mono rounded-full px-4 py-1.5 text-xs shadow-lg'
       break;
     case 'student':
       styleClasses = 'bg-[#eeeeee] text-[#555555] font-sans rounded-full px-3 py-1 text-xs'

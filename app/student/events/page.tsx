@@ -11,6 +11,7 @@ export default async function StudentEventsPage() {
   const { data: allEvents } = await supabase
     .from('events')
     .select('*')
+    .eq('approval_status', 'approved')
     .order('event_date', { ascending: true })
 
   const { data: profile } = await supabase

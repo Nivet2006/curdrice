@@ -23,6 +23,7 @@ export default async function StudentDashboard() {
   const { data: allEvents } = await supabase
     .from('events')
     .select('*')
+    .eq('approval_status', 'approved')
     .order('event_date', { ascending: true })
 
   const dynamicEvents = withDynamicEventStatus((allEvents as Event[]) || [])

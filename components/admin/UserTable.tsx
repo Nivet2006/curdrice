@@ -350,6 +350,10 @@ export function UserTable({ users }: { users: Profile[] }) {
                         >
                           <option value="student">Student</option>
                           <option value="manager">Manager</option>
+                          <option value="cc">Coordinator (CC)</option>
+                          <option value="pr">Public Relations (PR)</option>
+                          <option value="teacher">Teacher</option>
+                          <option value="hod">HOD</option>
                           <option value="admin">Admin</option>
                         </select>
 

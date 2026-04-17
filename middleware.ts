@@ -108,6 +108,31 @@ export async function middleware(request: NextRequest) {
         url.pathname = `/${role}/dashboard`
         return NextResponse.redirect(url)
       }
+
+      // New Club-Eve Roles
+      if (path.startsWith('/cc') && !['cc', 'admin'].includes(role)) {
+        const url = request.nextUrl.clone()
+        url.pathname = `/${role}/dashboard`
+        return NextResponse.redirect(url)
+      }
+
+      if (path.startsWith('/pr') && !['pr', 'admin'].includes(role)) {
+        const url = request.nextUrl.clone()
+        url.pathname = `/${role}/dashboard`
+        return NextResponse.redirect(url)
+      }
+
+      if (path.startsWith('/teacher') && !['teacher', 'admin'].includes(role)) {
+        const url = request.nextUrl.clone()
+        url.pathname = `/${role}/dashboard`
+        return NextResponse.redirect(url)
+      }
+
+      if (path.startsWith('/hod') && !['hod', 'admin'].includes(role)) {
+        const url = request.nextUrl.clone()
+        url.pathname = `/${role}/dashboard`
+        return NextResponse.redirect(url)
+      }
     } catch (error: any) {
       if (process.env.NODE_ENV === 'development') {
         console.error('[Middleware] Profile fetch error:', error.message)

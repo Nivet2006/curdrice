@@ -55,8 +55,17 @@ export function Navbar({ role, name }: { role?: Role; name?: string }) {
       { href: '/admin/attendance', label: 'Attendance', icon: ClipboardList },
       { href: '/admin/backup', label: 'Backup', icon: Database },
     ] : []),
-    ...(role === 'manager' ? [
-      { href: '/manager/scanner', label: 'Scanner', icon: ScanLine },
+    ...(role === 'manager' || role === 'cc' ? [
+      { href: `/${role}/scanner`, label: 'Scanner', icon: ScanLine },
+    ] : []),
+    ...(role === 'pr' ? [
+      { href: '/pr/review', label: 'Queue', icon: ClipboardList },
+    ] : []),
+    ...(role === 'teacher' ? [
+      { href: '/teacher/verify', label: 'Verify', icon: ClipboardList },
+    ] : []),
+    ...(role === 'hod' ? [
+      { href: '/hod/approvals', label: 'Approvals', icon: ClipboardList },
     ] : []),
     ...(role === 'student' ? [
       { href: '/student/profile', label: 'Profile', icon: UserCircle },
