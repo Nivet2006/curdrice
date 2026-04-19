@@ -165,6 +165,11 @@ export default function AdminDashboard() {
             title: 'System Backup →',
             desc: 'Download a full ZIP snapshot of all platform data.',
           },
+          {
+            href: '/admin/logs',
+            title: 'Intelligence Portal →',
+            desc: 'Monitor site-wide session footprints and forensic audit logs.',
+          },
         ].map(action => (
           <Link key={action.href} href={action.href}>
             <Card className="p-5 hover:border-[#0a0a0a] transition-colors cursor-pointer group h-full">

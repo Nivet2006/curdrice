@@ -16,6 +16,9 @@ export const metadata: Metadata = {
   }
 }
 
+import { AuditTracker } from '@/components/common/AuditTracker'
+import { Suspense } from 'react'
+
 export default function RootLayout({
   children,
 }: {
@@ -24,6 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <body className={`font-sans antialiased min-h-screen`}>
+        <Suspense><AuditTracker /></Suspense>
         <PatternProvider>{children}</PatternProvider>
         <Toaster richColors position="bottom-right" />
       </body>
