@@ -7,9 +7,16 @@ export default async function TeacherDashboard() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Get Teacher department
-  const { data: profile } = await supabase.from('profiles').select('department').eq('id', user?.id || '').single()
+  // Get Teacher profile
+  const { data: profile } = await supabase.from('profiles').select('full_name, department').eq('id', user?.id || '').single()
   const dept = profile?.department || 'General'
+  const facultyName = profile?.full_name?.split(' ')[0] || 'Faculty'
+
+  const hour = new Date().getHours()
+  let greeting = 'Good Morning'
+  if (hour >= 12 && hour < 17) greeting = 'Good Afternoon'
+  if (hour >= 17) greeting = 'Good Evening'
+  const personalizedGreeting = `${greeting}, ${facultyName}`
   
   // Events pending teacher verification (scoped to department)
   const { data: pendingEvents } = await supabase
@@ -36,9 +43,9 @@ export default async function TeacherDashboard() {
             <div className="w-10 h-10 rounded-2xl bg-[#0a0a0a] flex items-center justify-center shadow-lg">
               <User size={20} className="text-white" />
             </div>
-            <span className="font-mono text-xs uppercase tracking-[0.3em] text-zinc-500 font-bold">Faculty Oversight</span>
+            <span className="font-mono text-xs uppercase tracking-[0.3em] text-zinc-500 font-bold text-emerald-600">Faculty Overview</span>
           </div>
-          <h1 className="text-5xl font-black tracking-tighter text-[#0a0a0a] leading-none">Moderator Terminal</h1>
+          <h1 className="text-5xl font-black tracking-tighter text-[#0a0a0a] leading-none uppercase">{personalizedGreeting}</h1>
           <p className="max-w-md text-zinc-500 font-medium italic text-lg leading-relaxed border-l-4 border-emerald-500 pl-4">
             "Ensuring club activities align with institutional standards and student safety."
           </p>
