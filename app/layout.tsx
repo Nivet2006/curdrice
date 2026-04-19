@@ -1,12 +1,12 @@
 import type { Metadata } from 'next'
-import { Inter, JetBrains_Mono } from 'next/font/google'
+import { Outfit, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import { PatternProvider } from "@/components/shared/PatternProvider";
 
 import { Toaster } from 'sonner'
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
-const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono' })
+const sans = Outfit({ subsets: ['latin'], variable: '--font-sans' })
+const mono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono' })
 
 export const metadata: Metadata = {
   title: 'Club-Eve',
@@ -22,8 +22,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
-      <body className={`font-sans antialiased min-h-screen`}>
+    <html lang="en" className={`${sans.variable} ${mono.variable}`}>
+      <body className={`font-sans antialiased min-h-screen tracking-tight`}>
         <PatternProvider>{children}</PatternProvider>
         <Toaster richColors position="bottom-right" />
       </body>

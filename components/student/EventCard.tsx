@@ -58,7 +58,7 @@ export function EventCard({ event, registeredCount = 0, isRegistered = false, is
         </div>
 
         <div className="p-4 flex flex-col flex-1">
-          <h3 className="text-base font-bold text-[#0a0a0a] line-clamp-2">{event.title}</h3>
+          <h3 className="text-lg font-black text-[#0a0a0a] line-clamp-2 uppercase tracking-tighter leading-none">{event.title}</h3>
 
           <div className="mt-3 space-y-2 flex-1">
             <div className="flex items-center gap-2 text-xs font-mono text-[#555555]">
