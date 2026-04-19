@@ -1,7 +1,8 @@
 'use client'
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import { Monitor, Smartphone, Globe, Clock, Trash2, Download, Filter, X, Search, ChevronDown, ChevronUp, Fingerprint, AlertTriangle, Loader2, RefreshCw } from 'lucide-react'
-import { drainLogs, clearByIP, clearByDateRange } from '../../app/admin/logs/actions'
+import { drainLogs, clearByIP, clearByDateRange, getAuditLogs } from '../../app/admin/logs/actions'
+import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import { useSearchParams } from 'next/navigation'
 
@@ -52,27 +53,15 @@ export function LogsPageClient() {
     else setIsRefreshing(true)
 
     try {
-      let query = supabaseBrowser
-        .from('audit_logs')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(1000)
+      const filters = {
+        from: searchParams.get('from') || undefined,
+        to: searchParams.get('to') || undefined,
+        ip: searchParams.get('ip') || undefined,
+        user: searchParams.get('user') || undefined,
+        action: searchParams.get('action') || undefined,
+      }
 
-      const from = searchParams.get('from')
-      const to = searchParams.get('to')
-      const ip = searchParams.get('ip')
-      const user = searchParams.get('user')
-      const action = searchParams.get('action')
-
-      if (from) query = query.gte('created_at', from)
-      if (to) query = query.lte('created_at', to)
-      if (ip) query = query.ilike('ip_address', `%${ip}%`)
-      if (user) query = query.or(`user_email.ilike.%${user}%,user_name.ilike.%${user}%`)
-      if (action && action !== 'ALL') query = query.eq('action_type', action)
-
-      const { data, error: fetchError } = await query
-      if (fetchError) throw fetchError
-
+      const data = await getAuditLogs(filters)
       setLogs(data || [])
       setLastUpdated(new Date())
       setError(null)
@@ -139,7 +128,10 @@ export function LogsPageClient() {
         const to = searchParams.get('to')
         await clearByDateRange(from || '', to || '')
       }
+      toast.success('Audit vault scrubbed successfully')
       fetchLogs() // Manual refresh after drain
+    } catch (err: any) {
+      toast.error(`Purge failed: ${err.message}`)
     } finally {
       setDraining(false)
       setShowDrainModal(false)
