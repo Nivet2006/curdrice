@@ -42,6 +42,27 @@ export function EventRegistrationStats({ eventId }: { eventId: string }) {
     }
 
     fetchStats()
+
+    // Realtime subscription for live updates
+    const channel = supabase
+      .channel(`live-registrations-${eventId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'registrations',
+          filter: `event_id=eq.${eventId}`
+        },
+        () => {
+          fetchStats()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }, [eventId, supabase])
 
   const exportList = () => {
