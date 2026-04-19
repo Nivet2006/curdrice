@@ -90,6 +90,9 @@ export default async function TeacherVerifyPage({ params }: { params: Promise<{ 
 
            {/* Decision Terminal or Stats */}
            <div className="lg:sticky lg:top-12 h-fit">
+              {event.approval_status === 'approved' ? (
+                <div className="space-y-6">
+                  <div className="bg-emerald-500 text-white p-6 rounded-[2rem] shadow-xl shadow-emerald-500/20">
                     <div className="flex items-center gap-3 mb-2">
                        <CheckCircle2 size={20} />
                        <h3 className="font-black uppercase text-sm tracking-widest">Protocol Approved</h3>
