@@ -35,7 +35,13 @@ export default async function HODApprovalPage({ params }: { params: Promise<{ id
         {/* Left Side: Formal Event Dossier */}
         <div className="lg:col-span-3 space-y-14">
           <header className="space-y-4">
-            <div className="w-16 h-1 bg-black"></div>
+            <div className="flex items-center justify-between">
+              <div className="w-16 h-1 bg-black"></div>
+              <div className="flex items-center gap-3 bg-zinc-100 px-4 py-2 rounded-xl">
+                 <span className="font-mono text-[10px] uppercase font-bold text-zinc-500">Auth Code</span>
+                 <span className="font-mono text-xl font-black italic tracking-tighter text-black">{event.event_code}</span>
+              </div>
+            </div>
             <h1 className="text-7xl font-black tracking-tightest leading-[0.9] text-[#0a0a0a] uppercase">{event.title}</h1>
             <p className="font-mono text-sm font-bold text-zinc-500 uppercase tracking-widest">Formal Activity Request by {(event.profiles as any)?.full_name}</p>
           </header>
