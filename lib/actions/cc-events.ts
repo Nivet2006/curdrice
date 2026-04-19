@@ -33,6 +33,27 @@ export async function createDraftEvent(formData: FormData) {
   }
 
   const eventDt = new Date(event_date)
+  
+  // VENUE CONFLICT CHECK (± 4 hours for a session)
+  const fourHoursInMs = 4 * 60 * 60 * 1000
+  const startTime = new Date(eventDt.getTime() - fourHoursInMs).toISOString()
+  const endTime = new Date(eventDt.getTime() + fourHoursInMs).toISOString()
+
+  const { data: conflict } = await supabase
+    .from('events')
+    .select('title, event_date')
+    .eq('location', location)
+    .eq('approval_status', 'approved')
+    .gte('event_date', startTime)
+    .lte('event_date', endTime)
+    .maybeSingle()
+
+  if (conflict) {
+    return { 
+      error: `Venue Conflict: "${location}" is already booked for "${conflict.title}" at ${new Date(conflict.event_date).toLocaleTimeString()}. Please choose a different venue or time.` 
+    }
+  }
+
   const deadlineDt = new Date(deadlineStr)
 
   if (deadlineDt >= eventDt) return { error: 'Deadline must be before event date.' }
@@ -152,6 +173,27 @@ export async function updateEventDraft(id: string, formData: FormData) {
   const yearStr = formData.get('years') as string
   const sems = JSON.parse(semStr || '[]')
   const years = JSON.parse(yearStr || '[]')
+
+  // VENUE CONFLICT CHECK (± 4 hours for a session)
+  const fourHoursInMs = 4 * 60 * 60 * 1000
+  const startTime = new Date(eventDt.getTime() - fourHoursInMs).toISOString()
+  const endTime = new Date(eventDt.getTime() + fourHoursInMs).toISOString()
+
+  const { data: conflict } = await supabase
+    .from('events')
+    .select('title, event_date')
+    .eq('location', location)
+    .eq('approval_status', 'approved')
+    .neq('id', id) // Exclude current event
+    .gte('event_date', startTime)
+    .lte('event_date', endTime)
+    .maybeSingle()
+
+  if (conflict) {
+    return { 
+      error: `Venue Conflict: "${location}" is already booked for "${conflict.title}" at ${new Date(conflict.event_date).toLocaleTimeString()}. Please choose a different venue or time.` 
+    }
+  }
 
   const isSubmission = formData.get('submitForReview') === 'true'
   const approval_status = isSubmission ? 'pending_teacher' : 'draft'
