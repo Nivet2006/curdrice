@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
   })
@@ -39,19 +39,18 @@ export async function middleware(request: NextRequest) {
         error.message?.includes('refresh_token_not_found') ||
         error.message?.includes('Invalid Refresh Token')
       ) {
-        await supabase.auth.signOut() // Wipes the stale cookie
+        await supabase.auth.signOut()
         const loginUrl = request.nextUrl.clone()
         loginUrl.pathname = '/login'
         return NextResponse.redirect(loginUrl)
       }
-      console.error('[Middleware] Auth error:', error.message)
+      console.error('[Proxy] Auth error:', error.message)
     }
 
     user = data?.user || null
   } catch (error: any) {
-    // Catch any unexpected errors during auth check
     if (process.env.NODE_ENV === 'development') {
-      console.error('[Middleware] Unexpected auth error:', error.message)
+      console.error('[Proxy] Unexpected auth error:', error.message)
     }
     user = null
   }
@@ -79,7 +78,6 @@ export async function middleware(request: NextRequest) {
 
       // Block suspended accounts
       if (role === 'deleted') {
-        // Clear session and redirect to login
         await supabase.auth.signOut()
         const url = request.nextUrl.clone()
         url.pathname = '/login'
@@ -109,7 +107,6 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(url)
       }
 
-      // New Club-Eve Roles
       if (path.startsWith('/cc') && !['cc', 'admin'].includes(role)) {
         const url = request.nextUrl.clone()
         url.pathname = `/${role}/dashboard`
@@ -135,7 +132,7 @@ export async function middleware(request: NextRequest) {
       }
     } catch (error: any) {
       if (process.env.NODE_ENV === 'development') {
-        console.error('[Middleware] Profile fetch error:', error.message)
+        console.error('[Proxy] Profile fetch error:', error.message)
       }
     }
   }
