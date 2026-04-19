@@ -69,8 +69,8 @@ export default async function CCEventDetailPage({ params }: { params: Promise<{ 
                   </div>
                )}
                <span className={`font-mono text-[9px] uppercase tracking-widest font-bold px-3 py-1.5 rounded-full border ${event.approval_status === 'approved' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30' :
-                     event.approval_status === 'rejected' ? 'bg-rose-500/10 text-rose-600 border-rose-500/30' :
-                        'bg-zinc-500/10 text-zinc-500 border-zinc-500/20'
+                  event.approval_status === 'rejected' ? 'bg-rose-500/10 text-rose-600 border-rose-500/30' :
+                     'bg-zinc-500/10 text-zinc-500 border-zinc-500/20'
                   }`}>
                   {event.approval_status.replace(/_/g, ' ').toUpperCase()}
                </span>
@@ -106,7 +106,7 @@ export default async function CCEventDetailPage({ params }: { params: Promise<{ 
                   <span>{event.targeted_department || 'All Departments'}</span>
                </div>
                <div className="flex items-center gap-2 ml-auto">
-                  <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest">Auth Code:</span>
+                  <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest">Event ID:</span>
                   <span className="bg-zinc-100 dark:bg-zinc-900 px-3 py-1 rounded-lg text-black dark:text-white font-black italic tracking-tighter">{event.id}</span>
                </div>
             </div>

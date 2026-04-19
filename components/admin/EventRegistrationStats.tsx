@@ -66,9 +66,9 @@ export function EventRegistrationStats({ eventId }: { eventId: string }) {
   }, [eventId, supabase])
 
   const exportList = () => {
-    const csvContent = "Full Name,USN,Department,Status\n" + 
+    const csvContent = "Full Name,USN,Department,Status\n" +
       registrations.map(r => `${r.profiles.full_name},${r.profiles.usn},${r.profiles.department},${r.checked_in ? 'Checked In' : 'Registered'}`).join("\n")
-    
+
     const blob = new Blob([csvContent], { type: 'text/csv' })
     const url = window.URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -91,7 +91,7 @@ export function EventRegistrationStats({ eventId }: { eventId: string }) {
             <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest">Total</span>
           </div>
           <p className="text-3xl font-black">{registrations.length}</p>
-          <p className="text-[10px] font-mono text-zinc-400 uppercase mt-1">Acquired Leads</p>
+          <p className="text-[10px] font-mono text-zinc-400 uppercase mt-1">Registered Students</p>
         </div>
         <div className="bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 rounded-3xl shadow-sm transition-all hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black group transition-all">
           <div className="flex items-center justify-between mb-2">
@@ -101,7 +101,7 @@ export function EventRegistrationStats({ eventId }: { eventId: string }) {
           <p className="text-3xl font-black">
             {registrations.filter(r => r.checked_in).length}
           </p>
-          <p className="text-[10px] font-mono text-zinc-400 uppercase mt-1 group-hover:text-inherit">Verified Entries</p>
+          <p className="text-[10px] font-mono text-zinc-400 uppercase mt-1 group-hover:text-inherit">Present Students</p>
         </div>
       </div>
 
@@ -112,14 +112,14 @@ export function EventRegistrationStats({ eventId }: { eventId: string }) {
             <Clock size={14} className="text-zinc-400" />
             Registration Manifest
           </h4>
-          <button 
+          <button
             onClick={exportList}
             className="p-2 hover:bg-zinc-50 dark:hover:bg-white/5 rounded-full transition-colors text-zinc-400 hover:text-black dark:hover:text-white"
           >
             <Download size={16} />
           </button>
         </div>
-        
+
         <div className="max-h-[400px] overflow-y-auto divide-y divide-zinc-50 dark:divide-zinc-800/50">
           {registrations.length > 0 ? (
             registrations.map(reg => (

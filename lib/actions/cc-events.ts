@@ -12,8 +12,8 @@ export async function createDraftEvent(formData: FormData) {
 
   // Extract profiles to check for cc role
   const { data: profile } = await supabase.from('profiles').select('role, full_name').eq('id', user.id).single()
-  if (profile?.role !== 'cc' && profile?.role !== 'admin') {
-    return { error: 'Unauthorized: Requires Club Coordinator permissions.' }
+  if (profile?.role !== 'cc' && profile?.role !== 'admin' && profile?.role !== 'manager') {
+    return { error: 'Unauthorized: Requires higher permissions.' }
   }
 
   const title = (formData.get('title') as string)?.trim()
@@ -63,8 +63,6 @@ export async function createDraftEvent(formData: FormData) {
   const sems = JSON.parse(semStr || '[]')
   const years = JSON.parse(yearStr || '[]')
 
-  // Status defaults to draft but we immediately push it to 'pending_pr' upon "Submit for Review"
-  // OR we can allow the user to save as literal draft first.
   const isSubmission = formData.get('submitForReview') === 'true'
   const approval_status = isSubmission ? 'pending_teacher' : 'draft'
 
@@ -77,7 +75,7 @@ export async function createDraftEvent(formData: FormData) {
     approval_status,
     targeted_department,
     feedback_config,
-    status: 'upcoming' // Visibility status
+    status: 'upcoming'
   }).select('id').single()
 
   if (error || !event) return { error: error?.message || 'Failed to create event' }
@@ -184,7 +182,7 @@ export async function updateEventDraft(id: string, formData: FormData) {
     .select('title, event_date')
     .eq('location', location)
     .eq('approval_status', 'approved')
-    .neq('id', id) // Exclude current event
+    .neq('id', id)
     .gte('event_date', startTime)
     .lte('event_date', endTime)
     .maybeSingle()
@@ -206,7 +204,7 @@ export async function updateEventDraft(id: string, formData: FormData) {
     approval_status,
     targeted_department,
     feedback_config,
-    rejection_data: '[]' // Clear rejection data when updating
+    rejection_data: '[]'
   }).eq('id', id).eq('created_by', user.id)
 
   if (eventError) return { error: eventError.message }

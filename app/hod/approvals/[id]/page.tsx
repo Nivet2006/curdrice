@@ -38,7 +38,7 @@ export default async function HODApprovalPage({ params }: { params: Promise<{ id
             <div className="flex items-center justify-between">
               <div className="w-16 h-1 bg-black"></div>
               <div className="flex items-center gap-3 bg-zinc-100 px-4 py-2 rounded-xl">
-                <span className="font-mono text-[10px] uppercase font-bold text-zinc-500">Auth Code</span>
+                <span className="font-mono text-[10px] uppercase font-bold text-zinc-500">Event ID</span>
                 <span className="font-mono text-xl font-black italic tracking-tighter text-black">{event.id}</span>
               </div>
             </div>
@@ -97,7 +97,7 @@ export default async function HODApprovalPage({ params }: { params: Promise<{ id
                   <CheckCircle2 size={24} className="text-zinc-400" />
                   <h3 className="text-xl font-black uppercase tracking-tighter">Event Authorized</h3>
                 </div>
-                <p className="text-xs font-mono text-zinc-400 italic">This proposal has received final executive authorization. The activity is now listed in the student terminal.</p>
+                <p className="text-xs font-mono text-zinc-400 italic">This event proposal has been approved. The Event is now listed in the student dashboard.</p>
               </div>
               <EventRegistrationStats eventId={event.id} />
             </div>
