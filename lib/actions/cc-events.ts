@@ -28,6 +28,10 @@ export async function createDraftEvent(formData: FormData) {
   const targeted_department = (formData.get('targetedDepartment') as string) || null
   const feedback_config = JSON.parse(formData.get('feedbackConfig') as string || '[]')
 
+  if (!feedback_config || feedback_config.length < 3) {
+    return { error: 'Policy: You must define at least 3 feedback questions for the event survey.' }
+  }
+
   if (!title || !club_name || !description || !location || !event_date || !deadlineStr || !banner_url) {
     return { error: 'Missing required fields.' }
   }
@@ -158,6 +162,10 @@ export async function updateEventDraft(id: string, formData: FormData) {
   const max_capacity = capStr && parseInt(capStr) > 0 ? parseInt(capStr) : null
   const targeted_department = (formData.get('targetedDepartment') as string) || null
   const feedback_config = JSON.parse(formData.get('feedbackConfig') as string || '[]')
+
+  if (!feedback_config || feedback_config.length < 3) {
+    return { error: 'Policy: You must define at least 3 feedback questions before submitting or saving.' }
+  }
 
   if (!title || !club_name || !description || !location || !event_date || !deadlineStr || !banner_url) {
     return { error: 'Missing required fields.' }
