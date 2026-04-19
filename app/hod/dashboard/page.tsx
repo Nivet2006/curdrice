@@ -37,14 +37,6 @@ export default async function HODDashboard() {
 
   // Filter reports to HOD department
   const deptReports = completedReports?.filter(r => (r.events as any).targeted_department === dept) || []
-  
-  // Recent Audit Logs for this HOD
-  const { data: recentLogs } = await supabase
-    .from('audit_logs')
-    .select('*')
-    .eq('user_id', user?.id)
-    .order('created_at', { ascending: false })
-    .limit(5)
 
   return (
     <div className="space-y-12">
@@ -179,26 +171,6 @@ export default async function HODDashboard() {
                  <h2 className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-zinc-400">Compliance Status</h2>
               </div>
               <p className="text-xs text-zinc-400 leading-relaxed italic">All visibility of events to the student body is gated by your final authorization above. Post-event records are first audited by PR before appearing in your archives.</p>
-           </div>
-
-           <div className="space-y-6 pt-6">
-              <div className="flex items-center gap-3">
-                 <History size={18} className="text-zinc-400" />
-                 <h2 className="text-xs font-mono font-bold uppercase tracking-widest">Recent Activity</h2>
-              </div>
-              <div className="space-y-4">
-                 {recentLogs && recentLogs.length > 0 ? (
-                   recentLogs.map((log) => (
-                     <div key={log.id} className="border-l-2 border-zinc-100 pl-4 py-1">
-                        <p className="text-[10px] font-mono font-black text-black uppercase tracking-tight">{log.action_type}</p>
-                        <p className="text-[10px] text-zinc-500 font-mono truncate">{log.resource_path}</p>
-                        <p className="text-[9px] text-zinc-300 font-mono italic">{new Date(log.created_at).toLocaleTimeString()}</p>
-                     </div>
-                   ))
-                 ) : (
-                   <p className="text-[10px] text-zinc-400 font-mono italic">No recent activity detected in this session.</p>
-                 )}
-              </div>
            </div>
         </div>
       </div>
