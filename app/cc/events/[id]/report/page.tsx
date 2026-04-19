@@ -5,13 +5,14 @@ import { ReportForm } from './ReportForm'
 import { ArrowLeft, FileText } from 'lucide-react'
 import Link from 'next/link'
 
-export default async function CCReportPage({ params }: { params: { id: string } }) {
+export default async function CCReportPage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
+  const { id } = await params
   
   const { data: event } = await supabase
     .from('events')
     .select('*, reports(*)')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (!event) notFound()

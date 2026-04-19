@@ -10,13 +10,14 @@ import { DeleteEventButton } from '@/components/manager/DeleteEventButton'
 import { withDynamicSingleEventStatus } from '@/lib/event-utils'
 import { EventStatusBadge } from '@/components/ui/EventStatusBadge'
 
-export default async function ManagerEventDetails({ params }: { params: { id: string } }) {
+export default async function ManagerEventDetails({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
+  const { id } = await params
 
   const { data: rawEvent } = await supabase
     .from('events')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (!rawEvent) return <div className="p-8 text-center font-mono text-[#555555] border-2 border-dashed rounded-2xl">Event not found in the system.</div>

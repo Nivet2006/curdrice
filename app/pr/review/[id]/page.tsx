@@ -5,13 +5,14 @@ import { PRReviewForm } from '@/components/pr/PRReviewForm'
 import { ArrowLeft, Clock } from 'lucide-react'
 import Link from 'next/link'
 
-export default async function PRReviewPage({ params }: { params: { id: string } }) {
+export default async function PRReviewPage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
+  const { id } = await params
   
   const { data: event } = await supabase
     .from('events')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (!event) notFound()

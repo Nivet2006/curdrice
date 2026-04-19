@@ -6,9 +6,9 @@ import { EventStatusTracker } from '@/components/common/EventStatusTracker'
 import { redirect } from 'next/navigation'
 import { submitEventForReview } from '@/lib/actions/cc-events'
 
-export default async function CCEventDetailPage({ params }: { params: { id: string } }) {
+export default async function CCEventDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
-  const { id } = params
+  const { id } = await params
   const { data: { user } } = await supabase.auth.getUser()
 
   const { data: event } = await supabase

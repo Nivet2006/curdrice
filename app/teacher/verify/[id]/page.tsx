@@ -6,13 +6,14 @@ import { ArrowLeft, User, ShieldAlert, CheckCircle2, Clock, MapPin } from 'lucid
 import Link from 'next/link'
 import { EventStatusTracker } from '@/components/common/EventStatusTracker'
 
-export default async function TeacherVerifyPage({ params }: { params: { id: string } }) {
+export default async function TeacherVerifyPage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
+  const { id } = await params
   
   const { data: event } = await supabase
     .from('events')
     .select('*, profiles!created_by(full_name, usn, department)')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (!event) notFound()

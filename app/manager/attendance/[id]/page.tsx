@@ -6,9 +6,9 @@ import { withDynamicSingleEventStatus } from '@/lib/event-utils'
 
 export const dynamic = 'force-dynamic'
 
-export default async function ManagerEventAttendancePage({ params }: { params: { id: string } }) {
+export default async function ManagerEventAttendancePage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
-  const { id } = params
+  const { id } = await params
   const { data: { user } } = await supabase.auth.getUser()
 
   const { createClient: createSupabaseClient } = await import('@supabase/supabase-js')

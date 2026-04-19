@@ -6,10 +6,10 @@ import { CreateUserModal } from '@/components/admin/CreateUserModal'
 export default async function AdminUsersPage({
   searchParams
 }: {
-  searchParams?: { query?: string }
+  searchParams: Promise<{ query?: string }>
 }) {
   const supabase = await createClient()
-  const query = searchParams?.query || ''
+  const { query = '' } = await searchParams
 
   let dbQuery = supabase
     .from('profiles')

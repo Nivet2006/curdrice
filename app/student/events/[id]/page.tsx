@@ -15,12 +15,12 @@ export default async function EventDetailPage({
   params,
   searchParams
 }: { 
-  params: { id: string },
-  searchParams: { invitedBy?: string }
+  params: Promise<{ id: string }>,
+  searchParams: Promise<{ invitedBy?: string }>
 }) {
   const supabase = await createClient()
-  const { id } = params
-  const invitedBy = searchParams.invitedBy
+  const { id } = await params
+  const { invitedBy } = await searchParams
   const { data: { user } } = await supabase.auth.getUser()
 
   const { data } = await supabase.from('events').select('*').eq('id', id).single()

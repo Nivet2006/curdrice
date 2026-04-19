@@ -5,13 +5,14 @@ import { HODActionWrapper } from './HODActionWrapper'
 import { ArrowLeft, Building, ShieldCheck } from 'lucide-react'
 import Link from 'next/link'
 
-export default async function HODApprovalPage({ params }: { params: { id: string } }) {
+export default async function HODApprovalPage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
+  const { id } = await params
   
   const { data: event } = await supabase
     .from('events')
     .select('*, profiles!created_by(full_name, usn, department)')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (!event) notFound()

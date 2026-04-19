@@ -5,13 +5,14 @@ import { ReportReviewView } from './ReportReviewView'
 import { ArrowLeft, ClipboardCheck } from 'lucide-react'
 import Link from 'next/link'
 
-export default async function TeacherReportReviewPage({ params }: { params: { id: string } }) {
+export default async function TeacherReportReviewPage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
+  const { id } = await params
   
   const { data: report } = await supabase
     .from('reports')
     .select('*, events(title, club_name), report_markups(*, profiles:author_id(full_name))')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (!report) notFound()
