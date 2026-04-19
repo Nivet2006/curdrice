@@ -37,6 +37,14 @@ export default async function HODDashboard() {
 
   // Filter reports to HOD department
   const deptReports = completedReports?.filter(r => (r.events as any).targeted_department === dept) || []
+  
+  // Recent Audit Logs for this HOD
+  const { data: recentLogs } = await supabase
+    .from('audit_logs')
+    .select('*')
+    .eq('user_id', user?.id)
+    .order('created_at', { ascending: false })
+    .limit(5)
 
   return (
     <div className="space-y-12">
@@ -51,7 +59,7 @@ export default async function HODDashboard() {
               <ShieldCheck size={16} className="text-zinc-400" />
               <span className="font-mono text-xs uppercase tracking-widest text-zinc-500">Authorized Access Only</span>
             </div>
-            <h1 className="text-4xl font-extrabold tracking-tighter text-[#0a0a0a]">Head of Department</h1>
+            <h1 className="text-5xl font-black tracking-tighter text-[#0a0a0a] uppercase leading-none">Head of Department</h1>
             <p className="text-sm font-mono mt-1 text-black font-bold px-3 py-1 bg-zinc-100 inline-block rounded-lg uppercase tracking-wider">{dept} Administration Hub</p>
           </div>
         </div>
@@ -66,7 +74,7 @@ export default async function HODDashboard() {
         <div className="xl:col-span-3 space-y-16">
           <section className="space-y-8">
             <div className="flex items-center gap-4">
-              <h2 className="text-2xl font-black italic tracking-tight uppercase">Event Proposals</h2>
+              <h2 className="text-2xl font-black tracking-tight uppercase">Event Proposals</h2>
               <div className="h-[2px] bg-zinc-100 flex-1"></div>
               <span className="font-mono text-xs bg-black text-white px-3 py-1 rounded-full">{pendingApprovals?.length || 0}</span>
             </div>
@@ -107,7 +115,7 @@ export default async function HODDashboard() {
           {/* Live & Approved Events Section */}
           <section className="space-y-8">
             <div className="flex items-center gap-4">
-              <h2 className="text-2xl font-black italic tracking-tight uppercase">Live &amp; Approved Activities</h2>
+              <h2 className="text-2xl font-black tracking-tight uppercase">Live &amp; Approved Activities</h2>
               <div className="h-[2px] bg-zinc-100 flex-1"></div>
               <span className="font-mono text-xs bg-black text-white px-3 py-1 rounded-full">{approvedEvents?.length || 0}</span>
             </div>
@@ -138,7 +146,7 @@ export default async function HODDashboard() {
 
           <section className="space-y-8">
             <div className="flex items-center gap-4">
-              <h2 className="text-2xl font-black italic tracking-tight uppercase">Verified Post-Event Bundles</h2>
+              <h2 className="text-2xl font-black tracking-tight uppercase">Verified Post-Event Bundles</h2>
               <div className="h-[2px] bg-zinc-100 flex-1"></div>
               <span className="font-mono text-xs bg-zinc-400 text-white px-3 py-1 rounded-full">{deptReports.length}</span>
             </div>
@@ -178,7 +186,19 @@ export default async function HODDashboard() {
                  <History size={18} className="text-zinc-400" />
                  <h2 className="text-xs font-mono font-bold uppercase tracking-widest">Recent Activity</h2>
               </div>
-              <p className="text-[10px] text-zinc-400 font-mono italic">Audit logs are currently active and being recorded per session.</p>
+              <div className="space-y-4">
+                 {recentLogs && recentLogs.length > 0 ? (
+                   recentLogs.map((log) => (
+                     <div key={log.id} className="border-l-2 border-zinc-100 pl-4 py-1">
+                        <p className="text-[10px] font-mono font-black text-black uppercase tracking-tight">{log.action_type}</p>
+                        <p className="text-[10px] text-zinc-500 font-mono truncate">{log.resource_path}</p>
+                        <p className="text-[9px] text-zinc-300 font-mono italic">{new Date(log.created_at).toLocaleTimeString()}</p>
+                     </div>
+                   ))
+                 ) : (
+                   <p className="text-[10px] text-zinc-400 font-mono italic">No recent activity detected in this session.</p>
+                 )}
+              </div>
            </div>
         </div>
       </div>
