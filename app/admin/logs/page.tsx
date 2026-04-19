@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Monitor, Smartphone, Globe, Clock, User, Fingerprint } from 'lucide-react'
 import Link from 'next/link'
+import { AuditManagement } from '@/components/admin/AuditManagement'
 
 function parseUA(ua: string) {
   if (ua.includes('Mobile') || ua.includes('Android') || ua.includes('iPhone')) return { type: 'Mobile', icon: <Smartphone size={14} /> }
@@ -49,6 +50,8 @@ export default async function AdminLogsPage() {
           <h1 className="text-6xl font-black tracking-tightest leading-[0.8] uppercase">Intelligence Portal</h1>
           <p className="font-mono text-xs text-zinc-500 uppercase tracking-tight">Real-time session tracking and behavioral forensics across the platform.</p>
        </header>
+
+       <AuditManagement logs={logs || []} />
 
        <div className="grid grid-cols-1 gap-8">
           {sessionList.map(session => {
