@@ -199,7 +199,7 @@ export function LogsPageClient() {
           { label: 'Unique Identifiers', value: stats.uniqueIPs },
           { label: 'System Mutations', value: stats.mutations },
         ].map(s => (
-          <div key={s.label} className="bg-black text-white rounded-2xl p-6 shadow-xl border border-zinc-800">
+          <div key={s.label} className="bg-black text-white rounded-2xl p-6 border border-zinc-800">
             <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-zinc-400 mb-1">{s.label}</p>
             <p className="text-4xl font-black">{s.value}</p>
           </div>
@@ -262,7 +262,7 @@ export function LogsPageClient() {
           return (
             <div key={group.key}
               className={`group/box bg-white border-2 border-black rounded-[2.5rem] overflow-hidden transition-all duration-300 ${
-                isExpanded ? 'shadow-[12px_12px_0px_rgba(0,0,0,1)] -translate-x-1 -translate-y-1' : 'shadow-[6px_6px_0px_rgba(0,0,0,1)] hover:shadow-[10px_10px_0px_rgba(0,0,0,1)] hover:-translate-x-1 hover:-translate-y-1'
+                isExpanded ? 'bg-zinc-50' : 'hover:bg-zinc-50/30'
               }`}>
 
               {/* Group Header */}
@@ -372,7 +372,7 @@ export function LogsPageClient() {
       {/* ── Drain Modal ── */}
       {showDrainModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-6 animate-in fade-in zoom-in duration-300">
-          <div className="bg-white border-4 border-black rounded-[3rem] p-12 max-w-lg w-full shadow-[20px_20px_0px_rgba(0,0,0,1)]">
+          <div className="bg-white border-4 border-black rounded-[3rem] p-12 max-w-lg w-full">
             <div className="flex items-center gap-4 mb-8">
               <div className="w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center">
                   <AlertTriangle size={24} />
@@ -452,7 +452,7 @@ function FilterBar({ searchParams }: { searchParams: URLSearchParams }) {
     }
 
     return (
-        <div className="flex flex-wrap items-end gap-6 border-2 border-black rounded-[2.5rem] p-8 bg-zinc-50 shadow-[8px_8px_0px_rgba(0,0,0,1)]">
+        <div className="flex flex-wrap items-end gap-6 border-2 border-black rounded-[2.5rem] p-8 bg-zinc-50">
             <div className="flex-1 min-w-[200px]">
                 <label className="text-[9px] font-mono font-black uppercase tracking-widest text-zinc-400 mb-2 block">IP Address</label>
                 <div className="flex items-center border-2 border-black rounded-xl px-4 py-3 bg-white gap-3 focus-within:ring-2 ring-zinc-200 transition-all">
