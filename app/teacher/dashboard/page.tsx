@@ -45,7 +45,7 @@ export default async function TeacherDashboard() {
             </div>
             <span className="font-mono text-xs uppercase tracking-[0.3em] text-zinc-500 font-bold text-emerald-600">Faculty Overview</span>
           </div>
-          <h1 className="text-5xl font-black tracking-tighter text-[#0a0a0a] leading-none uppercase">{personalizedGreeting}</h1>
+          <h1 className="text-5xl font-black tracking-tighter text-[#0a0a0a] dark:text-white leading-none uppercase">{personalizedGreeting}</h1>
           <p className="max-w-md text-zinc-500 font-medium italic text-lg leading-relaxed border-l-4 border-emerald-500 pl-4">
             "Ensuring club activities align with institutional standards and student safety."
           </p>
@@ -59,17 +59,17 @@ export default async function TeacherDashboard() {
             <div className="p-2 bg-amber-500/10 rounded-lg">
               <ShieldAlert size={20} className="text-amber-600" />
             </div>
-            <h2 className="text-lg font-black uppercase tracking-tighter text-zinc-800">Pending Actions ({pendingEvents?.length || 0})</h2>
+            <h2 className="text-lg font-black uppercase tracking-tighter text-zinc-800 dark:text-zinc-200">Pending Actions ({pendingEvents?.length || 0})</h2>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {pendingEvents && pendingEvents.length > 0 ? (
               pendingEvents.map(event => (
-                <div key={event.id} className="group bg-white border border-zinc-200 rounded-[2rem] p-8 hover:shadow-2xl hover:border-[#0a0a0a] transition-all cursor-pointer relative overflow-hidden">
+                <div key={event.id} className="group bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-[2rem] p-8 hover:shadow-2xl hover:border-[#0a0a0a] dark:hover:border-white transition-all cursor-pointer relative overflow-hidden">
                   <div className="absolute top-0 left-0 w-1 h-full bg-amber-500"></div>
                   <div className="flex justify-between items-start mb-6">
                     <div className="space-y-1">
-                      <h3 className="text-2xl font-black text-[#0a0a0a] leading-tight group-hover:text-emerald-600 transition-colors uppercase tracking-tighter">{event.title}</h3>
+                      <h3 className="text-2xl font-black text-[#0a0a0a] dark:text-white leading-tight group-hover:text-emerald-600 transition-colors uppercase tracking-tighter">{event.title}</h3>
                       <p className="font-mono text-[10px] text-zinc-400 uppercase tracking-widest">{event.club_name}</p>
                     </div>
                     <Link 
@@ -92,10 +92,10 @@ export default async function TeacherDashboard() {
                 </div>
               ))
             ) : (
-              <div className="col-span-full py-24 text-center bg-white border-2 border-dashed border-zinc-200 rounded-[3rem]">
+              <div className="col-span-full py-24 text-center bg-zinc-50/50 dark:bg-zinc-900/30 border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-[3rem]">
                 <CheckCircle size={40} className="mx-auto text-emerald-500 mb-6" />
-                <p className="text-zinc-600 font-black text-xl uppercase tracking-widest">Queue Clear</p>
-                <p className="text-zinc-400 text-sm mt-2">No pending proposals awaiting your verification.</p>
+                <p className="text-zinc-600 dark:text-zinc-400 font-black text-xl uppercase tracking-widest">Queue Clear</p>
+                <p className="text-zinc-400 dark:text-zinc-500 text-sm mt-2">No pending proposals awaiting your verification.</p>
               </div>
             )}
           </div>
@@ -107,16 +107,16 @@ export default async function TeacherDashboard() {
               <div className="p-2 bg-emerald-500/10 rounded-lg">
                 <CheckCircle size={20} className="text-emerald-600" />
               </div>
-              <h2 className="text-lg font-black uppercase tracking-tighter text-zinc-800">Verified &amp; Live Proposals</h2>
+              <h2 className="text-lg font-black uppercase tracking-tighter text-zinc-800 dark:text-zinc-200">Verified &amp; Live Proposals</h2>
            </div>
 
-           <div className="bg-white border border-zinc-200 rounded-[2.5rem] overflow-hidden shadow-sm">
+           <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-[2.5rem] overflow-hidden shadow-sm">
               {approvedEvents && approvedEvents.length > 0 ? (
-                <div className="divide-y divide-zinc-100">
+                <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
                   {approvedEvents.map(event => (
-                    <div key={event.id} className="bg-white p-8 hover:bg-zinc-50 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-6 group">
+                    <div key={event.id} className="bg-white dark:bg-zinc-900 p-8 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-6 group">
                        <div className="space-y-1">
-                          <h4 className="text-xl font-black text-[#0a0a0a] uppercase tracking-tighter group-hover:text-emerald-600 transition-colors">{event.title}</h4>
+                          <h4 className="text-xl font-black text-[#0a0a0a] dark:text-white uppercase tracking-tighter group-hover:text-emerald-600 transition-colors">{event.title}</h4>
                           <div className="flex items-center gap-3 font-mono text-[10px] uppercase text-zinc-500 tracking-widest">
                              <span className="text-emerald-600 font-bold">{event.club_name}</span>
                              <span>•</span>
@@ -131,16 +131,16 @@ export default async function TeacherDashboard() {
                           }`}>
                              {event.approval_status === 'approved' ? 'PUBLISHED' : 'HOD PENDING'}
                           </div>
-                          <Link href={`/teacher/verify/${event.id}`} className="p-3 rounded-xl border border-zinc-200 hover:border-[#0a0a0a] transition-colors">
-                             <ArrowRight size={16} />
+                          <Link href={`/teacher/verify/${event.id}`} className="p-3 rounded-xl border border-zinc-200 dark:border-zinc-700 hover:border-[#0a0a0a] dark:hover:border-white transition-colors">
+                             <ArrowRight size={16} className="dark:text-zinc-400" />
                           </Link>
                        </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="p-20 text-center bg-white">
-                   <p className="text-zinc-400 font-mono text-xs uppercase tracking-widest italic">No historical data found</p>
+                <div className="p-20 text-center bg-zinc-50/50 dark:bg-zinc-900/30">
+                   <p className="text-zinc-400 dark:text-zinc-500 font-mono text-xs uppercase tracking-widest italic">No historical data found</p>
                 </div>
               )}
            </div>
