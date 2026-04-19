@@ -78,9 +78,9 @@ export default async function HODApprovalPage({ params }: { params: Promise<{ id
         <div className="lg:col-span-2 lg:sticky lg:top-24 h-fit">
           {event.approval_status === 'approved' ? (
             <div className="space-y-6">
-              <div className="bg-black text-white p-8 rounded-[3rem] shadow-2xl border-2 border-emerald-500/50">
+              <div className="bg-black text-white p-8 rounded-[3rem] border border-zinc-800 shadow-2xl">
                 <div className="flex items-center gap-3 mb-4">
-                  <CheckCircle2 size={24} className="text-emerald-500" />
+                  <CheckCircle2 size={24} className="text-zinc-400" />
                   <h3 className="text-xl font-black uppercase tracking-tighter">Event Authorized</h3>
                 </div>
                 <p className="text-xs font-mono text-zinc-400 italic">This proposal has received final executive authorization. The activity is now listed in the student terminal.</p>

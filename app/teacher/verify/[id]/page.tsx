@@ -40,18 +40,18 @@ export default async function TeacherVerifyPage({ params }: { params: Promise<{ 
                      <h1 className="text-5xl font-black tracking-tighter text-[#0a0a0a] dark:text-white leading-tight">{event.title}</h1>
                      <div className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-4 py-2 rounded-2xl w-fit self-start sm:self-center">
                         <span className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest">Event Code</span>
-                        <span className="text-lg font-black font-mono text-emerald-600 dark:text-emerald-400 tracking-tighter italic">{event.event_code}</span>
+                        <span className="text-lg font-black font-mono text-[#0a0a0a] dark:text-white tracking-tighter italic">{event.event_code}</span>
                      </div>
                   </div>
                   <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm font-mono text-zinc-500 uppercase tracking-wider">
                      <div className="flex items-center gap-2 text-black dark:text-white font-bold">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        <span className="w-2 h-2 rounded-full bg-black dark:bg-white"></span>
                         <span>{event.club_name}</span>
                      </div>
                      <span className="opacity-30">/</span>
                      <span>Prop: {(event.profiles as any)?.full_name}</span>
                      <span className="opacity-30">/</span>
-                     <span className="text-emerald-600 dark:text-emerald-400 font-bold">{event.targeted_department || 'All Departments'}</span>
+                     <span className="text-black dark:text-white font-bold">{event.targeted_department || 'All Departments'}</span>
                   </div>
                </header>
 
@@ -98,9 +98,9 @@ export default async function TeacherVerifyPage({ params }: { params: Promise<{ 
                <div className="lg:sticky lg:top-12 h-fit">
                   {event.approval_status === 'approved' ? (
                      <div className="space-y-6">
-                        <div className="bg-emerald-500 text-white p-6 rounded-[2rem] shadow-xl shadow-emerald-500/20">
-                           <div className="flex items-center gap-3 mb-2">
-                              <CheckCircle2 size={20} />
+                         <div className="bg-black dark:bg-zinc-900 text-white p-6 rounded-[2rem] border border-zinc-100 dark:border-zinc-800 shadow-xl">
+                            <div className="flex items-center gap-3 mb-2">
+                               <CheckCircle2 size={20} className="text-zinc-400" />
                               <h3 className="font-black uppercase text-sm tracking-widest">Event Approved</h3>
                            </div>
                            <p className="text-xs font-mono opacity-80 italic">This event is currently published and open for student registrations. Approval phase is closed.</p>

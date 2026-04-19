@@ -43,10 +43,10 @@ export default async function TeacherDashboard() {
             <div className="w-10 h-10 rounded-2xl bg-[#0a0a0a] flex items-center justify-center shadow-lg">
               <User size={20} className="text-white" />
             </div>
-            <span className="font-mono text-xs uppercase tracking-[0.3em] text-zinc-500 font-bold text-emerald-600">Faculty Overview</span>
+            <span className="font-mono text-xs uppercase tracking-[0.3em] text-zinc-500 font-bold">Faculty Overview</span>
           </div>
           <h1 className="text-5xl font-black tracking-tighter text-[#0a0a0a] dark:text-white leading-none uppercase">{personalizedGreeting}</h1>
-          <p className="max-w-md text-zinc-500 font-medium italic text-lg leading-relaxed border-l-4 border-emerald-500 pl-4">
+          <p className="max-w-md text-zinc-500 font-medium italic text-lg leading-relaxed border-l-4 border-black dark:border-white pl-4">
             "Ensuring club activities align with institutional standards and student safety."
           </p>
         </div>
@@ -69,7 +69,7 @@ export default async function TeacherDashboard() {
                   <div className="absolute top-0 left-0 w-1 h-full bg-amber-500"></div>
                   <div className="flex justify-between items-start mb-6">
                     <div className="space-y-1">
-                      <h3 className="text-2xl font-black text-[#0a0a0a] dark:text-white leading-tight group-hover:text-emerald-600 transition-colors uppercase tracking-tighter">{event.title}</h3>
+                      <h3 className="text-2xl font-black text-[#0a0a0a] dark:text-white leading-tight group-hover:underline transition-all uppercase tracking-tighter">{event.title}</h3>
                       <p className="font-mono text-[10px] text-zinc-400 uppercase tracking-widest">{event.club_name}</p>
                     </div>
                     <Link 
@@ -93,7 +93,7 @@ export default async function TeacherDashboard() {
               ))
             ) : (
               <div className="col-span-full py-24 text-center bg-zinc-50/50 dark:bg-zinc-900/30 border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-[3rem]">
-                <CheckCircle size={40} className="mx-auto text-emerald-500 mb-6" />
+                <CheckCircle size={40} className="mx-auto text-zinc-300 dark:text-zinc-700 mb-6" />
                 <p className="text-zinc-600 dark:text-zinc-400 font-black text-xl uppercase tracking-widest">Queue Clear</p>
                 <p className="text-zinc-400 dark:text-zinc-500 text-sm mt-2">No pending proposals awaiting your verification.</p>
               </div>
@@ -104,8 +104,8 @@ export default async function TeacherDashboard() {
         {/* Verified & Approved Events */}
         <div className="space-y-8 pb-10">
            <div className="flex items-center gap-3">
-              <div className="p-2 bg-emerald-500/10 rounded-lg">
-                <CheckCircle size={20} className="text-emerald-600" />
+              <div className="p-2 bg-zinc-100 dark:bg-zinc-800 rounded-lg">
+                <CheckCircle size={20} className="text-black dark:text-white" />
               </div>
               <h2 className="text-lg font-black uppercase tracking-tighter text-zinc-800 dark:text-zinc-200">Verified &amp; Live Proposals</h2>
            </div>
@@ -116,9 +116,9 @@ export default async function TeacherDashboard() {
                   {approvedEvents.map(event => (
                     <div key={event.id} className="bg-white dark:bg-zinc-900 p-8 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-6 group">
                        <div className="space-y-1">
-                          <h4 className="text-xl font-black text-[#0a0a0a] dark:text-white uppercase tracking-tighter group-hover:text-emerald-600 transition-colors">{event.title}</h4>
+                          <h4 className="text-xl font-black text-[#0a0a0a] dark:text-white uppercase tracking-tighter group-hover:underline transition-all">{event.title}</h4>
                           <div className="flex items-center gap-3 font-mono text-[10px] uppercase text-zinc-500 tracking-widest">
-                             <span className="text-emerald-600 font-bold">{event.club_name}</span>
+                             <span className="text-zinc-400 font-bold">{event.club_name}</span>
                              <span>•</span>
                              <span>Event: {new Date(event.event_date).toLocaleDateString()}</span>
                           </div>
