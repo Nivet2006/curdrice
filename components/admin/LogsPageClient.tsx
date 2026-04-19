@@ -382,10 +382,10 @@ export function LogsPageClient() {
         <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-6 animate-in fade-in zoom-in duration-300">
           <div className="bg-white dark:bg-zinc-900 border-4 border-black dark:border-white/20 rounded-[3rem] p-12 max-w-lg w-full">
             <div className="flex items-center gap-4 mb-8">
-              <div className="w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center">
+              <div className="w-12 h-12 bg-rose-100 dark:bg-rose-900/30 text-rose-600 rounded-full flex items-center justify-center">
                   <AlertTriangle size={24} />
               </div>
-              <h2 className="text-3xl font-black uppercase tracking-tight">Vault Purge</h2>
+              <h2 className="text-3xl font-black uppercase tracking-tight text-[#0a0a0a] dark:text-white">Vault Purge</h2>
             </div>
 
             <p className="text-zinc-500 font-medium text-sm mb-10 leading-relaxed">
@@ -394,9 +394,9 @@ export function LogsPageClient() {
 
             <div className="space-y-4 mb-10">
               {(['all', 'ip', 'daterange'] as const).map(mode => (
-                <label key={mode} className={`flex items-center gap-4 p-5 rounded-[1.5rem] border-2 cursor-pointer transition-all active:scale-95 ${drainMode === mode ? 'border-black bg-zinc-50 shadow-md' : 'border-zinc-100 hover:border-zinc-200'}`}>
-                  <input type="radio" name="drain" value={mode} checked={drainMode === mode} onChange={() => setDrainMode(mode)} className="w-4 h-4 accent-black" />
-                  <span className="font-black uppercase text-sm tracking-tight">
+                <label key={mode} className={`flex items-center gap-4 p-5 rounded-[1.5rem] border-2 cursor-pointer transition-all active:scale-95 ${drainMode === mode ? 'border-black dark:border-white bg-zinc-50 dark:bg-zinc-800 shadow-md' : 'border-zinc-100 dark:border-white/5 hover:border-zinc-200 dark:hover:border-white/10'}`}>
+                  <input type="radio" name="drain" value={mode} checked={drainMode === mode} onChange={() => setDrainMode(mode)} className="w-4 h-4 accent-black dark:accent-white" />
+                  <span className="font-black uppercase text-sm tracking-tight dark:text-white">
                     {mode === 'all' ? 'Universal Purge (Full Drain)' : mode === 'ip' ? 'Targeted IP scrubbing' : 'Temporal range scrub'}
                   </span>
                 </label>
@@ -406,21 +406,21 @@ export function LogsPageClient() {
             {drainMode === 'ip' && (
               <div className="mb-8">
                 <label className="text-[10px] font-mono font-black uppercase tracking-widest text-zinc-400 mb-2 block">Identity Vector (IP Address)</label>
-                <input className="w-full border-2 border-black rounded-xl px-4 py-3 font-mono text-sm outline-none focus:ring-2 ring-zinc-200 transition-all"
+                <input className="w-full border-2 border-black dark:border-white/20 rounded-xl px-4 py-3 font-mono text-sm outline-none focus:ring-2 ring-zinc-200 bg-white dark:bg-zinc-800 dark:text-white transition-all"
                   placeholder="0.0.0.0" value={drainIP} onChange={e => setDrainIP(e.target.value)} />
               </div>
             )}
 
-            <div className="bg-rose-50 border-2 border-rose-100 p-4 rounded-xl mb-8 flex items-start gap-3">
+            <div className="bg-rose-50 dark:bg-rose-950/20 border-2 border-rose-100 dark:border-rose-900/30 p-4 rounded-xl mb-8 flex items-start gap-3">
                 <AlertTriangle className="text-rose-600 shrink-0 mt-0.5" size={16} />
-                <p className="text-[10px] font-mono text-rose-600 uppercase font-black leading-normal">
+                <p className="text-[10px] font-mono text-rose-600 dark:text-rose-400 uppercase font-black leading-normal">
                     Proceed with caution. All selected behavioral artifacts will be permanently scrubbed from the managed log store. IRREVOCABLE.
                 </p>
             </div>
 
             <div className="flex gap-4">
               <button onClick={() => setShowDrainModal(false)}
-                className="flex-1 border-2 border-black rounded-2xl py-4 font-black uppercase text-sm hover:bg-zinc-50 transition-all active:scale-95">
+                className="flex-1 border-2 border-black dark:border-white rounded-2xl py-4 font-black uppercase text-sm hover:bg-zinc-50 dark:hover:bg-white/10 dark:text-white transition-all active:scale-95">
                 Abort
               </button>
               <button onClick={handleDrain} disabled={draining}
