@@ -5,7 +5,7 @@ import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { redirect } from 'next/navigation'
 
 export async function createEvent(formData: FormData) {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Unauthorized' }
 
@@ -65,7 +65,7 @@ export async function createEvent(formData: FormData) {
 }
 
 export async function updateEvent(eventId: string, formData: FormData) {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Unauthorized' }
 
@@ -132,7 +132,7 @@ export async function updateEvent(eventId: string, formData: FormData) {
 }
 
 export async function deleteEvent(eventId: string) {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Unauthorized' }
 
@@ -156,7 +156,7 @@ export async function deleteEvent(eventId: string) {
 
 export async function registerForEvent(eventId: string) {
   const { revalidatePath } = await import('next/cache')
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Unauthorized' }
 
@@ -247,7 +247,7 @@ export async function updateStudentProfile(data: {
 }) {
   try {
     const { revalidatePath } = await import('next/cache')
-    const supabase = createClient()
+    const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return { error: 'Unauthorized' }
 

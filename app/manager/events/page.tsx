@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 export default async function ManagerEventsPage() {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   const { data: allEvents } = await supabase

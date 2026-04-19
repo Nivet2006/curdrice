@@ -8,7 +8,7 @@ import { Plus } from 'lucide-react'
 import { DeleteEventButton } from '@/components/manager/DeleteEventButton'
 
 export default async function AdminEventsPage() {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const { data: allEvents } = await supabase
     .from('events')

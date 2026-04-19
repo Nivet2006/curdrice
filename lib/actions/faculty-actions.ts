@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 
 export async function processTeacherVerification(eventId: string, decision: 'approve' | 'reject', feedback: string) {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Unauthorized' }
 
@@ -31,7 +31,7 @@ export async function processTeacherVerification(eventId: string, decision: 'app
 }
 
 export async function processHODApproval(eventId: string, decision: 'approve' | 'reject', feedback: string) {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Unauthorized' }
 
@@ -57,7 +57,7 @@ export async function processHODApproval(eventId: string, decision: 'approve' | 
 }
 
 export async function addReportMarkup(reportId: string, sectionKey: string, comment: string) {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Unauthorized' }
 

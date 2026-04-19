@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { Plus, Clock, CheckCircle2, AlertCircle, FileText } from 'lucide-react'
 
 export default async function CCDashboard() {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   
   const { data: events } = await supabase

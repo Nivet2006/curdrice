@@ -76,7 +76,7 @@ function getEveNLP() {
 }
 
 export async function fetchEveBotGreeting(userId: string): Promise<string> {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: profile } = await supabase.from('profiles').select('full_name, username').eq('id', userId).single()
   const name = profile ? profile.full_name : 'there'
   
@@ -92,7 +92,7 @@ export async function fetchEveBotGreeting(userId: string): Promise<string> {
 }
 
 export async function setStudentUsername(userId: string, requestedUsername: string): Promise<{success: boolean, error?: string}> {
-  const supabase = createClient()
+  const supabase = await createClient()
   const cleanUsername = requestedUsername.toLowerCase().trim()
   
   if (!/^[a-zA-Z0-9_]{3,20}$/.test(cleanUsername)) {
@@ -116,7 +116,7 @@ export type ChatHistory = {
 }[]
 
 export async function processEveBotMessage(message: string, userId: string, history: ChatHistory = []): Promise<string> {
-  const supabase = createClient()
+  const supabase = await createClient()
   const lowerMsg = message.toLowerCase()
 
   // Execute NLP Inference

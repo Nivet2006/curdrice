@@ -5,7 +5,7 @@ import type { Event } from '@/lib/types'
 export const dynamic = 'force-dynamic'
 
 export default async function StudentEventsPage() {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   const { data: allEvents } = await supabase

@@ -11,7 +11,7 @@ import { withDynamicSingleEventStatus } from '@/lib/event-utils'
 import { EventStatusBadge } from '@/components/ui/EventStatusBadge'
 
 export default async function ManagerEventDetails({ params }: { params: { id: string } }) {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const { data: rawEvent } = await supabase
     .from('events')

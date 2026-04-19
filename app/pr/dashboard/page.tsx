@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { Search, Eye, Megaphone, FileCheck, ClipboardCheck } from 'lucide-react'
 
 export default async function PRDashboard() {
-  const supabase = createClient()
+  const supabase = await createClient()
   
   // Pending PR review (POST-EVENT REPORTS)
   const { data: pendingReports } = await supabase

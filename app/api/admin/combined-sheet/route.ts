@@ -10,7 +10,7 @@ import { supabaseAdmin } from '@/lib/supabase/admin'
 
 export async function GET() {
     // ── Auth guard ──────────────────────────────────────────────────────────────
-    const supabase = createClient()
+    const supabase = await createClient()
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 

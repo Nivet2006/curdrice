@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { EventStatusTracker } from '@/components/common/EventStatusTracker'
 
 export default async function TeacherVerifyPage({ params }: { params: { id: string } }) {
-  const supabase = createClient()
+  const supabase = await createClient()
   
   const { data: event } = await supabase
     .from('events')

@@ -4,7 +4,7 @@ import { StudentProfileClient } from '@/components/student/StudentProfileClient'
 export const dynamic = 'force-dynamic'
 
 export default async function StudentProfilePage() {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   const { data: profile } = await supabase

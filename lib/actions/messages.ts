@@ -9,7 +9,7 @@ import { revalidatePath } from 'next/cache'
 ───────────────────────────────────────── */
 
 export async function getNotifications(userId: string) {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data, error } = await supabase
     .from('notifications')
     .select('*')
@@ -21,7 +21,7 @@ export async function getNotifications(userId: string) {
 }
 
 export async function getUnreadNotificationsCount(userId: string): Promise<number> {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { count, error } = await supabase
     .from('notifications')
     .select('*', { count: 'exact', head: true })
@@ -33,7 +33,7 @@ export async function getUnreadNotificationsCount(userId: string): Promise<numbe
 }
 
 export async function archiveNotification(notificationId: string, userId: string) {
-  const supabase = createClient()
+  const supabase = await createClient()
   await supabase
     .from('notifications')
     .update({ is_archived: true })
@@ -42,7 +42,7 @@ export async function archiveNotification(notificationId: string, userId: string
 }
 
 export async function deleteNotification(notificationId: string, userId: string) {
-  const supabase = createClient()
+  const supabase = await createClient()
   await supabase
     .from('notifications')
     .delete()
@@ -55,7 +55,7 @@ export const archiveMessage = archiveNotification
 export const deleteMessage = deleteNotification
 
 export async function markNotificationRead(notificationId: string, userId: string) {
-  const supabase = createClient()
+  const supabase = await createClient()
   await supabase
     .from('notifications')
     .update({ is_read: true })
@@ -69,7 +69,7 @@ export async function createEventNotification(
   eventId: string,
   qrCode: string
 ) {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: event } = await supabase
     .from('events')
     .select('title, event_date, location')
@@ -94,7 +94,7 @@ export async function createEventNotification(
 ───────────────────────────────────────── */
 
 export async function getConversations(userId: string) {
-  const supabase = createClient()
+  const supabase = await createClient()
   
   // Get all conversations user is a member of (accepted)
   const { data, error } = await supabase
@@ -121,7 +121,7 @@ export async function getConversations(userId: string) {
 }
 
 export async function getMessages(conversationId: string) {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data } = await supabase
     .from('messages')
     .select(`
@@ -136,7 +136,7 @@ export async function getMessages(conversationId: string) {
 }
 
 export async function getInbox(userId: string) {
-  const supabase = createClient()
+  const supabase = await createClient()
   // Get all conversations the user is an active member of
   const { data: memberships } = await supabase
     .from('conversation_members')
@@ -173,7 +173,7 @@ export async function sendMessage(
   senderId: string,
   body: string
 ) {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   // Verify sender is an active member
   const { data: membership } = await supabase
@@ -201,7 +201,7 @@ export async function sendMessage(
 ───────────────────────────────────────── */
 
 export async function sendDMInvite(fromId: string, toId: string) {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   // Create conversation
   const { data: conv, error: convErr } = await supabaseAdmin
@@ -244,7 +244,7 @@ export async function respondToInvite(
   conversationId: string,
   status: 'accepted' | 'declined'
 ) {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not authenticated' }
 
@@ -278,7 +278,7 @@ export async function respondToInvite(
 ───────────────────────────────────────── */
 
 export async function searchUsers(query: string, excludeUserId: string) {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data, error } = await supabase
     .from('profiles')
     .select('id, full_name, usn, department')
@@ -300,7 +300,7 @@ export async function sendBroadcast(
   subject: string,
   body: string
 ): Promise<{ success?: boolean; error?: string }> {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   // Verify admin role
   const { data: profile } = await supabase

@@ -6,7 +6,7 @@ import { AttendanceManager } from '@/components/admin/AttendanceManager'
 export const dynamic = 'force-dynamic'
 
 export default async function AdminEventAttendancePage({ params }: { params: { id: string } }) {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { id } = params
 
   const { createClient: createSupabaseClient } = await import('@supabase/supabase-js')

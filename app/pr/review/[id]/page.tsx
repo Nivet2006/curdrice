@@ -6,7 +6,7 @@ import { ArrowLeft, Clock } from 'lucide-react'
 import Link from 'next/link'
 
 export default async function PRReviewPage({ params }: { params: { id: string } }) {
-  const supabase = createClient()
+  const supabase = await createClient()
   
   const { data: event } = await supabase
     .from('events')

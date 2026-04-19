@@ -5,7 +5,7 @@ import { FileDown, CheckCircle2, Building, History, ExternalLink, ShieldCheck, C
 import { ExportButton } from '@/components/hod/ExportButton'
 
 export default async function HODDashboard() {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   
   // Get HOD department

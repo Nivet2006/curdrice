@@ -8,7 +8,7 @@ import { EventStatusBadge } from '@/components/ui/EventStatusBadge'
 import type { Event as EventType } from '@/lib/types'
 
 export default async function AdminAttendanceDirectory() {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const { data: events } = await supabase
     .from('events')

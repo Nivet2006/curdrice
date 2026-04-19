@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache'
 import type { Role } from '@/lib/types'
 
 async function assertAdmin() {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Unauthorized')
   
@@ -205,7 +205,7 @@ export async function manualCheckIn(usn: string, eventId: string) {
 
 export async function verifyAdminPassword(password: string) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user?.email) return { error: 'Not authenticated' }
 

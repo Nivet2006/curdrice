@@ -35,7 +35,7 @@ export async function login(identifier: string, pass: string) {
     email = authData.user.email
   }
 
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password: pass,
@@ -86,7 +86,7 @@ export async function registerProfile(formData: FormData) {
     return { error: result.error.issues[0]?.message || 'Validation failed' }
   }
 
-  const supabase = createClient()
+  const supabase = await createClient()
   
   const { data: authData, error: signupError } = await supabase.auth.signUp({
     email: result.data.email,

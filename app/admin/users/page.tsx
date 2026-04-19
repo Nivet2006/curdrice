@@ -8,7 +8,7 @@ export default async function AdminUsersPage({
 }: {
   searchParams?: { query?: string }
 }) {
-  const supabase = createClient()
+  const supabase = await createClient()
   const query = searchParams?.query || ''
 
   let dbQuery = supabase

@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { ShieldAlert, CheckCircle, ArrowRight, User } from 'lucide-react'
 
 export default async function TeacherDashboard() {
-  const supabase = createClient()
+  const supabase = await createClient()
   
   // Events pending teacher verification
   const { data: pendingEvents } = await supabase
