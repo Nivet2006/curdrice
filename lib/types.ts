@@ -1,7 +1,7 @@
 export type Role = 'student' | 'manager' | 'admin' | 'cc' | 'pr' | 'teacher' | 'hod' | 'deleted'
 
 export type EventStatus = 'upcoming' | 'ongoing' | 'completed' | 'cancelled'
-export type ApprovalStatus = 'draft' | 'pending_pr' | 'pending_teacher' | 'pending_hod' | 'approved' | 'rejected'
+export type ApprovalStatus = 'draft' | 'pending_teacher' | 'pending_hod' | 'approved' | 'rejected'
 
 export interface Profile {
   id: string
@@ -39,7 +39,7 @@ export interface Report {
   id: string
   event_id: string
   content: any
-  status: 'draft' | 'pending_teacher' | 'completed'
+  status: 'draft' | 'pending_pr' | 'completed'
   created_at: string
   updated_at: string
 }

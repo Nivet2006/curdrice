@@ -8,7 +8,11 @@ import Link from 'next/link'
 import { ArrowLeft, Save, Send } from 'lucide-react'
 import { FeedbackFormBuilder, Question } from '@/components/cc/FeedbackFormBuilder'
 
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
+
 export default function CCCreateEventPage() {
+  const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [eventDate, setEventDate] = useState('')
@@ -21,8 +25,7 @@ export default function CCCreateEventPage() {
   const toggleSem = (s: number) => setSemesters(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s])
   const toggleYear = (y: number) => setYears(prev => prev.includes(y) ? prev.filter(x => x !== y) : [...prev, y])
 
-  async function handleAction(e: React.FormEvent<HTMLFormElement>, isFinalSubmit: boolean) {
-    e.preventDefault()
+  async function handleAction(form: HTMLFormElement, isFinalSubmit: boolean) {
     setError(null)
 
     if (!eventDate || !deadline) {
@@ -32,7 +35,7 @@ export default function CCCreateEventPage() {
 
     setLoading(true)
 
-    const formData = new FormData(e.currentTarget)
+    const formData = new FormData(form)
     formData.append('semesters', JSON.stringify(semesters))
     formData.append('years', JSON.stringify(years))
     formData.append('feedbackConfig', JSON.stringify(questions))
@@ -42,6 +45,9 @@ export default function CCCreateEventPage() {
     if (result?.error) {
       setError(result.error)
       setLoading(false)
+    } else {
+      toast.success(isFinalSubmit ? "Event submitted for review!" : "Draft saved successfully!")
+      router.push('/cc/dashboard')
     }
   }
 
@@ -61,7 +67,7 @@ export default function CCCreateEventPage() {
       <form onSubmit={(e) => e.currentTarget.setAttribute('data-submit-type', 'draft')} className="space-y-12">
         <header>
           <h1 className="text-4xl font-bold tracking-tight text-[#0a0a0a]">Proposal Draft</h1>
-          <p className="text-[#555] mt-2">Initialize your club event. This draft will be reviewed by PR and Faculty before being published.</p>
+          <p className="text-[#555] mt-2">Initialize your club event. This draft will be reviewed by Faculty (Teacher & HOD) before being published to students.</p>
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
@@ -80,7 +86,7 @@ export default function CCCreateEventPage() {
                 </div>
                 <div className="w-full flex flex-col gap-1">
                   <label className="text-xs font-mono text-[#555555] uppercase tracking-widest">Detailed Pitch / Description *</label>
-                  <textarea name="description" rows={6} required className="rounded-xl border border-[#d0d0d0] bg-white px-4 py-3 text-sm focus:ring-2 focus:ring-black outline-none resize-none" placeholder="What is this event about? (Min 50 words recommended for PR review)" />
+                  <textarea name="description" rows={6} required className="rounded-xl border border-[#d0d0d0] bg-white px-4 py-3 text-sm focus:ring-2 focus:ring-black outline-none resize-none" placeholder="What is this event about?" />
                 </div>
              </section>
 
@@ -111,7 +117,7 @@ export default function CCCreateEventPage() {
                 <h2 className="font-mono text-[10px] uppercase tracking-widest text-zinc-400 border-b border-zinc-100 pb-2">Visual Branding</h2>
                 <div className="bg-zinc-50 border-2 border-dashed border-zinc-200 rounded-3xl p-8 text-center space-y-4">
                    <Input label="Banner / Poster URL *" name="bannerUrl" type="url" required placeholder="https://..." />
-                   <p className="text-[10px] font-mono text-zinc-400 italic">PR will review this for quality and alignment with brand guidelines.</p>
+                   <p className="text-[10px] font-mono text-zinc-400 italic">This will appear on the student dashboard once approved by HOD.</p>
                 </div>
              </section>
           </div>
@@ -147,19 +153,19 @@ export default function CCCreateEventPage() {
                   type="button" 
                   onClick={(e) => {
                     const form = e.currentTarget.closest('form');
-                    if(form) handleAction(form as any, true);
+                    if(form) handleAction(form, true);
                   }}
                   disabled={loading}
                   className="w-full bg-black text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-zinc-800 transition-all shadow-lg active:scale-95 disabled:opacity-50"
                 >
                   <Send size={18} />
-                  {loading ? 'Processing...' : 'Submit for PR Review'}
+                   {loading ? 'Processing...' : 'Submit for Review'}
                 </button>
                 <button 
                   type="button" 
                    onClick={(e) => {
                     const form = e.currentTarget.closest('form');
-                    if(form) handleAction(form as any, false);
+                    if(form) handleAction(form, false);
                   }}
                   disabled={loading}
                   className="w-full bg-white border border-zinc-200 text-black py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-zinc-50 transition-all active:scale-95 disabled:opacity-50"

@@ -44,7 +44,7 @@ export async function createDraftEvent(formData: FormData) {
   // Status defaults to draft but we immediately push it to 'pending_pr' upon "Submit for Review"
   // OR we can allow the user to save as literal draft first.
   const isSubmission = formData.get('submitForReview') === 'true'
-  const approval_status = isSubmission ? 'pending_pr' : 'draft'
+  const approval_status = isSubmission ? 'pending_teacher' : 'draft'
 
   const { data: event, error } = await supabase.from('events').insert({
     title, club_name, description, location,
@@ -70,7 +70,7 @@ export async function createDraftEvent(formData: FormData) {
   if (constraintError) return { error: constraintError.message }
 
   revalidatePath('/cc/dashboard')
-  redirect('/cc/dashboard')
+  return { success: true }
 }
 
 export async function submitReport(eventId: string, content: any, isFinal: boolean) {
@@ -78,7 +78,7 @@ export async function submitReport(eventId: string, content: any, isFinal: boole
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Unauthorized' }
 
-  const status = isFinal ? 'pending_teacher' : 'draft'
+  const status = isFinal ? 'pending_pr' : 'draft'
 
   const { error } = await supabase
     .from('reports')

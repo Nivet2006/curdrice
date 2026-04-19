@@ -59,7 +59,7 @@ export function Navbar({ role, name }: { role?: Role; name?: string }) {
       { href: `/${role}/scanner`, label: 'Scanner', icon: ScanLine },
     ] : []),
     ...(role === 'pr' ? [
-      { href: '/pr/review', label: 'Queue', icon: ClipboardList },
+      { href: '/pr/dashboard', label: 'Audit Queue', icon: ClipboardList },
     ] : []),
     ...(role === 'teacher' ? [
       { href: '/teacher/verify', label: 'Verify', icon: ClipboardList },

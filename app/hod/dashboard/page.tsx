@@ -1,7 +1,7 @@
 import React from 'react'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { FileDown, CheckCircle2, Building, History, ExternalLink, ShieldCheck } from 'lucide-react'
+import { FileDown, CheckCircle2, Building, History, ExternalLink, ShieldCheck, ClipboardCheck } from 'lucide-react'
 import { ExportButton } from '@/components/hod/ExportButton'
 
 export default async function HODDashboard() {
@@ -20,14 +20,15 @@ export default async function HODDashboard() {
     .eq('targeted_department', dept)
     .order('created_at', { ascending: true })
 
-  // Recently approved by HOD
-  const { data: history } = await supabase
-    .from('events')
-    .select('*')
-    .eq('approval_status', 'approved')
-    .eq('targeted_department', dept)
-    .order('created_at', { ascending: false })
-    .limit(5)
+  // Verified Reports (Ready for view/export) after PR approval
+  const { data: completedReports } = await supabase
+    .from('reports')
+    .select('*, events(title, club_name, targeted_department)')
+    .eq('status', 'completed')
+    .order('updated_at', { ascending: false })
+
+  // Filter reports to HOD department
+  const deptReports = completedReports?.filter(r => (r.events as any).targeted_department === dept) || []
 
   return (
     <div className="space-y-12">
@@ -54,81 +55,90 @@ export default async function HODDashboard() {
 
       <div className="grid grid-cols-1 xl:grid-cols-4 gap-12">
         {/* Main Approval Queue */}
-        <div className="xl:col-span-3 space-y-8">
-          <div className="flex items-center gap-4">
-            <h2 className="text-2xl font-black italic tracking-tight">Pending Final Approvals</h2>
-            <div className="h-[2px] bg-zinc-100 flex-1"></div>
-            <span className="font-mono text-xs bg-black text-white px-3 py-1 rounded-full">{pendingApprovals?.length || 0}</span>
-          </div>
+        <div className="xl:col-span-3 space-y-16">
+          <section className="space-y-8">
+            <div className="flex items-center gap-4">
+              <h2 className="text-2xl font-black italic tracking-tight uppercase">Event Proposals</h2>
+              <div className="h-[2px] bg-zinc-100 flex-1"></div>
+              <span className="font-mono text-xs bg-black text-white px-3 py-1 rounded-full">{pendingApprovals?.length || 0}</span>
+            </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {pendingApprovals && pendingApprovals.length > 0 ? (
-              pendingApprovals.map(event => (
-                <div key={event.id} className="bg-white border-2 border-black p-8 rounded-[2rem] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all cursor-pointer group">
-                   <div className="flex justify-between items-start mb-6">
-                      <span className="text-[10px] font-mono border border-black px-2 py-0.5 rounded-full uppercase font-bold tracking-tighter">Event Protocol 40.2</span>
-                      <CheckCircle2 size={24} className="text-zinc-200 group-hover:text-black transition-colors" />
-                   </div>
-                   <h3 className="text-2xl font-black mb-3 leading-none group-hover:underline underline-offset-4">{event.title}</h3>
-                   <div className="flex items-center gap-4 mb-8">
-                      <div className="flex flex-col">
-                        <span className="text-[10px] uppercase text-zinc-400 font-mono tracking-widest">Club</span>
-                        <span className="text-xs font-bold">{event.club_name}</span>
-                      </div>
-                      <div className="w-[1px] h-6 bg-zinc-200"></div>
-                      <div className="flex flex-col">
-                        <span className="text-[10px] uppercase text-zinc-400 font-mono tracking-widest">Date</span>
-                        <span className="text-xs font-bold">{new Date(event.event_date).toLocaleDateString()}</span>
-                      </div>
-                   </div>
-                   <Link 
-                    href={`/hod/approvals/${event.id}`}
-                    className="flex items-center justify-center gap-2 bg-black text-white w-full py-4 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-zinc-800 transition-colors"
-                   >
-                     Review & Authorize
-                     <ExternalLink size={16} />
-                   </Link>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {pendingApprovals && pendingApprovals.length > 0 ? (
+                pendingApprovals.map(event => (
+                  <div key={event.id} className="bg-white border-2 border-black p-8 rounded-[2rem] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all cursor-pointer group">
+                     <div className="flex justify-between items-start mb-6">
+                        <span className="text-[10px] font-mono border border-black px-2 py-0.5 rounded-full uppercase font-bold tracking-tighter">Event Protocol 40.2</span>
+                        <CheckCircle2 size={24} className="text-zinc-200 group-hover:text-black transition-colors" />
+                     </div>
+                     <h3 className="text-2xl font-black mb-3 leading-none group-hover:underline underline-offset-4 uppercase">{event.title}</h3>
+                     <div className="flex items-center gap-4 mb-8">
+                        <div className="flex flex-col">
+                          <span className="text-[10px] uppercase text-zinc-400 font-mono tracking-widest">Club</span>
+                          <span className="text-xs font-bold uppercase">{event.club_name}</span>
+                        </div>
+                     </div>
+                     <Link 
+                      href={`/hod/approvals/${event.id}`}
+                      className="flex items-center justify-center gap-2 bg-black text-white w-full py-4 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-zinc-800 transition-colors"
+                     >
+                       Authorize Proposal
+                       <ExternalLink size={16} />
+                     </Link>
+                  </div>
+                ))
+              ) : (
+                <div className="col-span-full py-20 bg-zinc-50 rounded-[2rem] border-2 border-dashed border-zinc-200 flex flex-col items-center justify-center text-zinc-400">
+                  <CheckCircle2 size={40} className="mb-4 opacity-20" />
+                  <p className="font-mono text-xs uppercase tracking-widest">Queue Clear</p>
                 </div>
-              ))
-            ) : (
-              <div className="col-span-full py-20 bg-zinc-50 rounded-[2rem] border-2 border-dashed border-zinc-200 flex flex-col items-center justify-center text-zinc-400">
-                <CheckCircle2 size={40} className="mb-4 opacity-20" />
-                <p className="font-mono text-xs uppercase tracking-widest">Clear Queue: No Authorization Required</p>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          </section>
+
+          <section className="space-y-8">
+            <div className="flex items-center gap-4">
+              <h2 className="text-2xl font-black italic tracking-tight uppercase">Verified Post-Event Bundles</h2>
+              <div className="h-[2px] bg-zinc-100 flex-1"></div>
+              <span className="font-mono text-xs bg-zinc-400 text-white px-3 py-1 rounded-full">{deptReports.length}</span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 opacity-80 hover:opacity-100 transition-opacity">
+               {deptReports.map(report => (
+                 <div key={report.id} className="bg-[#f8f8f8] border border-zinc-200 p-6 rounded-2xl flex justify-between items-center group">
+                    <div>
+                      <p className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest mb-1">BUNDLED DATA ARCHIVE</p>
+                      <h4 className="font-bold text-black uppercase">{(report.events as any)?.title}</h4>
+                      <p className="text-[10px] text-zinc-500 italic mt-1 font-mono uppercase">Verified by PR on {new Date(report.updated_at).toLocaleDateString()}</p>
+                    </div>
+                    <Link href={`/cc/events/${report.event_id}`} className="w-10 h-10 bg-white border border-zinc-200 rounded-full flex items-center justify-center hover:bg-black hover:text-white transition-all shadow-sm">
+                       <FileDown size={18} />
+                    </Link>
+                 </div>
+               ))}
+               {deptReports.length === 0 && (
+                 <div className="col-span-full py-12 text-center text-zinc-300 font-mono text-xs uppercase tracking-widest border border-dashed border-zinc-200 rounded-2xl italic">No archives available</div>
+               )}
+            </div>
+          </section>
         </div>
 
         {/* Sidebar: Historical & Actions */}
         <div className="space-y-12">
-           <div className="space-y-6">
+           <div className="bg-zinc-950 text-white p-8 rounded-3xl space-y-6 shadow-2xl">
               <div className="flex items-center gap-3">
-                 <History size={18} className="text-zinc-400" />
-                 <h2 className="text-xs font-mono font-bold uppercase tracking-widest">Decision History</h2>
+                 <ClipboardCheck size={20} className="text-zinc-500" />
+                 <h2 className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-zinc-400">Compliance Status</h2>
               </div>
-              <div className="space-y-4">
-                 {history && history.length > 0 ? (
-                   history.map(event => (
-                     <div key={event.id} className="border-l-2 border-zinc-100 pl-4 py-1">
-                        <p className="text-sm font-bold text-black truncate">{event.title}</p>
-                        <p className="text-[10px] font-mono text-zinc-400 mt-1 uppercase tracking-tighter">Approved {new Date(event.updated_at || event.created_at).toLocaleDateString()}</p>
-                     </div>
-                   ))
-                 ) : (
-                   <div className="text-zinc-300 text-[10px] font-mono uppercase italic p-4">Empty</div>
-                 )}
-              </div>
+              <p className="text-xs text-zinc-400 leading-relaxed italic">All visibility of events to the student body is gated by your final authorization above. Post-event records are first audited by PR before appearing in your archives.</p>
            </div>
 
-           <div className="space-y-6">
+           <div className="space-y-6 pt-6">
               <div className="flex items-center gap-3">
-                 <FileDown size={18} className="text-zinc-400" />
-                 <h2 className="text-xs font-mono font-bold uppercase tracking-widest">Report Archives</h2>
+                 <History size={18} className="text-zinc-400" />
+                 <h2 className="text-xs font-mono font-bold uppercase tracking-widest">Recent Activity</h2>
               </div>
-              <p className="text-[11px] text-zinc-500 leading-relaxed font-medium">Access and export verified departmental reports for institutional audit.</p>
-              <Link href="/hod/reports" className="block text-center border border-zinc-200 py-3 rounded-xl text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-black hover:text-white transition-all">
-                Open Archives
-              </Link>
+              <p className="text-[10px] text-zinc-400 font-mono italic">Audit logs are currently active and being recorded per session.</p>
            </div>
         </div>
       </div>

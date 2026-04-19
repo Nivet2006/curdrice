@@ -70,7 +70,11 @@ export default async function CCDashboard() {
                         event.approval_status === 'rejected' ? 'bg-rose-50 border-rose-200 text-rose-700' :
                         'bg-amber-50 border-amber-200 text-amber-700'
                       }`}>
-                        {event.approval_status.replace('_', ' ')}
+                        {event.approval_status === 'draft' ? 'Draft' : 
+                         ['pending_pr', 'pending_teacher', 'pending_hod'].includes(event.approval_status) ? 'Review Pending' :
+                         event.approval_status === 'approved' ? 'Approved' :
+                         event.approval_status === 'rejected' ? 'Rejected' :
+                         event.approval_status.replace('_', ' ')}
                       </span>
                     </div>
                   </div>

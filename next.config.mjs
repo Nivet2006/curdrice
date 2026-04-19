@@ -6,7 +6,7 @@ const nextConfig = {
     typescript: {
         ignoreBuildErrors: false,
     },
-    webpack: (config, { isServer }) => {
+    webpack: (config, { isServer, webpack }) => {
         if (!isServer) {
             config.resolve.fallback = {
                 ...config.resolve.fallback,
@@ -14,6 +14,11 @@ const nextConfig = {
                 "lapack": false,
             };
         }
+        config.plugins.push(
+            new webpack.IgnorePlugin({
+                resourceRegExp: /^(lapack|webworker-threads)$/,
+            })
+        );
         return config;
     },
 }

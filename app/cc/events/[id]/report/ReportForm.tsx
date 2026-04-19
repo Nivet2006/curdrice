@@ -33,7 +33,7 @@ export function ReportForm({ eventId, initialData }: { eventId: string; initialD
     if (res?.error) {
       alert(res.error)
     } else {
-      alert(isFinal ? "Report submitted for Faculty verification!" : "Draft saved.")
+      alert(isFinal ? "Bundle submitted for PR Publicity Audit!" : "Draft saved.")
     }
     setLoading(false)
   }
@@ -118,7 +118,7 @@ export function ReportForm({ eventId, initialData }: { eventId: string; initialD
            className="w-full md:w-auto px-10 py-3 rounded-full bg-black text-white font-mono text-xs uppercase tracking-widest hover:bg-zinc-800 transition-all shadow-xl flex items-center justify-center gap-2"
          >
            <Send size={14} />
-           Submit for Faculty Verification
+           Submit for PR Publicity Audit
          </button>
       </footer>
     </div>

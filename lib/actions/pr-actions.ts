@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 
-export async function processPRReview(eventId: string, decision: 'approve' | 'reject', feedback: string, flaggedFields: string[] = []) {
+export async function processReportReview(reportId: string, decision: 'approve' | 'reject', feedback: string) {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Unauthorized' }
@@ -14,22 +14,26 @@ export async function processPRReview(eventId: string, decision: 'approve' | 're
     return { error: 'Unauthorized: Requires PR permissions.' }
   }
 
-  const approval_status = decision === 'approve' ? 'pending_teacher' : 'rejected'
-  
-  const rejection_data = flaggedFields.map(field => ({
-    field,
-    reason: feedback // For now, one general reason or many, but let's keep it simple.
-  }))
+  const status = decision === 'approve' ? 'completed' : 'draft'
 
   const { error } = await supabase
-    .from('events')
+    .from('reports')
     .update({ 
-      approval_status,
-      rejection_data: decision === 'reject' ? rejection_data : []
+      status, 
+      // Add feedback to markups or a new field? Let's add it as a markup.
     })
-    .eq('id', eventId)
+    .eq('id', reportId)
 
   if (error) return { error: error.message }
+
+  if (decision === 'reject') {
+    await supabase.from('report_markups').insert({
+       report_id: reportId,
+       author_id: user.id,
+       section_key: 'general_review',
+       comment: feedback
+    })
+  }
 
   revalidatePath('/pr/dashboard')
   redirect('/pr/dashboard')
