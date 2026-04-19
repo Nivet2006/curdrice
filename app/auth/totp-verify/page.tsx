@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { TotpLoginStep } from '@/components/auth/TotpLoginStep'
@@ -8,7 +8,7 @@ import { ShieldLoader } from '@/components/shared/ShieldLoader'
 import { ThemeToggle } from '@/components/shared/ThemeToggle'
 import { BrandMark } from '@/components/shared/BrandMark'
 
-export default function TotpVerifyPage() {
+function TotpVerifyContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [userId, setUserId] = useState<string | null>(null)
@@ -56,3 +56,16 @@ export default function TotpVerifyPage() {
     </div>
   )
 }
+
+export default function TotpVerifyPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <ShieldLoader />
+      </div>
+    }>
+      <TotpVerifyContent />
+    </Suspense>
+  )
+}
+
