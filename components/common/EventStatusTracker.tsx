@@ -38,10 +38,10 @@ export function EventStatusTracker({ status }: EventStatusTrackerProps) {
   ]
 
   return (
-    <div className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-3xl p-8 space-y-8 shadow-sm transition-colors">
+    <div className="bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-3xl p-8 space-y-8 shadow-sm transition-colors">
       <h3 className="font-bold text-lg text-[#0a0a0a] dark:text-white flex items-center gap-2">
         <Clock size={18} className="text-zinc-400" />
-        Pipeline Status
+        Live Pipeline Status
       </h3>
       <div className="space-y-6">
         {steps.map((step, idx) => (
@@ -52,11 +52,11 @@ export function EventStatusTracker({ status }: EventStatusTrackerProps) {
             }`}
           >
             <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all duration-500 ${
-              step.isCompleted ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 
+              step.isCompleted ? 'bg-emerald-600 border-emerald-600 text-white shadow-lg shadow-emerald-600/20' : 
               step.isActive ? 'border-amber-500 animate-pulse bg-amber-500/10' : 'border-zinc-200 dark:border-zinc-800'
             }`}>
               {step.isCompleted ? (
-                <Check size={16} strokeWidth={4} className="text-white" />
+                <Check size={16} strokeWidth={4} color="white" className="text-white" />
               ) : step.isActive ? (
                 <Clock size={14} className="text-amber-600 dark:text-amber-500" />
               ) : (
