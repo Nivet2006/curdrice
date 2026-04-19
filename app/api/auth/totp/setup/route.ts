@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
-import { authenticator } from 'otplib'
+import { generateSecret, generateURI } from 'otplib'
 import qrcode from 'qrcode'
 
 export async function POST() {
@@ -25,8 +25,12 @@ export async function POST() {
     }
 
     // Generate secret
-    const secret = authenticator.generateSecret()
-    const otpauthUrl = authenticator.keyuri(user.email!, 'CurdRice', secret)
+    const secret = generateSecret()
+    const otpauthUrl = generateURI({
+        issuer: 'CurdRice',
+        label: user.email!,
+        secret,
+    })
     const qrCodeUrl = await qrcode.toDataURL(otpauthUrl)
 
     // Save secret to database (using admin client to write to sensitive column)

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
-import { authenticator } from 'otplib'
+import { verify } from 'otplib'
 
 export async function POST(req: Request) {
   try {
@@ -25,12 +25,12 @@ export async function POST(req: Request) {
     }
 
     // Verify code
-    const isValid = authenticator.verify({
+    const result = await verify({
       token: code,
       secret: profile.totp_secret
     })
 
-    if (isValid) {
+    if (result.valid) {
       // Finalize setup
       await supabaseAdmin
         .from('profiles')

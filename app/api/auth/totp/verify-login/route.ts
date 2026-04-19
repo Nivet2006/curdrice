@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
-import { authenticator } from 'otplib'
+import { verify } from 'otplib'
 import { cookies } from 'next/headers'
 
 export async function POST(req: Request) {
@@ -41,12 +41,12 @@ export async function POST(req: Request) {
       }
     }
 
-    const isValid = authenticator.verify({
+    const result = await verify({
       token: code,
       secret: profile.totp_secret
     })
 
-    if (isValid) {
+    if (result.valid) {
       // Reset rate limit on success
       await supabaseAdmin.from('profiles').update({
         totp_attempts: 0,
