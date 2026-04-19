@@ -71,7 +71,7 @@ export function TotpSetupWizard({ onCompleted }: { onCompleted: () => void }) {
                 <div className="w-12 h-12 bg-black text-white rounded-2xl flex items-center justify-center shadow-lg">
                     <ShieldCheck size={24} />
                 </div>
-                <h2 className="text-3xl font-black uppercase tracking-tight">強化セキュリティ</h2>
+                <h2 className="text-3xl font-black uppercase tracking-tight">Enhanced Security</h2>
             </div>
             <p className="text-zinc-600 font-medium mb-10 leading-relaxed text-sm">
               Level up your admin account security by enabling Two-Factor Authentication. 
