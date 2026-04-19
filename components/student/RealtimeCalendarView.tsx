@@ -14,7 +14,7 @@ interface Props {
 
 export function RealtimeCalendarView({ initialEvents, registrationMap, studentName, studentUsn }: Props) {
   const [events, setEvents] = useState<Event[]>(initialEvents)
-  const supabase = await createClient()
+  const supabase = createClient()
 
   useEffect(() => {
     const channel = supabase

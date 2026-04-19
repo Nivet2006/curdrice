@@ -18,7 +18,7 @@ import { EveBot } from '@/components/shared/EveBot'
 export function Navbar({ role, name }: { role?: Role; name?: string }) {
   const router = useRouter()
   const pathname = usePathname()
-  const supabase = await createClient()
+  const supabase = createClient()
   const [loading, setLoading] = React.useState(false)
   const [sidebarOpen, setSidebarOpen] = React.useState(false)
   const [messagesOpen, setMessagesOpen] = React.useState(false)

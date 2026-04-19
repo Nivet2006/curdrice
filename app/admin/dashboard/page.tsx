@@ -9,7 +9,7 @@ import { createClient } from '@/lib/supabase/client'
 import BroadcastModal from '@/components/messages/BroadcastModal'
 
 export default function AdminDashboard() {
-  const supabase = await createClient()
+  const supabase = createClient()
   const [user, setUser] = useState<any>(null)
   const [stats, setStats] = useState<any[]>([])
   const [loading, setLoading] = useState(true)

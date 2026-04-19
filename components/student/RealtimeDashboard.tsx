@@ -19,7 +19,7 @@ interface Props {
 
 export function RealtimeDashboard({ initialEvents, registrations, profile }: Props) {
   const [events, setEvents] = useState<Event[]>(initialEvents)
-  const supabase = await createClient()
+  const supabase = createClient()
 
   useEffect(() => {
     const channel = supabase

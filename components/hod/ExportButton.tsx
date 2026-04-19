@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 
 export function ExportButton({ dept }: { dept: string }) {
   const [loading, setLoading] = useState(false)
-  const supabase = await createClient()
+  const supabase = createClient()
 
   const handleExport = async () => {
     setLoading(true)
