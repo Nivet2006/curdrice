@@ -107,7 +107,7 @@ export default async function CCEventDetailPage({ params }: { params: Promise<{ 
              <span>{event.targeted_department || 'All Departments'}</span>
           </div>
           <div className="flex items-center gap-2 ml-auto">
-             <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest">PID:</span>
+             <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest">Auth Code:</span>
              <span className="bg-zinc-100 dark:bg-zinc-900 px-3 py-1 rounded-lg text-black dark:text-white font-black italic tracking-tighter">{event.event_code}</span>
           </div>
         </div>

@@ -39,7 +39,7 @@ export default async function TeacherVerifyPage({ params }: { params: Promise<{ 
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                      <h1 className="text-5xl font-black tracking-tighter text-[#0a0a0a] dark:text-white leading-tight">{event.title}</h1>
                      <div className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-4 py-2 rounded-2xl w-fit self-start sm:self-center">
-                        <span className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest">Event Code</span>
+                        <span className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest">Auth Code</span>
                         <span className="text-lg font-black font-mono text-[#0a0a0a] dark:text-white tracking-tighter italic">{event.event_code}</span>
                      </div>
                   </div>
