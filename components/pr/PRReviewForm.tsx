@@ -24,7 +24,7 @@ export function PRReviewForm({ eventId }: { eventId: string }) {
   async function handleSubmit() {
     if (!decision) return
     setLoading(true)
-    const res = await processReportReview(eventId, decision, feedback, flaggedFields)
+    const res = await processReportReview(eventId, decision, feedback)
     if (res?.error) {
       alert(res.error)
       setLoading(false)
