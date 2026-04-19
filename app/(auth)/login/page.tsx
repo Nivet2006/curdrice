@@ -11,12 +11,15 @@ import { Button } from '@/components/ui/Button'
 import Link from 'next/link'
 import { login } from '@/lib/actions/auth'
 import { Eye, EyeOff } from 'lucide-react'
+import { TotpLoginStep } from '@/components/auth/TotpLoginStep'
 
 export default function LoginPage() {
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [step, setStep] = useState<'credentials' | 'totp'>('credentials')
+  const [adminData, setAdminData] = useState<{ userId: string; role: string } | null>(null)
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -32,11 +35,41 @@ export default function LoginPage() {
     if (result?.error) {
       setError(result.error)
       setLoading(false)
-    } else if (result?.success && result?.role) {
-      // ✅ Wait for all 4 loader steps to complete before redirecting
-      await new Promise(r => setTimeout(r, 4 * 900))
-      router.push(`/${result.role}/dashboard`)
+    } else if (result?.success) {
+      if (result.role === 'admin' && result.totpEnabled) {
+        setAdminData({ userId: result.userId!, role: result.role })
+        setStep('totp')
+        setLoading(false)
+      } else {
+        // ✅ Wait for all 4 loader steps to complete before redirecting
+        await new Promise(r => setTimeout(r, 4 * 900))
+        router.push(`/${result.role}/dashboard`)
+      }
     }
+  }
+
+  const handleTotpSuccess = async () => {
+    setLoading(true)
+    // Small delay to feel realistic after code verification
+    await new Promise(r => setTimeout(r, 1000))
+    router.push(`/admin/dashboard`)
+  }
+
+  if (step === 'totp' && adminData) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-4 relative">
+        {loading && <ShieldLoader />}
+        <div className="absolute top-6 left-8 font-mono font-bold text-lg">{'>'} Club-Eve</div>
+        <div className="absolute top-6 right-8 flex items-center gap-3">
+          <ThemeToggle />
+          <BrandMark />
+        </div>
+        <TotpLoginStep 
+          userId={adminData.userId} 
+          onSuccess={handleTotpSuccess} 
+        />
+      </div>
+    )
   }
 
   return (

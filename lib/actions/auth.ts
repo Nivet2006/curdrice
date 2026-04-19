@@ -48,7 +48,7 @@ export async function login(identifier: string, pass: string) {
   // Determine role
   const { data: profile } = await supabase
     .from('profiles')
-    .select('role')
+    .select('role, totp_enabled')
     .eq('id', data.user.id)
     .single()
   
@@ -59,9 +59,13 @@ export async function login(identifier: string, pass: string) {
 
   const role = profile?.role || 'student'
   
-  // ✅ Return success with role instead of redirecting
-  // This allows the client to show the loader during redirect
-  return { success: true, role }
+  // ✅ Return success with role and TOTP info
+  return { 
+    success: true, 
+    role, 
+    userId: data.user.id,
+    totpEnabled: !!profile?.totp_enabled 
+  }
 }
 
 const registerSchema = z.object({

@@ -109,7 +109,7 @@ export async function proxy(request: NextRequest) {
 
     user = data?.user || null
     if (user) {
-        const { data: profile } = await supabase.from('profiles').select('role, full_name').eq('id', user.id).single()
+        const { data: profile } = await supabase.from('profiles').select('role, full_name, totp_enabled').eq('id', user.id).single()
         userProfile = profile
     }
   } catch (error: any) {
@@ -141,6 +141,17 @@ export async function proxy(request: NextRequest) {
           const url = request.nextUrl.clone()
           url.pathname = `/${role}/dashboard`
           return NextResponse.redirect(url)
+      }
+
+      // TOTP Check for Admins
+      if (path.startsWith('/admin') && role === 'admin' && userProfile?.totp_enabled) {
+          const totpVerified = request.cookies.get('curdrice_totp_verified')?.value === 'true'
+          if (!totpVerified && path !== '/auth/totp-verify') {
+              const url = request.nextUrl.clone()
+              url.pathname = '/auth/totp-verify'
+              url.searchParams.set('redirect', path)
+              return NextResponse.redirect(url)
+          }
       }
 
       // RBAC

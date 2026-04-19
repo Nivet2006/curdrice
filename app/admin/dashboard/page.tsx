@@ -170,6 +170,11 @@ export default function AdminDashboard() {
             title: 'Intelligence Portal →',
             desc: 'Monitor site-wide session footprints and forensic audit logs.',
           },
+          {
+            href: '/admin/security',
+            title: 'Security Portal →',
+            desc: 'Manage Two-Factor Authentication and account hardening.',
+          },
         ].map(action => (
           <Link key={action.href} href={action.href}>
             <Card className="p-5 hover:border-[#0a0a0a] transition-colors cursor-pointer group h-full">
