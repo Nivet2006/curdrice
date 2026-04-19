@@ -184,13 +184,13 @@ export function LogsPageClient() {
             <p className="font-mono text-xs text-zinc-400 uppercase tracking-tight">
             Behavioral forensics · Managed log store access
             </p>
-            <div className={`flex items-center gap-2 px-3 py-1 rounded-full border-2 border-black dark:border-white/20 text-[10px] font-black uppercase transition-all ${isRefreshing ? 'bg-emerald-100 dark:bg-emerald-950/30' : 'bg-zinc-50 dark:bg-zinc-900'}`}>
+            <div className={`flex items-center gap-2 px-3 py-1 rounded-full border-2 border-black dark:border-white/20 text-[10px] font-black uppercase transition-all ${isRefreshing ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'bg-zinc-50 dark:bg-zinc-900'}`}>
                 <div className={`w-2 h-2 rounded-full ${isRefreshing ? 'bg-emerald-500 animate-pulse' : 'bg-emerald-500'}`} />
-                {isRefreshing ? 'Synchronizing...' : `Last Sync: ${lastUpdated?.toLocaleTimeString()}`}
+                <span className="dark:text-emerald-400">{isRefreshing ? 'Synchronizing...' : `Last Sync: ${lastUpdated?.toLocaleTimeString()}`}</span>
                 <button 
                     onClick={() => fetchLogs(false)}
                     disabled={isRefreshing}
-                    className="ml-2 pl-2 border-l-2 border-black/10 dark:border-white/10 hover:text-emerald-600 transition-colors flex items-center gap-1 disabled:opacity-50"
+                    className="ml-2 pl-2 border-l-2 border-black/10 dark:border-white/10 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors flex items-center gap-1 disabled:opacity-50 dark:text-zinc-400"
                 >
                     <RefreshCw size={10} className={isRefreshing ? 'animate-spin' : ''} />
                     Sync Now
@@ -288,10 +288,10 @@ export function LogsPageClient() {
                         {group.user || 'Anonymous Trace'}
                       </h3>
                       {group.role && (
-                        <span className="bg-black dark:bg-white dark:text-black text-white text-[10px] font-mono px-3 py-1 rounded-lg uppercase font-black leading-none">{group.role}</span>
+                        <span className="bg-black dark:bg-zinc-800 text-white dark:text-zinc-200 text-[10px] font-mono px-3 py-1 rounded-lg uppercase font-black leading-none">{group.role}</span>
                       )}
-                      {groupMutations > 0 && (
-                        <span className="bg-emerald-100 text-emerald-700 border border-emerald-300 text-[10px] font-mono px-3 py-1 rounded-lg uppercase font-black leading-none flex items-center gap-1">
+                       {groupMutations > 0 && (
+                        <span className="bg-emerald-100 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800 text-[10px] font-mono px-3 py-1 rounded-lg uppercase font-black leading-none flex items-center gap-1">
                             <Zap className="w-3 h-3" /> {groupMutations} Mutations
                         </span>
                       )}
