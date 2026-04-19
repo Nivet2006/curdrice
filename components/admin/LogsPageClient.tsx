@@ -184,13 +184,13 @@ export function LogsPageClient() {
             <p className="font-mono text-xs text-zinc-400 uppercase tracking-tight">
             Behavioral forensics · Managed log store access
             </p>
-            <div className={`flex items-center gap-2 px-3 py-1 rounded-full border-2 border-black text-[10px] font-black uppercase transition-all ${isRefreshing ? 'bg-emerald-100' : 'bg-zinc-50'}`}>
+            <div className={`flex items-center gap-2 px-3 py-1 rounded-full border-2 border-black dark:border-white/20 text-[10px] font-black uppercase transition-all ${isRefreshing ? 'bg-emerald-100 dark:bg-emerald-950/30' : 'bg-zinc-50 dark:bg-zinc-900'}`}>
                 <div className={`w-2 h-2 rounded-full ${isRefreshing ? 'bg-emerald-500 animate-pulse' : 'bg-emerald-500'}`} />
                 {isRefreshing ? 'Synchronizing...' : `Last Sync: ${lastUpdated?.toLocaleTimeString()}`}
                 <button 
                     onClick={() => fetchLogs(false)}
                     disabled={isRefreshing}
-                    className="ml-2 pl-2 border-l-2 border-black/10 hover:text-emerald-600 transition-colors flex items-center gap-1 disabled:opacity-50"
+                    className="ml-2 pl-2 border-l-2 border-black/10 dark:border-white/10 hover:text-emerald-600 transition-colors flex items-center gap-1 disabled:opacity-50"
                 >
                     <RefreshCw size={10} className={isRefreshing ? 'animate-spin' : ''} />
                     Sync Now
@@ -223,7 +223,7 @@ export function LogsPageClient() {
           <span className="text-[10px] font-mono font-black uppercase tracking-widest text-zinc-400">Categorization:</span>
           {(['session', 'ip', 'user'] as const).map(g => (
             <button key={g} onClick={() => setGroupBy(g)}
-              className={`text-[10px] font-black uppercase px-5 py-2 rounded-xl border-2 transition-all active:scale-95 shadow-sm ${groupBy === g ? 'bg-black text-white border-black' : 'bg-white border-zinc-200 hover:border-black'}`}>
+              className={`text-[10px] font-black uppercase px-5 py-2 rounded-xl border-2 transition-all active:scale-95 shadow-sm ${groupBy === g ? 'bg-black dark:bg-white text-white dark:text-black border-black dark:border-white' : 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-white/10 hover:border-black dark:hover:border-white dark:text-white'}`}>
               {g}
             </button>
           ))}
@@ -236,11 +236,11 @@ export function LogsPageClient() {
                 <Download size={12} /> Data Extraction:
             </span>
             <button onClick={() => exportCSV(logs)}
-              className="text-[10px] font-black uppercase px-4 py-2 rounded-xl border-2 border-zinc-200 bg-white hover:border-black transition-all active:scale-95">
+              className="text-[10px] font-black uppercase px-4 py-2 rounded-xl border-2 border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-900 dark:text-white hover:border-black dark:hover:border-white transition-all active:scale-95">
               CSV
             </button>
             <button onClick={() => exportJSON(logs)}
-              className="text-[10px] font-black uppercase px-4 py-2 rounded-xl border-2 border-zinc-200 bg-white hover:border-black transition-all active:scale-95">
+              className="text-[10px] font-black uppercase px-4 py-2 rounded-xl border-2 border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-900 dark:text-white hover:border-black dark:hover:border-white transition-all active:scale-95">
               JSON
             </button>
           </div>
@@ -269,17 +269,17 @@ export function LogsPageClient() {
 
           return (
             <div key={group.key}
-              className={`group/box bg-white border-2 border-black rounded-[2.5rem] overflow-hidden transition-all duration-300 ${
-                isExpanded ? 'bg-zinc-50' : 'hover:bg-zinc-50/30'
+              className={`group/box bg-white dark:bg-zinc-900 border-2 border-black dark:border-white/20 rounded-[2.5rem] overflow-hidden transition-all duration-300 ${
+                isExpanded ? 'bg-zinc-50 dark:bg-zinc-800' : 'hover:bg-zinc-50/30 dark:hover:bg-white/5'
               }`}>
 
               {/* Group Header */}
               <button
-                className={`w-full p-8 border-b-2 border-black flex flex-wrap items-center justify-between gap-6 text-left transition-colors ${isExpanded ? 'bg-zinc-50' : 'bg-white group-hover/box:bg-zinc-50/50'}`}
+                className={`w-full p-8 border-b-2 border-black dark:border-white/20 flex flex-wrap items-center justify-between gap-6 text-left transition-colors ${isExpanded ? 'bg-zinc-50 dark:bg-zinc-800' : 'bg-white dark:bg-zinc-900 group-hover/box:bg-zinc-50/50 dark:group-hover/box:bg-white/5'}`}
                 onClick={() => setExpandedGroup(isExpanded ? null : group.key)}
               >
                 <div className="flex items-center gap-6">
-                  <div className="w-14 h-14 bg-black text-white rounded-full flex items-center justify-center text-xl shadow-lg">
+                  <div className="w-14 h-14 bg-black dark:bg-white dark:text-black text-white rounded-full flex items-center justify-center text-xl shadow-lg">
                     {uaInfo.icon}
                   </div>
                   <div>
@@ -288,7 +288,7 @@ export function LogsPageClient() {
                         {group.user || 'Anonymous Trace'}
                       </h3>
                       {group.role && (
-                        <span className="bg-black text-white text-[10px] font-mono px-3 py-1 rounded-lg uppercase font-black leading-none">{group.role}</span>
+                        <span className="bg-black dark:bg-white dark:text-black text-white text-[10px] font-mono px-3 py-1 rounded-lg uppercase font-black leading-none">{group.role}</span>
                       )}
                       {groupMutations > 0 && (
                         <span className="bg-emerald-100 text-emerald-700 border border-emerald-300 text-[10px] font-mono px-3 py-1 rounded-lg uppercase font-black leading-none flex items-center gap-1">
@@ -315,7 +315,7 @@ export function LogsPageClient() {
                     <p className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest mb-1 font-black">Artifact Count</p>
                     <p className="font-black text-3xl leading-none">{group.items.length}</p>
                   </div>
-                  <div className={`p-2 rounded-full border-2 border-black transition-transform duration-300 ${isExpanded ? 'bg-black text-white rotate-180' : 'bg-white'}`}>
+                  <div className={`p-2 rounded-full border-2 border-black dark:border-white transition-transform duration-300 ${isExpanded ? 'bg-black dark:bg-white text-white dark:text-black rotate-180' : 'bg-white dark:bg-zinc-900 dark:text-white'}`}>
                       <ChevronDown size={20} />
                   </div>
                 </div>
@@ -323,36 +323,36 @@ export function LogsPageClient() {
 
               {/* Expanded Timeline */}
               {isExpanded && (
-                <div className="p-10 bg-white">
+                <div className="p-10 bg-white dark:bg-zinc-950">
                   <div className="space-y-2">
-                    <h4 className="text-[10px] font-mono font-black text-zinc-300 uppercase tracking-[0.4em] mb-6 flex items-center gap-3">
-                        <div className="h-[2px] w-6 bg-zinc-200" /> Forensic Sequence timeline
+                    <h4 className="text-[10px] font-mono font-black text-zinc-300 dark:text-zinc-600 uppercase tracking-[0.4em] mb-6 flex items-center gap-3">
+                        <div className="h-[2px] w-6 bg-zinc-200 dark:bg-zinc-800" /> Forensic Sequence timeline
                     </h4>
                     {group.items.map((event, i) => (
                       <div key={event.id}
-                        className="flex items-start justify-between py-4 px-6 border-2 border-transparent hover:border-zinc-100 hover:bg-zinc-50/50 rounded-2xl transition-all group/row">
+                        className="flex items-start justify-between py-4 px-6 border-2 border-transparent hover:border-zinc-100 dark:hover:border-white/5 hover:bg-zinc-50/50 dark:hover:bg-white/5 rounded-2xl transition-all group/row">
                         <div className="flex items-start gap-6">
                           <div className="pt-1">
-                              <div className="w-2 h-2 rounded-full bg-zinc-200 mt-1" />
+                              <div className="w-2 h-2 rounded-full bg-zinc-200 dark:bg-zinc-800 mt-1" />
                           </div>
                           <span className="font-mono text-[10px] text-zinc-400 font-black mt-0.5 min-w-[100px]">
                             {new Date(event.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                           </span>
-                          <span className={`text-[10px] font-black uppercase px-3 py-1 rounded-lg border-2 whitespace-nowrap shadow-sm ${actionColors[event.action_type] || 'bg-zinc-100 border-zinc-200 text-zinc-500'}`}>
+                          <span className={`text-[10px] font-black uppercase px-3 py-1 rounded-lg border-2 whitespace-nowrap shadow-sm ${actionColors[event.action_type] || 'bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-500'}`}>
                             {event.action_type}
                           </span>
                           <div>
-                            <span className="font-mono text-sm font-black text-black group-hover/row:translate-x-1 transition-transform block">
+                            <span className="font-mono text-sm font-black text-black dark:text-white group-hover/row:translate-x-1 transition-transform block">
                                 {event.resource_path}
                             </span>
                             {event.metadata && Object.keys(event.metadata).length > 0 && (
-                                <div className="mt-2 text-[10px] font-mono text-zinc-400 bg-white border border-zinc-100 p-2 rounded-lg max-w-2xl overflow-hidden text-ellipsis italic">
+                                <div className="mt-2 text-[10px] font-mono text-zinc-400 bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-white/5 p-2 rounded-lg max-w-2xl overflow-hidden text-ellipsis italic">
                                     {JSON.stringify(event.metadata)}
                                 </div>
                             )}
                           </div>
                         </div>
-                        <div className="text-[10px] font-mono text-zinc-300 uppercase font-black">
+                        <div className="text-[10px] font-mono text-zinc-300 dark:text-zinc-700 uppercase font-black">
                             {new Date(event.created_at).toLocaleDateString()}
                         </div>
                       </div>
@@ -380,7 +380,7 @@ export function LogsPageClient() {
       {/* ── Drain Modal ── */}
       {showDrainModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-6 animate-in fade-in zoom-in duration-300">
-          <div className="bg-white border-4 border-black rounded-[3rem] p-12 max-w-lg w-full">
+          <div className="bg-white dark:bg-zinc-900 border-4 border-black dark:border-white/20 rounded-[3rem] p-12 max-w-lg w-full">
             <div className="flex items-center gap-4 mb-8">
               <div className="w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center">
                   <AlertTriangle size={24} />
@@ -460,38 +460,38 @@ function FilterBar({ searchParams }: { searchParams: URLSearchParams }) {
     }
 
     return (
-        <div className="flex flex-wrap items-end gap-6 border-2 border-black rounded-[2.5rem] p-8 bg-zinc-50">
+        <div className="flex flex-wrap items-end gap-6 border-2 border-black dark:border-white/20 rounded-[2.5rem] p-8 bg-zinc-50 dark:bg-zinc-900/50">
             <div className="flex-1 min-w-[200px]">
                 <label className="text-[9px] font-mono font-black uppercase tracking-widest text-zinc-400 mb-2 block">IP Address</label>
-                <div className="flex items-center border-2 border-black rounded-xl px-4 py-3 bg-white gap-3 focus-within:ring-2 ring-zinc-200 transition-all">
+                <div className="flex items-center border-2 border-black dark:border-white/10 rounded-xl px-4 py-3 bg-white dark:bg-zinc-800 gap-3 focus-within:ring-2 ring-zinc-200 transition-all">
                     <Search size={14} className="text-zinc-400" />
-                    <input className="flex-1 text-xs font-mono outline-none bg-transparent" placeholder="192.168.x.x" value={ip} onChange={e => setIp(e.target.value)} />
+                    <input className="flex-1 text-xs font-mono outline-none bg-transparent dark:text-white" placeholder="192.168.x.x" value={ip} onChange={e => setIp(e.target.value)} />
                 </div>
             </div>
             <div className="flex-1 min-w-[200px]">
                 <label className="text-[9px] font-mono font-black uppercase tracking-widest text-zinc-400 mb-2 block">User Identification</label>
-                <div className="flex items-center border-2 border-black rounded-xl px-4 py-3 bg-white gap-3 focus-within:ring-2 ring-zinc-200 transition-all">
+                <div className="flex items-center border-2 border-black dark:border-white/10 rounded-xl px-4 py-3 bg-white dark:bg-zinc-800 gap-3 focus-within:ring-2 ring-zinc-200 transition-all">
                     <Search size={14} className="text-zinc-400" />
-                    <input className="flex-1 text-xs font-mono outline-none bg-transparent" placeholder="Email or Name" value={user} onChange={e => setUser(e.target.value)} />
+                    <input className="flex-1 text-xs font-mono outline-none bg-transparent dark:text-white" placeholder="Email or Name" value={user} onChange={e => setUser(e.target.value)} />
                 </div>
             </div>
             <div>
                 <label className="text-[9px] font-mono font-black uppercase tracking-widest text-zinc-400 mb-2 block">Vector</label>
-                <select className="border-2 border-black rounded-xl px-4 py-3 text-xs font-mono font-black bg-white outline-none cursor-pointer" value={action} onChange={e => setAction(e.target.value)}>
+                <select className="border-2 border-black dark:border-white/10 rounded-xl px-4 py-3 text-xs font-mono font-black bg-white dark:bg-zinc-800 outline-none cursor-pointer dark:text-white" value={action} onChange={e => setAction(e.target.value)}>
                     {['ALL', 'NAVIGATION', 'MUTATION', 'AUTH', 'ERROR', 'DOWNLOAD'].map(a => <option key={a}>{a}</option>)}
                 </select>
             </div>
             <div>
                 <label className="text-[9px] font-mono font-black uppercase tracking-widest text-zinc-400 mb-2 block">Timeline</label>
                 <div className="flex items-center gap-2">
-                    <input type="datetime-local" className="border-2 border-black rounded-xl px-4 py-3 text-[10px] font-mono bg-white outline-none" value={from} onChange={e => setFrom(e.target.value)} />
+                    <input type="datetime-local" className="border-2 border-black dark:border-white/10 rounded-xl px-4 py-3 text-[10px] font-mono bg-white dark:bg-zinc-800 outline-none dark:text-white" value={from} onChange={e => setFrom(e.target.value)} />
                     <span className="text-zinc-400">→</span>
-                    <input type="datetime-local" className="border-2 border-black rounded-xl px-4 py-3 text-[10px] font-mono bg-white outline-none" value={to} onChange={e => setTo(e.target.value)} />
+                    <input type="datetime-local" className="border-2 border-black dark:border-white/10 rounded-xl px-4 py-3 text-[10px] font-mono bg-white dark:bg-zinc-800 outline-none dark:text-white" value={to} onChange={e => setTo(e.target.value)} />
                 </div>
             </div>
             <div className="flex gap-2">
-                <button onClick={apply} className="bg-black text-white rounded-xl px-6 py-3 text-xs font-black uppercase active:scale-95 transition-all">Filter</button>
-                <button onClick={reset} className="border-2 border-black rounded-xl px-4 py-3 text-xs font-black uppercase hover:bg-zinc-100 active:scale-95 transition-all"><X size={14}/></button>
+                <button onClick={apply} className="bg-black dark:bg-white dark:text-black text-white rounded-xl px-6 py-3 text-xs font-black uppercase active:scale-95 transition-all">Filter</button>
+                <button onClick={reset} className="border-2 border-black dark:border-white/20 rounded-xl px-4 py-3 text-xs font-black uppercase hover:bg-zinc-100 dark:hover:bg-white/10 dark:text-white active:scale-95 transition-all"><X size={14}/></button>
             </div>
         </div>
     )
