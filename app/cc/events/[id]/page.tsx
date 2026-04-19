@@ -126,7 +126,7 @@ export default async function CCEventDetailPage({ params }: { params: { id: stri
            <section className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-[2.5rem] p-10 space-y-6 shadow-sm transition-colors">
               <div className="flex justify-between items-center">
                  <h2 className="font-bold text-2xl tracking-tight text-[#0a0a0a] dark:text-white">Survey Design</h2>
-                 <Badge variant="secondary" className="font-mono text-[10px]">{event.feedback_config?.length || 0} QUESTIONS</Badge>
+                 <span className="font-mono text-[9px] uppercase tracking-widest font-bold px-3 py-1.5 rounded-full border bg-zinc-500/10 text-zinc-500 border-zinc-500/20">{event.feedback_config?.length || 0} QUESTIONS</span>
               </div>
               <div className="space-y-4">
                  {event.feedback_config?.map((q: any, i: number) => (
