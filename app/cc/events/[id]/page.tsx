@@ -1,28 +1,33 @@
 import { createClient } from '@/lib/supabase/server'
-import { ArrowLeft, Clock, CheckCircle2, XCircle, FileText, Send, Edit3, Heart } from 'lucide-react'
+import { ArrowLeft, Clock, XCircle, FileText, Send, Edit3, Heart } from 'lucide-react'
 import { EventRegistrationStats } from '@/components/admin/EventRegistrationStats'
 import Link from 'next/link'
-import { Button } from '@/components/ui/Button'
 import { EventStatusTracker } from '@/components/common/EventStatusTracker'
 import { redirect } from 'next/navigation'
 import { submitEventForReview } from '@/lib/actions/cc-events'
+import { AdminManualOverride } from '@/components/admin/AdminManualOverride'
 
 export default async function CCEventDetailPage({ params }: { params: Promise<{ id: string }> }) {
    const supabase = await createClient()
    const { id } = await params
    const { data: { user } } = await supabase.auth.getUser()
 
-   const { data: event } = await supabase
-      .from('events')
-      .select('*')
-      .eq('id', id)
-      .eq('created_by', user?.id || '')
-      .single()
+   // Get user role for permissions
+   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user?.id || '').single()
+   const isAdmin = profile?.role === 'admin'
+
+   // If admin, we don't filter by created_by
+   let query = supabase.from('events').select('*').eq('id', id)
+   if (!isAdmin) {
+      query = query.eq('created_by', user?.id || '')
+   }
+
+   const { data: event } = await query.single()
 
    if (!event) {
       return (
          <div className="flex flex-col items-center justify-center py-20 space-y-4">
-            <h2 className="text-2xl font-bold">Event not found</h2>
+            <h2 className="text-2xl font-bold">Event not found or access denied.</h2>
             <Link href="/cc/dashboard" className="text-sm font-mono text-zinc-500 hover:underline">← Back to Dashboard</Link>
          </div>
       )
@@ -32,21 +37,24 @@ export default async function CCEventDetailPage({ params }: { params: Promise<{ 
       .from('event_constraints')
       .select('*')
       .eq('event_id', id)
-      .single()
+      .maybeSingle()
+
+   const { data: depts } = await supabase.from('profiles').select('department')
+   const uniqueDepts = Array.from(new Set(depts?.map(d => d.department).filter(Boolean))) as string[]
 
    return (
       <div className="max-w-4xl mx-auto space-y-12 pb-20 transition-colors">
          <header className="flex items-center justify-between">
-            <Link href="/cc/dashboard" className="flex items-center gap-2 text-zinc-700 dark:text-zinc-400 hover:text-black dark:hover:text-white font-mono text-xs uppercase tracking-widest transition-colors">
+            <Link href={isAdmin ? "/admin/logs" : "/cc/dashboard"} className="flex items-center gap-2 text-zinc-700 dark:text-zinc-400 hover:text-black dark:hover:text-white font-mono text-xs uppercase tracking-widest transition-colors">
                <ArrowLeft size={14} />
-               Back to Pipeline
+               {isAdmin ? 'Back to Intel' : 'Back to Pipeline'}
             </Link>
             <div className="flex items-center gap-3">
                {(event.approval_status === 'draft' || (event.rejection_data && event.rejection_data.length > 0)) && (
                   <div className="flex gap-2 mr-4">
                      <Link
                         href={`/cc/events/${id}/edit`}
-                        className="flex items-center gap-2 px-4 py-2 border border-black rounded-full text-xs font-bold hover:bg-zinc-50 transition-all active:scale-95"
+                        className="flex items-center gap-2 px-4 py-2 border border-black dark:border-white rounded-full text-xs font-bold hover:bg-zinc-50 transition-all active:scale-95"
                      >
                         <Edit3 size={14} />
                         Edit Draft
@@ -59,7 +67,7 @@ export default async function CCEventDetailPage({ params }: { params: Promise<{ 
                         }}>
                            <button
                               type="submit"
-                              className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-full text-xs font-bold hover:bg-zinc-800 transition-all active:scale-95 shadow-md"
+                              className="flex items-center gap-2 px-4 py-2 bg-black text-white dark:bg-white dark:text-black rounded-full text-xs font-bold hover:bg-zinc-800 transition-all active:scale-95 shadow-md"
                            >
                               <Send size={14} />
                               Submit to Faculty
@@ -76,6 +84,11 @@ export default async function CCEventDetailPage({ params }: { params: Promise<{ 
                </span>
             </div>
          </header>
+
+         {/* ADMIN OVERRIDE SECTION */}
+         {isAdmin && (
+            <AdminManualOverride event={event} departments={uniqueDepts} />
+         )}
 
          {/* Visual Branding / Poster */}
          {event.banner_url && (
@@ -106,7 +119,7 @@ export default async function CCEventDetailPage({ params }: { params: Promise<{ 
                   <span>{event.targeted_department || 'All Departments'}</span>
                </div>
                <div className="flex items-center gap-2 ml-auto">
-                  <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest">Event ID:</span>
+                  <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest">Auth Code:</span>
                   <span className="bg-zinc-100 dark:bg-zinc-900 px-3 py-1 rounded-lg text-black dark:text-white font-black italic tracking-tighter">{event.id}</span>
                </div>
             </div>
