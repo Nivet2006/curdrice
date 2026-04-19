@@ -1,9 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
-import { ArrowLeft, Clock, CheckCircle2, XCircle, FileText, Send } from 'lucide-react'
+import { ArrowLeft, Clock, CheckCircle2, XCircle, FileText, Send, Edit3 } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { EventStatusTracker } from '@/components/common/EventStatusTracker'
 import { redirect } from 'next/navigation'
+import { submitEventForReview } from '@/lib/actions/cc-events'
 
 export default async function CCEventDetailPage({ params }: { params: { id: string } }) {
   const supabase = await createClient()
@@ -40,6 +41,32 @@ export default async function CCEventDetailPage({ params }: { params: { id: stri
           Back to Pipeline
         </Link>
         <div className="flex items-center gap-3">
+           {(event.approval_status === 'draft' || (event.rejection_data && event.rejection_data.length > 0)) && (
+             <div className="flex gap-2 mr-4">
+                <Link 
+                  href={`/cc/events/${id}/edit`}
+                  className="flex items-center gap-2 px-4 py-2 border border-black rounded-full text-xs font-bold hover:bg-zinc-50 transition-all active:scale-95"
+                >
+                  <Edit3 size={14} />
+                  Edit Draft
+                </Link>
+                {event.approval_status === 'draft' && (
+                  <form action={async () => {
+                    'use server'
+                    await submitEventForReview(id)
+                    redirect('/cc/dashboard')
+                  }}>
+                    <button 
+                      type="submit"
+                      className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-full text-xs font-bold hover:bg-zinc-800 transition-all active:scale-95 shadow-md"
+                    >
+                      <Send size={14} />
+                      Submit to Faculty
+                    </button>
+                  </form>
+                )}
+             </div>
+           )}
            <span className={`font-mono text-[9px] uppercase tracking-widest font-bold px-3 py-1.5 rounded-full border ${
              event.approval_status === 'approved' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30' :
              event.approval_status === 'rejected' ? 'bg-rose-500/10 text-rose-600 border-rose-500/30' :
