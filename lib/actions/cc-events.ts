@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
+import { logMutation } from '@/lib/audit/log-mutation'
 
 export async function createDraftEvent(formData: FormData) {
   const supabase = await createClient()
@@ -10,7 +11,7 @@ export async function createDraftEvent(formData: FormData) {
   if (!user) return { error: 'Unauthorized' }
 
   // Extract profiles to check for cc role
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  const { data: profile } = await supabase.from('profiles').select('role, full_name').eq('id', user.id).single()
   if (profile?.role !== 'cc' && profile?.role !== 'admin') {
     return { error: 'Unauthorized: Requires Club Coordinator permissions.' }
   }
@@ -68,6 +69,21 @@ export async function createDraftEvent(formData: FormData) {
   })
 
   if (constraintError) return { error: constraintError.message }
+
+  // LOG MUTATION
+  await logMutation({
+    userId: user.id,
+    userEmail: user.email,
+    userName: profile.full_name,
+    userRole: profile.role,
+    action: 'event.create',
+    path: '/cc/dashboard',
+    metadata: { 
+        eventId: event.id, 
+        title, 
+        approval_status 
+    },
+  })
 
   revalidatePath('/cc/dashboard')
   return { success: true }
