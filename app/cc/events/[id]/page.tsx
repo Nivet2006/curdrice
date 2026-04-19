@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
-import { ArrowLeft, Clock, CheckCircle2, XCircle, FileText, Send, Edit3 } from 'lucide-react'
+import { ArrowLeft, Clock, CheckCircle2, XCircle, FileText, Send, Edit3, Heart } from 'lucide-react'
+import { EventRegistrationStats } from '@/components/admin/EventRegistrationStats'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { EventStatusTracker } from '@/components/common/EventStatusTracker'
@@ -191,20 +192,32 @@ export default async function CCEventDetailPage({ params }: { params: Promise<{ 
            )}
         </div>
 
-        <aside className="space-y-6">
-           <EventStatusTracker status={event.approval_status} />
+         <aside className="space-y-6">
+            <EventStatusTracker status={event.approval_status} />
 
-           <div className="bg-white dark:bg-black text-[#0a0a0a] dark:text-white border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 space-y-4 shadow-xl transition-colors">
-              <h3 className="font-bold text-lg">Analytics Overview</h3>
-              <div className="space-y-1">
-                 <p className="text-3xl font-black">--</p>
-                 <p className="text-[10px] font-mono uppercase text-zinc-600 dark:text-zinc-500">Total Registrations</p>
+            {event.approval_status === 'approved' ? (
+              <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
+                <div className="bg-[#0a0a0a] dark:bg-zinc-900 p-6 rounded-3xl border border-emerald-500/30">
+                   <div className="flex items-center gap-2 text-emerald-400 mb-2">
+                      <Heart size={16} fill="currentColor" />
+                      <span className="text-[10px] font-mono font-black uppercase tracking-widest">Public Interest</span>
+                   </div>
+                   <p className="text-white text-sm font-medium">Your event is currently attracting registrations.</p>
+                </div>
+                <EventRegistrationStats eventId={event.id} />
               </div>
-              <p className="text-[10px] text-zinc-500 dark:text-zinc-500 italic">Analytics will be available once the event is approved and published.</p>
-           </div>
-        </aside>
+            ) : (
+              <div className="bg-white dark:bg-black text-[#0a0a0a] dark:text-white border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 space-y-4 shadow-xl transition-colors">
+                <h3 className="font-bold text-lg">Analytics Overview</h3>
+                <div className="space-y-1">
+                    <p className="text-3xl font-black">--</p>
+                    <p className="text-[10px] font-mono uppercase text-zinc-600 dark:text-zinc-500">Total Registrations</p>
+                </div>
+                <p className="text-[10px] text-zinc-500 dark:text-zinc-500 italic">Analytics will be available once the event is approved and published.</p>
+              </div>
+            )}
+         </aside>
       </div>
     </div>
   )
 }
-

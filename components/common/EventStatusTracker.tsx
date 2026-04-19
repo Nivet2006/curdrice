@@ -52,11 +52,11 @@ export function EventStatusTracker({ status }: EventStatusTrackerProps) {
             }`}
           >
             <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all duration-500 ${
-              step.isCompleted ? 'bg-black dark:bg-white border-black dark:border-white text-white dark:text-black shadow-lg shadow-black/10' : 
+              step.isCompleted ? 'bg-black dark:bg-zinc-100 border-black dark:border-zinc-100 text-white dark:text-black shadow-lg shadow-black/10' : 
               step.isActive ? 'border-amber-500 animate-pulse bg-amber-500/10' : 'border-zinc-200 dark:border-zinc-800'
             }`}>
               {step.isCompleted ? (
-                <CheckCircle2 size={16} />
+                <CheckCircle2 size={16} className="text-white dark:text-black" />
               ) : step.isActive ? (
                 <Clock size={14} className="text-amber-600 dark:text-amber-500" />
               ) : (

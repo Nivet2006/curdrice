@@ -2,6 +2,7 @@ import React from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import { TeacherActionWrapper } from './TeacherActionWrapper'
+import { EventRegistrationStats } from '@/components/admin/EventRegistrationStats'
 import { ArrowLeft, User, ShieldAlert, CheckCircle2, Clock, MapPin } from 'lucide-react'
 import Link from 'next/link'
 import { EventStatusTracker } from '@/components/common/EventStatusTracker'
@@ -87,9 +88,19 @@ export default async function TeacherVerifyPage({ params }: { params: Promise<{ 
         <div className="lg:col-span-5 space-y-8">
            <EventStatusTracker status={event.approval_status} />
 
-           {/* Decision Terminal */}
+           {/* Decision Terminal or Stats */}
            <div className="lg:sticky lg:top-12 h-fit">
-              <TeacherActionWrapper eventId={event.id} />
+                    <div className="flex items-center gap-3 mb-2">
+                       <CheckCircle2 size={20} />
+                       <h3 className="font-black uppercase text-sm tracking-widest">Protocol Approved</h3>
+                    </div>
+                    <p className="text-xs font-mono opacity-80 italic">This activity is currently live and acquiring student leads. Verification phase is closed.</p>
+                  </div>
+                  <EventRegistrationStats eventId={event.id} />
+                </div>
+              ) : (
+                <TeacherActionWrapper eventId={event.id} />
+              )}
            </div>
         </div>
       </div>
