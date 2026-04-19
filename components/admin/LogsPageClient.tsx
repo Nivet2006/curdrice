@@ -1,6 +1,6 @@
 'use client'
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react'
-import { Monitor, Smartphone, Globe, Clock, Trash2, Download, Filter, X, Search, ChevronDown, ChevronUp, Fingerprint, AlertTriangle, Loader2 } from 'lucide-react'
+import { Monitor, Smartphone, Globe, Clock, Trash2, Download, Filter, X, Search, ChevronDown, ChevronUp, Fingerprint, AlertTriangle, Loader2, RefreshCw } from 'lucide-react'
 import { drainLogs, clearByIP, clearByDateRange } from '../../app/admin/logs/actions'
 import { createClient } from '@/lib/supabase/client'
 import { useSearchParams } from 'next/navigation'
@@ -187,6 +187,14 @@ export function LogsPageClient() {
             <div className={`flex items-center gap-2 px-3 py-1 rounded-full border-2 border-black text-[10px] font-black uppercase transition-all ${isRefreshing ? 'bg-emerald-100' : 'bg-zinc-50'}`}>
                 <div className={`w-2 h-2 rounded-full ${isRefreshing ? 'bg-emerald-500 animate-pulse' : 'bg-emerald-500'}`} />
                 {isRefreshing ? 'Synchronizing...' : `Last Sync: ${lastUpdated?.toLocaleTimeString()}`}
+                <button 
+                    onClick={() => fetchLogs(false)}
+                    disabled={isRefreshing}
+                    className="ml-2 pl-2 border-l-2 border-black/10 hover:text-emerald-600 transition-colors flex items-center gap-1 disabled:opacity-50"
+                >
+                    <RefreshCw size={10} className={isRefreshing ? 'animate-spin' : ''} />
+                    Sync Now
+                </button>
             </div>
         </div>
       </header>
