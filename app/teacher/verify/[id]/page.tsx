@@ -97,7 +97,7 @@ export default async function TeacherVerifyPage({ params }: { params: Promise<{ 
                               <CheckCircle2 size={20} />
                               <h3 className="font-black uppercase text-sm tracking-widest">Event Approved</h3>
                            </div>
-                           <p className="text-xs font-mono opacity-80 italic">This activity is currently live and acquiring student leads. Verification phase is closed.</p>
+                           <p className="text-xs font-mono opacity-80 italic">This activity is currently published and open for student registrations. Approval phase is closed.</p>
                         </div>
                         <EventRegistrationStats eventId={event.id} />
                      </div>
