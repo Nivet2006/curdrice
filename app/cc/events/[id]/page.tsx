@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { ArrowLeft, Clock, CheckCircle2, XCircle, FileText, Send } from 'lucide-react'
 import Link from 'next/link'
-import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { EventStatusTracker } from '@/components/common/EventStatusTracker'
 import { redirect } from 'next/navigation'
@@ -41,9 +40,13 @@ export default async function CCEventDetailPage({ params }: { params: { id: stri
           Back to Pipeline
         </Link>
         <div className="flex items-center gap-3">
-           <Badge variant={event.approval_status === 'approved' ? 'success' : event.approval_status === 'rejected' ? 'destructive' : 'secondary'}>
-              {event.approval_status.replace('_', ' ').toUpperCase()}
-           </Badge>
+           <span className={`font-mono text-[9px] uppercase tracking-widest font-bold px-3 py-1.5 rounded-full border ${
+             event.approval_status === 'approved' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30' :
+             event.approval_status === 'rejected' ? 'bg-rose-500/10 text-rose-600 border-rose-500/30' :
+             'bg-zinc-500/10 text-zinc-500 border-zinc-500/20'
+           }`}>
+             {event.approval_status.replace(/_/g, ' ').toUpperCase()}
+           </span>
         </div>
       </header>
 
