@@ -5,19 +5,26 @@ import { ShieldAlert, CheckCircle, ArrowRight, User } from 'lucide-react'
 
 export default async function TeacherDashboard() {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  // Get Teacher department
+  const { data: profile } = await supabase.from('profiles').select('department').eq('id', user?.id || '').single()
+  const dept = profile?.department || 'General'
   
-  // Events pending teacher verification
+  // Events pending teacher verification (scoped to department)
   const { data: pendingEvents } = await supabase
     .from('events')
     .select('*')
     .eq('approval_status', 'pending_teacher')
+    .eq('targeted_department', dept)
     .order('created_at', { ascending: true })
 
-  // Events already approved or forwarded to HOD
+  // Events already approved or forwarded to HOD (scoped to department)
   const { data: approvedEvents } = await supabase
     .from('events')
     .select('*')
     .in('approval_status', ['pending_hod', 'approved'])
+    .eq('targeted_department', dept)
     .order('event_date', { ascending: false })
 
   return (
