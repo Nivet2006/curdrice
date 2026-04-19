@@ -1,3 +1,4 @@
+'use client'
 import dynamic from 'next/dynamic'
 
 const QRScanner = dynamic(() => import('@/components/manager/QRScanner').then(mod => mod.QRScanner), {

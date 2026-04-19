@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { processPRReview } from '@/lib/actions/pr-actions'
+import { processReportReview } from '@/lib/actions/pr-actions'
 import { CheckCircle2, XCircle, AlertTriangle, Send, ShieldCheck } from 'lucide-react'
 
 export function PRReviewForm({ eventId }: { eventId: string }) {
