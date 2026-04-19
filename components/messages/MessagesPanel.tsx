@@ -28,6 +28,7 @@ interface MessagesPanelProps {
 }
 
 export default function MessagesPanel({ open, onClose, userId }: MessagesPanelProps) {
+  const supabase = createClient()
   const [activeTab, setActiveTab] = useState<'notifications' | 'inbox'>('notifications')
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [conversations, setConversations] = useState<any[]>([])
@@ -64,7 +65,6 @@ export default function MessagesPanel({ open, onClose, userId }: MessagesPanelPr
   }, [chatMessages])
 
   const fetchProfile = async () => {
-    const supabase = await createClient()
     const { data } = await supabase.from('profiles').select('full_name, usn').eq('id', userId!).single()
     if (data) setProfile(data)
   }
@@ -93,7 +93,6 @@ export default function MessagesPanel({ open, onClose, userId }: MessagesPanelPr
   useEffect(() => {
     if (!open || !userId) return
 
-    const supabase = await createClient()
     const globalChannel = supabase.channel(`global-updates-${userId}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => refreshBackground())
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` }, () => refreshBackground())
@@ -115,7 +114,6 @@ export default function MessagesPanel({ open, onClose, userId }: MessagesPanelPr
     // Load initial messages
     getMessages(openConversation.id).then(setChatMessages)
 
-    const supabase = await createClient()
     const channel = supabase
       .channel('messages:' + openConversation.id)
       .on('postgres_changes', {
