@@ -19,6 +19,14 @@ export default async function HODDashboard() {
     .eq('approval_status', 'pending_hod')
     .eq('targeted_department', dept)
     .order('created_at', { ascending: true })
+  
+  // Events already authorized and live (scoped to their department)
+  const { data: approvedEvents } = await supabase
+    .from('events')
+    .select('*')
+    .eq('approval_status', 'approved')
+    .eq('targeted_department', dept)
+    .order('event_date', { ascending: false })
 
   // Verified Reports (Ready for view/export) after PR approval
   const { data: completedReports } = await supabase
@@ -92,6 +100,38 @@ export default async function HODDashboard() {
                   <CheckCircle2 size={40} className="mb-4 opacity-20" />
                   <p className="font-mono text-xs uppercase tracking-widest">Queue Clear</p>
                 </div>
+              )}
+            </div>
+          </section>
+  
+          {/* Live & Approved Events Section */}
+          <section className="space-y-8">
+            <div className="flex items-center gap-4">
+              <h2 className="text-2xl font-black italic tracking-tight uppercase">Live &amp; Approved Activities</h2>
+              <div className="h-[2px] bg-zinc-100 flex-1"></div>
+              <span className="font-mono text-xs bg-black text-white px-3 py-1 rounded-full">{approvedEvents?.length || 0}</span>
+            </div>
+  
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {approvedEvents && approvedEvents.length > 0 ? (
+                approvedEvents.map(event => (
+                  <div key={event.id} className="bg-white border border-zinc-200 p-8 rounded-[2rem] hover:border-black transition-all group">
+                     <div className="flex justify-between items-start mb-6">
+                        <span className="text-[10px] font-mono bg-black text-white px-2 py-0.5 rounded-md uppercase font-bold tracking-tighter">Live Status</span>
+                        <ExternalLink size={20} className="text-zinc-300 group-hover:text-black transition-colors" />
+                     </div>
+                     <h3 className="text-2xl font-black mb-3 leading-none uppercase group-hover:underline">{event.title}</h3>
+                     <p className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest mb-6">{event.club_name}</p>
+                     <Link 
+                      href={`/hod/approvals/${event.id}`}
+                      className="flex items-center justify-center gap-2 border-2 border-black text-black w-full py-3 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-black hover:text-white transition-all"
+                     >
+                        Monitor Activity
+                     </Link>
+                  </div>
+                ))
+              ) : (
+                <div className="col-span-full py-12 text-center text-zinc-300 font-mono text-xs uppercase tracking-widest border border-dashed border-zinc-200 rounded-3xl">No live activities found</div>
               )}
             </div>
           </section>

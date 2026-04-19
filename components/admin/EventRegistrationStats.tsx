@@ -93,15 +93,15 @@ export function EventRegistrationStats({ eventId }: { eventId: string }) {
           <p className="text-3xl font-black">{registrations.length}</p>
           <p className="text-[10px] font-mono text-zinc-400 uppercase mt-1">Acquired Leads</p>
         </div>
-        <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 p-6 rounded-3xl shadow-sm">
+        <div className="bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 rounded-3xl shadow-sm transition-all hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black group transition-all">
           <div className="flex items-center justify-between mb-2">
-            <CheckCircle size={16} className="text-emerald-500" />
-            <span className="text-[10px] font-mono text-emerald-400 uppercase tracking-widest">Live</span>
+            <CheckCircle size={16} className="text-zinc-400 group-hover:text-inherit" />
+            <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest group-hover:text-inherit">Live</span>
           </div>
-          <p className="text-3xl font-black text-emerald-600 dark:text-emerald-400">
+          <p className="text-3xl font-black">
             {registrations.filter(r => r.checked_in).length}
           </p>
-          <p className="text-[10px] font-mono text-emerald-500/60 uppercase mt-1">Verified Entries</p>
+          <p className="text-[10px] font-mono text-zinc-400 uppercase mt-1 group-hover:text-inherit">Verified Entries</p>
         </div>
       </div>
 
@@ -134,7 +134,7 @@ export function EventRegistrationStats({ eventId }: { eventId: string }) {
                   </div>
                 </div>
                 {reg.checked_in && (
-                  <span className="text-[9px] font-black uppercase bg-emerald-500/10 text-emerald-600 px-2 py-0.5 rounded-md">Entered</span>
+                  <span className="text-[9px] font-black uppercase bg-black text-white dark:bg-white dark:text-black px-2 py-0.5 rounded-md">Entered</span>
                 )}
               </div>
             ))

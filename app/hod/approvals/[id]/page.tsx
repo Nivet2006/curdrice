@@ -66,6 +66,20 @@ export default async function HODApprovalPage({ params }: { params: Promise<{ id
             </div>
           </div>
 
+          {(event.feedback_config as any[])?.length > 0 && (
+            <div className="space-y-6">
+              <h3 className="font-mono text-xs font-black uppercase text-zinc-300 tracking-[0.3em]">Proposed Feedback Questions</h3>
+              <div className="bg-white border-2 border-dashed border-zinc-200 rounded-[2.5rem] p-8 space-y-4">
+                {(event.feedback_config as any[]).map((q, idx) => (
+                  <div key={idx} className="flex gap-4 items-start">
+                    <span className="font-mono text-xs text-zinc-400 mt-1">{idx + 1}.</span>
+                    <p className="font-bold text-zinc-800 uppercase text-sm tracking-tight">{q.question}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="space-y-8">
             <h3 className="font-mono text-xs font-black uppercase text-zinc-300 tracking-[0.3em]">Verified Promotional Material</h3>
             <div className="rounded-[3rem] overflow-hidden border-[12px] border-white shadow-2xl skew-x-1">
