@@ -7,6 +7,17 @@ export const BrandMark = ({ className = '', role = '' }: { className?: string, r
   const router = useRouter()
   const [clickCount, setClickCount] = useState(0)
   const [showDenied, setShowDenied] = useState(false)
+  const [deniedEffect, setDeniedEffect] = useState<'shake' | 'fade' | null>(null)
+
+  useEffect(() => {
+    if (showDenied && deniedEffect) {
+      const effectClass = deniedEffect === 'shake' ? 'access-denied-shake' : 'access-denied-fade'
+      document.body.classList.add(effectClass)
+    } else {
+      document.body.classList.remove('access-denied-shake', 'access-denied-fade')
+    }
+    return () => document.body.classList.remove('access-denied-shake', 'access-denied-fade')
+  }, [showDenied, deniedEffect])
 
   const handleClick = () => {
     const next = clickCount + 1
@@ -14,8 +25,13 @@ export const BrandMark = ({ className = '', role = '' }: { className?: string, r
       if (role === 'admin') {
         router.push('/status')
       } else {
+        const effect = Math.random() > 0.5 ? 'shake' : 'fade'
+        setDeniedEffect(effect)
         setShowDenied(true)
-        setTimeout(() => setShowDenied(false), 2000)
+        setTimeout(() => {
+          setShowDenied(false)
+          setDeniedEffect(null)
+        }, 3000)
       }
       setClickCount(0)
     } else {
@@ -25,22 +41,11 @@ export const BrandMark = ({ className = '', role = '' }: { className?: string, r
   }
 
   return (
-    <>
-      {showDenied && (
-        <div className="fixed inset-0 z-[9999] bg-red-950/65 backdrop-blur-xl flex items-center justify-center animate-in fade-in duration-300">
-          <div className="text-center animate-in zoom-in-95 duration-300">
-            <h1 className="text-6xl md:text-9xl font-black text-red-600 tracking-tighter italic uppercase">
-              Access Denied
-            </h1>
-          </div>
-        </div>
-      )}
-      <span 
-        onClick={handleClick}
-        className={`font-mono text-sm tracking-widest select-none text-[#999999] cursor-default ${className}`}
-      >
-        |||··||
-      </span>
-    </>
+    <span 
+      onClick={handleClick}
+      className={`font-mono text-sm tracking-widest select-none text-[#999999] cursor-default ${className}`}
+    >
+      |||··||
+    </span>
   )
 }
