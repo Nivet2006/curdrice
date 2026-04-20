@@ -118,35 +118,35 @@ export function BugReporterWidget() {
 
   // ── Realtime history subscription ───────────────────────────
   useEffect(() => {
-    if (!user || !isVerified) return
+    if (user) {
+      supabase
+        .from('bug_reports')
+        .select('id, created_at, description, page_url, status')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(20)
+        .then(({ data }) => { if (data) setHistory(data as BugReport[]) })
 
-    supabase
-      .from('bug_reports')
-      .select('id, created_at, description, page_url, status')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-      .limit(20)
-      .then(({ data }) => { if (data) setHistory(data as BugReport[]) })
+      const channel = supabase
+        .channel(`bug-history-${user.id}`)
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'bug_reports',
+          filter: `user_id=eq.${user.id}`,
+        }, (payload) => {
+          if (payload.eventType === 'INSERT') {
+            setHistory(prev => [payload.new as BugReport, ...prev].slice(0, 20))
+          } else if (payload.eventType === 'UPDATE') {
+            setHistory(prev => prev.map(r => r.id === payload.new.id ? { ...r, ...payload.new as BugReport } : r))
+          } else if (payload.eventType === 'DELETE') {
+            setHistory(prev => prev.filter(r => r.id !== payload.old.id))
+          }
+        })
+        .subscribe()
 
-    const channel = supabase
-      .channel(`bug-history-${user.id}`)
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'bug_reports',
-        filter: `user_id=eq.${user.id}`,
-      }, (payload) => {
-        if (payload.eventType === 'INSERT') {
-          setHistory(prev => [payload.new as BugReport, ...prev].slice(0, 20))
-        } else if (payload.eventType === 'UPDATE') {
-          setHistory(prev => prev.map(r => r.id === payload.new.id ? { ...r, ...payload.new as BugReport } : r))
-        } else if (payload.eventType === 'DELETE') {
-          setHistory(prev => prev.filter(r => r.id !== payload.old.id))
-        }
-      })
-      .subscribe()
-
-    return () => { supabase.removeChannel(channel) }
+      return () => { supabase.removeChannel(channel) }
+    }
   }, [user, supabase, isVerified])
 
   // ── Verification ─────────────────────────────────────────────
@@ -218,13 +218,13 @@ export function BugReporterWidget() {
 
   // ── Submit ───────────────────────────────────────────────────
   const handleSubmit = async () => {
-    if (!description.trim() || !user || !isVerified) return
+    if (!description.trim() || !isVerified) return
     setSubmitting(true)
     const { clickTrail, jsErrors } = getCollectedData()
 
     const { error } = await supabase.from('bug_reports').insert({
-      user_id: user.id,
-      user_email: user.email,
+      user_id: user?.id || null,
+      user_email: user?.email || 'anonymous',
       page_url: window.location.href,
       user_agent: navigator.userAgent,
       description: description.trim(),
@@ -252,7 +252,7 @@ export function BugReporterWidget() {
     sessionStorage.removeItem('bug-verified-id')
   }
 
-  if (!mounted || !user) return null
+  if (!mounted) return null
 
   return (
     <div

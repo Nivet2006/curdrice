@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import * as XLSX from 'xlsx'
-import { Download, Save, FileText } from 'lucide-react'
+import { Download, Save, FileText, Camera, Printer, Trash2 } from 'lucide-react'
+import { toPng } from 'html-to-image'
 
 type Report = {
   id: string
@@ -52,6 +53,7 @@ export default function AdminBugsPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editName, setEditName] = useState('')
   const [editId, setEditId] = useState('')
+  const [showShareCard, setShowShareCard] = useState(false)
 
   useEffect(() => {
     // Fetch reports
@@ -222,6 +224,29 @@ export default function AdminBugsPage() {
     }
   }
 
+  const downloadCardAsPng = async () => {
+    const node = document.getElementById('team-share-card-content');
+    if (!node) return;
+    
+    setCreating(true)
+    try {
+      const dataUrl = await toPng(node, { 
+        cacheBust: true,
+        pixelRatio: 3,
+        backgroundColor: '#0f0f0f',
+      });
+      const link = document.createElement('a');
+      link.download = `Team_Credentials_Security_Protocol.png`;
+      link.href = dataUrl;
+      link.click();
+      toast.success('Premium PNG Generated');
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to generate PNG');
+    }
+    setCreating(false)
+  }
+
   return (
     <div className="p-6 max-w-7xl mx-auto min-h-screen" style={{ color: 'var(--fg)' }}>
       <header className="mb-8 flex justify-between items-end">
@@ -243,7 +268,17 @@ export default function AdminBugsPage() {
               EXPORT ALL
             </button>
           )}
-          <div className="flex gap-2 p-1 rounded-lg border shadow-sm" style={{ background: 'var(--bg-subtle)', borderColor: 'var(--border)' }}>
+          <div className="flex items-center gap-3">
+            {activeTab === 'access' && accessIds.length > 0 && (
+              <button 
+                onClick={() => setShowShareCard(true)}
+                className="flex items-center gap-2 px-4 py-1.5 rounded-lg border text-[10px] font-black hover:bg-[var(--bg-hover)] transition-all"
+                style={{ borderColor: 'var(--border)', color: 'var(--fg-muted)' }}
+              >
+                <FileText size={12} />
+                SHARE CARD
+              </button>
+            )}
             <button 
               onClick={() => setActiveTab('reports')}
               className={`px-4 py-1.5 rounded-md text-[10px] font-black transition-all ${activeTab === 'reports' ? 'bg-[var(--fg)] text-[var(--bg)] shadow-md' : 'hover:bg-[var(--bg-hover)]'}`}
@@ -637,6 +672,114 @@ export default function AdminBugsPage() {
           </footer>
         </div>
       )}
+      {/* ── Aesthetic Share Card Modal ── */}
+      {showShareCard && (
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md print:hidden">
+          <div className="flex flex-col items-center gap-6 max-w-lg w-full">
+            <div className="bg-[#0f0f0f] border border-white/10 rounded-[32px] w-full shadow-2xl p-10 relative overflow-hidden" id="team-share-card-content">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-zinc-500/10 blur-[100px] rounded-full -mr-20 -mt-20 pointer-events-none"></div>
+              
+              <div className="flex justify-between items-start relative z-10">
+                <div>
+                  <h1 className="text-2xl font-black uppercase text-white tracking-tighter">Team Credentials</h1>
+                  <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest mt-1">Bug Reporter Suite // 2026</p>
+                </div>
+              </div>
+
+              <div className="mt-12 space-y-4 relative z-10">
+                {accessIds
+                  .filter(a => !a.name.toLowerCase().includes('nived') && !a.access_id.toLowerCase().includes('nived'))
+                  .map(a => (
+                    <div key={a.id} className="bg-white/[0.03] border border-white/5 rounded-2xl p-5 flex justify-between items-center group transition-all">
+                      <div>
+                        <p className="text-[9px] font-black uppercase text-zinc-500 mb-1 tracking-widest">Authorized Member</p>
+                        <h3 className="text-sm font-bold text-white uppercase">{a.name}</h3>
+                        <p className="text-[11px] font-mono text-zinc-400 mt-1">{a.access_id}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[9px] font-black uppercase text-zinc-600 mb-1 tracking-widest">Passkey</p>
+                        <p className="text-xs font-mono text-white tracking-[0.2em]">{a.password}</p>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+
+              <div className="mt-12 pt-8 border-t border-white/10 flex justify-between items-end relative z-10">
+                <div>
+                  <p className="text-[9px] font-black uppercase text-zinc-600 leading-tight">Project Custodian</p>
+                  <p className="text-[10px] text-zinc-400 mt-1 italic">Authorized deployment access only.</p>
+                </div>
+                <div className="text-right opacity-20">
+                    <p className="text-[8px] font-mono uppercase text-white">SECURE AUTH</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Controls outside the capture area */}
+            <div className="flex gap-4 w-full">
+              <button 
+                onClick={downloadCardAsPng}
+                disabled={creating}
+                className="flex-1 bg-white text-black px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-zinc-200 transition shadow-xl active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50"
+              >
+                {creating ? 'GENERATING...' : <><Camera size={16} /> DOWNLOAD PNG</>}
+              </button>
+              <button 
+                onClick={() => window.print()}
+                className="bg-zinc-800 text-white px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-zinc-700 transition shadow-xl active:scale-95 flex items-center justify-center gap-3"
+              >
+                <Printer size={16} /> PRINT PDF
+              </button>
+              <button 
+                onClick={() => setShowShareCard(false)}
+                className="bg-red-500/10 text-red-500 px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-red-500/20 transition shadow-xl active:scale-95 flex items-center justify-center"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div id="team-share-card-print" className="hidden print:flex flex-col absolute inset-0 bg-white h-screen w-screen p-10 overflow-hidden" style={{ pageBreakAfter: 'always' }}>
+         <div className="border-[4px] border-black p-10 rounded-[30px] w-full max-w-2xl mx-auto my-auto flex flex-col justify-between h-full max-h-[90vh]">
+            <div>
+              <h1 className="text-5xl font-black uppercase tracking-tighter mb-2 text-black">Access Protocol</h1>
+              <p className="text-[10px] font-mono uppercase tracking-[0.4em] text-zinc-400 mb-12 border-b pb-6">Debug Infrastructure Authentication</p>
+              
+              <div className="space-y-8">
+                {accessIds
+                  .filter(a => !a.name.toLowerCase().includes('nived') && !a.access_id.toLowerCase().includes('nived'))
+                  .map(a => (
+                    <div key={a.id} className="flex justify-between items-end border-b border-zinc-100 pb-6">
+                      <div>
+                        <p className="text-base font-black uppercase text-black">{a.name}</p>
+                        <p className="text-[11px] font-mono opacity-40 mt-0.5 text-black">{a.access_id}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[8px] font-bold uppercase opacity-30 mb-1 tracking-widest text-black">Passkey</p>
+                        <p className="text-xl font-black font-mono tracking-widest text-black">{a.password}</p>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+
+            <div className="mt-auto flex justify-between items-end pt-10">
+              <div className="opacity-20 text-[8px] font-mono leading-relaxed text-black">
+                GENERATED VIA ADMIN PORTAL<br/>
+                TIMESTAMP: {new Date().toLocaleString().toUpperCase()}<br/>
+                AUTHENTICATION CODE: {Math.random().toString(36).substring(7).toUpperCase()}
+              </div>
+              <div className="text-right">
+                 <p className="text-[10px] font-black uppercase text-black mb-1">Authenticated</p>
+                 <div className="w-12 h-12 bg-black rounded-xl flex items-center justify-center text-white text-xl font-black">
+                   C
+                 </div>
+              </div>
+            </div>
+         </div>
+      </div>
     </div>
   )
 }
