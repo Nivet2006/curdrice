@@ -184,11 +184,29 @@ Successfully verified and explicitly applied the architectural internal data-fet
   - **Graceful Termination**: Added `await supabase.auth.signOut()` within the middleware to explicitly clear bad auth cookies before redirecting to login.
   - **Clean Redirects**: Standardized the redirect flow to prevent infinite loops in cases of session expiration.
 
-
 ### Combined Attendance Sheet (April 12, 2026)
-- **Action**: Created \pp/api/admin/combined-sheet/route.ts\ and \components/admin/CombinedSheetButton.tsx\.
+- **Action**: Created `app/api/admin/combined-sheet/route.ts` and `components/admin/CombinedSheetButton.tsx`.
 - **Implemented Logic**: 
-  - **Multi-Semester Export**: Generates a single \.xlsx\ with 8 sheets (one per semester) and a Summary dashboard.
-  - **High Fidelity**: Freezes USN/Name columns for better horizontal scrolling and includes live \COUNTIF\ summary formulas.
-  - **Specialized Loading**: Implemented a \ExcelOverlay\ that visualizes the spreadsheet generation process in real-time.
+  - **Multi-Semester Export**: Generates a single `.xlsx` with 8 sheets (one per semester) and a Summary dashboard.
+  - **High Fidelity**: Freezes USN/Name columns for better horizontal scrolling and includes live `COUNTIF` summary formulas.
+  - **Specialized Loading**: Implemented a `ExcelOverlay` that visualizes the spreadsheet generation process in real-time.
+
+### Advanced Security & TOTP Implementation (April 19, 2026)
+- **Action**: Refactored `app/api/auth/totp/` routes and updated `middleware.ts`.
+- **Implemented Logic**:
+  - **TOTP Migration**: Migrated from `otplib` v12 to v13 functional API to resolve build errors.
+  - **Multi-Stage 2FA Gate**: Implemented a secure gate for all administrative and faculty routes.
+  - **Dynamic Setup Wizard**: Interactive UI for generating and verifying TOTP secrets with manual QR code support.
+  - **Secondary Database Layer**: Initial architectural work for an air-gapped audit log database for high-security operations.
+
+### Multi-Role Authorization Pipeline (April 20, 2026)
+- **Action**: Created `app/teacher/`, `app/hod/`, and `app/pr/` dashboard structures.
+- **Implemented Logic**:
+  - **Stage-Based Approvals**: New events start as drafts and must pass through Teacher verification and HOD authorization.
+  - **Departmental Scoping**: HODs only see and approve events within their specific campus departments.
+  - **PR Audit Feed**: Standardized post-event audit flow for verifying attendance integrity and student feedback.
+  - **Dark Mode Visibility**: Refactored hardcoded Tailwind colors to theme-aware variants across all new dashboards to ensure accessibility and premium look.
+
+---
+*End of Update - 2026-04-20*
 

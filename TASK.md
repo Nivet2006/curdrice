@@ -11,6 +11,22 @@
   - [x] System Backup Centre (ZIP Generation)
   - [x] On-demand User Creation & Multi-Format List Export functionality
   - [x] Build complete comprehensive Event Modifying/Editing flows with Poster handling and precise Constraint Management.
+- [x] Extract and refine the `ShieldLoader` into a reusable component to handle both Login and Logout flows with custom timed sequences and theme detection. (See `Updates/FEATURE_LOGOUT_LOADER_20260328_223500.md`)
+- [x] Implement TOTP (Two-Factor Authentication) for Admin/Faculty routes using `otplib`.
+  - [x] TOTP Setup Wizard (`/api/auth/totp/setup`)
+  - [x] Verification Page for Login Gate
+  - [x] Middleware expansion to enforce 2FA session status.
+- [x] Build Club-Eve Authorization Pipeline.
+  - [x] Teacher Dashboard for initial approval.
+  - [x] HOD Dashboard with department-specific filtering and final authorization.
+  - [x] PR Audit workflow for post-event verification.
+- [x] Finalize Real-Time Messaging.
+  - [x] Direct peer-to-peer messaging between roles.
+  - [x] Event-linked card sharing in chats.
+  - [x] Optimized RLS for message recursion prevention.
+- [x] Refactor UI for Dark Mode Visibility.
+  - [x] Theme-aware color classes for all administrative dashboards.
+  - [x] High-contrast accessibility fixes for dashboard metrics.
 - [x] Export designs/screenshots to assets folder
 - [x] Build Application Code (Next.js backend and frontend)
 
@@ -35,6 +51,17 @@
 - [x] Fix Admin Attendance page `Registered (0)` crash caused by requesting an invalid `email` column inherently missing from the PostgREST `profiles` layout payload. (See `ERROR/ERROR_18_20260322_012200/summary.md`)
 - [x] Extract and refine the `ShieldLoader` into a reusable component to handle both Login and Logout flows with custom timed sequences and theme detection. (See `Updates/FEATURE_LOGOUT_LOADER_20260328_223500.md`)
 
+## Discovered During Work (Extended)
+- [x] Fix Next.js `Module not found` error caused by `@/*` path mapping in `tsconfig.json` pointing to the deleted `src/` directory.
+- [x] Fix missing Tailwind CSS styling caused by `content` paths in `tailwind.config.ts` pointing to the deleted `src/` directory.
+- [x] Fix `TypeError` crash in `/register` Server Action caused by using incorrect Zod error property mapping.
+- [x] Fix Supabase `new row violates row-level security policy` by defining the missing user and manager RLS permissions.
+- [x] Fix Server Action unauthenticated RLS insertion failure post-signup using the Service Role admin client.
+- [x] Fix 404 error on `/student/dashboard` redirect by removing the Next.js parenthesis Route Groups from folder names.
+- [x] Fix `otplib` v13 breaking changes (removal of `authenticator` class) by migrating to functional TOTP API.
+- [x] Fix Suspense Boundary errors in Admin layouts by wrapping dynamic fetchers in proper `<Suspense>` components.
+- [x] Fix SVG visibility in Dark Mode by applying `filter: invert()` where appropriate or using dynamic fill colors.
+- [x] Fix RLS recursion issues on the `messages` table by simplifying policy predicates.
 
 ## Generated Designs
 

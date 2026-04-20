@@ -4,21 +4,24 @@
 ![Supabase](https://img.shields.io/badge/Supabase-Database%20%26%20Auth-green?style=for-the-badge&logo=supabase)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-Modern_UI-blue?style=for-the-badge&logo=tailwind-css)
 
-Club-Eve is a premium, full-stack event management platform designed for college clubs and student organizations. It features a robust 3-tier role system, branded QR-based attendance tracking, real-time messaging, and high-fidelity aesthetics.
+Club-Eve is a premium, full-stack event management platform designed for college clubs and student organizations. It features a robust multi-tier role system (Student, Manager, Teacher, HOD, PR, Admin), branded QR-based attendance tracking, real-time messaging, and high-fidelity aesthetics secured by mandatory TOTP 2FA.
 
 ---
 
 ## 🚀 Comprehensive Feature Set
 
 ### 🎓 Institutional Identity & Auth
-*   **USN-First Authentication**: Tailored login flow prioritizing University Serial Numbers (USNs) to naturally enforce student identities.
+*   **USN-First & 2FA Powered**: Tailored login flow prioritizing University Serial Numbers (USNs) with mandatory **TOTP (Two-Factor Authentication)** for all administrative and faculty roles.
 *   **One-Time Edit Profiles**: Specialized `StudentProfile` system restricting cosmetic modifications (Names, USN, vanity usernames) to a strict one-time limit to prevent abuse and impersonation.
 *   **Dynamic Event Eligibility**: Deep validation checks ensuring students cannot register for events outside their precise `department`, `semester`, or `year` constraints.
 
-### 👤 3-Tier Role-Based Experience
+### 👤 Multi-Tier Role-Based Experience
 *   **Students**: Browse events, automatically evaluate eligibility, register in one click, and receive a **unique branded QR code** for seamless event check-ins.
 *   **Managers**: Publish and manage events, enforce registration guardrails, track real-time registration counts, and scan QR codes natively in the browser.
+*   **Faculty (Teacher/HOD)**: A sophisticated approval pipeline where Teachers initiate event proposals and HODs provide final departmental authorization.
+*   **PR (Public Relations)**: Post-event auditing system to verify attendance data and feedback quality before final archival.
 *   **Admins**: Full architectural oversight, user role management (verification, promotions, suspensions), and database backup capabilities.
+
 
 ### 📱 Sophisticated Attendance Engine
 *   **Branded QR Tokens**: Every student registration dynamically generates a unique, encrypted QR code watermarked with the `|||··||` brand mark.

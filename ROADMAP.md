@@ -59,6 +59,13 @@
 2.  **Hall Booking + Clash Detection**: Solves the most common operational headache for college faculty.
 3.  **Resume / Participation Export**: Directly links club activities to student career outcomes.
 
+## ✅ Completed Milestones (2026-04)
+- [x] **Real-Time Messaging**: Broadcast system and peer-to-peer event sharing.
+- [x] **Advanced Auth (TOTP)**: Mandatory 2FA for all faculty and administrative roles.
+- [x] **USN-Based Authentication**: Refined login logic prioritizing University Serial Numbers.
+- [x] **Teacher/HOD Authorization Pipeline**: Multi-stage approval flow for new event proposals.
+- [x] **Infrastructure Dashboard**: Real-time server health and security audit logs.
+- [x] **Dark Mode Theme System**: Full accessibility-compliant dark theme implementation.
+
 ---
-*Last updated: 2026-04-12*
-THEMES:
+*Last updated: 2026-04-20*

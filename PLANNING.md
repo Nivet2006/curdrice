@@ -1,19 +1,16 @@
 # PLANNING.md — EventHub: Club-Event Management System
 > Architecture, goals, style, and constraints for the full-stack build.
-> Last updated: 2026-03-21
+> Last updated: 2026-04-20
 
 ---
 
 ## 1. Project Overview
 
-A college Club-Event management web app with **three roles** — **Admin**, **Manager**, and **Student**.
-Students register for events and receive a branded QR code (with `|||··||` embedded). Managers run events
-and control who can register. Admins have full system control including site-wide backups.
+A college Club-Event management web app with **dynamic roles** — **Admin**, **Teacher**, **HOD**, **PR**, **Manager**, and **Student**.
+Students register for events and receive a branded QR code. The system now features a robust authorization pipeline (Teacher → HOD), real-time messaging, and enhanced security via TOTP (Two-Factor Authentication).
 
-Design language mirrors [nived.work](https://nived.work) — minimal, monospace accents, clean white,
-with the `|||··||` brand mark appearing on auth pages **and** inside every QR code.
+**Live reference:** `https://Club-Eve.nivet2006.in/`
 
-**Live reference:** `https://Club-Eve.nivet2006.in/login`
 
 ---
 
@@ -726,50 +723,59 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 ## 18. Implementation Order (Phases)
 
-### Phase 1 — Foundation
-- [ ] Init Next.js 14 + TypeScript + Tailwind
-- [ ] Install all dependencies (Section 17)
-- [ ] Supabase project + run schema SQL + RLS policies
-- [ ] `lib/supabase/client.ts` and `lib/supabase/server.ts`
-- [ ] `middleware.ts` — 3-role route protection
+### Phase 1 — Foundation (Completed)
+- [x] Init Next.js 14 + TypeScript + Tailwind
+- [x] Install all dependencies (Section 17)
+- [x] Supabase project + run schema SQL + RLS policies
+- [x] `lib/supabase/client.ts` and `lib/supabase/server.ts`
+- [x] `middleware.ts` — 3-role route protection
 
-### Phase 2 — Auth
-- [ ] `/login` with `|||··||` top-right, `> EventHub` top-left
-- [ ] `/register` student sign-up
-- [ ] Server Actions: `login()`, `register()`, `logout()`
-- [ ] Role-based redirect post-login
+### Phase 2 — Auth (Completed)
+- [x] `/login` with `|||··||` top-right, `> EventHub` top-left
+- [x] `/register` student sign-up
+- [x] Server Actions: `login()`, `register()`, `logout()`
+- [x] Role-based redirect post-login
 
-### Phase 3 — Manager Flow
-- [ ] Manager dashboard
-- [ ] Events list, create, edit (with `ConstraintBuilder`), delete
-- [ ] `event_constraints` UPSERT on save
-- [ ] QR Scanner page
+### Phase 3 — Manager Flow (Completed)
+- [x] Manager dashboard
+- [x] Events list, create, edit (with `ConstraintBuilder`), delete
+- [x] `event_constraints` UPSERT on save
+- [x] QR Scanner page
 
-### Phase 4 — Student Flow
-- [ ] Student dashboard + event browse
-- [ ] Server-side eligibility check before registration
-- [ ] `generateBrandedQR()` with `|||··||` overlay
-- [ ] QR modal + download button
+### Phase 4 — Student Flow (Completed)
+- [x] Student dashboard + event browse
+- [x] Server-side eligibility check before registration
+- [x] `generateBrandedQR()` with `|||··||` overlay
+- [x] QR modal + download button
 
-### Phase 5 — Admin Flow
-- [ ] Admin dashboard (aggregate stats)
-- [ ] User management (role assignment, soft-delete)
-- [ ] View all events + attendance override
+### Phase 5 — Admin Flow (Completed)
+- [x] Admin dashboard (aggregate stats)
+- [x] User management (role assignment, soft-delete)
+- [x] View all events + attendance override
 
-### Phase 6 — Export + Backup
-- [ ] `/api/export/registered` and `/api/export/attendees`
-- [ ] Download buttons on attendance pages (manager + admin)
-- [ ] `lib/backup.ts` — ZIP generation
-- [ ] `/api/backup/route.ts`
-- [ ] `/admin/backup` UI + log table
+### Phase 6 — Export + Backup (Completed)
+- [x] `/api/export/registered` and `/api/export/attendees`
+- [x] Download buttons on attendance pages (manager + admin)
+- [x] `lib/backup.ts` — ZIP generation
+- [x] `/api/backup/route.ts`
+- [x] `/admin/backup` UI + log table
 
-### Phase 7 — Polish & Deploy
-- [ ] Responsive (mobile-first)
-- [ ] Loading skeletons, toasts, error boundaries
-- [ ] Empty states everywhere
-- [ ] Full RLS audit
-- [ ] `supabase gen types typescript` → `lib/database.types.ts`
-- [ ] Deploy to Vercel + set env vars
+### Phase 7 — Messaging & Authorization (Completed)
+- [x] Real-time messaging system (Broadcasting)
+- [x] Club-Eve Teacher/HOD approval pipeline
+- [x] PR auditing workflow
+
+### Phase 8 — Advanced Security (Completed)
+- [x] TOTP (2FA) Implementation for Admins/Faculty
+- [x] Secure USN-based Login refinement
+- [x] Infrastructure Dashboard & Security Audits
+
+### Phase 9 — Polish & Scale (Ongoing)
+- [x] Theme-aware UI (Dark/Light mode)
+- [x] Mobile responsiveness optimization
+- [x] Performance audits and RLS hardening
+- [ ] Multi-region database synchronization (Audit logs)
+
 
 ---
 
