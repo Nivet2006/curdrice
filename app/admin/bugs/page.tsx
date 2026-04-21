@@ -156,7 +156,10 @@ export default function AdminBugsPage() {
   }, [supabase])
 
   const toggleWidget = async () => {
+    if (settingLoading) return
+    
     const nextVal = !widgetActive
+    setSettingLoading(true)
     // Optimistic update
     setWidgetActive(nextVal)
     
@@ -165,6 +168,7 @@ export default function AdminBugsPage() {
       .update({ value: nextVal })
       .eq('key', 'widget_active')
 
+    setSettingLoading(false)
     if (error) {
        console.error('Widget toggle error:', error)
        toast.error(`Sync failed: ${error.message}`)
