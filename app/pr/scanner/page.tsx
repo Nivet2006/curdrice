@@ -303,7 +303,7 @@ export default function PRScannerPage() {
                                 )}
                             </div>
                         </div>
-                    )}
+                    ) : null}
                 </div>
             </div>
 
