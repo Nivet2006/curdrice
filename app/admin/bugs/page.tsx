@@ -139,10 +139,11 @@ export default function AdminBugsPage() {
 
     // Real-time settings
     const settingsChannel = supabase
-      .channel('bug-settings-sync')
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'bug_settings' }, (payload) => {
-        if (payload.new && payload.new.key === 'widget_active') {
-          setWidgetActive(payload.new.value as boolean)
+      .channel('bug-settings-global')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'bug_settings' }, (payload) => {
+        if (payload.new && (payload.new as any).key === 'widget_active') {
+          const val = (payload.new as any).value
+          setWidgetActive(val === true || val === 'true')
         }
       })
       .subscribe()
@@ -165,7 +166,8 @@ export default function AdminBugsPage() {
       .eq('key', 'widget_active')
 
     if (error) {
-       toast.error('Sync failed: ' + error.message)
+       console.error('Widget toggle error:', error)
+       toast.error(`Sync failed: ${error.message}`)
        setWidgetActive(!nextVal)
     } else {
        toast.success(`SYSTEM: Widget is now ${nextVal ? 'LIVE' : 'OFFLINE'}`)

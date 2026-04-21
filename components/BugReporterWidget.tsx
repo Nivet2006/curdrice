@@ -85,9 +85,10 @@ export function BugReporterWidget() {
 
     const globalChannel = supabase
       .channel('global-bug-toggle')
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'bug_settings' }, (payload) => {
-        if (payload.new && payload.new.key === 'widget_active') {
-          setGlobalEnabled(payload.new.value as boolean)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'bug_settings' }, (payload) => {
+        if (payload.new && (payload.new as any).key === 'widget_active') {
+          const val = (payload.new as any).value
+          setGlobalEnabled(val === true || val === 'true')
         }
       })
       .subscribe()
