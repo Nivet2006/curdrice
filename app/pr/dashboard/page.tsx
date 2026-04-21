@@ -1,7 +1,7 @@
 import React from 'react'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { Search, Eye, Megaphone, FileCheck, ClipboardCheck } from 'lucide-react'
+import { Search, Eye, Megaphone, FileCheck, ClipboardCheck, Camera } from 'lucide-react'
 
 export default async function PRDashboard() {
   const supabase = await createClient()
