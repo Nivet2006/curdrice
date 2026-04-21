@@ -12,7 +12,7 @@ export default async function HODApprovalPage({ params }: { params: Promise<{ id
 
   const { data: event } = await supabase
     .from('events')
-    .select('*, profiles!created_by(full_name, usn, department)')
+    .select('*, profiles!created_by(full_name, usn, department), event_constraints(*)')
     .eq('id', id)
     .single()
 
@@ -59,6 +59,33 @@ export default async function HODApprovalPage({ params }: { params: Promise<{ id
             </div>
           </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 border-b-2 border-zinc-100 pb-12">
+             <div className="space-y-1">
+                <span className="text-[9px] font-mono text-zinc-400 uppercase font-black">Target Semesters</span>
+                <div className="flex flex-wrap gap-2">
+                   {(event.event_constraints as any)?.allowed_semesters?.map((s: number) => (
+                      <span key={s} className="bg-zinc-100 text-[10px] font-black px-2 py-1 rounded">SEM {s}</span>
+                   )) || <span className="text-zinc-400 text-[10px] uppercase">All</span>}
+                </div>
+             </div>
+             <div className="space-y-1">
+                <span className="text-[9px] font-mono text-zinc-400 uppercase font-black">Target Years</span>
+                <div className="flex flex-wrap gap-2">
+                   {(event.event_constraints as any)?.allowed_years?.map((y: number) => (
+                      <span key={y} className="bg-zinc-100 text-[10px] font-black px-2 py-1 rounded">YEAR {y}</span>
+                   )) || <span className="text-zinc-400 text-[10px] uppercase">All</span>}
+                </div>
+             </div>
+             <div className="space-y-1">
+                <span className="text-[9px] font-mono text-zinc-400 uppercase font-black">Restricted Depts</span>
+                <div className="flex flex-wrap gap-2">
+                   {(event.event_constraints as any)?.allowed_departments?.map((d: string) => (
+                      <span key={d} className="bg-black text-white text-[9px] font-black px-2 py-1 rounded">{d}</span>
+                   )) || <span className="text-zinc-400 text-[10px] uppercase">Global</span>}
+                </div>
+             </div>
+          </div>
+
           <div className="space-y-6">
             <h3 className="font-mono text-xs font-black uppercase text-zinc-300 tracking-[0.3em]">Briefing Document</h3>
             <div className="bg-zinc-50 rounded-[2.5rem] p-12 text-2xl font-serif italic text-zinc-700 leading-relaxed indent-8 shadow-inner border border-zinc-100">
@@ -73,7 +100,13 @@ export default async function HODApprovalPage({ params }: { params: Promise<{ id
                 {(event.feedback_config as any[]).map((q, idx) => (
                   <div key={idx} className="flex gap-4 items-start">
                     <span className="font-mono text-xs text-zinc-400 mt-1">{idx + 1}.</span>
-                    <p className="font-bold text-zinc-800 uppercase text-sm tracking-tight">{q.question}</p>
+                    <div className="flex flex-col gap-1">
+                       <p className="font-bold text-zinc-800 uppercase text-sm tracking-tight">{q.label}</p>
+                       <div className="flex items-center gap-2">
+                          <span className="text-[9px] bg-zinc-100 text-zinc-500 px-2 py-0.5 rounded font-black uppercase tracking-tighter">{q.type}</span>
+                          {q.required && <span className="text-[9px] text-red-500 font-bold uppercase tracking-tighter">Required</span>}
+                       </div>
+                    </div>
                   </div>
                 ))}
               </div>
