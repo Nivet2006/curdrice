@@ -246,14 +246,14 @@ export async function toggleFeedback(eventId: string, isOpen: boolean) {
     return { error: 'Unauthorized: You do not have permission to toggle feedback for this event.' }
   }
 
-  const { error, count } = await supabase
+  const { error, data } = await supabase
     .from('events')
     .update({ feedback_open: isOpen })
     .eq('id', eventId)
-    .select('*', { count: 'exact', head: true })
+    .select()
 
   if (error) return { error: error.message }
-  if (count === 0) return { error: 'Failed to update: Event not found or permission denied.' }
+  if (!data || data.length === 0) return { error: 'Failed to update: Event not found or permission denied.' }
   
   revalidatePath(`/cc/events/${eventId}`)
   revalidatePath(`/student/events/${eventId}`)
