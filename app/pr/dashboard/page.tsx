@@ -41,7 +41,38 @@ export default async function PRDashboard() {
       </div>
 
       {/* Primary Action: Pending Queue */}
-      <div className="space-y-6">
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <Link href="/pr/scanner" className="md:col-span-1 bg-black text-white p-8 rounded-[2.5rem] flex flex-col justify-between group hover:scale-[1.02] transition-all shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-150 transition-transform duration-700">
+                    <Camera size={80} />
+                </div>
+                <div className="relative z-10">
+                    <div className="bg-white/10 w-12 h-12 rounded-2xl flex items-center justify-center mb-6">
+                        <Camera size={24} className="text-white" />
+                    </div>
+                    <h3 className="text-2xl font-black italic uppercase leading-none mb-2">Attendance<br/>Scanner</h3>
+                    <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-400">Launch QR Entry Terminal</p>
+                </div>
+                <div className="mt-8 flex items-center justify-end gap-2 text-[10px] font-black uppercase tracking-widest opacity-60 group-hover:opacity-100 transition-opacity">
+                    Access System
+                    <div className="w-8 h-[2px] bg-white"></div>
+                </div>
+            </Link>
+
+            <div className="md:col-span-2 bg-zinc-50 border border-zinc-200 p-8 rounded-[2.5rem] flex flex-col justify-center">
+                 <div className="flex items-center gap-4 mb-4">
+                    <div className="bg-white p-3 rounded-2xl shadow-sm border border-zinc-100">
+                        <FileCheck size={20} className="text-black" />
+                    </div>
+                    <div>
+                        <h4 className="font-black uppercase italic tracking-tighter text-lg">Platform Integrity Dashboard</h4>
+                        <p className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest leading-tight">Monitoring all participant entry and post-event data accuracy.</p>
+                    </div>
+                 </div>
+            </div>
+        </div>
+
         <div className="flex items-center justify-between">
           <h2 className="font-mono text-xs uppercase tracking-widest text-[#555] border-b border-[#e0e0e0] pb-2 flex-1 mr-4">Pending Report Audits ({pendingReports?.length || 0})</h2>
         </div>
