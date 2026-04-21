@@ -206,7 +206,7 @@ export default function PRScannerPage() {
                             </div>
                             <button onClick={handleRescan} className="bg-red-600 text-white px-8 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl hover:bg-red-700 transition-all active:scale-95">Restart Scanner</button>
                         </div>
-                    ) : (
+                    ) : lookupData ? (
                         <div className={`relative p-10 rounded-[3.5rem] border-4 border-black bg-white shadow-2xl transition-all animate-in slide-in-from-right-10 duration-500 overflow-hidden`}>
                             {/* Watermark Background */}
                             <div className="absolute top-10 right-10 opacity-[0.03] rotate-12 pointer-events-none">
