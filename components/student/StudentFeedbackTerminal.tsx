@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/Button'
 import { 
     MessageSquareHeart, 
@@ -48,12 +48,18 @@ type FeedbackTerminalProps = {
 export function StudentFeedbackTerminal({ event, studentId, hasSubmitted: initialHasSubmitted }: FeedbackTerminalProps) {
     const [isOpen, setIsOpen] = useState(false)
     const [hasSubmitted, setHasSubmitted] = useState(initialHasSubmitted)
-    const [responses, setResponses] = useState<Record<number, any>>({})
+    const [isFeedbackOpen, setIsFeedbackOpen] = useState(event.feedback_open)
+    const [responses, setResponses] = useState<Record<string, any>>({})
     const [isSubmitting, setIsSubmitting] = useState(false)
-    const [isFeedbackOpen, setIsFeedbackOpen] = React.useState(event.feedback_open)
     const [hoveredStar, setHoveredStar] = useState<Record<number, number>>({})
     const supabase = createClient()
     const router = useRouter()
+
+    // Sync with server state changes IF they happen via page revalidations/props
+    useEffect(() => {
+        setIsFeedbackOpen(event.feedback_open)
+        setHasSubmitted(initialHasSubmitted)
+    }, [event.feedback_open, initialHasSubmitted])
 
     React.useEffect(() => {
         const channel = supabase
