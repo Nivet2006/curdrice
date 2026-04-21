@@ -16,17 +16,30 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
 type FeedbackQuestion = {
+    id?: string
     label: string
-    type: 'rating' | 'text' | 'multiple_choice'
+    type: QuestionType
     options?: string[]
     required?: boolean
 }
+
+type QuestionType = 
+  | 'short_text' 
+  | 'long_text' 
+  | 'rating' 
+  | 'multiple_choice' 
+  | 'checkboxes' 
+  | 'boolean' 
+  | 'dropdown'
+  | 'text'   
+  | 'choice' 
 
 type FeedbackTerminalProps = {
     event: {
         id: string
         title: string
         feedback_config: FeedbackQuestion[]
+        feedback_open: boolean
     }
     studentId: string
     hasSubmitted: boolean
@@ -37,14 +50,46 @@ export function StudentFeedbackTerminal({ event, studentId, hasSubmitted: initia
     const [hasSubmitted, setHasSubmitted] = useState(initialHasSubmitted)
     const [responses, setResponses] = useState<Record<number, any>>({})
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const [isFeedbackOpen, setIsFeedbackOpen] = React.useState(event.feedback_open)
+    const [hoveredStar, setHoveredStar] = useState<Record<number, number>>({})
     const supabase = createClient()
     const router = useRouter()
+
+    React.useEffect(() => {
+        const channel = supabase
+            .channel(`event-feedback-${event.id}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'events',
+                    filter: `id=eq.${event.id}`
+                },
+                (payload) => {
+                    if (payload.new.feedback_open !== undefined) {
+                        setIsFeedbackOpen(payload.new.feedback_open)
+                    }
+                }
+            )
+            .subscribe()
+
+        return () => {
+            supabase.removeChannel(channel)
+        }
+    }, [event.id, supabase])
 
     const questions = event.feedback_config || []
 
     async function handleSubmit() {
         // Basic validation
-        const missing = questions.findIndex((q, i) => q.required !== false && !responses[i])
+        const missing = questions.findIndex((q, i) => {
+            if (q.required === false) return false
+            const resp = responses[i]
+            if (Array.isArray(resp)) return resp.length === 0
+            return !resp
+        })
+        
         if (missing !== -1) {
             toast.error(`Please answer: ${questions[missing].label}`)
             return
@@ -82,6 +127,8 @@ export function StudentFeedbackTerminal({ event, studentId, hasSubmitted: initia
             setIsSubmitting(false)
         }
     }
+
+    if (!isFeedbackOpen && !hasSubmitted) return null
 
     if (hasSubmitted) {
         return (
@@ -145,25 +192,38 @@ export function StudentFeedbackTerminal({ event, studentId, hasSubmitted: initia
                                         </div>
 
                                         <div className="pl-10">
-                                            {q.type === 'rating' && (
+                                            {(q.type === 'rating') && (
                                                 <div className="flex gap-2">
-                                                    {[1, 2, 3, 4, 5].map((val) => (
-                                                        <button
-                                                            key={val}
-                                                            onClick={() => setResponses({...responses, [i]: val})}
-                                                            className={`w-12 h-12 rounded-xl border-2 flex items-center justify-center transition-all ${
-                                                                responses[i] === val 
-                                                                ? 'bg-black border-black text-white scale-110 shadow-lg' 
-                                                                : 'bg-white border-zinc-100 text-zinc-400 hover:border-black'
-                                                            }`}
-                                                        >
-                                                            <Star size={18} fill={responses[i] === val ? "currentColor" : "none"} />
-                                                        </button>
-                                                    ))}
+                                                    {[1, 2, 3, 4, 5].map((val) => {
+                                                        const isSelected = (responses[i] || 0) >= val
+                                                        const isHovered = (hoveredStar[i] || 0) >= val
+                                                        return (
+                                                            <button
+                                                                key={val}
+                                                                type="button"
+                                                                onMouseEnter={() => setHoveredStar({...hoveredStar, [i]: val})}
+                                                                onMouseLeave={() => setHoveredStar({...hoveredStar, [i]: 0})}
+                                                                onClick={() => setResponses({...responses, [i]: val})}
+                                                                className={`w-12 h-12 rounded-xl border-2 flex items-center justify-center transition-all ${
+                                                                    isSelected 
+                                                                    ? 'bg-yellow-400 border-yellow-500 text-black scale-110 shadow-[0_0_15px_rgba(250,204,21,0.4)]' 
+                                                                    : isHovered
+                                                                        ? 'bg-yellow-50 border-yellow-200 text-yellow-600 scale-105'
+                                                                        : 'bg-white border-zinc-100 text-zinc-400 hover:border-black'
+                                                                }`}
+                                                            >
+                                                                <Star 
+                                                                    size={18} 
+                                                                    fill={isSelected || isHovered ? "currentColor" : "none"} 
+                                                                    className={`${isSelected ? 'animate-in zoom-in-75 duration-300' : ''}`}
+                                                                />
+                                                            </button>
+                                                        )
+                                                    })}
                                                 </div>
                                             )}
 
-                                            {q.type === 'text' && (
+                                            {(q.type === 'text' || q.type === 'long_text') && (
                                                 <textarea 
                                                     className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl p-4 text-sm font-medium focus:ring-2 focus:ring-black focus:border-black outline-none transition-all placeholder:text-zinc-300 min-h-[100px]"
                                                     placeholder="Type your response here..."
@@ -172,11 +232,22 @@ export function StudentFeedbackTerminal({ event, studentId, hasSubmitted: initia
                                                 />
                                             )}
 
-                                            {q.type === 'multiple_choice' && (
+                                            {q.type === 'short_text' && (
+                                                <input 
+                                                    type="text"
+                                                    className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl p-4 text-sm font-medium focus:ring-2 focus:ring-black focus:border-black outline-none transition-all placeholder:text-zinc-300"
+                                                    placeholder="Type your response here..."
+                                                    value={responses[i] || ''}
+                                                    onChange={(e) => setResponses({...responses, [i]: e.target.value})}
+                                                />
+                                            )}
+
+                                            {(q.type === 'multiple_choice' || q.type === 'choice') && (
                                                 <div className="grid grid-cols-1 gap-2">
                                                     {q.options?.map((opt) => (
                                                         <button
                                                             key={opt}
+                                                            type="button"
                                                             onClick={() => setResponses({...responses, [i]: opt})}
                                                             className={`w-full p-4 rounded-2xl border-2 text-left text-xs font-bold transition-all flex items-center justify-between ${
                                                                 responses[i] === opt 
@@ -188,6 +259,67 @@ export function StudentFeedbackTerminal({ event, studentId, hasSubmitted: initia
                                                             {responses[i] === opt && <CheckCircle2 size={16} />}
                                                         </button>
                                                     ))}
+                                                </div>
+                                            )}
+
+                                            {q.type === 'dropdown' && (
+                                                <select
+                                                    className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl p-4 text-sm font-medium focus:ring-2 focus:ring-black focus:border-black outline-none transition-all"
+                                                    value={responses[i] || ''}
+                                                    onChange={(e) => setResponses({...responses, [i]: e.target.value})}
+                                                >
+                                                    <option value="" disabled>Select an option</option>
+                                                    {q.options?.map((opt) => (
+                                                        <option key={opt} value={opt}>{opt}</option>
+                                                    ))}
+                                                </select>
+                                            )}
+
+                                            {q.type === 'boolean' && (
+                                                <div className="flex gap-4">
+                                                    {['Yes', 'No'].map((opt) => (
+                                                        <button
+                                                            key={opt}
+                                                            type="button"
+                                                            onClick={() => setResponses({...responses, [i]: opt})}
+                                                            className={`flex-1 p-4 rounded-2xl border-2 text-center text-xs font-bold transition-all ${
+                                                                responses[i] === opt 
+                                                                ? 'bg-black border-black text-white' 
+                                                                : 'bg-white border-zinc-100 text-[#555] hover:border-zinc-300'
+                                                            }`}
+                                                        >
+                                                            {opt}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            )}
+
+                                            {q.type === 'checkboxes' && (
+                                                <div className="grid grid-cols-1 gap-2">
+                                                    {q.options?.map((opt) => {
+                                                        const currentValues = responses[i] || []
+                                                        const isSelected = currentValues.includes(opt)
+                                                        return (
+                                                            <button
+                                                                key={opt}
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    const nextValues = isSelected
+                                                                        ? currentValues.filter((v: string) => v !== opt)
+                                                                        : [...currentValues, opt]
+                                                                    setResponses({...responses, [i]: nextValues})
+                                                                }}
+                                                                className={`w-full p-4 rounded-2xl border-2 text-left text-xs font-bold transition-all flex items-center justify-between ${
+                                                                    isSelected 
+                                                                    ? 'bg-black border-black text-white' 
+                                                                    : 'bg-white border-zinc-100 text-[#555] hover:border-zinc-300'
+                                                                }`}
+                                                            >
+                                                                {opt}
+                                                                {isSelected && <CheckCircle2 size={16} />}
+                                                            </button>
+                                                        )
+                                                    })}
                                                 </div>
                                             )}
                                         </div>

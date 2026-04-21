@@ -10,6 +10,11 @@ export function FeedbackToggle({ eventId, initialStatus }: { eventId: string, in
     const [isOpen, setIsOpen] = useState(initialStatus)
     const [isPending, setIsPending] = useState(false)
 
+    // Sync with server state if it changes externally
+    React.useEffect(() => {
+        setIsOpen(initialStatus)
+    }, [initialStatus])
+
     async function handleToggle(checked: boolean) {
         setIsPending(true)
         const oldStatus = isOpen

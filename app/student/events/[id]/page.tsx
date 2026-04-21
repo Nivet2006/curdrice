@@ -124,13 +124,11 @@ export default async function EventDetailPage({
               <div className="mt-6 space-y-4">
                 <Button className="w-full opacity-50 cursor-not-allowed">Registered ✓</Button>
                 
-                {event.feedback_open && (
-                  <StudentFeedbackTerminal 
-                    event={event} 
-                    studentId={user?.id || ''} 
-                    hasSubmitted={hasSubmittedFeedback} 
-                  />
-                )}
+                <StudentFeedbackTerminal 
+                  event={event} 
+                  studentId={user?.id || ''} 
+                  hasSubmitted={hasSubmittedFeedback} 
+                />
 
                 <QRButton 
                   token={registration?.qr_token || ''} 

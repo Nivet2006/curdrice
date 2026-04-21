@@ -235,20 +235,25 @@ export async function toggleFeedback(eventId: string, isOpen: boolean) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Unauthorized' }
 
-  // Check ownership
-  const { data: event } = await supabase.from('events').select('created_by').eq('id', eventId).single()
+  // Check ownership/role
+  const { data: event } = await supabase.from('events').select('created_by, club_name').eq('id', eventId).single()
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   
-  if (event?.created_by !== user.id && profile?.role !== 'admin') {
-    return { error: 'Unauthorized: Only the event creator can toggle feedback.' }
+  const isOwner = event?.created_by === user.id
+  const isStaff = ['admin', 'teacher', 'hod', 'pr', 'cc', 'manager'].includes(profile?.role || '')
+
+  if (!isOwner && !isStaff) {
+    return { error: 'Unauthorized: You do not have permission to toggle feedback for this event.' }
   }
 
-  const { error } = await supabase
+  const { error, count } = await supabase
     .from('events')
     .update({ feedback_open: isOpen })
     .eq('id', eventId)
+    .select('*', { count: 'exact', head: true })
 
   if (error) return { error: error.message }
+  if (count === 0) return { error: 'Failed to update: Event not found or permission denied.' }
   
   revalidatePath(`/cc/events/${eventId}`)
   revalidatePath(`/student/events/${eventId}`)
