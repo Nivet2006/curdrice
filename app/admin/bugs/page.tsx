@@ -139,9 +139,11 @@ export default function AdminBugsPage() {
 
     // Real-time settings
     const settingsChannel = supabase
-      .channel('bug-settings')
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'bug_settings', filter: 'key=eq.widget_active' }, (payload) => {
-        setWidgetActive(payload.new.value as boolean)
+      .channel('bug-settings-sync')
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'bug_settings' }, (payload) => {
+        if (payload.new && payload.new.key === 'widget_active') {
+          setWidgetActive(payload.new.value as boolean)
+        }
       })
       .subscribe()
 
@@ -153,14 +155,20 @@ export default function AdminBugsPage() {
   }, [supabase])
 
   const toggleWidget = async () => {
-    const newVal = !widgetActive
-    setWidgetActive(newVal)
-    const { error } = await supabase.from('bug_settings').update({ value: newVal }).eq('key', 'widget_active')
+    const nextVal = !widgetActive
+    // Optimistic update
+    setWidgetActive(nextVal)
+    
+    const { error } = await supabase
+      .from('bug_settings')
+      .update({ value: nextVal })
+      .eq('key', 'widget_active')
+
     if (error) {
-       toast.error('Failed to update status')
-       setWidgetActive(!newVal)
+       toast.error('Sync failed: ' + error.message)
+       setWidgetActive(!nextVal)
     } else {
-       toast.success(`Widget ${newVal ? 'ENABLED' : 'DISABLED'} GLOBALLY`)
+       toast.success(`SYSTEM: Widget is now ${nextVal ? 'LIVE' : 'OFFLINE'}`)
     }
   }
 
