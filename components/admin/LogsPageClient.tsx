@@ -4,7 +4,7 @@ import { Monitor, Smartphone, Globe, Clock, Trash2, Download, Filter, X, Search,
 import { drainLogs, clearByIP, clearByDateRange, getAuditLogs } from '../../app/admin/logs/actions'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 
 // ── Types ──────────────────────────────────────────────────────
 interface LogEntry {
@@ -434,6 +434,9 @@ function FilterBar({ searchParams }: { searchParams: URLSearchParams }) {
     const [from, setFrom] = useState(searchParams.get('from') || '')
     const [to, setTo] = useState(searchParams.get('to') || '')
 
+    const router = useRouter()
+    const pathname = usePathname()
+
     const apply = () => {
         const params = new URLSearchParams()
         if (ip) params.set('ip', ip)
@@ -441,14 +444,12 @@ function FilterBar({ searchParams }: { searchParams: URLSearchParams }) {
         if (action !== 'ALL') params.set('action', action)
         if (from) params.set('from', from)
         if (to) params.set('to', to)
-        window.history.pushState({}, '', `?${params.toString()}`)
-        window.dispatchEvent(new Event('popstate')) // Trigger searchParams hook update
+        router.push(`${pathname}?${params.toString()}`)
     }
 
     const reset = () => {
         setIp(''); setUser(''); setAction('ALL'); setFrom(''); setTo('')
-        window.history.pushState({}, '', `/admin/logs`)
-        window.dispatchEvent(new Event('popstate'))
+        router.push(pathname)
     }
 
     return (

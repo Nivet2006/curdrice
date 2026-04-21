@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import * as XLSX from 'xlsx'
@@ -54,6 +55,35 @@ export default function AdminBugsPage() {
   const [editName, setEditName] = useState('')
   const [editId, setEditId] = useState('')
   const [showShareCard, setShowShareCard] = useState(false)
+
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
+
+  useEffect(() => {
+      const id = searchParams.get('id')
+      if (id) {
+          const report = reports.find(r => r.id === id)
+          if (report) {
+              setSelected(report)
+              setNote(report.admin_note || '')
+          }
+      } else {
+          setSelected(null)
+      }
+  }, [searchParams, reports])
+
+  const handleSelect = (r: Report) => {
+      const params = new URLSearchParams(searchParams)
+      params.set('id', r.id)
+      router.push(`${pathname}?${params.toString()}`)
+  }
+
+  const handleClose = () => {
+      const params = new URLSearchParams(searchParams)
+      params.delete('id')
+      router.push(pathname)
+  }
 
   useEffect(() => {
     // Fetch reports
@@ -304,7 +334,7 @@ export default function AdminBugsPage() {
             )}
             {reports.map(r => (
               <div key={r.id}
-                onClick={() => { setSelected(r); setNote(r.admin_note || '') }}
+                onClick={() => handleSelect(r)}
                 className={`cursor-pointer rounded-xl border p-5 transition-all duration-200 ${
                   selected?.id === r.id 
                   ? 'bg-[var(--bg-hover)] border-[var(--fg)] shadow-[0_4px_20px_rgba(255,255,255,0.05)] ring-1 ring-[var(--fg)]' 
@@ -358,7 +388,7 @@ export default function AdminBugsPage() {
                     >
                       Delete
                     </button>
-                    <button onClick={() => setSelected(null)} style={{ color: 'var(--fg-faint)' }} className="hover:text-[var(--fg)] transition text-lg ml-2">✕</button>
+                    <button onClick={handleClose} style={{ color: 'var(--fg-faint)' }} className="hover:text-[var(--fg)] transition text-lg ml-2">✕</button>
                   </div>
                 </div>
                 

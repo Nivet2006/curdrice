@@ -12,10 +12,38 @@ const clickTrail: string[] = []
 const jsErrors: string[] = []
 
 if (typeof window !== 'undefined') {
+  // Track initial page
+  clickTrail.unshift(`PAGE_LOAD: ${window.location.pathname}`)
+
+  // Navigation tracking
+  const trackNav = () => {
+    const lastEntry = clickTrail[0]
+    const currentPath = `PAGE_NAV: ${window.location.pathname}`
+    if (lastEntry !== currentPath) {
+      clickTrail.unshift(currentPath)
+      if (clickTrail.length > MAX_CLICKS) clickTrail.pop()
+    }
+  }
+
+  window.addEventListener('popstate', trackNav)
+  
+  // Patch pushState/replaceState for SPA navigation detection
+  const originalPushState = window.history.pushState
+  window.history.pushState = function(...args: any[]) {
+    originalPushState.apply(this, args)
+    trackNav()
+  }
+  
+  const originalReplaceState = window.history.replaceState
+  window.history.replaceState = function(...args: any[]) {
+    originalReplaceState.apply(this, args)
+    trackNav()
+  }
+
   window.addEventListener('click', (e) => {
     const target = e.target as HTMLElement
     const label = target.tagName + (target.id ? `#${target.id}` : '') + (target.className ? `.${String(target.className).split(' ')[0]}` : '')
-    clickTrail.unshift(`${label} @ ${window.location.pathname}`)
+    clickTrail.unshift(`CLICK: ${label} @ ${window.location.pathname}`)
     if (clickTrail.length > MAX_CLICKS) clickTrail.pop()
   }, { capture: true, passive: true })
 
