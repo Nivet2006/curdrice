@@ -10,6 +10,7 @@ import { QRButton } from '@/components/student/QRButton'
 import { ShareEventButton } from '@/components/student/ShareEventButton'
 import { withDynamicSingleEventStatus } from '@/lib/event-utils'
 import { EventStatusBadge } from '@/components/ui/EventStatusBadge'
+import { StudentFeedbackTerminal } from '@/components/student/StudentFeedbackTerminal'
 
 export default async function EventDetailPage({ 
   params,
@@ -46,7 +47,15 @@ export default async function EventDetailPage({
     .eq('student_id', user?.id)
     .maybeSingle()
 
+  const { data: feedbackData } = await supabase
+    .from('feedbacks')
+    .select('id')
+    .eq('event_id', id)
+    .eq('student_id', user?.id)
+    .maybeSingle()
+
   const isRegistered = !!registration
+  const hasSubmittedFeedback = !!feedbackData
   const isEligible = true
   const regCount = registeredCount || 0
   const maxCap = event.max_capacity || Infinity
@@ -112,8 +121,17 @@ export default async function EventDetailPage({
             )}
 
             {isRegistered ? (
-              <div className="mt-6">
+              <div className="mt-6 space-y-4">
                 <Button className="w-full opacity-50 cursor-not-allowed">Registered ✓</Button>
+                
+                {event.feedback_open && (
+                  <StudentFeedbackTerminal 
+                    event={event} 
+                    studentId={user?.id || ''} 
+                    hasSubmitted={hasSubmittedFeedback} 
+                  />
+                )}
+
                 <QRButton 
                   token={registration?.qr_token || ''} 
                   studentName={profile?.full_name || ''} 

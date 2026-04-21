@@ -226,7 +226,31 @@ export async function updateEventDraft(id: string, formData: FormData) {
 
   if (constraintError) return { error: constraintError.message }
 
-  revalidatePath('/cc/dashboard')
   revalidatePath(`/cc/events/${id}`)
+  return { success: true }
+}
+
+export async function toggleFeedback(eventId: string, isOpen: boolean) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Unauthorized' }
+
+  // Check ownership
+  const { data: event } = await supabase.from('events').select('created_by').eq('id', eventId).single()
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  
+  if (event?.created_by !== user.id && profile?.role !== 'admin') {
+    return { error: 'Unauthorized: Only the event creator can toggle feedback.' }
+  }
+
+  const { error } = await supabase
+    .from('events')
+    .update({ feedback_open: isOpen })
+    .eq('id', eventId)
+
+  if (error) return { error: error.message }
+  
+  revalidatePath(`/cc/events/${eventId}`)
+  revalidatePath(`/student/events/${eventId}`)
   return { success: true }
 }

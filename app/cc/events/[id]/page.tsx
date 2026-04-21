@@ -6,6 +6,7 @@ import { EventStatusTracker } from '@/components/common/EventStatusTracker'
 import { redirect } from 'next/navigation'
 import { submitEventForReview } from '@/lib/actions/cc-events'
 import { AdminManualOverride } from '@/components/admin/AdminManualOverride'
+import { FeedbackToggle } from '@/components/cc/FeedbackToggle'
 
 export default async function CCEventDetailPage({ params }: { params: Promise<{ id: string }> }) {
    const supabase = await createClient()
@@ -213,6 +214,7 @@ export default async function CCEventDetailPage({ params }: { params: Promise<{ 
 
                {event.approval_status === 'approved' ? (
                   <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
+                     <FeedbackToggle eventId={event.id} initialStatus={event.feedback_open} />
                      <div className="bg-[#0a0a0a] dark:bg-zinc-900 p-6 rounded-3xl border border-emerald-500/30">
                         <div className="flex items-center gap-2 text-emerald-400 mb-2">
                            <Heart size={16} fill="currentColor" />

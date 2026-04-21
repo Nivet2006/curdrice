@@ -29,6 +29,7 @@ export interface Event {
   approval_status: ApprovalStatus
   rejection_data: { field: string; reason: string }[]
   feedback_config: any[]
+  feedback_open: boolean
   targeted_department: string | null
   banner_url: string | null
   created_by: string
