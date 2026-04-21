@@ -121,8 +121,8 @@ export default function AdminBugsPage() {
       .channel('admin-access-ids')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'bug_access_ids' }, (payload) => {
         if (payload.eventType === 'INSERT') setAccessIds(p => [payload.new as AccessId, ...p])
-        if (payload.eventType === 'UPDATE') setAccessIds(p => p.map(a => a.id === payload.new.id ? payload.new as AccessId : a))
-        if (payload.eventType === 'DELETE') setAccessIds(p => p.filter(a => a.id !== payload.old.id))
+        if (payload.eventType === 'UPDATE') setAccessIds(p => p.map(a => a.access_id === payload.new.access_id ? payload.new as AccessId : a))
+        if (payload.eventType === 'DELETE') setAccessIds(p => p.filter(a => a.access_id !== payload.old.access_id))
       })
       .subscribe()
 
