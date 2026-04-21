@@ -60,6 +60,7 @@ export function BugReporterWidget() {
   const [isResetting, setIsResetting] = useState(false)
   const [newPassForm, setNewPassForm] = useState('')
   const [confirmPassForm, setConfirmPassForm] = useState('')
+  const [globalEnabled, setGlobalEnabled] = useState(true)
 
   const dragging = useRef(false)
   const dragOccurred = useRef(false)
@@ -70,13 +71,29 @@ export function BugReporterWidget() {
   useEffect(() => {
     setMounted(true)
     setPos(getSavedPosition())
-    // Check if previously verified in this session
     const saved = sessionStorage.getItem('bug-verified-id')
     if (saved) {
       setAccessId(saved)
       setIsVerified(true)
     }
-  }, [])
+
+    // Global toggle check
+    supabase.from('bug_settings').select('value').eq('key', 'widget_active').single()
+      .then(({ data }) => {
+        if (data) setGlobalEnabled(data.value as boolean)
+      })
+
+    const globalChannel = supabase
+      .channel('global-bug-toggle')
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'bug_settings', filter: 'key=eq.widget_active' }, (payload) => {
+        setGlobalEnabled(payload.new.value as boolean)
+      })
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(globalChannel)
+    }
+  }, [supabase])
 
   // ── Drag logic ──────────────────────────────────────────────
   const onMouseDown = useCallback((e: React.MouseEvent) => {
@@ -252,7 +269,7 @@ export function BugReporterWidget() {
     sessionStorage.removeItem('bug-verified-id')
   }
 
-  if (!mounted) return null
+  if (!mounted || !globalEnabled) return null
 
   return (
     <div

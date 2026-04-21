@@ -55,6 +55,8 @@ export default function AdminBugsPage() {
   const [editName, setEditName] = useState('')
   const [editId, setEditId] = useState('')
   const [showShareCard, setShowShareCard] = useState(false)
+  const [widgetActive, setWidgetActive] = useState(true)
+  const [settingLoading, setSettingLoading] = useState(true)
 
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -124,11 +126,43 @@ export default function AdminBugsPage() {
       })
       .subscribe()
 
+    // Fetch settings
+    supabase
+      .from('bug_settings')
+      .select('value')
+      .eq('key', 'widget_active')
+      .single()
+      .then(({ data }) => {
+        if (data) setWidgetActive(data.value as boolean)
+        setSettingLoading(false)
+      })
+
+    // Real-time settings
+    const settingsChannel = supabase
+      .channel('bug-settings')
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'bug_settings', filter: 'key=eq.widget_active' }, (payload) => {
+        setWidgetActive(payload.new.value as boolean)
+      })
+      .subscribe()
+
     return () => { 
       supabase.removeChannel(reportChannel)
       supabase.removeChannel(accessChannel)
+      supabase.removeChannel(settingsChannel)
     }
   }, [supabase])
+
+  const toggleWidget = async () => {
+    const newVal = !widgetActive
+    setWidgetActive(newVal)
+    const { error } = await supabase.from('bug_settings').update({ value: newVal }).eq('key', 'widget_active')
+    if (error) {
+       toast.error('Failed to update status')
+       setWidgetActive(!newVal)
+    } else {
+       toast.success(`Widget ${newVal ? 'ENABLED' : 'DISABLED'} GLOBALLY`)
+    }
+  }
 
   const refreshAccessIds = async () => {
     const { data } = await supabase.from('bug_access_ids').select('*').order('created_at', { ascending: false })
@@ -285,6 +319,24 @@ export default function AdminBugsPage() {
             <span>🐛</span> Bug Central
           </h1>
           <p className="font-mono text-[10px] mt-1 uppercase tracking-[0.2em]" style={{ color: 'var(--fg-faint)' }}>Administrative Debugging Suite</p>
+        </div>
+
+        {/* Global Toggle */}
+        <div className="mx-auto flex items-center gap-4 bg-[var(--bg-subtle)] border border-[var(--border)] px-4 py-2 rounded-2xl">
+           <div className="flex flex-col text-right">
+              <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: widgetActive ? '#22c55e' : '#ef4444' }}>
+                {widgetActive ? 'WIDGET LIVE' : 'WIDGET OFFLINE'}
+              </span>
+              <span className="text-[8px] font-medium opacity-40 uppercase">Global Visibility Control</span>
+           </div>
+           
+           <button 
+             onClick={toggleWidget}
+             disabled={settingLoading}
+             className={`relative w-12 h-6 rounded-full p-1 transition-all duration-300 ${widgetActive ? 'bg-green-500' : 'bg-red-500/20'}`}
+           >
+              <div className={`w-4 h-4 rounded-full bg-white transition-all duration-300 shadow-sm ${widgetActive ? 'translate-x-6' : 'translate-x-0'}`} />
+           </button>
         </div>
         
         <div className="flex items-center gap-3">

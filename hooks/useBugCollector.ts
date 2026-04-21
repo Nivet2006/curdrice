@@ -29,14 +29,14 @@ if (typeof window !== 'undefined') {
   
   // Patch pushState/replaceState for SPA navigation detection
   const originalPushState = window.history.pushState
-  window.history.pushState = function(...args: any[]) {
-    originalPushState.apply(this, args)
+  window.history.pushState = function(data: any, unused: string, url?: string | URL | null) {
+    originalPushState.call(this, data, unused, url)
     trackNav()
   }
   
   const originalReplaceState = window.history.replaceState
-  window.history.replaceState = function(...args: any[]) {
-    originalReplaceState.apply(this, args)
+  window.history.replaceState = function(data: any, unused: string, url?: string | URL | null) {
+    originalReplaceState.call(this, data, unused, url)
     trackNav()
   }
 
