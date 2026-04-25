@@ -1,73 +1,95 @@
 import * as SQLite from 'expo-sqlite';
 
-const db = SQLite.openDatabase('attendance.db');
+let _db: SQLite.SQLiteDatabase | null = null;
 
-export const initDb = () => {
-  return new Promise((resolve, reject) => {
-    db.transaction(tx => {
-      tx.executeSql(
-        `CREATE TABLE IF NOT EXISTS registrations (
-          id TEXT PRIMARY KEY,
-          eventId TEXT,
-          studentName TEXT,
-          usn TEXT,
-          email TEXT,
-          isPresent INTEGER DEFAULT 0,
-          markedAt INTEGER,
-          isSynced INTEGER DEFAULT 1
-        );`,
-        [],
-        () => resolve(true),
-        (_, error) => { reject(error); return false; }
-      );
-    });
-  });
+const getDb = async () => {
+  if (!_db) {
+    _db = await SQLite.openDatabaseAsync('attendance.db');
+  }
+  return _db;
 };
 
-export const saveRegistrations = (registrations: any[]) => {
-  return new Promise((resolve, reject) => {
-    db.transaction(tx => {
-      registrations.forEach(reg => {
-        tx.executeSql(
+export const initDb = async () => {
+  try {
+    const db = await getDb();
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS registrations (
+        id TEXT PRIMARY KEY,
+        eventId TEXT,
+        studentName TEXT,
+        usn TEXT,
+        email TEXT,
+        isPresent INTEGER DEFAULT 0,
+        markedAt INTEGER,
+        isSynced INTEGER DEFAULT 1
+      );
+    `);
+    return true;
+  } catch (error) {
+    console.error("DB Init Error:", error);
+    return false;
+  }
+};
+
+export const saveRegistrations = async (registrations: any[]) => {
+  try {
+    const db = await getDb();
+    await db.withTransactionAsync(async () => {
+      for (const reg of registrations) {
+        await db.runAsync(
           'INSERT OR REPLACE INTO registrations (id, eventId, studentName, usn, email, isPresent, markedAt, isSynced) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-          [reg.id, reg.event_id, reg.student_name, reg.usn, reg.email, reg.is_present ? 1 : 0, reg.marked_at ? new Date(reg.marked_at).getTime() : null, 1]
+          [
+            reg.id, 
+            reg.event_id, 
+            reg.student_name, 
+            reg.usn, 
+            reg.email, 
+            reg.is_present ? 1 : 0, 
+            reg.marked_at ? new Date(reg.marked_at).getTime() : null, 
+            1
+          ]
         );
-      });
-    }, reject, () => resolve(true));
-  });
+      }
+    });
+    return true;
+  } catch (error) {
+    console.error("Save Registrations Error:", error);
+    return false;
+  }
 };
 
-export const markPresentLocally = (usn: string, eventId: string) => {
+export const markPresentLocally = async (usn: string, eventId: string) => {
   const now = Date.now();
-  return new Promise((resolve, reject) => {
-    db.transaction(tx => {
-      tx.executeSql(
-        'UPDATE registrations SET isPresent = 1, markedAt = ?, isSynced = 0 WHERE usn = ? AND eventId = ?',
-        [now, usn, eventId],
-        () => resolve(now),
-        (_, error) => { reject(error); return false; }
-      );
-    }, reject);
-  });
+  try {
+    const db = await getDb();
+    await db.runAsync(
+      'UPDATE registrations SET isPresent = 1, markedAt = ?, isSynced = 0 WHERE usn = ? AND eventId = ?',
+      [now, usn, eventId]
+    );
+    return now;
+  } catch (error) {
+    console.error("Mark Present Error:", error);
+    throw error;
+  }
 };
 
-export const getUnsyncedRecords = () => {
-  return new Promise((resolve, reject) => {
-    db.transaction(tx => {
-      tx.executeSql(
-        'SELECT * FROM registrations WHERE isSynced = 0',
-        [],
-        (_, { rows: { _array } }) => resolve(_array),
-        (_, error) => { reject(error); return false; }
-      );
-    });
-  });
+export const getUnsyncedRecords = async () => {
+  try {
+    const db = await getDb();
+    return await db.getAllAsync('SELECT * FROM registrations WHERE isSynced = 0', []);
+  } catch (error) {
+    console.error("Get Unsynced Error:", error);
+    return [];
+  }
 };
 
-export const markSynced = (id: string) => {
-  return new Promise((resolve, reject) => {
-    db.transaction(tx => {
-      tx.executeSql('UPDATE registrations SET isSynced = 1 WHERE id = ?', [id], () => resolve(true), (_, error) => { reject(error); return false; });
-    });
-  });
+export const markSynced = async (id: string) => {
+  try {
+    const db = await getDb();
+    await db.runAsync('UPDATE registrations SET isSynced = 1 WHERE id = ?', [id]);
+    return true;
+  } catch (error) {
+    console.error("Mark Synced Error:", error);
+    return false;
+  }
 };

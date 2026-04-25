@@ -39,4 +39,4 @@ tmp/
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-./NATIVE APP
+/NATIVE APP

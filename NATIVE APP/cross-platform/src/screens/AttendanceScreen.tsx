@@ -2,47 +2,50 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity, SearchBar } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { ArrowLeft, CheckCircle2, Circle } from 'lucide-react-native';
+import * as DB from '../lib/database';
 import * as SQLite from 'expo-sqlite';
-
-const db = SQLite.openDatabase('attendance.db');
 
 export const AttendanceScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const { eventId } = route.params as { eventId: string };
   
-  const [students, setStudents] = useState([]);
+  const [students, setStudents] = useState<any[]>([]);
   const [stats, setStats] = useState({ total: 0, present: 0 });
 
   useEffect(() => {
     loadData();
   }, []);
 
-  const loadData = () => {
-    db.transaction(tx => {
-      tx.executeSql(
+  const loadData = async () => {
+    try {
+      const db = await SQLite.openDatabaseAsync('attendance.db');
+      const result = await db.getAllAsync<any>(
         'SELECT * FROM registrations WHERE eventId = ? ORDER BY studentName ASC',
-        [eventId],
-        (_, { rows: { _array } }) => {
-          setStudents(_array);
-          const present = _array.filter(s => s.isPresent).length;
-          setStats({ total: _array.length, present });
-        }
+        [eventId]
       );
-    });
+      setStudents(result);
+      const present = result.filter(s => s.isPresent).length;
+      setStats({ total: result.length, present });
+    } catch (e) {
+      console.error(e);
+    }
   };
 
-  const togglePresence = (item: any) => {
+  const togglePresence = async (item: any) => {
     const newState = item.isPresent ? 0 : 1;
     const now = newState ? Date.now() : null;
     
-    db.transaction(tx => {
-      tx.executeSql(
+    try {
+      const db = await SQLite.openDatabaseAsync('attendance.db');
+      await db.runAsync(
         'UPDATE registrations SET isPresent = ?, markedAt = ?, isSynced = 0 WHERE id = ?',
-        [newState, now, item.id],
-        () => loadData()
+        [newState, now, item.id]
       );
-    });
+      loadData();
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const renderItem = ({ item }: { item: any }) => (

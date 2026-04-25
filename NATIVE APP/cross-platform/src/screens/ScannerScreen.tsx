@@ -1,73 +1,71 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import { BarCodeScanner } from 'expo-barcode-scanner';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { X, RefreshCcw, UserCheck, List } from 'lucide-react-native';
+import * as DB from '../lib/database';
 import * as SQLite from 'expo-sqlite';
-
-const db = SQLite.openDatabase('attendance.db');
 
 export const ScannerScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const { eventId } = route.params as { eventId: string };
 
-  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+  const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
   const [studentInfo, setStudentInfo] = useState<any>(null);
 
   useEffect(() => {
-    (async () => {
-      const { status } = await BarCodeScanner.requestPermissionsAsync();
-      setHasPermission(status === 'granted');
-    })();
-  }, []);
+    if (!permission) requestPermission();
+  }, [permission]);
 
   const handleBarCodeScanned = ({ data }: { data: string }) => {
     setScanned(true);
     lookupStudent(data);
   };
 
-  const lookupStudent = (usn: string) => {
-    db.transaction(tx => {
-      tx.executeSql(
+  const lookupStudent = async (usn: string) => {
+    try {
+      const db = await SQLite.openDatabaseAsync('attendance.db');
+      const result = await db.getFirstAsync<any>(
         'SELECT * FROM registrations WHERE usn = ? AND eventId = ?',
-        [usn, eventId],
-        (_, { rows: { _array } }) => {
-          if (_array.length > 0) {
-            setStudentInfo(_array[0]);
-          } else {
-            Alert.alert('Not Found', `No student found with USN: ${usn} for this event.`);
-            setScanned(false);
-          }
-        }
+        [usn, eventId]
       );
-    });
+      
+      if (result) {
+        setStudentInfo(result);
+      } else {
+        Alert.alert('Not Found', `No student found with USN: ${usn} for this event.`);
+        setScanned(false);
+      }
+    } catch (e) {
+      console.error(e);
+      setScanned(false);
+    }
   };
 
-  const markPresent = () => {
-    const now = Date.now();
-    db.transaction(tx => {
-      tx.executeSql(
-        'UPDATE registrations SET isPresent = 1, markedAt = ?, isSynced = 0 WHERE usn = ? AND eventId = ?',
-        [now, studentInfo.usn, eventId],
-        () => {
-          Alert.alert('Success', `${studentInfo.studentName} marked as present.`);
-          setScanned(false);
-          setStudentInfo(null);
-        }
-      );
-    });
+  const markPresent = async () => {
+    try {
+      await DB.markPresentLocally(studentInfo.usn, eventId);
+      Alert.alert('Success', `${studentInfo.studentName} marked as present.`);
+      setScanned(false);
+      setStudentInfo(null);
+    } catch (e) {
+      Alert.alert('Error', 'Failed to mark attendance.');
+    }
   };
 
-  if (hasPermission === null) return <View style={styles.container}><Text>Requesting camera permission...</Text></View>;
-  if (hasPermission === false) return <View style={styles.container}><Text>No access to camera</Text></View>;
+  if (!permission) return <View style={styles.container}><Text>Requesting camera permission...</Text></View>;
+  if (!permission.granted) return <View style={styles.container}><Text>No access to camera</Text></View>;
 
   return (
     <View style={styles.container}>
-      <BarCodeScanner
-        onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
+      <CameraView
         style={StyleSheet.absoluteFillObject}
+        onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
+        barcodeScannerSettings={{
+          barcodeTypes: ["qr"],
+        }}
       />
 
       <View style={styles.overlay}>

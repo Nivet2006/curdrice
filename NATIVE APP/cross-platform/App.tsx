@@ -7,9 +7,17 @@ import { ScannerScreen } from './src/screens/ScannerScreen';
 import { AttendanceScreen } from './src/screens/AttendanceScreen';
 import { StatusBar } from 'expo-status-bar';
 
+import { initDb } from './src/lib/database';
+import { startSyncService } from './src/lib/sync';
+
 const Stack = createStackNavigator();
 
 export default function App() {
+  React.useEffect(() => {
+    initDb();
+    startSyncService();
+  }, []);
+
   return (
     <NavigationContainer>
       <StatusBar style="auto" />

@@ -24,6 +24,10 @@ Follow these steps to validate the offline-first attendance flow on your device.
    - **Android**: The "Scan QR Code" button inside the Expo Go app.
    - **iOS**: Your standard Camera app.
 
+npx expo start -c --tunnel
+
+
+
 ## 3. Test Scenarios
 
 ### Scenario A: Online Flow (Live Sync)
