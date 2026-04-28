@@ -215,13 +215,22 @@ export default async function CCEventDetailPage({ params }: { params: Promise<{ 
                {event.approval_status === 'approved' ? (
                   <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
                      <FeedbackToggle eventId={event.id} initialStatus={event.feedback_open} />
-                     <div className="bg-[#0a0a0a] dark:bg-zinc-900 p-6 rounded-3xl border border-emerald-500/30">
-                        <div className="flex items-center gap-2 text-emerald-400 mb-2">
-                           <Heart size={16} fill="currentColor" />
-                           <span className="text-[10px] font-mono font-black uppercase tracking-widest">Public Interest</span>
-                        </div>
-                        <p className="text-white text-sm font-medium">Your event is currently attracting registrations.</p>
-                     </div>
+                     {(() => {
+                        const isRegistrationsClosed = new Date() > new Date(event.registration_deadline);
+                        return (
+                           <div className={`p-6 rounded-3xl border ${isRegistrationsClosed ? 'bg-zinc-100 dark:bg-zinc-800/50 border-zinc-300 dark:border-zinc-700' : 'bg-[#0a0a0a] dark:bg-zinc-900 border-emerald-500/30'}`}>
+                              <div className={`flex items-center gap-2 mb-2 ${isRegistrationsClosed ? 'text-zinc-500' : 'text-emerald-400'}`}>
+                                 {isRegistrationsClosed ? <XCircle size={16} /> : <Heart size={16} fill="currentColor" />}
+                                 <span className="text-[10px] font-mono font-black uppercase tracking-widest">
+                                    {isRegistrationsClosed ? 'Registrations Closed' : 'Public Interest'}
+                                 </span>
+                              </div>
+                              <p className={`text-sm font-medium ${isRegistrationsClosed ? 'text-zinc-600 dark:text-zinc-400' : 'text-white'}`}>
+                                 {isRegistrationsClosed ? 'The registration window has concluded. You can now focus on event execution and feedback collection.' : 'Your event is currently attracting registrations.'}
+                              </p>
+                           </div>
+                        );
+                     })()}
                      <EventRegistrationStats eventId={event.id} />
                   </div>
                ) : (
