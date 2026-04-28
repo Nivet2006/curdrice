@@ -2,10 +2,11 @@
 
 import React, { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Users, User, Clock, CheckCircle, Download } from 'lucide-react'
+import { Users, User, Clock, CheckCircle, Download, MessageSquareHeart } from 'lucide-react'
 
 interface Registration {
   id: string
+  student_id: string
   registered_at: string
   checked_in: boolean
   profiles: {
@@ -18,6 +19,7 @@ interface Registration {
 export function EventRegistrationStats({ eventId }: { eventId: string }) {
   const supabase = createClient()
   const [registrations, setRegistrations] = useState<Registration[]>([])
+  const [feedbacks, setFeedbacks] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -26,6 +28,7 @@ export function EventRegistrationStats({ eventId }: { eventId: string }) {
         .from('registrations')
         .select(`
           id,
+          student_id,
           registered_at,
           checked_in,
           profiles:student_id (
@@ -37,7 +40,13 @@ export function EventRegistrationStats({ eventId }: { eventId: string }) {
         .eq('event_id', eventId)
         .order('registered_at', { ascending: false })
 
+      const { data: fbData } = await supabase
+        .from('feedbacks')
+        .select('student_id')
+        .eq('event_id', eventId)
+
       if (data) setRegistrations(data as any)
+      if (fbData) setFeedbacks(fbData.map(f => f.student_id))
       setLoading(false)
     }
 
@@ -66,8 +75,8 @@ export function EventRegistrationStats({ eventId }: { eventId: string }) {
   }, [eventId, supabase])
 
   const exportList = () => {
-    const csvContent = "Full Name,USN,Department,Status\n" +
-      registrations.map(r => `${r.profiles.full_name},${r.profiles.usn},${r.profiles.department},${r.checked_in ? 'Checked In' : 'Registered'}`).join("\n")
+    const csvContent = "Full Name,USN,Department,Status,Feedback Given\n" +
+      registrations.map(r => `${r.profiles.full_name},${r.profiles.usn},${r.profiles.department},${r.checked_in ? 'Checked In' : 'Registered'},${feedbacks.includes(r.student_id) ? 'Yes' : 'No'}`).join("\n")
 
     const blob = new Blob([csvContent], { type: 'text/csv' })
     const url = window.URL.createObjectURL(blob)
@@ -84,7 +93,7 @@ export function EventRegistrationStats({ eventId }: { eventId: string }) {
   return (
     <div className="space-y-6">
       {/* Overview Cards */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 rounded-3xl shadow-sm">
           <div className="flex items-center justify-between mb-2">
             <Users size={16} className="text-zinc-400" />
@@ -102,6 +111,16 @@ export function EventRegistrationStats({ eventId }: { eventId: string }) {
             {registrations.filter(r => r.checked_in).length}
           </p>
           <p className="text-[10px] font-mono text-zinc-400 uppercase mt-1 group-hover:text-inherit">Present Students</p>
+        </div>
+        <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/30 p-6 rounded-3xl shadow-sm transition-all hover:bg-emerald-500 hover:text-white dark:hover:bg-emerald-500 dark:hover:text-white group transition-all">
+          <div className="flex items-center justify-between mb-2">
+            <MessageSquareHeart size={16} className="text-emerald-500 group-hover:text-white" />
+            <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 uppercase tracking-widest group-hover:text-white">Feedback</span>
+          </div>
+          <p className="text-3xl font-black text-emerald-700 dark:text-emerald-300 group-hover:text-white">
+            {feedbacks.length}
+          </p>
+          <p className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 uppercase mt-1 group-hover:text-emerald-100">Given Feedbacks</p>
         </div>
       </div>
 
@@ -133,9 +152,16 @@ export function EventRegistrationStats({ eventId }: { eventId: string }) {
                     <p className="text-[10px] font-mono text-zinc-400">{reg.profiles.usn} · {reg.profiles.department}</p>
                   </div>
                 </div>
-                {reg.checked_in && (
-                  <span className="text-[9px] font-black uppercase bg-black text-white dark:bg-white dark:text-black px-2 py-0.5 rounded-md">Entered</span>
-                )}
+                <div className="flex items-center gap-2">
+                  {feedbacks.includes(reg.student_id) && (
+                    <span className="text-[9px] font-black uppercase bg-emerald-500 text-white px-2 py-0.5 rounded-md flex items-center gap-1">
+                      <MessageSquareHeart size={10} /> Feedback
+                    </span>
+                  )}
+                  {reg.checked_in && (
+                    <span className="text-[9px] font-black uppercase bg-black text-white dark:bg-white dark:text-black px-2 py-0.5 rounded-md">Entered</span>
+                  )}
+                </div>
               </div>
             ))
           ) : (
