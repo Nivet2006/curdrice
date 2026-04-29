@@ -88,7 +88,7 @@ export async function fetchEveBotGreeting(userId: string): Promise<string> {
     "🪪 Show my profile"
   ]
   
-  return `Hi, **${name}**! ✨\n\nI am Eve, your intelligent Club-Eve assistant. I can natively understand what you want without rigid commands.\n\nTry clicking one of the interactions below or simply talk to me naturally!\n[SUGGESTIONS=${JSON.stringify(suggestions)}]`
+  return `Hi, **${name}**! ✨\n\nI am Helen, your intelligent Club-Eve assistant. I can natively understand what you want without rigid commands.\n\nTry clicking one of the interactions below or simply talk to me naturally!\n[SUGGESTIONS=${JSON.stringify(suggestions)}]`
 }
 
 export async function setStudentUsername(userId: string, requestedUsername: string): Promise<{success: boolean, error?: string}> {
@@ -301,7 +301,7 @@ export async function processEveBotMessage(message: string, userId: string, hist
 
   // 8. Command: Help and Capabilities
   if (nlpIntent === 'HELP' || lowerMsg.includes('help') || lowerMsg.includes('what can you do') || lowerMsg.includes('commands')) {
-    return "I am Eve, your intelligent Event Assistant! Try these precise commands:\n\n| Command | Action |\n|---|---|\n| \`give qr\` | Extracts your secure check-in QR code. |\n| \`upcoming events\` | Explores new events happening on campus. |\n| \`my registered events\` | Lists valid upcoming reservations. |\n| \`my past events\` | Lists events you previously registered for. |\n| \`my profile\` | Reports your authenticated session data. |"
+    return "I am Helen, your intelligent Event Assistant! Try these precise commands:\n\n| Command | Action |\n|---|---|\n| \`give qr\` | Extracts your secure check-in QR code. |\n| \`upcoming events\` | Explores new events happening on campus. |\n| \`my registered events\` | Lists valid upcoming reservations. |\n| \`my past events\` | Lists events you previously registered for. |\n| \`my profile\` | Reports your authenticated session data. |"
   }
 
   // 9. Command: Hello / Onboarding
@@ -313,7 +313,7 @@ export async function processEveBotMessage(message: string, userId: string, hist
       "🕰️ My past events", 
       "🪪 Show my profile"
     ]
-    return `Hi, **${profile.full_name}**! ✨\n\nI am Eve, your intelligent Club-Eve assistant. I can natively understand what you want without rigid commands.\n\nTry clicking one of the interactions below or simply talk to me naturally!\n[SUGGESTIONS=${JSON.stringify(suggestions)}]`
+    return `Hi, **${profile.full_name}**! ✨\n\nI am Helen, your intelligent Club-Eve assistant. I can natively understand what you want without rigid commands.\n\nTry clicking one of the interactions below or simply talk to me naturally!\n[SUGGESTIONS=${JSON.stringify(suggestions)}]`
   }
 
   return "I'm still learning! 🧠 Ask me about your 'registered events', 'past events', or ask me to 'give qr'."
