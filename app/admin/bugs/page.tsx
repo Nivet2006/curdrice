@@ -601,8 +601,7 @@ export default function AdminBugsPage() {
               </div>
               <button 
                 type="submit" disabled={creating}
-                className="w-full py-4 font-black text-[10px] uppercase rounded-xl hover:brightness-110 active:scale-[0.98] transition disabled:opacity-50 shadow-lg"
-                style={{ background: 'var(--fg)', color: 'var(--bg)' }}
+                className="w-full py-4 font-black text-[10px] uppercase rounded-xl hover:brightness-110 active:scale-[0.98] transition disabled:opacity-50 shadow-lg bg-[var(--fg)] text-[var(--bg)]"
               >
                 {creating ? 'Creating...' : 'Generate Access Key'}
               </button>
