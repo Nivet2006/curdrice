@@ -138,9 +138,9 @@ export function StudentFeedbackTerminal({ event, studentId, hasSubmitted: initia
 
     if (hasSubmitted) {
         return (
-            <div className="mt-6 p-4 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center gap-3">
-                <CheckCircle2 className="text-emerald-500" size={18} />
-                <span className="text-[10px] font-mono font-black text-emerald-700 uppercase tracking-widest">Feedback Recorded ✓</span>
+            <div className="mt-6 p-4 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 rounded-2xl flex items-center gap-3">
+                <CheckCircle2 className="text-emerald-500 dark:text-emerald-400" size={18} />
+                <span className="text-[10px] font-mono font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-widest">Feedback Recorded ✓</span>
             </div>
         )
     }
