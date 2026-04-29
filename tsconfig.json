@@ -38,6 +38,7 @@
   "exclude": [
     "node_modules",
     "seed.ts",
-    "tmp"
+    "tmp",
+    "NATIVE APP"
   ]
 }
