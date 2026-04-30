@@ -20,6 +20,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [step, setStep] = useState<'credentials' | 'totp'>('credentials')
   const [adminData, setAdminData] = useState<{ userId: string; role: string } | null>(null)
+  const [showTestCreds, setShowTestCreds] = useState(false)
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -138,6 +139,48 @@ export default function LoginPage() {
           Don&apos;t have an account? Register →
         </Link>
       </Card>
+
+      {/* Test Credentials Helper */}
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+        <div className={`mb-4 bg-white dark:bg-[#111111] border border-[#e0e0e0] dark:border-[#333333] shadow-lg rounded-xl p-4 transition-all duration-200 origin-bottom-right ${showTestCreds ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
+          <h3 className="font-bold text-sm mb-3 text-[#0a0a0a] dark:text-[#f5f5f5] flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+            Test Accounts
+          </h3>
+          <div className="space-y-2 text-xs font-mono">
+            <div className="flex justify-between gap-4">
+              <span className="text-[#555555] dark:text-[#999999]">FACULTY</span>
+              <span className="font-medium text-[#0a0a0a] dark:text-[#f5f5f5] select-all cursor-pointer hover:text-blue-500">1GD24CS008</span>
+            </div>
+            <div className="flex justify-between gap-4">
+              <span className="text-[#555555] dark:text-[#999999]">STUDENT</span>
+              <span className="font-medium text-[#0a0a0a] dark:text-[#f5f5f5] select-all cursor-pointer hover:text-blue-500">1GD24CS006</span>
+            </div>
+            <div className="flex justify-between gap-4">
+              <span className="text-[#555555] dark:text-[#999999]">HOD</span>
+              <span className="font-medium text-[#0a0a0a] dark:text-[#f5f5f5] select-all cursor-pointer hover:text-blue-500">1GD12CS001</span>
+            </div>
+            <div className="flex justify-between gap-4">
+              <span className="text-[#555555] dark:text-[#999999]">PR</span>
+              <span className="font-medium text-[#0a0a0a] dark:text-[#f5f5f5] select-all cursor-pointer hover:text-blue-500">1GD24CS001</span>
+            </div>
+            <div className="flex justify-between gap-4">
+              <span className="text-[#555555] dark:text-[#999999]">CC</span>
+              <span className="font-medium text-[#0a0a0a] dark:text-[#f5f5f5] select-all cursor-pointer hover:text-blue-500">1GD24CS073</span>
+            </div>
+            <div className="mt-3 pt-3 border-t border-[#e0e0e0] dark:border-[#333333] text-[10px] text-[#999999] text-center">
+              Password is 123456 for all
+            </div>
+          </div>
+        </div>
+        <button 
+          onClick={() => setShowTestCreds(!showTestCreds)}
+          className="w-12 h-12 bg-white dark:bg-[#111111] border border-[#e0e0e0] dark:border-[#333333] shadow-md rounded-full flex items-center justify-center text-[#0a0a0a] dark:text-[#f5f5f5] hover:bg-[#f5f5f5] dark:hover:bg-[#222222] transition-colors"
+          title="Test Credentials"
+        >
+          <span className="font-mono font-bold text-lg">?</span>
+        </button>
+      </div>
     </div>
   )
 }
