@@ -138,11 +138,12 @@ export function MultiStepReportForm({ eventId, eventTitle, eventDate, department
         // Force refresh or redirect to download
         window.location.reload();
       } else {
-        alert("Failed to generate report.");
+        const errorData = await res.json();
+        alert(`Failed to generate report: ${errorData.error || 'Unknown error'}`);
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      alert("An error occurred");
+      alert(`An error occurred: ${e.message}`);
     } finally {
       setIsGenerating(false);
     }

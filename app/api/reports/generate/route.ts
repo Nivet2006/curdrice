@@ -263,7 +263,8 @@ export async function POST(request: Request) {
        // If it fails, let's just do a normal insert for now, assuming 1 report per event
        // Or let's manually delete the old one first
        await supabase.from('iic_event_reports').delete().eq('event_id', eventId);
-       await supabase.from('iic_event_reports').insert(reportRow);
+       const { error: finalDbError } = await supabase.from('iic_event_reports').insert(reportRow);
+       if (finalDbError) throw new Error("Database error: " + finalDbError.message);
     }
 
     return NextResponse.json({ success: true, pdfUrl });
