@@ -7,7 +7,7 @@ import { redirect } from 'next/navigation'
 import { submitEventForReview } from '@/lib/actions/cc-events'
 import { AdminManualOverride } from '@/components/admin/AdminManualOverride'
 import { FeedbackToggle } from '@/components/cc/FeedbackToggle'
-
+import { ReportHubCard } from '@/components/iic/ReportHubCard'
 export default async function CCEventDetailPage({ params }: { params: Promise<{ id: string }> }) {
    const supabase = await createClient()
    const { id } = await params
@@ -245,6 +245,9 @@ export default async function CCEventDetailPage({ params }: { params: Promise<{ 
                )}
             </aside>
          </div>
+
+         {/* Section 1 — Event Report Hub Card */}
+         <ReportHubCard eventId={event.id} />
       </div>
    )
 }
