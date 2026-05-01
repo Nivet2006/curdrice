@@ -3,11 +3,14 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CheckCircle2, ChevronRight, ChevronLeft, Save, Loader2, Upload } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
 
 export function MultiStepReportForm({ eventId, eventTitle, eventDate, department, existingReport, studentCount }: any) {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [studentsList, setStudentsList] = useState<{name: string, usn: string}[]>([]);
+  const [studentSearchMap, setStudentSearchMap] = useState<{[key: number]: string}>({});
   
   // To avoid timezone shift, safely parse date
   const formattedDate = eventDate ? (typeof eventDate === 'string' ? eventDate.split('T')[0] : new Date(eventDate).toISOString().split('T')[0]) : '';
@@ -31,13 +34,95 @@ export function MultiStepReportForm({ eventId, eventTitle, eventDate, department
     instagram_link: '',
     facebook_link: '',
     twitter_link: '',
+    photo_1_url: '',
+    photo_2_url: '',
     resource_persons: [],
     faculty_coordinators: [''],
     student_coordinators: [''],
   });
 
+  // Fetch students on mount for the autocomplete feature
+  import('react').then((React) => {
+    React.useEffect(() => {
+      const fetchStudents = async () => {
+        try {
+          const supabase = createClient();
+          const { data } = await supabase.from('profiles').select('full_name, usn').eq('role', 'student');
+          if (data) {
+            setStudentsList(data.map(d => ({ name: d.full_name, usn: d.usn })));
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      fetchStudents();
+    }, []);
+  });
+
   const updateForm = (key: string, value: any) => {
     setFormData((prev: any) => ({ ...prev, [key]: value }));
+  };
+
+  const StudentAutocomplete = ({ rpIdx, isUsn, placeholder }: { rpIdx: number, isUsn: boolean, placeholder: string }) => {
+    const rp = formData.resource_persons[rpIdx];
+    const value = isUsn ? rp.usn : rp.name;
+    const [showDropdown, setShowDropdown] = useState(false);
+    
+    const terms = (value || '').split(';');
+    const currentTerm = terms[terms.length - 1] || '';
+    const cleanTerm = currentTerm.trim();
+
+    const filtered = cleanTerm.length > 0 ? studentsList.filter(s => 
+      isUsn ? s.usn.toLowerCase().includes(cleanTerm.toLowerCase()) : s.name.toLowerCase().includes(cleanTerm.toLowerCase())
+    ).slice(0, 5) : [];
+
+    return (
+      <div className="relative">
+        <input 
+          type="text" 
+          className="w-full border border-zinc-300 rounded-lg p-3 text-sm" 
+          placeholder={placeholder}
+          value={value || ''}
+          onChange={e => {
+            const newRp = [...formData.resource_persons];
+            if (isUsn) newRp[rpIdx].usn = e.target.value;
+            else newRp[rpIdx].name = e.target.value;
+            updateForm('resource_persons', newRp);
+            setShowDropdown(true);
+          }}
+          onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
+          onFocus={() => setShowDropdown(true)}
+        />
+        {showDropdown && filtered.length > 0 && (
+          <div className="absolute z-10 w-full mt-1 bg-white border border-zinc-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+            {filtered.map((s, i) => (
+              <div 
+                key={i} 
+                className="px-4 py-2 hover:bg-zinc-100 cursor-pointer text-sm"
+                onClick={() => {
+                  const newRp = [...formData.resource_persons];
+                  
+                  // Reconstruct string
+                  const nameTerms = (newRp[rpIdx].name || '').split(';');
+                  nameTerms[nameTerms.length - 1] = ' ' + s.name;
+                  newRp[rpIdx].name = nameTerms.join(';').trim() + '; ';
+                  
+                  const usnTerms = (newRp[rpIdx].usn || '').split(';');
+                  usnTerms[usnTerms.length - 1] = ' ' + s.usn;
+                  newRp[rpIdx].usn = usnTerms.join(';').trim() + '; ';
+                  
+                  updateForm('resource_persons', newRp);
+                  setShowDropdown(false);
+                }}
+              >
+                <div className="font-medium">{s.name}</div>
+                <div className="text-xs text-zinc-500">{s.usn}</div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
   };
 
   const handleGenerate = async () => {
@@ -186,11 +271,15 @@ export function MultiStepReportForm({ eventId, eventTitle, eventDate, department
               </select>
             </div>
             
-            <div className="space-y-3">
-               <label className="block text-sm font-medium mb-1">Upload Photo Collages (min 2)</label>
-               <div className="border-2 border-dashed border-zinc-300 rounded-lg p-8 flex flex-col items-center justify-center bg-zinc-50 cursor-pointer hover:bg-zinc-100 transition-colors">
-                  <Upload className="text-zinc-400 mb-2" />
-                  <span className="text-sm text-zinc-500">Click to select files (simulated for now)</span>
+            <div className="space-y-4 mt-6">
+               <h3 className="font-bold text-sm text-[#1A1A2E]">Photo Collages</h3>
+               <div>
+                 <label className="block text-sm font-medium mb-1">Image Link 1</label>
+                 <input type="text" className="w-full border border-zinc-300 rounded-lg p-3 text-sm" placeholder="https://example.com/image1.jpg" value={formData.photo_1_url || ''} onChange={e => updateForm('photo_1_url', e.target.value)} />
+               </div>
+               <div>
+                 <label className="block text-sm font-medium mb-1">Image Link 2</label>
+                 <input type="text" className="w-full border border-zinc-300 rounded-lg p-3 text-sm" placeholder="https://example.com/image2.jpg" value={formData.photo_2_url || ''} onChange={e => updateForm('photo_2_url', e.target.value)} />
                </div>
             </div>
           </div>
@@ -214,22 +303,102 @@ export function MultiStepReportForm({ eventId, eventTitle, eventDate, department
               </div>
             </div>
             
-            <div className="border border-zinc-200 rounded-xl p-4 bg-zinc-50">
-               <h3 className="font-bold text-sm mb-3">Resource Persons</h3>
-               {formData.resource_persons.map((rp: any, idx: number) => (
-                 <div key={idx} className="bg-white p-3 rounded border border-zinc-200 mb-2 flex justify-between items-center text-sm">
-                   <span>{rp.name} - {rp.organization}</span>
-                   <button onClick={() => {
-                     const newRp = [...formData.resource_persons];
-                     newRp.splice(idx, 1);
-                     updateForm('resource_persons', newRp);
-                   }} className="text-red-500 text-xs">Remove</button>
-                 </div>
-               ))}
+            <div className="border border-zinc-200 rounded-xl p-4 bg-zinc-50 space-y-6">
+               <h3 className="font-bold text-sm text-[#1A1A2E]">Resource Persons</h3>
+               {formData.resource_persons.map((rp: any, idx: number) => {
+                 const isInternal = formData.level === 'Institute' || formData.level === 'Department';
+
+                 return (
+                   <div key={idx} className="bg-white p-4 rounded-xl border border-zinc-200 shadow-sm relative space-y-4">
+                     <button onClick={() => {
+                       const newRp = [...formData.resource_persons];
+                       newRp.splice(idx, 1);
+                       updateForm('resource_persons', newRp);
+                     }} className="absolute top-4 right-4 text-red-500 text-xs font-bold hover:text-red-700">Remove</button>
+                     
+                     <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Entry {idx + 1}</h4>
+                     
+                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                       {isInternal ? (
+                         <>
+                           <div>
+                             <label className="block text-xs font-medium mb-1">Student Name (separate with ;)</label>
+                             <StudentAutocomplete rpIdx={idx} isUsn={false} placeholder="Start typing name..." />
+                           </div>
+                           <div>
+                             <label className="block text-xs font-medium mb-1">USN (separate with ;)</label>
+                             <StudentAutocomplete rpIdx={idx} isUsn={true} placeholder="Start typing USN..." />
+                           </div>
+                           <div>
+                             <label className="block text-xs font-medium mb-1">Department</label>
+                             <select 
+                               className="w-full border border-zinc-300 rounded-lg p-3 text-sm bg-white"
+                               value={rp.department || ''} 
+                               onChange={e => {
+                                 const newRp = [...formData.resource_persons];
+                                 newRp[idx].department = e.target.value;
+                                 updateForm('resource_persons', newRp);
+                               }}
+                             >
+                               <option value="">Select Dept</option>
+                               <option value="CSE">CSE</option>
+                               <option value="ECE">ECE</option>
+                               <option value="AERO">AERO</option>
+                               <option value="ISE">ISE</option>
+                               <option value="MECH">MECH</option>
+                               <option value="CIVIL">CIVIL</option>
+                             </select>
+                           </div>
+                           <div>
+                             <label className="block text-xs font-medium mb-1">Designation</label>
+                             <input type="text" className="w-full border border-zinc-300 rounded-lg p-3 text-sm bg-zinc-100 cursor-not-allowed" value="STUDENT" readOnly />
+                           </div>
+                         </>
+                       ) : (
+                         <>
+                           <div>
+                             <label className="block text-xs font-medium mb-1">Name of the Speaker/Expert</label>
+                             <input type="text" className="w-full border border-zinc-300 rounded-lg p-3 text-sm" value={rp.name || ''} onChange={e => { const newRp = [...formData.resource_persons]; newRp[idx].name = e.target.value; updateForm('resource_persons', newRp); }} />
+                           </div>
+                           <div>
+                             <label className="block text-xs font-medium mb-1">Industry/Company/Organization</label>
+                             <input type="text" className="w-full border border-zinc-300 rounded-lg p-3 text-sm" value={rp.organization || ''} onChange={e => { const newRp = [...formData.resource_persons]; newRp[idx].organization = e.target.value; updateForm('resource_persons', newRp); }} />
+                           </div>
+                           <div>
+                             <label className="block text-xs font-medium mb-1">Designation</label>
+                             <input type="text" className="w-full border border-zinc-300 rounded-lg p-3 text-sm" value={rp.designation || ''} onChange={e => { const newRp = [...formData.resource_persons]; newRp[idx].designation = e.target.value; updateForm('resource_persons', newRp); }} />
+                           </div>
+                           <div>
+                             <label className="block text-xs font-medium mb-1">Address of the Speaker</label>
+                             <input type="text" className="w-full border border-zinc-300 rounded-lg p-3 text-sm" value={rp.address || ''} onChange={e => { const newRp = [...formData.resource_persons]; newRp[idx].address = e.target.value; updateForm('resource_persons', newRp); }} />
+                           </div>
+                         </>
+                       )}
+                       
+                       <div>
+                         <label className="block text-xs font-medium mb-1">Mobile Number (WhatsApp)</label>
+                         <input type="text" className="w-full border border-zinc-300 rounded-lg p-3 text-sm" value={rp.mobile || ''} onChange={e => { const newRp = [...formData.resource_persons]; newRp[idx].mobile = e.target.value; updateForm('resource_persons', newRp); }} />
+                       </div>
+                       <div>
+                         <label className="block text-xs font-medium mb-1">E-mail id</label>
+                         <input type="email" className="w-full border border-zinc-300 rounded-lg p-3 text-sm" value={rp.email || ''} onChange={e => { const newRp = [...formData.resource_persons]; newRp[idx].email = e.target.value; updateForm('resource_persons', newRp); }} />
+                       </div>
+                     </div>
+                   </div>
+                 );
+               })}
+               
                <button onClick={() => {
-                 const newRp = [...formData.resource_persons, { name: 'New Person', organization: 'Company', designation: 'Role' }];
+                 const isInternal = formData.level === 'Institute' || formData.level === 'Department';
+                 const newPerson = isInternal 
+                    ? { name: '', usn: '', department: '', designation: 'STUDENT', mobile: '', email: '' }
+                    : { name: '', organization: '', designation: '', mobile: '', email: '', address: '' };
+                 
+                 const newRp = [...formData.resource_persons, newPerson];
                  updateForm('resource_persons', newRp);
-               }} className="text-sm text-blue-600 font-medium">+ Add Resource Person</button>
+               }} className="flex items-center gap-2 px-4 py-2 bg-[#1F3A8A] text-white text-sm font-medium rounded-lg hover:bg-blue-800 transition-colors">
+                 + Add Resource Person
+               </button>
             </div>
           </div>
         )}
