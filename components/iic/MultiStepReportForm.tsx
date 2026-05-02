@@ -5,6 +5,69 @@ import { useRouter } from 'next/navigation';
 import { CheckCircle2, ChevronRight, ChevronLeft, Save, Loader2, Upload } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
+const StudentAutocomplete = ({ rpIdx, isUsn, placeholder, formData, studentsList, updateForm }: { rpIdx: number, isUsn: boolean, placeholder: string, formData: any, studentsList: any[], updateForm: (key: string, value: any) => void }) => {
+  const rp = formData.resource_persons[rpIdx];
+  if (!rp) return null;
+  const value = isUsn ? rp.usn : rp.name;
+  const [showDropdown, setShowDropdown] = useState(false);
+  
+  const terms = (value || '').split(';');
+  const currentTerm = terms[terms.length - 1] || '';
+  const cleanTerm = currentTerm.trim();
+
+  const filtered = cleanTerm.length > 0 ? studentsList.filter(s => 
+    isUsn ? s.usn.toLowerCase().includes(cleanTerm.toLowerCase()) : s.name.toLowerCase().includes(cleanTerm.toLowerCase())
+  ).slice(0, 5) : [];
+
+  return (
+    <div className="relative">
+      <input 
+        type="text" 
+        className="w-full border border-zinc-300 rounded-lg p-3 text-sm" 
+        placeholder={placeholder}
+        value={value || ''}
+        onChange={e => {
+          const newRp = [...formData.resource_persons];
+          if (isUsn) newRp[rpIdx].usn = e.target.value;
+          else newRp[rpIdx].name = e.target.value;
+          updateForm('resource_persons', newRp);
+          setShowDropdown(true);
+        }}
+        onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
+        onFocus={() => setShowDropdown(true)}
+      />
+      {showDropdown && filtered.length > 0 && (
+        <div className="absolute z-10 w-full mt-1 bg-white border border-zinc-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+          {filtered.map((s, i) => (
+            <div 
+              key={i} 
+              className="px-4 py-2 hover:bg-zinc-100 cursor-pointer text-sm"
+              onClick={() => {
+                const newRp = [...formData.resource_persons];
+                
+                // Reconstruct string
+                const nameTerms = (newRp[rpIdx].name || '').split(';');
+                nameTerms[nameTerms.length - 1] = ' ' + s.name;
+                newRp[rpIdx].name = nameTerms.join(';').trim() + '; ';
+                
+                const usnTerms = (newRp[rpIdx].usn || '').split(';');
+                usnTerms[usnTerms.length - 1] = ' ' + s.usn;
+                newRp[rpIdx].usn = usnTerms.join(';').trim() + '; ';
+                
+                updateForm('resource_persons', newRp);
+                setShowDropdown(false);
+              }}
+            >
+              <div className="font-medium">{s.name}</div>
+              <div className="text-xs text-zinc-500">{s.usn}</div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 export function MultiStepReportForm({ eventId, eventTitle, eventDate, department, existingReport, studentCount }: any) {
   const router = useRouter();
   const [step, setStep] = useState(1);
@@ -63,67 +126,7 @@ export function MultiStepReportForm({ eventId, eventTitle, eventDate, department
     setFormData((prev: any) => ({ ...prev, [key]: value }));
   };
 
-  const StudentAutocomplete = ({ rpIdx, isUsn, placeholder }: { rpIdx: number, isUsn: boolean, placeholder: string }) => {
-    const rp = formData.resource_persons[rpIdx];
-    const value = isUsn ? rp.usn : rp.name;
-    const [showDropdown, setShowDropdown] = useState(false);
-    
-    const terms = (value || '').split(';');
-    const currentTerm = terms[terms.length - 1] || '';
-    const cleanTerm = currentTerm.trim();
 
-    const filtered = cleanTerm.length > 0 ? studentsList.filter(s => 
-      isUsn ? s.usn.toLowerCase().includes(cleanTerm.toLowerCase()) : s.name.toLowerCase().includes(cleanTerm.toLowerCase())
-    ).slice(0, 5) : [];
-
-    return (
-      <div className="relative">
-        <input 
-          type="text" 
-          className="w-full border border-zinc-300 rounded-lg p-3 text-sm" 
-          placeholder={placeholder}
-          value={value || ''}
-          onChange={e => {
-            const newRp = [...formData.resource_persons];
-            if (isUsn) newRp[rpIdx].usn = e.target.value;
-            else newRp[rpIdx].name = e.target.value;
-            updateForm('resource_persons', newRp);
-            setShowDropdown(true);
-          }}
-          onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
-          onFocus={() => setShowDropdown(true)}
-        />
-        {showDropdown && filtered.length > 0 && (
-          <div className="absolute z-10 w-full mt-1 bg-white border border-zinc-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-            {filtered.map((s, i) => (
-              <div 
-                key={i} 
-                className="px-4 py-2 hover:bg-zinc-100 cursor-pointer text-sm"
-                onClick={() => {
-                  const newRp = [...formData.resource_persons];
-                  
-                  // Reconstruct string
-                  const nameTerms = (newRp[rpIdx].name || '').split(';');
-                  nameTerms[nameTerms.length - 1] = ' ' + s.name;
-                  newRp[rpIdx].name = nameTerms.join(';').trim() + '; ';
-                  
-                  const usnTerms = (newRp[rpIdx].usn || '').split(';');
-                  usnTerms[usnTerms.length - 1] = ' ' + s.usn;
-                  newRp[rpIdx].usn = usnTerms.join(';').trim() + '; ';
-                  
-                  updateForm('resource_persons', newRp);
-                  setShowDropdown(false);
-                }}
-              >
-                <div className="font-medium">{s.name}</div>
-                <div className="text-xs text-zinc-500">{s.usn}</div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  };
 
   const handleGenerate = async () => {
     setIsGenerating(true);
@@ -324,11 +327,11 @@ export function MultiStepReportForm({ eventId, eventTitle, eventDate, department
                          <>
                            <div>
                              <label className="block text-xs font-medium mb-1">Student Name (separate with ;)</label>
-                             <StudentAutocomplete rpIdx={idx} isUsn={false} placeholder="Start typing name..." />
+                             <StudentAutocomplete rpIdx={idx} isUsn={false} placeholder="Start typing name..." formData={formData} studentsList={studentsList} updateForm={updateForm} />
                            </div>
                            <div>
                              <label className="block text-xs font-medium mb-1">USN (separate with ;)</label>
-                             <StudentAutocomplete rpIdx={idx} isUsn={true} placeholder="Start typing USN..." />
+                             <StudentAutocomplete rpIdx={idx} isUsn={true} placeholder="Start typing USN..." formData={formData} studentsList={studentsList} updateForm={updateForm} />
                            </div>
                            <div>
                              <label className="block text-xs font-medium mb-1">Department</label>
