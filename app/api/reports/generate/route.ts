@@ -117,20 +117,6 @@ export async function POST(request: Request) {
 
        // Divider line REMOVED as per request
 
-       // Footer - Clean and professional
-       page.drawLine({
-          start: { x: 25, y: 45 },
-          end: { x: width - 25, y: 45 },
-          thickness: 0.5,
-          color: rgb(0.8, 0.8, 0.8)
-       });
-       page.drawText("Institution's Innovation Council (IIC) - GCEM", {
-         x: 35, y: 30, font: fontItalic, size: 8, color: rgb(0.5, 0.5, 0.6)
-       });
-       page.drawText(`Page ${pdfDoc.getPageCount()}`, {
-         x: width - 70, y: 30, font: font, size: 8, color: rgb(0.5, 0.5, 0.6)
-       });
-
        return page;
     };
 
