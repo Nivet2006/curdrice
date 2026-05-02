@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { CheckCircle2, ChevronRight, ChevronLeft, Save, Loader2, Upload } from 'lucide-react';
+import Link from 'next/link';
+import { CheckCircle2, ChevronRight, ChevronLeft, Save, Loader2, Download, ExternalLink, FileText } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 const StudentAutocomplete = ({ rpIdx, isUsn, placeholder, formData, studentsList, updateForm }: { rpIdx: number, isUsn: boolean, placeholder: string, formData: any, studentsList: any[], updateForm: (key: string, value: any) => void }) => {
@@ -72,6 +73,7 @@ export function MultiStepReportForm({ eventId, eventTitle, eventDate, department
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedPdfUrl, setGeneratedPdfUrl] = useState<string | null>(null);
   const [studentsList, setStudentsList] = useState<{name: string, usn: string}[]>([]);
   const [studentSearchMap, setStudentSearchMap] = useState<{[key: number]: string}>({});
   
@@ -138,8 +140,7 @@ export function MultiStepReportForm({ eventId, eventTitle, eventDate, department
       });
       if (res.ok) {
         const data = await res.json();
-        // Force refresh or redirect to download
-        window.location.reload();
+        setGeneratedPdfUrl(data.pdfUrl || '');
       } else {
         const errorData = await res.json();
         alert(`Failed to generate report: ${errorData.error || 'Unknown error'}`);
@@ -172,7 +173,51 @@ export function MultiStepReportForm({ eventId, eventTitle, eventDate, department
 
   return (
     <div className="bg-white border border-zinc-200 rounded-[12px] p-8 shadow-[0_1px_4px_rgba(0,0,0,0.06)] max-w-[760px] mx-auto">
-      {renderStepIndicator()}
+
+      {/* ── SUCCESS SCREEN ── */}
+      {generatedPdfUrl !== null ? (
+        <div className="flex flex-col items-center justify-center py-16 space-y-8 text-center">
+          <div className="w-20 h-20 rounded-full bg-green-50 flex items-center justify-center">
+            <CheckCircle2 size={40} className="text-green-500" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-2xl font-black text-[#1A1A2E]">Report Generated!</h2>
+            <p className="text-zinc-500 text-sm max-w-sm">
+              Your IIC Activity Report PDF has been successfully created and stored.
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3 w-full max-w-sm">
+            {generatedPdfUrl && (
+              <a
+                href={generatedPdfUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-[#1F3A8A] to-[#2563EB] text-white font-semibold rounded-xl shadow-md shadow-blue-500/20 hover:scale-[1.02] active:scale-95 transition-all"
+              >
+                <ExternalLink size={16} />
+                View Report PDF
+              </a>
+            )}
+            <Link
+              href={`/cc/events/${eventId}`}
+              className="flex-1 flex items-center justify-center gap-2 px-6 py-3 border-2 border-zinc-200 text-zinc-700 font-semibold rounded-xl hover:border-zinc-400 hover:text-black transition-all"
+            >
+              <FileText size={16} />
+              Back to Event
+            </Link>
+          </div>
+
+          <button
+            onClick={() => setGeneratedPdfUrl(null)}
+            className="text-xs text-zinc-400 hover:text-zinc-600 underline underline-offset-2 transition-colors"
+          >
+            Edit &amp; Re-generate Report
+          </button>
+        </div>
+      ) : (
+        <>
+          {renderStepIndicator()}
 
       <div className="space-y-6 min-h-[400px]">
         {step === 1 && (
@@ -453,6 +498,8 @@ export function MultiStepReportForm({ eventId, eventTitle, eventDate, department
           </button>
         )}
       </div>
+      </>
+      )}
     </div>
   );
 }
