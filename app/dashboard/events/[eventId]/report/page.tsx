@@ -43,7 +43,7 @@ export default async function IICReportPage({ params }: { params: Promise<{ even
 
   // BYPASS: For testing purposes, we allow viewing the form even if feedback isn't strictly complete in the DB
   // In production, you would restore the strict !isComplete check.
-  if (false && !isComplete && !existingReport) {
+  if (false && !existingReport) {
     return (
       <div className="max-w-4xl mx-auto py-20 text-center space-y-4">
         <h1 className="text-2xl font-bold">Feedback Incomplete</h1>
