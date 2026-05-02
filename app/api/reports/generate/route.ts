@@ -14,7 +14,12 @@ function loadLogoBytes(filename: string): Buffer | null {
   if (existsSync(filePath)) {
     return readFileSync(filePath);
   }
-  console.warn(`[PDF] Logo not found at ${filePath} — skipping.`);
+  // Fallback check for different environments
+  const fallbackPath = join(process.cwd(), '..', 'public', 'iic', filename);
+  if (existsSync(fallbackPath)) {
+    return readFileSync(fallbackPath);
+  }
+  console.warn(`[PDF] Logo not found: ${filename} — skipping.`);
   return null;
 }
 
@@ -46,8 +51,27 @@ export async function POST(request: Request) {
     // Load logos from public/iic/
     const gcemBytes = loadLogoBytes('gcem-crest.png');
     const iicBytes = loadLogoBytes('iic-logo.png');
-    const gcemImage = gcemBytes ? await pdfDoc.embedPng(gcemBytes) : null;
-    const iicImage  = iicBytes  ? await pdfDoc.embedPng(iicBytes)  : null;
+    
+    let gcemImage = null;
+    let iicImage = null;
+
+    if (gcemBytes) {
+      try {
+        gcemImage = await pdfDoc.embedPng(gcemBytes);
+      } catch (e) {
+        console.error("[PDF] Failed to embed GCEM PNG, trying JPG", e);
+        try { gcemImage = await pdfDoc.embedJpg(gcemBytes); } catch (e2) { console.error("[PDF] Failed both", e2); }
+      }
+    }
+    
+    if (iicBytes) {
+      try {
+        iicImage = await pdfDoc.embedPng(iicBytes);
+      } catch (e) {
+        console.error("[PDF] Failed to embed IIC PNG, trying JPG", e);
+        try { iicImage = await pdfDoc.embedJpg(iicBytes); } catch (e2) { console.error("[PDF] Failed both", e2); }
+      }
+    }
 
     const addLetterheadPage = () => {
        const page = pdfDoc.addPage([595.28, 841.89]); // A4
@@ -59,38 +83,57 @@ export async function POST(request: Request) {
           color: rgb(1, 1, 1),  // solid white
        });
        
-       // Double border
+       // Premium double border with subtle color
        page.drawRectangle({
           x: 10, y: 10, width: width - 20, height: height - 20,
-          borderWidth: 2, borderColor: rgb(0.06, 0.06, 0.06),
+          borderWidth: 1.5, borderColor: rgb(0.1, 0.1, 0.2),
        });
        page.drawRectangle({
           x: 14, y: 14, width: width - 28, height: height - 28,
-          borderWidth: 1, borderColor: rgb(0.06, 0.06, 0.06),
+          borderWidth: 0.5, borderColor: rgb(0.1, 0.1, 0.2),
        });
 
-       // GCEM Logo (left)
+       // GCEM Logo (left) - Slightly larger and repositioned for impact
        if (gcemImage) {
-         page.drawImage(gcemImage, { x: 30, y: height - 90, width: 60, height: 60 });
+         page.drawImage(gcemImage, { x: 35, y: height - 85, width: 65, height: 65 });
        }
-       page.drawText("GOPALAN", { x: 100, y: height - 50, font: fontBold, size: 18, color: rgb(0.1, 0.1, 0.18) });
-       page.drawText("COLLEGE OF ENGINEERING", { x: 100, y: height - 65, font: font, size: 10, color: rgb(0.1, 0.1, 0.18) });
-       page.drawText("AND MANAGEMENT", { x: 100, y: height - 77, font: font, size: 10, color: rgb(0.1, 0.1, 0.18) });
-       page.drawText("Whitefield, Bengaluru", { x: 100, y: height - 89, font: font, size: 8, color: rgb(0.1, 0.1, 0.18) });
+       
+       // Central Title Text - Professional Typography
+       page.drawText("GOPALAN COLLEGE OF ENGINEERING", { 
+         x: 120, y: height - 50, font: fontBold, size: 16, color: rgb(0.05, 0.05, 0.15) 
+       });
+       page.drawText("AND MANAGEMENT", { 
+         x: 120, y: height - 68, font: fontBold, size: 16, color: rgb(0.05, 0.05, 0.15) 
+       });
+       page.drawText("Whitefield, Bengaluru | NAAC Accredited", { 
+         x: 120, y: height - 85, font: font, size: 9, color: rgb(0.3, 0.3, 0.4) 
+       });
 
-       // IIC Logo (right)
+       // IIC Logo (right) - Aligned with GCEM logo
        if (iicImage) {
-         page.drawImage(iicImage, { x: width - 80, y: height - 90, width: 50, height: 50 });
+         page.drawImage(iicImage, { x: width - 100, y: height - 85, width: 65, height: 65 });
        }
-       page.drawText("INSTITUTION'S INNOVATION COUNCIL", { x: width - 300, y: height - 50, font: fontBold, size: 11, color: rgb(0.12, 0.22, 0.54) });
-       page.drawText("(Ministry of HRD Initiative)", { x: width - 230, y: height - 65, font: fontItalic, size: 9, color: rgb(0.12, 0.22, 0.54) });
 
-       // Divider
+       // Divider line - Elegant and subtle
        page.drawLine({
-          start: { x: 20, y: height - 100 },
-          end: { x: width - 20, y: height - 100 },
-          thickness: 1,
-          color: rgb(0.1, 0.1, 0.1)
+          start: { x: 25, y: height - 105 },
+          end: { x: width - 25, y: height - 105 },
+          thickness: 1.5,
+          color: rgb(0.1, 0.1, 0.2)
+       });
+
+       // Footer - Clean and professional
+       page.drawLine({
+          start: { x: 25, y: 45 },
+          end: { x: width - 25, y: 45 },
+          thickness: 0.5,
+          color: rgb(0.8, 0.8, 0.8)
+       });
+       page.drawText("Institution's Innovation Council (IIC) - GCEM", {
+         x: 35, y: 30, font: fontItalic, size: 8, color: rgb(0.5, 0.5, 0.6)
+       });
+       page.drawText(`Page ${pdfDoc.getPageCount()}`, {
+         x: width - 70, y: 30, font: font, size: 8, color: rgb(0.5, 0.5, 0.6)
        });
 
        return page;
@@ -98,6 +141,7 @@ export async function POST(request: Request) {
 
     // Page 1
     let page = addLetterheadPage();
+
     let currentY = 700;
 
     const drawRow = (label: string, value: string) => {
