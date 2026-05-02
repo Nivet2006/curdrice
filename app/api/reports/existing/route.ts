@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { reportsClient } from '@/lib/supabase/reports-client';
 import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
@@ -10,15 +10,13 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Event ID is required' }, { status: 400 });
     }
 
-    const supabase = await createClient();
-
-    const { data: report, error } = await supabase
+    const { data: report, error } = await reportsClient
       .from('iic_event_reports')
       .select('*')
       .eq('event_id', eventId)
-      .single();
+      .maybeSingle();
 
-    if (error && error.code !== 'PGRST116') {
+    if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 

@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { reportsClient } from '@/lib/supabase/reports-client';
 import { NextResponse } from 'next/server';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 
@@ -197,33 +198,33 @@ export async function POST(request: Request) {
     const pdfBytes = await pdfDoc.save();
 
     // -------------------------------------------------------------
-    // UPLOAD TO SUPABASE
+    // UPLOAD TO SECOND (REPORTS) SUPABASE DB
     // -------------------------------------------------------------
     const timestamp = new Date().getTime();
     const filePath = `${eventId}/${timestamp}_report.pdf`;
-    
-    const { error: uploadError } = await supabase
+
+    const { error: uploadError } = await reportsClient
       .storage
       .from('iic-reports')
       .upload(filePath, pdfBytes, {
         contentType: 'application/pdf',
-        upsert: true
+        upsert: true,
       });
 
     if (uploadError) {
-      console.error(uploadError);
-      return NextResponse.json({ error: 'Failed to upload PDF' }, { status: 500 });
+      console.error('[PDF Upload Error]', uploadError);
+      return NextResponse.json({ error: `Failed to upload PDF: ${uploadError.message}` }, { status: 500 });
     }
 
-    // Get signed URL
-    const { data: signedData, error: signedError } = await supabase
+    // Get a long-lived signed URL (30 days)
+    const { data: signedData } = await reportsClient
       .storage
       .from('iic-reports')
-      .createSignedUrl(filePath, 60 * 60 * 24 * 7); // 7 days
+      .createSignedUrl(filePath, 60 * 60 * 24 * 30);
 
     const pdfUrl = signedData?.signedUrl || '';
 
-    // Insert or Update the row
+    // Build the report row
     const reportRow = {
       event_id: eventId,
       created_by: user.id,
@@ -251,20 +252,21 @@ export async function POST(request: Request) {
       student_coordinators: reportData.student_coordinators || [],
       pdf_path: filePath,
       pdf_url: pdfUrl,
-      status: 'generated'
+      status: 'generated',
+      signatures: {},
     };
 
-    const { error: dbError } = await supabase
+    // Upsert into second DB
+    const { error: dbError } = await reportsClient
       .from('iic_event_reports')
-      .upsert(reportRow, { onConflict: 'event_id' }); // wait, id is primary key, onConflict event_id needs a unique constraint on event_id. We'll just insert, or query first to get ID.
+      .upsert(reportRow, { onConflict: 'event_id' });
 
     if (dbError) {
-       // Check if event_id is unique
-       // If it fails, let's just do a normal insert for now, assuming 1 report per event
-       // Or let's manually delete the old one first
-       await supabase.from('iic_event_reports').delete().eq('event_id', eventId);
-       const { error: finalDbError } = await supabase.from('iic_event_reports').insert(reportRow);
-       if (finalDbError) throw new Error("Database error: " + finalDbError.message);
+      console.error('[DB Upsert Error]', dbError);
+      // Fallback: delete old, re-insert
+      await reportsClient.from('iic_event_reports').delete().eq('event_id', eventId);
+      const { error: finalDbError } = await reportsClient.from('iic_event_reports').insert(reportRow);
+      if (finalDbError) throw new Error('Database error: ' + finalDbError.message);
     }
 
     return NextResponse.json({ success: true, pdfUrl });
