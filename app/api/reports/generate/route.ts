@@ -2,10 +2,21 @@ import { createClient } from '@/lib/supabase/server';
 import { reportsClient } from '@/lib/supabase/reports-client';
 import { NextResponse } from 'next/server';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import { readFileSync, existsSync } from 'fs';
+import { join } from 'path';
 
-// Minimal 1x1 base64 pngs just so it compiles and renders
-const GCEM_CREST_B64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='; 
-const IIC_LOGO_B64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+// Load logos from public/iic/ at startup (server-side only)
+// Place your files at:
+//   public/iic/gcem-crest.png
+//   public/iic/iic-logo.png
+function loadLogoBytes(filename: string): Buffer | null {
+  const filePath = join(process.cwd(), 'public', 'iic', filename);
+  if (existsSync(filePath)) {
+    return readFileSync(filePath);
+  }
+  console.warn(`[PDF] Logo not found at ${filePath} — skipping.`);
+  return null;
+}
 
 export async function POST(request: Request) {
   try {
@@ -32,12 +43,21 @@ export async function POST(request: Request) {
     const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
     const fontItalic = await pdfDoc.embedFont(StandardFonts.HelveticaOblique);
 
-    const gcemImage = await pdfDoc.embedPng(Buffer.from(GCEM_CREST_B64, 'base64'));
-    const iicImage = await pdfDoc.embedPng(Buffer.from(IIC_LOGO_B64, 'base64'));
+    // Load logos from public/iic/
+    const gcemBytes = loadLogoBytes('gcem-crest.png');
+    const iicBytes = loadLogoBytes('iic-logo.png');
+    const gcemImage = gcemBytes ? await pdfDoc.embedPng(gcemBytes) : null;
+    const iicImage  = iicBytes  ? await pdfDoc.embedPng(iicBytes)  : null;
 
     const addLetterheadPage = () => {
        const page = pdfDoc.addPage([595.28, 841.89]); // A4
        const { width, height } = page.getSize();
+
+       // ── WHITE BACKGROUND (fill entire page) ──
+       page.drawRectangle({
+          x: 0, y: 0, width, height,
+          color: rgb(1, 1, 1),  // solid white
+       });
        
        // Double border
        page.drawRectangle({
@@ -49,15 +69,19 @@ export async function POST(request: Request) {
           borderWidth: 1, borderColor: rgb(0.06, 0.06, 0.06),
        });
 
-       // GCEM Logo
-       page.drawImage(gcemImage, { x: 30, y: height - 90, width: 60, height: 60 });
+       // GCEM Logo (left)
+       if (gcemImage) {
+         page.drawImage(gcemImage, { x: 30, y: height - 90, width: 60, height: 60 });
+       }
        page.drawText("GOPALAN", { x: 100, y: height - 50, font: fontBold, size: 18, color: rgb(0.1, 0.1, 0.18) });
        page.drawText("COLLEGE OF ENGINEERING", { x: 100, y: height - 65, font: font, size: 10, color: rgb(0.1, 0.1, 0.18) });
        page.drawText("AND MANAGEMENT", { x: 100, y: height - 77, font: font, size: 10, color: rgb(0.1, 0.1, 0.18) });
        page.drawText("Whitefield, Bengaluru", { x: 100, y: height - 89, font: font, size: 8, color: rgb(0.1, 0.1, 0.18) });
 
-       // IIC Logo
-       page.drawImage(iicImage, { x: width - 80, y: height - 90, width: 50, height: 50 });
+       // IIC Logo (right)
+       if (iicImage) {
+         page.drawImage(iicImage, { x: width - 80, y: height - 90, width: 50, height: 50 });
+       }
        page.drawText("INSTITUTION'S INNOVATION COUNCIL", { x: width - 300, y: height - 50, font: fontBold, size: 11, color: rgb(0.12, 0.22, 0.54) });
        page.drawText("(Ministry of HRD Initiative)", { x: width - 230, y: height - 65, font: fontItalic, size: 9, color: rgb(0.12, 0.22, 0.54) });
 
