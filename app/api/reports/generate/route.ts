@@ -93,34 +93,29 @@ export async function POST(request: Request) {
           borderWidth: 0.5, borderColor: rgb(0.1, 0.1, 0.2),
        });
 
-       // GCEM Logo (left) - Slightly larger and repositioned for impact
+       // GCEM Logo (left) - Using a larger area to avoid shrinking
        if (gcemImage) {
-         page.drawImage(gcemImage, { x: 35, y: height - 85, width: 65, height: 65 });
+         const dims = gcemImage.scaleToFit(250, 80); 
+         page.drawImage(gcemImage, { 
+           x: 30, 
+           y: height - dims.height - 35, 
+           width: dims.width, 
+           height: dims.height 
+         });
        }
        
-       // Central Title Text - Professional Typography
-       page.drawText("GOPALAN COLLEGE OF ENGINEERING", { 
-         x: 120, y: height - 50, font: fontBold, size: 16, color: rgb(0.05, 0.05, 0.15) 
-       });
-       page.drawText("AND MANAGEMENT", { 
-         x: 120, y: height - 68, font: fontBold, size: 16, color: rgb(0.05, 0.05, 0.15) 
-       });
-       page.drawText("Whitefield, Bengaluru | NAAC Accredited", { 
-         x: 120, y: height - 85, font: font, size: 9, color: rgb(0.3, 0.3, 0.4) 
-       });
-
-       // IIC Logo (right) - Aligned with GCEM logo
+       // IIC Logo (right) - Aligned and properly scaled
        if (iicImage) {
-         page.drawImage(iicImage, { x: width - 100, y: height - 85, width: 65, height: 65 });
+         const dims = iicImage.scaleToFit(200, 80);
+         page.drawImage(iicImage, { 
+           x: width - dims.width - 30, 
+           y: height - dims.height - 35, 
+           width: dims.width, 
+           height: dims.height 
+         });
        }
 
-       // Divider line - Elegant and subtle
-       page.drawLine({
-          start: { x: 25, y: height - 105 },
-          end: { x: width - 25, y: height - 105 },
-          thickness: 1.5,
-          color: rgb(0.1, 0.1, 0.2)
-       });
+       // Divider line REMOVED as per request
 
        // Footer - Clean and professional
        page.drawLine({
