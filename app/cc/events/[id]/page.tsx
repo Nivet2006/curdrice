@@ -40,8 +40,11 @@ export default async function CCEventDetailPage({ params }: { params: Promise<{ 
       .eq('event_id', id)
       .maybeSingle()
 
-   const { data: depts } = await supabase.from('profiles').select('department')
-   const uniqueDepts = Array.from(new Set(depts?.map(d => d.department).filter(Boolean))) as string[]
+   let uniqueDepts: string[] = []
+   if (isAdmin) {
+      const { data: depts } = await supabase.from('profiles').select('department')
+      uniqueDepts = Array.from(new Set(depts?.map(d => d.department).filter(Boolean))) as string[]
+   }
 
    return (
       <div className="max-w-4xl mx-auto space-y-12 pb-20 transition-colors">
