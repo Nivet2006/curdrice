@@ -126,15 +126,40 @@ export async function POST(request: Request) {
     let currentY = 700;
 
     const drawRow = (label: string, value: string) => {
-       if (currentY < 100) {
+       const text = value ? value.toString() : 'N/A';
+       const maxWidth = 350;
+       const fontSize = 11;
+       
+       // Helper to wrap text
+       const words = text.split(' ');
+       let line = '';
+       const lines = [];
+       
+       for (let n = 0; n < words.length; n++) {
+         const testLine = line + words[n] + ' ';
+         const testWidth = font.widthOfTextAtSize(testLine, fontSize);
+         if (testWidth > maxWidth && n > 0) {
+           lines.push(line);
+           line = words[n] + ' ';
+         } else {
+           line = testLine;
+         }
+       }
+       lines.push(line);
+
+       const rowHeight = Math.max(30, lines.length * 15);
+       if (currentY < rowHeight + 50) {
           page = addLetterheadPage();
           currentY = 700;
        }
+
        page.drawText(label, { x: 40, y: currentY, font: fontBold, size: 11 });
-       // Simple text wrap (naive)
-       const wrapped = value ? value.toString().substring(0, 100) + (value.toString().length > 100 ? '...' : '') : 'N/A';
-       page.drawText(wrapped, { x: 200, y: currentY, font: font, size: 11 });
-       currentY -= 30;
+       
+       lines.forEach((l, idx) => {
+         page.drawText(l.trim(), { x: 200, y: currentY - (idx * 15), font: font, size: 11 });
+       });
+       
+       currentY -= rowHeight;
     };
 
     drawRow("1. Activity Name", reportData.activity_name);
@@ -152,11 +177,12 @@ export async function POST(request: Request) {
     drawRow("13. Summary", reportData.summary);
     drawRow("14. Benefits", reportData.benefits);
 
-    // Page 2 - Signature Row
+    // Resource Persons
     page = addLetterheadPage();
     currentY = 700;
-    // Resource Persons
-    drawRow("15. Resource Persons:", "");
+    page.drawText("15. Resource Persons:", { x: 40, y: currentY, font: fontBold, size: 12 });
+    currentY -= 30;
+
     if (reportData.resource_persons && reportData.resource_persons.length > 0) {
        reportData.resource_persons.forEach((rp: any, idx: number) => {
           if (currentY < 150) {
@@ -183,29 +209,67 @@ export async function POST(request: Request) {
        });
     }
 
-    // Social Links
+    // Social Links & Coordinators
+    if (currentY < 150) { page = addLetterheadPage(); currentY = 700; }
     drawRow("19. Instagram", reportData.instagram_link);
     drawRow("19. Facebook", reportData.facebook_link);
     drawRow("19. Twitter", reportData.twitter_link);
-    
-    // Coordinators
     drawRow("21. Faculty Coordinators", (reportData.faculty_coordinators || []).join(', '));
     drawRow("22. Student Coordinators", (reportData.student_coordinators || []).join(', '));
 
-    // Signatures
-    currentY = 150;
-    page.drawLine({ start: { x: 50, y: currentY }, end: { x: 180, y: currentY }, thickness: 1 });
-    page.drawLine({ start: { x: 230, y: currentY }, end: { x: 360, y: currentY }, thickness: 1 });
-    page.drawLine({ start: { x: 410, y: currentY }, end: { x: 540, y: currentY }, thickness: 1 });
-    
-    page.drawText("Prepared By", { x: 80, y: currentY - 15, font: fontBold, size: 10 });
-    page.drawText("Faculty Coordinator", { x: 70, y: currentY - 30, font: font, size: 9 });
+    // --- NEW: ATTENDANCE SHEET ---
+    const { data: attendees } = await supabase
+      .from('registrations')
+      .select('profiles(full_name, usn, department)')
+      .eq('event_id', eventId)
+      .eq('checked_in', true);
 
-    page.drawText("Verified by", { x: 270, y: currentY - 15, font: fontBold, size: 10 });
-    page.drawText("Department HoD", { x: 260, y: currentY - 30, font: font, size: 9 });
+    if (attendees && attendees.length > 0) {
+      page = addLetterheadPage();
+      currentY = 700;
+      page.drawText("Attendance Sheet (Present Participants)", { x: 40, y: currentY, font: fontBold, size: 14 });
+      currentY -= 30;
+      
+      // Header
+      page.drawText("S.No", { x: 40, y: currentY, font: fontBold, size: 10 });
+      page.drawText("Name", { x: 80, y: currentY, font: fontBold, size: 10 });
+      page.drawText("USN", { x: 250, y: currentY, font: fontBold, size: 10 });
+      page.drawText("Dept", { x: 400, y: currentY, font: fontBold, size: 10 });
+      currentY -= 20;
+      page.drawLine({ start: { x: 40, y: currentY + 15 }, end: { x: 550, y: currentY + 15 }, thickness: 0.5 });
 
-    page.drawText("Approved by", { x: 450, y: currentY - 15, font: fontBold, size: 10 });
-    page.drawText("IIC President", { x: 455, y: currentY - 30, font: font, size: 9 });
+      attendees.forEach((att: any, i: number) => {
+        if (currentY < 50) {
+          page = addLetterheadPage();
+          currentY = 750;
+        }
+        const profile = att.profiles;
+        page.drawText(String(i+1), { x: 45, y: currentY, font: font, size: 9 });
+        page.drawText(profile?.full_name || 'N/A', { x: 80, y: currentY, font: font, size: 9 });
+        page.drawText(profile?.usn || 'N/A', { x: 250, y: currentY, font: font, size: 9 });
+        page.drawText(profile?.department || 'N/A', { x: 400, y: currentY, font: font, size: 9 });
+        currentY -= 15;
+      });
+    }
+
+    // --- NEW: FEEDBACK GRAPHS ---
+    const { data: feedbacks } = await supabase.from('feedback_responses').select('*').eq('event_id', eventId);
+    if (feedbacks && feedbacks.length > 0) {
+      const { generateChartBuffer } = await import('@/lib/charts-server');
+      page = addLetterheadPage();
+      currentY = 700;
+      page.drawText("Feedback Analysis", { x: 40, y: currentY, font: fontBold, size: 14 });
+      currentY -= 40;
+
+      for (const fb of feedbacks) {
+        if (currentY < 300) { page = addLetterheadPage(); currentY = 700; }
+        const chartBuffer = await generateChartBuffer(fb.response_type as 'bar' | 'pie', fb.question, fb.responses || []);
+        const chartImg = await pdfDoc.embedPng(chartBuffer);
+        const dims = chartImg.scaleToFit(500, 200);
+        page.drawImage(chartImg, { x: (595.28 - dims.width) / 2, y: currentY - dims.height, width: dims.width, height: dims.height });
+        currentY -= (dims.height + 40);
+      }
+    }
 
     // Page 3 - Photo Collages
     if (reportData.photo_1_url || reportData.photo_2_url) {
@@ -243,6 +307,24 @@ export async function POST(request: Request) {
        if (reportData.photo_1_url) await drawRemoteImage(reportData.photo_1_url, 650);
        if (reportData.photo_2_url) await drawRemoteImage(reportData.photo_2_url, 350);
     }
+
+    // --- SIGNATURES (AT THE END) ---
+    if (currentY < 150) {
+      page = addLetterheadPage();
+    }
+    currentY = 150;
+    page.drawLine({ start: { x: 50, y: currentY }, end: { x: 180, y: currentY }, thickness: 1 });
+    page.drawLine({ start: { x: 230, y: currentY }, end: { x: 360, y: currentY }, thickness: 1 });
+    page.drawLine({ start: { x: 410, y: currentY }, end: { x: 540, y: currentY }, thickness: 1 });
+    
+    page.drawText("Prepared By", { x: 80, y: currentY - 15, font: fontBold, size: 10 });
+    page.drawText("Faculty Coordinator", { x: 70, y: currentY - 30, font: font, size: 9 });
+
+    page.drawText("Verified by", { x: 270, y: currentY - 15, font: fontBold, size: 10 });
+    page.drawText("Department HoD", { x: 260, y: currentY - 30, font: font, size: 9 });
+
+    page.drawText("Approved by", { x: 450, y: currentY - 15, font: fontBold, size: 10 });
+    page.drawText("IIC President", { x: 455, y: currentY - 30, font: font, size: 9 });
 
     const pdfBytes = await pdfDoc.save();
 
