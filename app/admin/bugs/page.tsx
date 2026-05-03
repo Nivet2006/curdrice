@@ -326,7 +326,8 @@ export default function AdminBugsPage() {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto min-h-screen" style={{ color: 'var(--fg)' }}>
+    <>
+      <div className="p-6 max-w-7xl mx-auto min-h-screen print:hidden" style={{ color: 'var(--fg)' }}>
       <header className="mb-8 flex justify-between items-end">
         <div>
           <h1 className="text-3xl font-black tracking-tighter uppercase flex items-center gap-3" style={{ color: 'var(--fg)' }}>
@@ -670,9 +671,10 @@ export default function AdminBugsPage() {
           </div>
         </div>
       )}
+      </div>
 
       {/* ── Aesthetic Print Layout (Only visible when printing) ── */}
-      {selected && (
+      {selected && !showShareCard && (
         <div id="bug-report-print" className="hidden print:block p-12 bg-white text-black font-sans min-h-screen">
           <header className="flex justify-between items-start border-b-2 border-black pb-8 mb-10">
             <div>
@@ -836,7 +838,8 @@ export default function AdminBugsPage() {
         </div>
       )}
 
-      <div id="team-share-card-print" className="hidden print:flex flex-col absolute inset-0 bg-white h-screen w-screen p-10 overflow-hidden" style={{ pageBreakAfter: 'always' }}>
+      {showShareCard && (
+        <div id="team-share-card-print" className="hidden print:flex flex-col absolute inset-0 bg-white h-screen w-screen p-10 overflow-hidden" style={{ pageBreakAfter: 'always' }}>
          <div className="border-[4px] border-black p-10 rounded-[30px] w-full max-w-2xl mx-auto my-auto flex flex-col justify-between h-full max-h-[90vh]">
             <div>
               <h1 className="text-5xl font-black uppercase tracking-tighter mb-2 text-black">Access Protocol</h1>
@@ -875,6 +878,7 @@ export default function AdminBugsPage() {
             </div>
          </div>
       </div>
-    </div>
+      )}
+    </>
   )
 }
