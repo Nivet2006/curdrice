@@ -75,7 +75,7 @@ export function ReportHubCard({ eventId }: { eventId: string }) {
             </div>
             <div className="h-2 w-full bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
               <div
-                className={`h-full transition-all duration-1000 ${isComplete ? 'bg-black dark:bg-white' : 'bg-zinc-400 dark:bg-zinc-500'}`}
+                className={`h-full transition-all duration-1000 ${isComplete ? 'bg-emerald-400 dark:bg-emerald-800' : 'bg-zinc-400 dark:bg-zinc-500'}`}
                 style={{ width: `${progressPercent}%` }}
               ></div>
             </div>
