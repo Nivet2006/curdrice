@@ -71,9 +71,9 @@ export default async function CCEventDetailPage({ params }: { params: Promise<{ 
                         }}>
                            <button
                               type="submit"
-                              className="flex items-center gap-2 px-4 py-2 bg-black text-white dark:bg-white dark:text-black rounded-full text-xs font-bold hover:bg-zinc-800 transition-all active:scale-95 shadow-md"
+                              className="flex items-center gap-2 px-4 py-2 bg-black text-white dark:bg-white dark:!text-black rounded-full text-xs font-bold hover:bg-zinc-800 transition-all active:scale-95 shadow-md"
                            >
-                              <Send size={14} />
+                              <Send size={14} className="dark:!text-black" />
                               Submit to Faculty
                            </button>
                         </form>

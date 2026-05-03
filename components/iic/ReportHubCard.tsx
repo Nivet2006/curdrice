@@ -95,9 +95,9 @@ export function ReportHubCard({ eventId }: { eventId: string }) {
           {isComplete || reportData ? (
             <Link
               href={`/dashboard/events/${eventId}/report`}
-              className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-black dark:bg-white text-white dark:text-black font-bold shadow-lg transition-all active:scale-[0.98] hover:opacity-90"
+              className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-black dark:bg-white text-white dark:!text-black font-bold shadow-lg transition-all active:scale-[0.98] hover:opacity-90"
             >
-              <FileText size={16} />
+              <FileText size={16} className="dark:!text-black" />
               {reportData ? 'Edit Report' : 'Generate Report'}
             </Link>
           ) : (
