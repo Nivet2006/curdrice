@@ -159,7 +159,7 @@ export function EventRegistrationStats({ eventId }: { eventId: string }) {
                     </span>
                   )}
                   {reg.checked_in && (
-                    <span className="text-[9px] font-black uppercase bg-zinc-100 text-black border border-zinc-200 dark:bg-white dark:text-black px-2 py-0.5 rounded-md">Entered</span>
+                    <span className="text-[9px] font-black uppercase bg-[#0a0a0a] text-white px-2 py-0.5 rounded-md">Entered</span>
                   )}
                 </div>
               </div>
