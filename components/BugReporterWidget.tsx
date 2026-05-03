@@ -138,22 +138,22 @@ export function BugReporterWidget() {
 
   // ── Realtime history subscription ───────────────────────────
   useEffect(() => {
-    if (user) {
+    if (isVerified && accessId) {
       supabase
         .from('bug_reports')
         .select('id, created_at, description, page_url, status')
-        .eq('user_id', user.id)
+        .eq('access_id_used', accessId)
         .order('created_at', { ascending: false })
         .limit(20)
         .then(({ data }) => { if (data) setHistory(data as BugReport[]) })
 
       const channel = supabase
-        .channel(`bug-history-${user.id}`)
+        .channel(`bug-history-${accessId}`)
         .on('postgres_changes', {
           event: '*',
           schema: 'public',
           table: 'bug_reports',
-          filter: `user_id=eq.${user.id}`,
+          filter: `access_id_used=eq.${accessId}`,
         }, (payload) => {
           if (payload.eventType === 'INSERT') {
             setHistory(prev => [payload.new as BugReport, ...prev].slice(0, 20))
@@ -167,7 +167,7 @@ export function BugReporterWidget() {
 
       return () => { supabase.removeChannel(channel) }
     }
-  }, [user, supabase, isVerified])
+  }, [accessId, supabase, isVerified])
 
   // ── Verification ─────────────────────────────────────────────
   const handleVerify = async (e: React.FormEvent) => {
