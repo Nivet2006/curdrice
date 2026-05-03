@@ -293,14 +293,24 @@ export function MultiStepReportForm({ eventId, eventTitle, eventDate, department
 
         {step === 2 && (
           <div className="space-y-4 animate-in fade-in">
-            <h2 className="text-xl font-bold text-black dark:text-white">Step 2: Narrative</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold text-black dark:text-white">Step 2: Narrative</h2>
+              <span className="text-[10px] font-black uppercase tracking-[0.15em] px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                Note: Use "-" for bullet points
+              </span>
+            </div>
             <div>
               <label className="block text-sm font-medium mb-1">Department</label>
               <input type="text" className="w-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 rounded-lg p-3 text-sm text-black dark:text-white transition-colors" value={formData.department} onChange={e => updateForm('department', e.target.value)} placeholder="e.g. Computer Science and Engineering" />
             </div>
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">Objective</label>
+                <div className="flex items-center gap-2">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">Objective</label>
+                  <span className={`text-[10px] font-bold ${(formData.objective?.length || 0) > 900 ? 'text-red-500' : 'text-zinc-400'}`}>
+                    {formData.objective?.length || 0}/1000
+                  </span>
+                </div>
                 <button 
                   onClick={() => togglePreview('objective')}
                   className="text-[10px] font-mono uppercase tracking-widest flex items-center gap-1.5 px-2 py-1 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-500 hover:text-black dark:hover:text-white transition-colors"
@@ -313,13 +323,24 @@ export function MultiStepReportForm({ eventId, eventTitle, eventDate, department
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>{formData.objective || '*No objective provided.*'}</ReactMarkdown>
                 </div>
               ) : (
-                <textarea className="w-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 rounded-lg p-3 text-sm text-black dark:text-white transition-colors min-h-[120px] resize-y" placeholder="State the purpose, IIC alignment, learning outcomes..." value={formData.objective} onChange={e => updateForm('objective', e.target.value)} />
+                <textarea 
+                  className="w-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 rounded-lg p-3 text-sm text-black dark:text-white transition-colors min-h-[120px] resize-y" 
+                  placeholder="State the purpose, IIC alignment, learning outcomes..." 
+                  maxLength={1000}
+                  value={formData.objective} 
+                  onChange={e => updateForm('objective', e.target.value)} 
+                />
               )}
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">Summary</label>
+                <div className="flex items-center gap-2">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">Summary</label>
+                  <span className={`text-[10px] font-bold ${(formData.summary?.length || 0) > 900 ? 'text-red-500' : 'text-zinc-400'}`}>
+                    {formData.summary?.length || 0}/1000
+                  </span>
+                </div>
                 <button 
                   onClick={() => togglePreview('summary')}
                   className="text-[10px] font-mono uppercase tracking-widest flex items-center gap-1.5 px-2 py-1 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-500 hover:text-black dark:hover:text-white transition-colors"
@@ -332,13 +353,24 @@ export function MultiStepReportForm({ eventId, eventTitle, eventDate, department
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>{formData.summary || '*No summary provided.*'}</ReactMarkdown>
                 </div>
               ) : (
-                <textarea className="w-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 rounded-lg p-3 text-sm text-black dark:text-white transition-colors min-h-[120px] resize-y" placeholder="Describe activity nature, key sessions..." value={formData.summary} onChange={e => updateForm('summary', e.target.value)} />
+                <textarea 
+                  className="w-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 rounded-lg p-3 text-sm text-black dark:text-white transition-colors min-h-[120px] resize-y" 
+                  placeholder="Describe activity nature, key sessions..." 
+                  maxLength={1000}
+                  value={formData.summary} 
+                  onChange={e => updateForm('summary', e.target.value)} 
+                />
               )}
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">Benefits</label>
+                <div className="flex items-center gap-2">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">Benefits</label>
+                  <span className={`text-[10px] font-bold ${(formData.benefits?.length || 0) > 900 ? 'text-red-500' : 'text-zinc-400'}`}>
+                    {formData.benefits?.length || 0}/1000
+                  </span>
+                </div>
                 <button 
                   onClick={() => togglePreview('benefits')}
                   className="text-[10px] font-mono uppercase tracking-widest flex items-center gap-1.5 px-2 py-1 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-500 hover:text-black dark:hover:text-white transition-colors"
@@ -351,7 +383,13 @@ export function MultiStepReportForm({ eventId, eventTitle, eventDate, department
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>{formData.benefits || '*No benefits provided.*'}</ReactMarkdown>
                 </div>
               ) : (
-                <textarea className="w-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 rounded-lg p-3 text-sm text-black dark:text-white transition-colors min-h-[120px] resize-y" placeholder="Outline knowledge, skills, exposure..." value={formData.benefits} onChange={e => updateForm('benefits', e.target.value)} />
+                <textarea 
+                  className="w-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 rounded-lg p-3 text-sm text-black dark:text-white transition-colors min-h-[120px] resize-y" 
+                  placeholder="Outline knowledge, skills, exposure..." 
+                  maxLength={1000}
+                  value={formData.benefits} 
+                  onChange={e => updateForm('benefits', e.target.value)} 
+                />
               )}
             </div>
           </div>
