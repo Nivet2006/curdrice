@@ -206,7 +206,12 @@ export default function AdminBugsPage() {
       sender_type: 'admin',
       content: adminNewMessage.trim(),
     })
-    if (!error) setAdminNewMessage('')
+    if (error) {
+      console.error('Admin chat error:', error)
+      toast.error('Failed to send: ' + error.message)
+    } else {
+      setAdminNewMessage('')
+    }
     setSendingMsg(false)
     setShowEmoji(false)
   }

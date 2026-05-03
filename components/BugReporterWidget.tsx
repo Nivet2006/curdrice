@@ -338,7 +338,12 @@ export function BugReporterWidget() {
       sender_type: 'reporter',
       content: newMessage.trim(),
     })
-    if (!error) setNewMessage('')
+    if (error) {
+      console.error('Chat error:', error)
+      alert('Failed to send message: ' + error.message)
+    } else {
+      setNewMessage('')
+    }
     setSendingMsg(false)
     setShowEmoji(false)
   }
