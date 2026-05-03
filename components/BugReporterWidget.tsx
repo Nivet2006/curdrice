@@ -644,7 +644,7 @@ export function BugReporterWidget() {
                         onClick={sendChatMessage} disabled={sendingMsg || !newMessage.trim()}
                         style={{ background: '#fff', border: 'none', borderRadius: 8, padding: '8px 12px', color: '#000', cursor: 'pointer', opacity: sendingMsg || !newMessage.trim() ? 0.5 : 1 }}
                       >
-                        <Send size={14} />
+                        <Send size={14} color="#000000" />
                       </button>
                     </div>
                   </div>
