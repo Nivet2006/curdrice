@@ -39,7 +39,7 @@ function cleanMarkdown(text: string): string {
     .replace(/^>\s+(.*)$/gm, '    $1') // Indent blockquotes
     .replace(/^- (.*)$/gm, '• $1')    // Bullet points
     .replace(/\[(.*?)\]\(.*?\)/g, '$1') // Remove links, keep text
-    .replace(/`{1,3}.*?`{1,3}/gs, '') // Remove code blocks
+    .replace(/`{1,3}[\s\S]*?`{1,3}/g, '') // Remove code blocks
     .replace(/\|/g, ' ')               // Remove table pipes
     .replace(/-{3,}/g, ' ')            // Remove horizontal rules
     .trim();
