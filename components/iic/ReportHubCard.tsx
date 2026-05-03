@@ -17,13 +17,13 @@ export function ReportHubCard({ eventId }: { eventId: string }) {
           const data = await res.json();
           setStatus(data);
         }
-        
+
         // Also fetch if there is an existing report generated
         const reportRes = await fetch(`/api/reports/existing?eventId=${eventId}`);
         if (reportRes.ok) {
           const reportData = await reportRes.json();
           if (reportData.report) {
-             setReportData(reportData.report);
+            setReportData(reportData.report);
           }
         }
       } catch (e) {
@@ -46,14 +46,14 @@ export function ReportHubCard({ eventId }: { eventId: string }) {
 
   // Calculate progress safely
   const isComplete = status?.isComplete || false;
-  const progressPercent = status?.total && status.total > 0 
-    ? Math.min(100, Math.round((status.submitted / status.total) * 100)) 
+  const progressPercent = status?.total && status.total > 0
+    ? Math.min(100, Math.round((status.submitted / status.total) * 100))
     : 0;
 
   return (
     <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-[2.5rem] p-8 mt-0 shadow-sm relative overflow-hidden group transition-colors">
       <div className="absolute top-0 left-0 w-full h-1 bg-black dark:bg-white"></div>
-      
+
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-4 flex-1">
           <div className="flex items-center gap-3">
@@ -65,7 +65,7 @@ export function ReportHubCard({ eventId }: { eventId: string }) {
               <p className="text-xs font-mono text-zinc-500 uppercase tracking-widest mt-1">Official Ministry Format</p>
             </div>
           </div>
- 
+
           <div className="space-y-2 max-w-md">
             <div className="flex items-center justify-between text-xs font-medium text-zinc-600 dark:text-zinc-400">
               <span>Feedback Status</span>
@@ -74,7 +74,7 @@ export function ReportHubCard({ eventId }: { eventId: string }) {
               </span>
             </div>
             <div className="h-2 w-full bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-              <div 
+              <div
                 className={`h-full transition-all duration-1000 ${isComplete ? 'bg-black dark:bg-white' : 'bg-zinc-400 dark:bg-zinc-500'}`}
                 style={{ width: `${progressPercent}%` }}
               ></div>
@@ -90,18 +90,18 @@ export function ReportHubCard({ eventId }: { eventId: string }) {
             )}
           </div>
         </div>
- 
+
         <div className="flex flex-col gap-3 min-w-[200px]">
           {isComplete || reportData ? (
-            <Link 
+            <Link
               href={`/dashboard/events/${eventId}/report`}
-              className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#0a0a0a] text-white font-bold shadow-lg transition-all active:scale-[0.98] hover:opacity-90"
+              className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-black dark:bg-white text-white dark:text-black font-bold shadow-lg transition-all active:scale-[0.98] hover:opacity-90"
             >
               <FileText size={16} />
               {reportData ? 'Edit Report' : 'Generate Report'}
             </Link>
           ) : (
-            <button 
+            <button
               disabled
               className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-400 cursor-not-allowed border border-zinc-200 dark:border-zinc-700 font-medium"
               title={`Report unlocks after all ${status?.total || 0} students submit feedback. ${((status?.total || 0) - (status?.submitted || 0))} pending.`}
@@ -110,9 +110,9 @@ export function ReportHubCard({ eventId }: { eventId: string }) {
               Generate Report
             </button>
           )}
- 
+
           {reportData?.pdf_url && (
-            <a 
+            <a
               href={reportData.pdf_url}
               target="_blank"
               rel="noopener noreferrer"
