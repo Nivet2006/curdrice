@@ -111,7 +111,7 @@ export function BugReporterWidget() {
     return () => {
       supabase.removeChannel(globalChannel)
     }
-  }, [supabase])
+  }, [supabase, user?.id])
 
   // ── Drag logic ──────────────────────────────────────────────
   const onMouseDown = useCallback((e: React.MouseEvent) => {
@@ -163,7 +163,10 @@ export function BugReporterWidget() {
         .order('created_at', { ascending: false })
         .limit(20)
         .then(({ data, error }) => { 
-          if (!error && data) setHistory(data as BugReport[]) 
+          if (error) {
+            console.error('Bug Reporter: History fetch error:', error)
+          }
+          if (data) setHistory(data as BugReport[]) 
         })
 
       const channel = supabase
@@ -188,7 +191,7 @@ export function BugReporterWidget() {
     } else {
       setHistory([])
     }
-  }, [accessId, supabase, isVerified])
+  }, [accessId, supabase, isVerified, user?.id])
 
   // ── Chat subscription ──────────────────────────────────────
   useEffect(() => {
@@ -217,7 +220,7 @@ export function BugReporterWidget() {
       .subscribe()
 
     return () => { supabase.removeChannel(channel) }
-  }, [selectedChat, supabase])
+  }, [selectedChat, supabase, user?.id])
 
   // ── Verification ─────────────────────────────────────────────
   const handleVerify = async (e: React.FormEvent) => {
