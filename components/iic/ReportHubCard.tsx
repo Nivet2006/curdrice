@@ -37,7 +37,7 @@ export function ReportHubCard({ eventId }: { eventId: string }) {
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-[2.5rem] p-10 mt-10 animate-pulse">
+      <div className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-[2.5rem] p-10 mt-0 animate-pulse">
         <div className="h-6 w-48 bg-zinc-200 dark:bg-zinc-800 rounded mb-4"></div>
         <div className="h-4 w-full bg-zinc-200 dark:bg-zinc-800 rounded"></div>
       </div>
@@ -51,7 +51,7 @@ export function ReportHubCard({ eventId }: { eventId: string }) {
     : 0;
 
   return (
-    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-[2.5rem] p-8 mt-10 shadow-sm relative overflow-hidden group">
+    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-[2.5rem] p-8 mt-0 shadow-sm relative overflow-hidden group">
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#1F3A8A] to-[#2563EB]"></div>
       
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">

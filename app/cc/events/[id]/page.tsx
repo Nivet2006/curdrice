@@ -210,6 +210,9 @@ export default async function CCEventDetailPage({ params }: { params: Promise<{ 
                      </div>
                   </section>
                )}
+
+               {/* Section 1 — Event Report Hub Card moved here */}
+               <ReportHubCard eventId={event.id} />
             </div>
 
             <aside className="space-y-6">
@@ -249,8 +252,6 @@ export default async function CCEventDetailPage({ params }: { params: Promise<{ 
             </aside>
          </div>
 
-         {/* Section 1 — Event Report Hub Card */}
-         <ReportHubCard eventId={event.id} />
       </div>
    )
 }
