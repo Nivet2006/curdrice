@@ -508,5 +508,6 @@ export function BugReporterWidget() {
         </div>
       )}
     </div>
+    </>
   )
 }
