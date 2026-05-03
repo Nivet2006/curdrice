@@ -4,9 +4,7 @@ const nextConfig = {
         ignoreBuildErrors: false,
     },
     transpilePackages: ['otplib'],
-    experimental: {
-        serverExternalPackages: ['chartjs-node-canvas', 'canvas'],
-    },
+    serverExternalPackages: ['chartjs-node-canvas', 'canvas'],
 }
 
 export default nextConfig
