@@ -23,6 +23,14 @@ function loadLogoBytes(filename: string): Buffer | null {
   return null;
 }
 
+// Helper to strip non-WinAnsi characters (emojis, etc.) that crash standard PDF fonts
+function sanitizeText(text: string): string {
+  if (!text) return '';
+  // Keep standard printable ASCII, common punctuation, and extended Latin
+  // This is a broad stroke to prevent "WinAnsi cannot encode" errors
+  return text.replace(/[^\x00-\x7F\x80-\xFF]/g, '');
+}
+
 export async function POST(request: Request) {
   try {
     const data = await request.json();
@@ -126,7 +134,7 @@ export async function POST(request: Request) {
     let currentY = 700;
 
     const drawRow = (label: string, value: string) => {
-       const text = value ? value.toString() : 'N/A';
+       const text = value ? sanitizeText(value.toString()) : 'N/A';
        const maxWidth = 350;
        const fontSize = 11;
        
@@ -201,16 +209,16 @@ export async function POST(request: Request) {
           currentY -= 20;
           
           if (isInternal) {
-             page.drawText(`Name: ${rp.name || 'N/A'}, USN: ${rp.usn || 'N/A'}, Dept: ${rp.department || 'N/A'}`, { x: 60, y: currentY, font: font, size: 10 });
+             page.drawText(sanitizeText(`Name: ${rp.name || 'N/A'}, USN: ${rp.usn || 'N/A'}, Dept: ${rp.department || 'N/A'}`), { x: 60, y: currentY, font: font, size: 10 });
              currentY -= 20;
-             page.drawText(`Mobile: ${rp.mobile || 'N/A'}, Email: ${rp.email || 'N/A'}`, { x: 60, y: currentY, font: font, size: 10 });
+             page.drawText(sanitizeText(`Mobile: ${rp.mobile || 'N/A'}, Email: ${rp.email || 'N/A'}`), { x: 60, y: currentY, font: font, size: 10 });
              currentY -= 30;
           } else {
-             page.drawText(`Name: ${rp.name || 'N/A'}, Org: ${rp.organization || 'N/A'}, Desig: ${rp.designation || 'N/A'}`, { x: 60, y: currentY, font: font, size: 10 });
+             page.drawText(sanitizeText(`Name: ${rp.name || 'N/A'}, Org: ${rp.organization || 'N/A'}, Desig: ${rp.designation || 'N/A'}`), { x: 60, y: currentY, font: font, size: 10 });
              currentY -= 20;
-             page.drawText(`Mobile: ${rp.mobile || 'N/A'}, Email: ${rp.email || 'N/A'}`, { x: 60, y: currentY, font: font, size: 10 });
+             page.drawText(sanitizeText(`Mobile: ${rp.mobile || 'N/A'}, Email: ${rp.email || 'N/A'}`), { x: 60, y: currentY, font: font, size: 10 });
              currentY -= 20;
-             page.drawText(`Address: ${rp.address || 'N/A'}`, { x: 60, y: currentY, font: font, size: 10 });
+             page.drawText(sanitizeText(`Address: ${rp.address || 'N/A'}`), { x: 60, y: currentY, font: font, size: 10 });
              currentY -= 30;
           }
        });
@@ -251,10 +259,10 @@ export async function POST(request: Request) {
           currentY = 750;
         }
         const profile = att.profiles;
-        page.drawText(String(i+1), { x: 45, y: currentY, font: font, size: 9 });
-        page.drawText(profile?.full_name || 'N/A', { x: 80, y: currentY, font: font, size: 9 });
-        page.drawText(profile?.usn || 'N/A', { x: 250, y: currentY, font: font, size: 9 });
-        page.drawText(profile?.department || 'N/A', { x: 400, y: currentY, font: font, size: 9 });
+        page.drawText(sanitizeText(String(i+1)), { x: 45, y: currentY, font: font, size: 9 });
+        page.drawText(sanitizeText(profile?.full_name || 'N/A'), { x: 80, y: currentY, font: font, size: 9 });
+        page.drawText(sanitizeText(profile?.usn || 'N/A'), { x: 250, y: currentY, font: font, size: 9 });
+        page.drawText(sanitizeText(profile?.department || 'N/A'), { x: 400, y: currentY, font: font, size: 9 });
         currentY -= 15;
       });
     }
