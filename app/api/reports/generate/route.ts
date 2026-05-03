@@ -26,9 +26,23 @@ function loadLogoBytes(filename: string): Buffer | null {
 // Helper to strip non-WinAnsi characters (emojis, etc.) that crash standard PDF fonts
 function sanitizeText(text: string): string {
   if (!text) return '';
-  // Keep standard printable ASCII, common punctuation, and extended Latin
-  // This is a broad stroke to prevent "WinAnsi cannot encode" errors
   return text.replace(/[^\x00-\x7F\x80-\xFF]/g, '');
+}
+
+// Simple Markdown to Plain Text formatter for PDF
+function cleanMarkdown(text: string): string {
+  if (!text) return '';
+  return text
+    .replace(/^#+\s+(.*)$/gm, '$1') // Remove heading hashes
+    .replace(/\*\*(.*?)\*\*/g, '$1') // Remove bold
+    .replace(/\*(.*?)\*/g, '$1')     // Remove italics
+    .replace(/^>\s+(.*)$/gm, '    $1') // Indent blockquotes
+    .replace(/^- (.*)$/gm, '• $1')    // Bullet points
+    .replace(/\[(.*?)\]\(.*?\)/g, '$1') // Remove links, keep text
+    .replace(/`{1,3}.*?`{1,3}/gs, '') // Remove code blocks
+    .replace(/\|/g, ' ')               // Remove table pipes
+    .replace(/-{3,}/g, ' ')            // Remove horizontal rules
+    .trim();
 }
 
 export async function POST(request: Request) {
@@ -188,9 +202,9 @@ export async function POST(request: Request) {
     drawRow("9. Student Count", String(reportData.student_count));
     drawRow("10. Funds Utilized", String(reportData.funds_used));
     drawRow("11. Department", reportData.department);
-    drawRow("12. Objective", reportData.objective);
-    drawRow("13. Summary", reportData.summary);
-    drawRow("14. Benefits", reportData.benefits);
+    drawRow("12. Objective", cleanMarkdown(reportData.objective));
+    drawRow("13. Summary", cleanMarkdown(reportData.summary));
+    drawRow("14. Benefits", cleanMarkdown(reportData.benefits));
 
     // Resource Persons
     page = addLetterheadPage();
