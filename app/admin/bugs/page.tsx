@@ -5,7 +5,7 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import * as XLSX from 'xlsx'
-import { Download, Save, FileText, Camera, Printer, Trash2 } from 'lucide-react'
+import { Download, Save, FileText, Camera, Printer, Trash2, Send, Smile, MessageSquare } from 'lucide-react'
 import { toPng } from 'html-to-image'
 
 type Report = {
@@ -19,6 +19,14 @@ type Report = {
   status: string
   admin_note: string | null
   access_id_used: string | null
+}
+
+type BugMessage = {
+  id: string
+  bug_id: string
+  sender_type: 'admin' | 'reporter'
+  content: string
+  created_at: string
 }
 
 type AccessId = {
@@ -57,6 +65,12 @@ export default function AdminBugsPage() {
   const [showShareCard, setShowShareCard] = useState(false)
   const [widgetActive, setWidgetActive] = useState(true)
   const [settingLoading, setSettingLoading] = useState(true)
+
+  // Chat state
+  const [messages, setMessages] = useState<BugMessage[]>([])
+  const [adminNewMessage, setAdminNewMessage] = useState('')
+  const [sendingMsg, setSendingMsg] = useState(false)
+  const [showEmoji, setShowEmoji] = useState(false)
 
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -154,6 +168,48 @@ export default function AdminBugsPage() {
       supabase.removeChannel(settingsChannel)
     }
   }, [supabase])
+
+  // ── Chat subscription ──────────────────────────────────────
+  useEffect(() => {
+    if (!selected) {
+      setMessages([])
+      return
+    }
+
+    supabase
+      .from('bug_messages')
+      .select('*')
+      .eq('bug_id', selected.id)
+      .order('created_at', { ascending: true })
+      .then(({ data }) => { if (data) setMessages(data) })
+
+    const channel = supabase
+      .channel(`bug-chat-admin-${selected.id}`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'bug_messages',
+        filter: `bug_id=eq.${selected.id}`,
+      }, (payload) => {
+        setMessages(prev => [...prev, payload.new as BugMessage])
+      })
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
+  }, [selected, supabase])
+
+  const sendAdminMessage = async () => {
+    if (!adminNewMessage.trim() || !selected) return
+    setSendingMsg(true)
+    const { error } = await supabase.from('bug_messages').insert({
+      bug_id: selected.id,
+      sender_type: 'admin',
+      content: adminNewMessage.trim(),
+    })
+    if (!error) setAdminNewMessage('')
+    setSendingMsg(false)
+    setShowEmoji(false)
+  }
 
   const toggleWidget = async () => {
     if (settingLoading) return
@@ -516,6 +572,66 @@ export default function AdminBugsPage() {
                 <div className="flex justify-between items-center text-[9px] font-mono opacity-40 uppercase tracking-widest border-t pt-4" style={{ borderColor: 'var(--border)' }}>
                   <span>Reported at: {new Date(selected.created_at).toLocaleString()}</span>
                   <span>ID: {selected.id.split('-')[0]}</span>
+                </div>
+
+                {/* Chat Section */}
+                <div className="space-y-4 pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
+                  <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest flex items-center gap-2">
+                    <MessageSquare size={12} /> Chat with Reporter
+                  </p>
+                  <div className="bg-[var(--bg-subtle)] border border-[var(--border)] rounded-xl p-4 flex flex-col gap-3 min-h-[150px] max-h-[300px] overflow-y-auto bug-reporter-scrollbar">
+                    {messages.length === 0 && (
+                      <p className="text-[10px] text-[var(--fg-faint)] text-center my-auto">No communication history. Start a chat with the reporter below.</p>
+                    )}
+                    {messages.map(m => (
+                      <div key={m.id} className={`flex flex-col ${m.sender_type === 'admin' ? 'items-end' : 'items-start'}`}>
+                        <div className={`max-w-[80%] p-3 rounded-2xl text-xs leading-relaxed ${
+                          m.sender_type === 'admin' 
+                          ? 'bg-[var(--fg)] text-[var(--bg)] font-medium' 
+                          : 'bg-[var(--bg-card)] border border-[var(--border)] text-[var(--fg)]'
+                        }`}>
+                          {m.content}
+                        </div>
+                        <span className="text-[8px] mt-1 opacity-40 font-mono">
+                          {m.sender_type === 'admin' ? 'YOU' : 'REPORTER'} • {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="relative">
+                    {showEmoji && (
+                      <div className="absolute bottom-full left-0 mb-2 bg-[var(--bg-card)] border border-[var(--border)] p-2 rounded-xl flex gap-2 shadow-2xl z-20">
+                        {['👍', '✅', '❌', '⏳', '💡', '🐛', '🙏'].map(e => (
+                          <button key={e} onClick={() => { setAdminNewMessage(p => p + e); setShowEmoji(false) }} 
+                            className="p-2 hover:bg-[var(--bg-hover)] rounded-lg transition-colors text-lg">{e}</button>
+                        ))}
+                      </div>
+                    )}
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => setShowEmoji(!showEmoji)}
+                        className="p-3 bg-[var(--bg-subtle)] border border-[var(--border)] rounded-xl text-[var(--fg-muted)] hover:text-[var(--fg)] transition-colors"
+                      >
+                        <Smile size={16} />
+                      </button>
+                      <input 
+                        type="text" 
+                        value={adminNewMessage} 
+                        onChange={e => setAdminNewMessage(e.target.value)}
+                        onKeyDown={e => e.key === 'Enter' && sendAdminMessage()}
+                        placeholder="Message reporter..."
+                        className="flex-1 bg-[var(--bg-subtle)] border border-[var(--border)] rounded-xl px-4 text-xs outline-none focus:border-[var(--fg)] transition-all"
+                      />
+                      <button 
+                        onClick={sendAdminMessage}
+                        disabled={sendingMsg || !adminNewMessage.trim()}
+                        className="p-3 bg-[var(--fg)] text-[var(--bg)] rounded-xl disabled:opacity-30 transition-all hover:scale-105 active:scale-95"
+                      >
+                        <Send size={16} />
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="space-y-2 pt-4 border-t" style={{ borderColor: 'var(--border)' }}>

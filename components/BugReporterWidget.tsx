@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { getCollectedData } from '@/hooks/useBugCollector'
 import { useUser } from '@/hooks/useUser'
-import { LogOut } from 'lucide-react'
+import { LogOut, MessageSquare, Send, ArrowLeft, Smile } from 'lucide-react'
 
 type BugReport = {
   id: string
@@ -12,6 +12,14 @@ type BugReport = {
   description: string
   page_url: string
   status: 'open' | 'in_progress' | 'resolved' | 'wont_fix'
+}
+
+type BugMessage = {
+  id: string
+  bug_id: string
+  sender_type: 'admin' | 'reporter'
+  content: string
+  created_at: string
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -61,6 +69,13 @@ export function BugReporterWidget() {
   const [newPassForm, setNewPassForm] = useState('')
   const [confirmPassForm, setConfirmPassForm] = useState('')
   const [globalEnabled, setGlobalEnabled] = useState(true)
+  
+  // Chat state
+  const [selectedChat, setSelectedChat] = useState<BugReport | null>(null)
+  const [messages, setMessages] = useState<BugMessage[]>([])
+  const [newMessage, setNewMessage] = useState('')
+  const [sendingMsg, setSendingMsg] = useState(false)
+  const [showEmoji, setShowEmoji] = useState(false)
 
   const dragging = useRef(false)
   const dragOccurred = useRef(false)
@@ -175,6 +190,35 @@ export function BugReporterWidget() {
     }
   }, [accessId, supabase, isVerified])
 
+  // ── Chat subscription ──────────────────────────────────────
+  useEffect(() => {
+    if (!selectedChat) {
+      setMessages([])
+      return
+    }
+
+    supabase
+      .from('bug_messages')
+      .select('*')
+      .eq('bug_id', selectedChat.id)
+      .order('created_at', { ascending: true })
+      .then(({ data }) => { if (data) setMessages(data) })
+
+    const channel = supabase
+      .channel(`bug-chat-${selectedChat.id}`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'bug_messages',
+        filter: `bug_id=eq.${selectedChat.id}`,
+      }, (payload) => {
+        setMessages(prev => [...prev, payload.new as BugMessage])
+      })
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
+  }, [selectedChat, supabase])
+
   // ── Verification ─────────────────────────────────────────────
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -283,6 +327,20 @@ export function BugReporterWidget() {
     setAccessPass('')
     setHistory([])
     localStorage.removeItem('bug-verified-id')
+    setSelectedChat(null)
+  }
+
+  const sendChatMessage = async () => {
+    if (!newMessage.trim() || !selectedChat) return
+    setSendingMsg(true)
+    const { error } = await supabase.from('bug_messages').insert({
+      bug_id: selectedChat.id,
+      sender_type: 'reporter',
+      content: newMessage.trim(),
+    })
+    if (!error) setNewMessage('')
+    setSendingMsg(false)
+    setShowEmoji(false)
   }
 
   if (!mounted || !globalEnabled) return null
@@ -476,7 +534,6 @@ export function BugReporterWidget() {
                 </div>
               )}
 
-              {/* History tab */}
               {tab === 'history' && (
                 <div className="bug-reporter-scrollbar" style={{ maxHeight: 250, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6, paddingRight: 4 }}>
                   {history.length === 0 && <p style={{ color: '#52525b', fontSize: 11, textAlign: 'center', marginTop: 16 }}>No reports yet.</p>}
@@ -496,11 +553,101 @@ export function BugReporterWidget() {
                       <p style={{ fontSize: 11, color: '#d4d4d8', margin: 0, lineHeight: 1.4 }}>
                         {r.description}
                       </p>
-                      <p style={{ fontSize: 9, color: '#52525b', fontFamily: 'var(--font-mono)', marginTop: 4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {r.page_url}
-                      </p>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
+                        <p style={{ fontSize: 8, color: '#52525b', fontFamily: 'var(--font-mono)', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '70%' }}>
+                          {r.page_url}
+                        </p>
+                        <button 
+                          onClick={() => setSelectedChat(r)}
+                          style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, padding: '4px 8px', color: '#fff', fontSize: 9, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
+                        >
+                          <MessageSquare size={10} /> CHAT
+                        </button>
+                      </div>
                     </div>
                   ))}
+                </div>
+              )}
+
+              {/* Chat Overlay */}
+              {selectedChat && (
+                <div style={{ 
+                  position: 'absolute', top: 48, left: 0, right: 0, bottom: 0, 
+                  background: '#0f0f0f', zIndex: 10, display: 'flex', flexDirection: 'column',
+                  padding: '12px 14px'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                    <button onClick={() => setSelectedChat(null)} style={{ background: 'none', border: 'none', color: '#71717a', cursor: 'pointer', padding: 0 }}>
+                      <ArrowLeft size={16} />
+                    </button>
+                    <div style={{ flex: 1 }}>
+                      <p style={{ fontSize: 10, fontWeight: 900, color: '#fff', margin: 0, textTransform: 'uppercase' }}>Chat with Admin</p>
+                      <p style={{ fontSize: 8, color: '#52525b', margin: 0 }}>Issue: {selectedChat.description.slice(0, 20)}...</p>
+                    </div>
+                  </div>
+
+                  <div className="bug-reporter-scrollbar" style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12, paddingRight: 4 }}>
+                    {messages.length === 0 && (
+                      <p style={{ fontSize: 10, color: '#52525b', textAlign: 'center', marginTop: 20 }}>No messages yet. Send a message to start chatting with the admin.</p>
+                    )}
+                    {messages.map(m => (
+                      <div key={m.id} style={{
+                        alignSelf: m.sender_type === 'reporter' ? 'flex-end' : 'flex-start',
+                        maxWidth: '85%',
+                        padding: '8px 10px',
+                        borderRadius: 12,
+                        background: m.sender_type === 'reporter' ? '#fff' : 'rgba(255,255,255,0.05)',
+                        color: m.sender_type === 'reporter' ? '#000' : '#fff',
+                        fontSize: 11,
+                        lineHeight: 1.4,
+                        position: m.sender_type === 'reporter' ? 'relative' : 'initial',
+                        border: m.sender_type === 'reporter' ? 'none' : '1px solid rgba(255,255,255,0.1)'
+                      }}>
+                        {m.content}
+                        <p style={{ fontSize: 7, marginTop: 4, opacity: 0.5, textAlign: m.sender_type === 'reporter' ? 'right' : 'left' }}>
+                          {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div style={{ position: 'relative' }}>
+                    {showEmoji && (
+                      <div style={{ 
+                        position: 'absolute', bottom: '100%', left: 0, 
+                        background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: 8, padding: 6, display: 'flex', gap: 6, marginBottom: 8,
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
+                      }}>
+                        {['👍', '🔥', '❤️', '🐛', '🙏', '😂', '😮'].map(e => (
+                          <button key={e} onClick={() => { setNewMessage(prev => prev + e); setShowEmoji(false) }} 
+                            style={{ background: 'none', border: 'none', fontSize: 16, cursor: 'pointer', padding: 4 }}>
+                            {e}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button onClick={() => setShowEmoji(!showEmoji)} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: '8px', color: '#71717a', cursor: 'pointer' }}>
+                        <Smile size={16} />
+                      </button>
+                      <input 
+                        type="text" value={newMessage} onChange={e => setNewMessage(e.target.value)}
+                        onKeyDown={e => e.key === 'Enter' && sendChatMessage()}
+                        placeholder="Type a message..."
+                        style={{ 
+                          flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', 
+                          borderRadius: 8, padding: '8px 12px', color: '#fff', fontSize: 11, outline: 'none' 
+                        }}
+                      />
+                      <button 
+                        onClick={sendChatMessage} disabled={sendingMsg || !newMessage.trim()}
+                        style={{ background: '#fff', border: 'none', borderRadius: 8, padding: '8px 12px', color: '#000', cursor: 'pointer', opacity: sendingMsg || !newMessage.trim() ? 0.5 : 1 }}
+                      >
+                        <Send size={14} />
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
             </>
