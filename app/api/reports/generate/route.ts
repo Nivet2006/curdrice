@@ -309,9 +309,7 @@ export async function POST(request: Request) {
     }
 
     // --- SIGNATURES (AT THE END) ---
-    if (currentY < 150) {
-      page = addLetterheadPage();
-    }
+    page = addLetterheadPage();
     currentY = 150;
     page.drawLine({ start: { x: 50, y: currentY }, end: { x: 180, y: currentY }, thickness: 1 });
     page.drawLine({ start: { x: 230, y: currentY }, end: { x: 360, y: currentY }, thickness: 1 });
