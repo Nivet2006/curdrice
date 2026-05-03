@@ -71,7 +71,7 @@ export function BugReporterWidget() {
   useEffect(() => {
     setMounted(true)
     setPos(getSavedPosition())
-    const saved = sessionStorage.getItem('bug-verified-id')
+    const saved = localStorage.getItem('bug-verified-id')
     if (saved) {
       setAccessId(saved)
       setIsVerified(true)
@@ -139,21 +139,25 @@ export function BugReporterWidget() {
   // ── Realtime history subscription ───────────────────────────
   useEffect(() => {
     if (isVerified && accessId) {
+      const cleanId = accessId.trim().toUpperCase()
+      
       supabase
         .from('bug_reports')
         .select('id, created_at, description, page_url, status')
-        .eq('access_id_used', accessId)
+        .eq('access_id_used', cleanId)
         .order('created_at', { ascending: false })
         .limit(20)
-        .then(({ data }) => { if (data) setHistory(data as BugReport[]) })
+        .then(({ data, error }) => { 
+          if (!error && data) setHistory(data as BugReport[]) 
+        })
 
       const channel = supabase
-        .channel(`bug-history-${accessId}`)
+        .channel(`bug-history-${cleanId}`)
         .on('postgres_changes', {
           event: '*',
           schema: 'public',
           table: 'bug_reports',
-          filter: `access_id_used=eq.${accessId}`,
+          filter: `access_id_used=eq.${cleanId}`,
         }, (payload) => {
           if (payload.eventType === 'INSERT') {
             setHistory(prev => [payload.new as BugReport, ...prev].slice(0, 20))
@@ -166,6 +170,8 @@ export function BugReporterWidget() {
         .subscribe()
 
       return () => { supabase.removeChannel(channel) }
+    } else {
+      setHistory([])
     }
   }, [accessId, supabase, isVerified])
 
@@ -175,10 +181,12 @@ export function BugReporterWidget() {
     setVerifying(true)
     setError('')
 
+    const cleanId = accessId.trim().toUpperCase()
+
     const { data, error: fetchError } = await supabase
       .from('bug_access_ids')
       .select('*')
-      .eq('access_id', accessId)
+      .eq('access_id', cleanId)
       .eq('password', accessPass)
       .eq('is_active', true)
       .maybeSingle()
@@ -196,7 +204,8 @@ export function BugReporterWidget() {
     }
 
     setIsVerified(true)
-    sessionStorage.setItem('bug-verified-id', accessId)
+    setAccessId(cleanId)
+    localStorage.setItem('bug-verified-id', cleanId)
     setVerifying(false)
   }
 
@@ -210,6 +219,7 @@ export function BugReporterWidget() {
 
   const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault()
+    const cleanId = accessId.trim().toUpperCase()
     const errorMsg = validateStrongPassword(newPassForm)
     if (errorMsg) {
       setError(errorMsg)
@@ -224,13 +234,14 @@ export function BugReporterWidget() {
     const { error: updateError } = await supabase.from('bug_access_ids').update({
       password: newPassForm,
       force_password_reset: false
-    }).eq('access_id', accessId)
+    }).eq('access_id', cleanId)
 
     if (updateError) {
       setError('Failed to update passkey')
     } else {
       setIsVerified(true)
-      sessionStorage.setItem('bug-verified-id', accessId)
+      setAccessId(cleanId)
+      localStorage.setItem('bug-verified-id', cleanId)
       setIsResetting(false)
     }
     setVerifying(false)
@@ -238,6 +249,7 @@ export function BugReporterWidget() {
 
   // ── Submit ───────────────────────────────────────────────────
   const handleSubmit = async () => {
+    const cleanId = accessId.trim().toUpperCase()
     if (!description.trim() || !isVerified) return
     setSubmitting(true)
     const { clickTrail, jsErrors } = getCollectedData()
@@ -250,7 +262,7 @@ export function BugReporterWidget() {
       description: description.trim(),
       click_trail: clickTrail,
       js_errors: jsErrors,
-      access_id_used: accessId,
+      access_id_used: cleanId,
     })
 
     if (error) {
@@ -269,35 +281,52 @@ export function BugReporterWidget() {
     setIsVerified(false)
     setAccessId('')
     setAccessPass('')
-    sessionStorage.removeItem('bug-verified-id')
+    setHistory([])
+    localStorage.removeItem('bug-verified-id')
   }
 
   if (!mounted || !globalEnabled) return null
 
   return (
-    <div
-      ref={widgetRef}
-      onMouseDown={onMouseDown}
-      style={{
-        position: 'fixed',
-        left: pos.x,
-        top: pos.y,
-        zIndex: 9999,
-        width: expanded ? 300 : 48,
-        transition: dragging.current ? 'none' : 'width 200ms ease, border-radius 200ms ease, background 300ms ease',
-        borderRadius: expanded ? 16 : 999,
-        background: flash ? 'rgba(34,197,94,0.25)' : 'rgba(15,15,15,0.95)',
-        border: '1px solid rgba(255,255,255,0.1)',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
-        backdropFilter: 'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
-        cursor: dragging.current ? 'grabbing' : 'grab',
-        userSelect: 'none',
-        overflow: 'hidden',
-        color: '#f4f4f5',
-        fontFamily: 'var(--font-sans)',
-      }}
-    >
+    <>
+      <style jsx global>{`
+        .bug-reporter-scrollbar::-webkit-scrollbar {
+          width: 4px;
+        }
+        .bug-reporter-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .bug-reporter-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 10px;
+        }
+        .bug-reporter-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(255, 255, 255, 0.2);
+        }
+      `}</style>
+      <div
+        ref={widgetRef}
+        onMouseDown={onMouseDown}
+        style={{
+          position: 'fixed',
+          left: pos.x,
+          top: pos.y,
+          zIndex: 9999,
+          width: expanded ? 300 : 48,
+          transition: dragging.current ? 'none' : 'width 200ms ease, border-radius 200ms ease, background 300ms ease',
+          borderRadius: expanded ? 16 : 999,
+          background: flash ? 'rgba(34,197,94,0.25)' : 'rgba(15,15,15,0.95)',
+          border: '1px solid rgba(255,255,255,0.1)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          cursor: dragging.current ? 'grabbing' : 'grab',
+          userSelect: 'none',
+          overflow: 'hidden',
+          color: '#f4f4f5',
+          fontFamily: 'var(--font-sans)',
+        }}
+      >
       {/* Collapsed pill */}
       {!expanded && (
         <button
@@ -449,7 +478,7 @@ export function BugReporterWidget() {
 
               {/* History tab */}
               {tab === 'history' && (
-                <div style={{ maxHeight: 250, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6, paddingRight: 4 }}>
+                <div className="bug-reporter-scrollbar" style={{ maxHeight: 250, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6, paddingRight: 4 }}>
                   {history.length === 0 && <p style={{ color: '#52525b', fontSize: 11, textAlign: 'center', marginTop: 16 }}>No reports yet.</p>}
                   {history.map(r => (
                     <div key={r.id} style={{
