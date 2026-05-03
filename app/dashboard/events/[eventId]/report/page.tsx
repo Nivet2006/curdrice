@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { notFound, redirect } from 'next/navigation';
+import { reportsClient } from '@/lib/supabase/reports-client';
 import { MultiStepReportForm } from '@/components/iic/MultiStepReportForm';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
@@ -34,8 +35,8 @@ export default async function IICReportPage({ params }: { params: Promise<{ even
     .eq('event_id', eventId)
     .eq('checked_in', true);
 
-  // We should still allow them to view if they generated it already
-  const { data: existingReport } = await supabase
+  // FETCH FROM REPORTS DATABASE
+  const { data: existingReport } = await reportsClient
     .from('iic_event_reports')
     .select('*')
     .eq('event_id', eventId)
@@ -54,16 +55,16 @@ export default async function IICReportPage({ params }: { params: Promise<{ even
   }
 
   return (
-    <div className="min-h-screen bg-[#F9FAFB] py-12 px-4 sm:px-6">
+    <div className="min-h-screen bg-zinc-50 dark:bg-black py-12 px-4 sm:px-6 transition-colors">
       <div className="max-w-4xl mx-auto space-y-8">
-        <Link href={`/cc/events/${eventId}`} className="inline-flex items-center gap-2 text-zinc-500 hover:text-black transition-colors font-medium">
+        <Link href={`/cc/events/${eventId}`} className="inline-flex items-center gap-2 text-zinc-500 dark:text-zinc-400 hover:text-black dark:hover:text-white transition-colors font-medium">
           <ArrowLeft size={16} />
           Back to Event Details
         </Link>
         
         <div className="space-y-2">
-          <h1 className="text-3xl font-black tracking-tight text-[#1A1A2E]">Official IIC Activity Report</h1>
-          <p className="text-zinc-500">Ministry of HRD Initiative — Generation Portal</p>
+          <h1 className="text-3xl font-black tracking-tight text-black dark:text-white">Official IIC Activity Report</h1>
+          <p className="text-zinc-500 dark:text-zinc-400">Ministry of HRD Initiative — Generation Portal</p>
         </div>
 
         <MultiStepReportForm 

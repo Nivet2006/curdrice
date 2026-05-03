@@ -130,22 +130,29 @@ export async function POST(request: Request) {
        const maxWidth = 350;
        const fontSize = 11;
        
-       // Helper to wrap text
-       const words = text.split(' ');
-       let line = '';
-       const lines = [];
+       // Helper to wrap text and handle newlines
+       const paragraphs = text.split(/\r?\n/);
+       const lines: string[] = [];
        
-       for (let n = 0; n < words.length; n++) {
-         const testLine = line + words[n] + ' ';
-         const testWidth = font.widthOfTextAtSize(testLine, fontSize);
-         if (testWidth > maxWidth && n > 0) {
-           lines.push(line);
-           line = words[n] + ' ';
-         } else {
-           line = testLine;
+       paragraphs.forEach(p => {
+         if (p.trim() === '') {
+           lines.push(' '); // empty line
+           return;
          }
-       }
-       lines.push(line);
+         const words = p.split(' ');
+         let currentLine = '';
+         for (let n = 0; n < words.length; n++) {
+           const testLine = currentLine + words[n] + ' ';
+           const testWidth = font.widthOfTextAtSize(testLine, fontSize);
+           if (testWidth > maxWidth && n > 0) {
+             lines.push(currentLine);
+             currentLine = words[n] + ' ';
+           } else {
+             currentLine = testLine;
+           }
+         }
+         lines.push(currentLine);
+       });
 
        const rowHeight = Math.max(30, lines.length * 15);
        if (currentY < rowHeight + 50) {
