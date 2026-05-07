@@ -25,9 +25,12 @@ export async function raiseBugReport(page: Page, description: string) {
   const needsLogin = await accessIdInput.isVisible();
   
   if (needsLogin) {
-    console.log('[Bug Reporter] Widget requires authentication. Logging in as DEV-NIVED...');
-    await accessIdInput.fill('DEV-NIVED');
-    await passwordInput.fill('Nived@123');
+    const accessId = process.env.PLAYWRIGHT_BUG_REPORTER_ACCESS_ID || 'DEV-NIVED';
+    const password = process.env.PLAYWRIGHT_BUG_REPORTER_PASSWORD || 'Nived@123';
+    
+    console.log(`[Bug Reporter] Widget requires authentication. Logging in as ${accessId}...`);
+    await accessIdInput.fill(accessId);
+    await passwordInput.fill(password);
     
     // Click 'UNLOCK REPORTER' button
     const unlockBtn = page.locator('button:has-text("UNLOCK")').or(page.locator('button:has-text("REPORTER")'));
