@@ -41,3 +41,8 @@ tmp/
 next-env.d.ts
 /NATIVE APP
 /NATIVE APP/OUTPUT APK/
+
+# playwright
+/TEST/Playwright/test-results/
+/TEST/Playwright/playwright-report/
+/TEST/Playwright/blob-report/
