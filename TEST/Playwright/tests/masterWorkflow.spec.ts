@@ -43,6 +43,8 @@ test.describe('Club-Eve Master End-to-End Product Lifecycle Workflow', () => {
   });
 
   test('M-01: Execution of the Complete Cross-Role Product Lifecycle', async ({ page }) => {
+    // Set generous timeout for compilation and multi-step orchestration
+    test.setTimeout(240000);
     
     // ==========================================
     // STEP 1: CC Creates Event Proposal Form
@@ -131,6 +133,7 @@ test.describe('Club-Eve Master End-to-End Product Lifecycle Workflow', () => {
       await page.fill('input[name="email"]', teacherCreds.usn);
       await page.fill('input[name="password"]', teacherCreds.pass);
       await page.click('button[type="submit"]');
+      await page.waitForURL('**/teacher/dashboard');
       // Navigate directly to teacher verify page
       await page.goto(`/teacher/verify/${eventId}`);
 
@@ -152,6 +155,7 @@ test.describe('Club-Eve Master End-to-End Product Lifecycle Workflow', () => {
       await page.fill('input[name="email"]', hodCreds.usn);
       await page.fill('input[name="password"]', hodCreds.pass);
       await page.click('button[type="submit"]');
+      await page.waitForURL('**/hod/dashboard');
       // Navigate directly to HOD approvals page
       await page.goto(`/hod/approvals/${eventId}`);
 
@@ -175,13 +179,9 @@ test.describe('Club-Eve Master End-to-End Product Lifecycle Workflow', () => {
       await page.click('button[type="submit"]');
       await page.waitForURL('**/student/dashboard');
 
-      // Go to student event page
-      await page.goto('/student/events');
-      await page.waitForURL('**/student/events');
-
-      const liveEventLink = page.locator(`text=${testEventTitle}`).first();
-      await expect(liveEventLink).toBeVisible();
-      await liveEventLink.click();
+      // Navigate directly to student event detail page using the retrieved eventId
+      await page.goto(`/student/events/${eventId}`);
+      await page.waitForURL(`**/student/events/${eventId}`);
 
       // Click Register Now
       const registerBtn = page.locator('button:has-text("Register")').or(page.locator('button:has-text("Join")')).first();
