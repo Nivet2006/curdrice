@@ -1,5 +1,23 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { raiseBugReport } from '../utils/bugReporter';
+import { supabaseAdmin } from '../../../lib/supabase/admin';
+
+async function performLogout(page: Page) {
+  console.log('[E2E-Logout] Triggering session logout...');
+  try {
+    const logoutBtn = page.locator('button:has(.lucide-log-out)').first();
+    if (await logoutBtn.isVisible({ timeout: 3000 })) {
+      await logoutBtn.click();
+      await page.waitForURL('**/login', { timeout: 8000 });
+      console.log('[E2E-Logout] Logged out successfully via UI.');
+      return;
+    }
+  } catch (e) {
+    console.log('[E2E-Logout] UI logout button not found/interrupted. Clearing cookies programmatically...');
+  }
+  await page.context().clearCookies();
+  await page.goto('/login');
+}
 
 test.describe('Event Approval Pipeline E2E Workflow', () => {
   const ccCreds = { usn: '1GD24CS073', pass: '123456' };
@@ -30,101 +48,89 @@ test.describe('Event Approval Pipeline E2E Workflow', () => {
     await page.click('button[type="submit"]');
     await page.waitForURL('**/cc/dashboard');
 
-    // Go to event scheduler
-    await page.goto('/cc/events');
-    await page.waitForURL('**/cc/events');
+    await page.goto('/cc/events/create');
+    await page.fill('input[name="title"]', testEventTitle);
+    await page.fill('input[name="clubName"]', 'E2E Testing Club');
+    await page.selectOption('select[name="targetedDepartment"]', 'CSE');
+    await page.fill('textarea[name="description"]', 'An automated end-to-end event testing pipeline.');
+    await page.fill('input[name="location"]', `Auditorium Block C ${Date.now()}`);
+    
+    // Select date
+    const futureDate = new Date();
+    futureDate.setDate(futureDate.getDate() + 5);
+    await page.fill('input[name="eventDate"]', futureDate.toISOString().slice(0, 16));
 
-    // Locate the "Create Event" / "Schedule" button if visible
-    const schedulerBtn = page.locator('button:has-text("Schedule")').or(page.locator('button:has-text("Create")')).first();
-    if (await schedulerBtn.isVisible()) {
-      await schedulerBtn.click();
-      
-      // Fill the proposal form
-      await page.fill('input[name="title"]', testEventTitle);
-      await page.fill('input[name="clubName"]', 'E2E Testing Club');
-      await page.fill('textarea[name="description"]', 'An automated end-to-end event testing pipeline.');
-      await page.fill('input[name="location"]', 'Auditorium Block C');
-      
-      // Select date
-      const futureDate = new Date();
-      futureDate.setDate(futureDate.getDate() + 5);
-      await page.fill('input[name="eventDate"]', futureDate.toISOString().slice(0, 16));
+    const deadlineDate = new Date();
+    deadlineDate.setDate(deadlineDate.getDate() + 2);
+    await page.fill('input[name="deadline"]', deadlineDate.toISOString().slice(0, 16));
+    
+    await page.fill('input[name="capacity"]', '150');
 
-      const deadlineDate = new Date();
-      deadlineDate.setDate(deadlineDate.getDate() + 2);
-      await page.fill('input[name="deadline"]', deadlineDate.toISOString().slice(0, 16));
-      
-      await page.fill('input[name="capacity"]', '150');
-      
-      // Ensure "Submit for review" toggle or input is checked
-      const submitToggle = page.locator('input[name="submitForReview"]');
-      if (await submitToggle.isVisible()) {
-        await submitToggle.check();
-      }
-
-      await page.click('button[type="submit"]');
-      await page.waitForTimeout(2000); // Wait for API submission
-    } else {
-      console.log('[E2E-01] Scheduler button not found, assuming pre-seeded event list. Continuing audit...');
+    // Add 3 required feedback questions to satisfy database validation
+    const addFeedbackBtn = page.locator('button:has-text("Add Question")');
+    for (let i = 0; i < 3; i++) {
+      await addFeedbackBtn.click();
+      await page.locator('input[placeholder="How was the event?"]').nth(i).fill(`Event feedback criteria ${i + 1}`);
     }
 
-    // Sign out CC
-    await page.goto('/login'); // Force logout/login route transition
-    await page.waitForURL('**/login');
+    await page.fill('input[name="bannerUrl"]', 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1000&q=80');
+    await page.click('button:has-text("Submit for Review")');
+    await page.waitForURL('**/cc/dashboard');
+
+    // Query database programmatically to get the Event ID
+    const { data: eventDb, error: eventDbErr } = await supabaseAdmin
+      .from('events')
+      .select('id')
+      .eq('title', testEventTitle)
+      .single();
+    if (eventDbErr || !eventDb) {
+      throw new Error(`Failed to find newly created event "${testEventTitle}". Error: ${eventDbErr?.message}`);
+    }
+    const eventId = eventDb.id;
+    console.log(`[E2E-01] CC Event created successfully with ID: ${eventId}`);
+
+    // Sign out CC safely
+    await performLogout(page);
 
     // ==========================================
     // STEP 2: Teacher reviews and approves
     // ==========================================
     console.log('[E2E-01] Teacher review step...');
+    await page.goto('/login');
     await page.fill('input[name="email"]', teacherCreds.usn);
     await page.fill('input[name="password"]', teacherCreds.pass);
     await page.click('button[type="submit"]');
     await page.waitForURL('**/teacher/dashboard');
 
-    // Teacher checks the pending list for CC's event and reviews it
-    const pendingEvent = page.locator(`text=${testEventTitle}`).or(page.locator('text=Pending Review')).first();
-    if (await pendingEvent.isVisible()) {
-      await pendingEvent.click();
-      
-      // Verify review buttons are visible (approve / reject)
-      const approveBtn = page.locator('button:has-text("Approve")').or(page.locator('button[value="approve"]'));
-      await expect(approveBtn).toBeVisible();
-      
-      // Simulate input feedback and approve
-      await page.fill('textarea[name="feedback"]', 'Proposal looks excellent. Approved to HOD.');
-      await approveBtn.click();
-      await page.waitForURL('**/teacher/dashboard');
-    } else {
-      console.log('[E2E-01] No pending events in teacher audit queue. Proceeding to next guard checks...');
-    }
+    // Navigate directly to teacher verify page
+    await page.goto(`/teacher/verify/${eventId}`);
 
-    // Sign out Teacher
-    await page.goto('/login');
-    await page.waitForURL('**/login');
+    await page.locator('button:has-text("Authorize")').click();
+    await page.locator('textarea[placeholder*="State the reason"]').fill('Vetted and approved for departmental release.');
+    await page.click('button:has-text("Submit Verification")');
+    await page.waitForURL('**/teacher/dashboard');
+    console.log('[E2E-01] Teacher authorized event proposal successfully.');
+
+    // Sign out Teacher safely
+    await performLogout(page);
 
     // ==========================================
     // STEP 3: HOD approves and publishes event
     // ==========================================
     console.log('[E2E-01] HOD final decision step...');
+    await page.goto('/login');
     await page.fill('input[name="email"]', hodCreds.usn);
     await page.fill('input[name="password"]', hodCreds.pass);
     await page.click('button[type="submit"]');
     await page.waitForURL('**/hod/dashboard');
 
-    // Checks HOD pending queue
-    const hodPendingEvent = page.locator(`text=${testEventTitle}`).or(page.locator('text=Pending HOD')).first();
-    if (await hodPendingEvent.isVisible()) {
-      await hodPendingEvent.click();
-      
-      // Verify final decision actions
-      const finalApproveBtn = page.locator('button:has-text("Publish")').or(page.locator('button:has-text("Approve")'));
-      await expect(finalApproveBtn).toBeVisible();
-      
-      await page.fill('textarea[name="feedback"]', 'Approved for immediate publication.');
-      await finalApproveBtn.click();
-      await page.waitForURL('**/hod/dashboard');
-    } else {
-      console.log('[E2E-01] Event not yet in HOD workspace queue. Verified structure and layouts.');
-    }
+    // Navigate directly to HOD approvals page
+    await page.goto(`/hod/approvals/${eventId}`);
+
+    await page.locator('button:has-text("Authorize")').click();
+    await page.locator('textarea[placeholder*="State the reason"]').fill('Budget & venue confirmed. Publish immediately.');
+    await page.click('button:has-text("Submit Verification")');
+    await page.waitForURL('**/hod/dashboard');
+    console.log('[E2E-01] HOD approved and published event successfully.');
   });
 });

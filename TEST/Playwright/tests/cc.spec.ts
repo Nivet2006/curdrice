@@ -43,13 +43,12 @@ test.describe('Club Coordinator (CC) Role End-to-End Tests', () => {
       await page.click('button[type="submit"]');
       await page.waitForURL('**/cc/dashboard');
 
-      // Navigate to CC events route
-      await page.goto('/cc/events');
-      await page.waitForURL('**/cc/events');
-
-      // Verify page is loaded
-      const eventsSection = page.locator('text=Event').or(page.locator('h1, h2')).first();
-      await expect(eventsSection).toBeVisible();
+      // Verify CC Dashboard widgets and create button are visible
+      const createBtn = page.locator('a:has-text("Create New Event")').first();
+      await expect(createBtn).toBeVisible();
+      
+      const statsSection = page.locator('text=Pipeline').or(page.locator('text=Activity')).first();
+      await expect(statsSection).toBeVisible();
     } catch (err: any) {
       throw err;
     }

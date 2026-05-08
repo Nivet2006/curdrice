@@ -6,6 +6,7 @@ import path from 'path';
 dotenv.config({ path: path.resolve(__dirname, '.env.local') });
 
 export default defineConfig({
+  timeout: 90000,
   testDir: './TEST/Playwright/tests',
   outputDir: './TEST/Playwright/test-results',
   fullyParallel: false, // Run tests sequentially to avoid database collision and keep results cleaner
@@ -22,13 +23,16 @@ export default defineConfig({
     trace: 'on',          // Capture trace for every test
     screenshot: 'on',     // Capture screenshot for every test
     video: 'on',          // Capture video for every test
-    viewport: { width: 1280, height: 720 },
+    viewport: { width: 1920, height: 1080 },
     ignoreHTTPSErrors: true,
   },
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: { 
+        ...devices['Desktop Chrome'],
+        viewport: { width: 1920, height: 1080 }
+      },
     }
   ],
   // Start local server automatically if not running

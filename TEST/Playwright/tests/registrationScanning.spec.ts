@@ -1,5 +1,22 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { raiseBugReport } from '../utils/bugReporter';
+
+async function performLogout(page: Page) {
+  console.log('[E2E-Logout] Triggering session logout...');
+  try {
+    const logoutBtn = page.locator('button:has(.lucide-log-out)').first();
+    if (await logoutBtn.isVisible({ timeout: 3000 })) {
+      await logoutBtn.click();
+      await page.waitForURL('**/login', { timeout: 8000 });
+      console.log('[E2E-Logout] Logged out successfully via UI.');
+      return;
+    }
+  } catch (e) {
+    console.log('[E2E-Logout] UI logout button not found/interrupted. Clearing cookies programmatically...');
+  }
+  await page.context().clearCookies();
+  await page.goto('/login');
+}
 
 test.describe('Student Registration and Attendance QR Verification E2E Workflow', () => {
   const studentCreds = { usn: '1GD24CS006', pass: '123456' };
@@ -50,14 +67,14 @@ test.describe('Student Registration and Attendance QR Verification E2E Workflow'
       console.log('[E2E-02] No joinable upcoming event available. Proceeding with scan screen checks...');
     }
 
-    // Force sign out
-    await page.goto('/login');
-    await page.waitForURL('**/login');
+    // Force sign out safely
+    await performLogout(page);
 
     // ==========================================
     // STEP 2: PR opens scanner terminal and audits student usn
     // ==========================================
     console.log('[E2E-02] Scanner terminal check...');
+    await page.goto('/login');
     await page.fill('input[name="email"]', auditorCreds.usn);
     await page.fill('input[name="password"]', auditorCreds.pass);
     await page.click('button[type="submit"]');

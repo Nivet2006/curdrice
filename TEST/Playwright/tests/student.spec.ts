@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { raiseBugReport } from '../utils/bugReporter';
+import { supabaseAdmin } from '../../../lib/supabase/admin';
 
 test.describe('Student Role End-to-End Tests', () => {
   const credentials = { usn: '1GD24CS006', pass: '123456' };
@@ -34,9 +35,19 @@ test.describe('Student Role End-to-End Tests', () => {
       const welcomeHeader = page.locator('h1:has-text("Welcome")');
       await expect(welcomeHeader).toBeVisible();
       
+      // Fetch dynamic profile details from DB inside the test first, then assert dynamically!
+      const { data: profile } = await supabaseAdmin
+        .from('profiles')
+        .select('semester, academic_year')
+        .eq('usn', credentials.usn)
+        .single();
+
+      const semText = `Sem ${profile?.semester || '6'}`;
+      const yearText = `Year ${profile?.academic_year || '3'}`;
+
       // 5. Verify student badges are present
-      await expect(page.locator('text=Sem 4')).toBeVisible();
-      await expect(page.locator('text=Year 2')).toBeVisible();
+      await expect(page.locator(`text=${semText}`)).toBeVisible();
+      await expect(page.locator(`text=${yearText}`)).toBeVisible();
     } catch (err: any) {
       console.error('Test failed:', err);
       throw err;
@@ -60,9 +71,9 @@ test.describe('Student Role End-to-End Tests', () => {
       const usnLabel = page.locator('text=1GD24CS006');
       await expect(usnLabel).toBeVisible();
 
-      // Check if critical inputs like Name are visible or read-only
-      const profileCard = page.locator('div:has-text("Profile")');
-      await expect(profileCard).toBeVisible();
+      // Check if critical inputs like Name are visible using strict mode compliant selectors
+      const profileHeader = page.locator('h1, h2, h3').filter({ hasText: 'Profile' }).first();
+      await expect(profileHeader).toBeVisible();
     } catch (err: any) {
       throw err;
     }

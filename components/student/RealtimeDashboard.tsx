@@ -34,7 +34,6 @@ export function RealtimeDashboard({ initialEvents, registrations, profile }: Pro
             setEvents(prev =>
               [...prev, newEvent]
                 .sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())
-                .slice(0, 6)
             )
           }
         }

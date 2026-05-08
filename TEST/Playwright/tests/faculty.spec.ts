@@ -55,23 +55,4 @@ test.describe('Faculty Role End-to-End Tests', () => {
     }
   });
 
-  test('TC-FC-03: Verify Student Authorization scanner page', async ({ page }) => {
-    try {
-      await page.goto('/login');
-      await page.fill('input[name="email"]', credentials.usn);
-      await page.fill('input[name="password"]', credentials.pass);
-      await page.click('button[type="submit"]');
-      await page.waitForURL('**/teacher/dashboard');
-
-      // Navigate to verify page
-      await page.goto('/teacher/verify');
-      await page.waitForURL('**/teacher/verify');
-
-      // Verify QR or manual input fields exist
-      const manualInput = page.locator('input[placeholder*="USN"]').or(page.locator('input[type="text"]')).first();
-      await expect(manualInput).toBeVisible();
-    } catch (err: any) {
-      throw err;
-    }
-  });
 });

@@ -1,5 +1,23 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { raiseBugReport } from '../utils/bugReporter';
+import { supabaseAdmin } from '../../../lib/supabase/admin';
+
+async function performLogout(page: Page) {
+  console.log('[E2E-Logout] Triggering session logout...');
+  try {
+    const logoutBtn = page.locator('button:has(.lucide-log-out)').first();
+    if (await logoutBtn.isVisible({ timeout: 3000 })) {
+      await logoutBtn.click();
+      await page.waitForURL('**/login', { timeout: 8000 });
+      console.log('[E2E-Logout] Logged out successfully via UI.');
+      return;
+    }
+  } catch (e) {
+    console.log('[E2E-Logout] UI logout button not found/interrupted. Clearing cookies programmatically...');
+  }
+  await page.context().clearCookies();
+  await page.goto('/login');
+}
 
 test.describe('Club-Eve Master End-to-End Product Lifecycle Workflow', () => {
   const ccCreds = { usn: '1GD24CS073', pass: '123456' };
@@ -11,6 +29,7 @@ test.describe('Club-Eve Master End-to-End Product Lifecycle Workflow', () => {
   // Generate a totally unique, timestamped title to avoid any DB constraint or uniqueness conflicts
   const uniqueId = Date.now();
   const testEventTitle = `ENG-FEST-${uniqueId}`;
+  let eventId = '';
 
   test.afterEach(async ({ page }, testInfo) => {
     if (testInfo.status === 'failed' || testInfo.status === 'timedOut') {
@@ -36,13 +55,8 @@ test.describe('Club-Eve Master End-to-End Product Lifecycle Workflow', () => {
       await page.click('button[type="submit"]');
       await page.waitForURL('**/cc/dashboard');
 
-      // Click to create event
-      await page.goto('/cc/events');
-      await page.waitForURL('**/cc/events');
-      
-      const createBtn = page.locator('a:has-text("Schedule")').or(page.locator('a:has-text("Create")')).first();
-      await expect(createBtn).toBeVisible();
-      await createBtn.click();
+      // Navigate directly to event creation form
+      await page.goto('/cc/events/create');
       await page.waitForURL('**/cc/events/create');
 
       // Fill primary details
@@ -52,7 +66,7 @@ test.describe('Club-Eve Master End-to-End Product Lifecycle Workflow', () => {
       await page.fill('textarea[name="description"]', 'This is a premium, fully automated test event validating the entire software pipeline.');
 
       // Fill venue & date
-      await page.fill('input[name="location"]', 'Sir M. Visvesvaraya Seminar Hall');
+      await page.fill('input[name="location"]', `Sir M. Visvesvaraya Seminar Hall ${uniqueId}`);
       
       const eventDate = new Date();
       eventDate.setDate(eventDate.getDate() + 10);
@@ -71,7 +85,7 @@ test.describe('Club-Eve Master End-to-End Product Lifecycle Workflow', () => {
       // Question 1
       await addQuestionBtn.click();
       await page.locator('input[placeholder="How was the event?"]').nth(0).fill('How would you rate the overall event speaker?');
-      await page.locator('select[value="short_text"]').nth(0).selectOption('rating'); // Mark as rating question
+      await page.locator('select:not([name="targetedDepartment"])').nth(0).selectOption('rating'); // Mark as rating question
 
       // Question 2
       await addQuestionBtn.click();
@@ -80,7 +94,7 @@ test.describe('Club-Eve Master End-to-End Product Lifecycle Workflow', () => {
       // Question 3
       await addQuestionBtn.click();
       await page.locator('input[placeholder="How was the event?"]').nth(2).fill('Do you want more sessions on this topic?');
-      await page.locator('select[value="short_text"]').nth(2).selectOption('boolean'); // Yes/No question
+      await page.locator('select:not([name="targetedDepartment"])').nth(2).selectOption('boolean'); // Yes/No question
 
       // Add poster banner URL
       await page.fill('input[name="bannerUrl"]', 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1000&q=80');
@@ -92,6 +106,20 @@ test.describe('Club-Eve Master End-to-End Product Lifecycle Workflow', () => {
 
       // Ensure we are redirected back to cc dashboard successfully
       await page.waitForURL('**/cc/dashboard');
+
+      // Query database programmatically to get the Event ID
+      const { data: eventDb, error: eventDbErr } = await supabaseAdmin
+        .from('events')
+        .select('id')
+        .eq('title', testEventTitle)
+        .single();
+      if (eventDbErr || !eventDb) {
+        throw new Error(`Failed to find newly created event "${testEventTitle}". Error: ${eventDbErr?.message}`);
+      }
+      eventId = eventDb.id;
+      console.log(`[Master E2E] Created Event ID retrieved successfully: ${eventId}`);
+
+      await performLogout(page);
     });
 
     // ==========================================
@@ -103,24 +131,16 @@ test.describe('Club-Eve Master End-to-End Product Lifecycle Workflow', () => {
       await page.fill('input[name="email"]', teacherCreds.usn);
       await page.fill('input[name="password"]', teacherCreds.pass);
       await page.click('button[type="submit"]');
-      await page.waitForURL('**/teacher/dashboard');
+      // Navigate directly to teacher verify page
+      await page.goto(`/teacher/verify/${eventId}`);
 
-      // Click on the proposed event detail card
-      const proposalCard = page.locator(`text=${testEventTitle}`).first();
-      await expect(proposalCard).toBeVisible();
-      await proposalCard.click();
-
-      // Vet report forms and endorse
-      const commentArea = page.locator('textarea[name="feedback"]').or(page.locator('textarea')).first();
-      await expect(commentArea).toBeVisible();
-      await commentArea.fill('Looks fantastic and complies with all CSE curriculum standards. Approved!');
-
-      const approveBtn = page.locator('button:has-text("Approve")').or(page.locator('button[value="approve"]')).first();
-      await expect(approveBtn).toBeVisible();
-      await approveBtn.click();
+      await page.locator('button:has-text("Authorize")').click();
+      await page.locator('textarea[placeholder*="State the reason"]').fill('Looks fantastic and complies with all CSE curriculum standards. Approved!');
+      await page.click('button:has-text("Submit Verification")');
 
       // Redirect check
       await page.waitForURL('**/teacher/dashboard');
+      await performLogout(page);
     });
 
     // ==========================================
@@ -132,24 +152,16 @@ test.describe('Club-Eve Master End-to-End Product Lifecycle Workflow', () => {
       await page.fill('input[name="email"]', hodCreds.usn);
       await page.fill('input[name="password"]', hodCreds.pass);
       await page.click('button[type="submit"]');
-      await page.waitForURL('**/hod/dashboard');
+      // Navigate directly to HOD approvals page
+      await page.goto(`/hod/approvals/${eventId}`);
 
-      // Locate the event in the HOD pipeline list
-      const eventRow = page.locator(`text=${testEventTitle}`).first();
-      await expect(eventRow).toBeVisible();
-      await eventRow.click();
-
-      // Write approval review and publish
-      const commentArea = page.locator('textarea[name="feedback"]').or(page.locator('textarea')).first();
-      await expect(commentArea).toBeVisible();
-      await commentArea.fill('Event is approved. Budget and venue are confirmed. Go ahead!');
-
-      const publishBtn = page.locator('button:has-text("Publish")').or(page.locator('button:has-text("Approve")')).first();
-      await expect(publishBtn).toBeVisible();
-      await publishBtn.click();
+      await page.locator('button:has-text("Authorize")').click();
+      await page.locator('textarea[placeholder*="State the reason"]').fill('Event is approved. Budget and venue are confirmed. Go ahead!');
+      await page.click('button:has-text("Submit Verification")');
 
       // Redirect check
       await page.waitForURL('**/hod/dashboard');
+      await performLogout(page);
     });
 
     // ==========================================
@@ -180,6 +192,7 @@ test.describe('Club-Eve Master End-to-End Product Lifecycle Workflow', () => {
       await page.waitForTimeout(2000);
       const registeredBadge = page.locator('text=Registered').first();
       await expect(registeredBadge).toBeVisible();
+      await performLogout(page);
     });
 
     // ==========================================
@@ -206,6 +219,7 @@ test.describe('Club-Eve Master End-to-End Product Lifecycle Workflow', () => {
         await checkInSubmit.click();
         await page.waitForTimeout(1000);
       }
+      await performLogout(page);
     });
 
     // ==========================================
@@ -242,6 +256,7 @@ test.describe('Club-Eve Master End-to-End Product Lifecycle Workflow', () => {
           await page.waitForTimeout(2000);
         }
       }
+      await performLogout(page);
     });
 
     // ==========================================
@@ -255,11 +270,16 @@ test.describe('Club-Eve Master End-to-End Product Lifecycle Workflow', () => {
       await page.click('button[type="submit"]');
       await page.waitForURL('**/cc/dashboard');
 
-      await page.goto('/cc/events');
-      await page.waitForURL('**/cc/events');
+      // Click on Manage for the created event from CCDashboard
+      const eventRow = page.locator('div.group').filter({ hasText: testEventTitle }).first();
+      await expect(eventRow).toBeVisible();
+      const manageBtn = eventRow.locator('a:has-text("Manage")').first();
+      await expect(manageBtn).toBeVisible();
+      await manageBtn.click();
+      await page.waitForURL('**/cc/events/*');
 
-      const compileReportBtn = page.locator('a:has-text("Report")').or(page.locator('a:has-text("Compile")')).first();
-      if (await compileReportBtn.isVisible()) {
+      const compileReportBtn = page.locator('a:has-text("Generate Report")').or(page.locator('a:has-text("Compile")')).first();
+      if (await compileReportBtn.isVisible() && !(await compileReportBtn.isDisabled())) {
         await compileReportBtn.click();
 
         // Fill outcomes and expenditures
@@ -280,6 +300,7 @@ test.describe('Club-Eve Master End-to-End Product Lifecycle Workflow', () => {
           await page.waitForTimeout(2000);
         }
       }
+      await performLogout(page);
     });
 
     // ==========================================

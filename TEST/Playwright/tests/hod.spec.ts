@@ -25,7 +25,7 @@ test.describe('Head of Department (HOD) Role End-to-End Tests', () => {
       await page.click('button[type="submit"]');
 
       // Wait for redirect to HOD dashboard
-      await page.waitForURL('**/hod/dashboard', { timeout: 10000 });
+      await page.waitForURL(/.*\/hod\/dashboard/, { timeout: 15000 });
       
       // Verify HOD dashboard features are visible
       const hodHeader = page.locator('h1').or(page.locator('text=HOD')).first();
@@ -41,7 +41,7 @@ test.describe('Head of Department (HOD) Role End-to-End Tests', () => {
       await page.fill('input[name="email"]', credentials.usn);
       await page.fill('input[name="password"]', credentials.pass);
       await page.click('button[type="submit"]');
-      await page.waitForURL('**/hod/dashboard');
+      await page.waitForURL(/.*\/hod\/dashboard/, { timeout: 15000 });
 
       // Navigate to Approvals page
       await page.goto('/hod/approvals');

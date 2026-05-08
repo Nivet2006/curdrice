@@ -27,7 +27,7 @@ export default async function StudentDashboard() {
     .order('event_date', { ascending: true })
 
   const dynamicEvents = withDynamicEventStatus((allEvents as Event[]) || [])
-  const events = dynamicEvents.filter(e => e.status === 'upcoming').slice(0, 6)
+  const events = dynamicEvents.filter(e => e.status === 'upcoming')
 
   return (
     <div className="w-full">

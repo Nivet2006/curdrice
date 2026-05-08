@@ -367,6 +367,7 @@ export default function MessagesPanel({ open, onClose, userId }: MessagesPanelPr
                 {'>'} Messages
               </h2>
               <button
+                data-testid="close-messages-btn"
                 onClick={onClose}
                 className="p-1.5 rounded-lg hover:bg-[#f2f2f2] dark:hover:bg-zinc-800 transition-colors"
                 style={{ color: 'var(--fg-muted)' }}

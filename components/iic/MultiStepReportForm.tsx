@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { CheckCircle2, ChevronRight, ChevronLeft, Save, Loader2, Download, ExternalLink, FileText, Eye, Edit2 } from 'lucide-react';
@@ -114,22 +114,20 @@ export function MultiStepReportForm({ eventId, eventTitle, eventDate, department
   });
 
   // Fetch students on mount for the autocomplete feature
-  import('react').then((React) => {
-    React.useEffect(() => {
-      const fetchStudents = async () => {
-        try {
-          const supabase = createClient();
-          const { data } = await supabase.from('profiles').select('full_name, usn').eq('role', 'student');
-          if (data) {
-            setStudentsList(data.map(d => ({ name: d.full_name, usn: d.usn })));
-          }
-        } catch (e) {
-          console.error(e);
+  useEffect(() => {
+    const fetchStudents = async () => {
+      try {
+        const supabase = createClient();
+        const { data } = await supabase.from('profiles').select('full_name, usn').eq('role', 'student');
+        if (data) {
+          setStudentsList(data.map(d => ({ name: d.full_name, usn: d.usn })));
         }
+      } catch (e) {
+        console.error(e);
       }
-      fetchStudents();
-    }, []);
-  });
+    }
+    fetchStudents();
+  }, []);
 
   const updateForm = (key: string, value: any) => {
     setFormData((prev: any) => ({ ...prev, [key]: value }));

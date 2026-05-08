@@ -1,5 +1,22 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { raiseBugReport } from '../utils/bugReporter';
+
+async function performLogout(page: Page) {
+  console.log('[E2E-Logout] Triggering session logout...');
+  try {
+    const logoutBtn = page.locator('button:has(.lucide-log-out)').first();
+    if (await logoutBtn.isVisible({ timeout: 3000 })) {
+      await logoutBtn.click();
+      await page.waitForURL('**/login', { timeout: 8000 });
+      console.log('[E2E-Logout] Logged out successfully via UI.');
+      return;
+    }
+  } catch (e) {
+    console.log('[E2E-Logout] UI logout button not found/interrupted. Clearing cookies programmatically...');
+  }
+  await page.context().clearCookies();
+  await page.goto('/login');
+}
 
 test.describe('Feedback Portal and Report Approval Workflow E2E', () => {
   const studentCreds = { usn: '1GD24CS006', pass: '123456' };
@@ -38,7 +55,7 @@ test.describe('Feedback Portal and Report Approval Workflow E2E', () => {
       await detailsLink.click();
       
       // Look for the "Share Your Feedback" / "Feedback" button to expand the terminal modal
-      const feedbackBtn = page.locator('button:has-text("Feedback")').or(page.locator('button:has-text("Insight")')).first();
+      const feedbackBtn = page.locator('button:has-text("Feedback")').or(page.locator('button:has-text("Insight")')).or(page.locator('button:has-text("Share Your Feedback")')).first();
       if (await feedbackBtn.isVisible()) {
         await feedbackBtn.click();
         
@@ -69,57 +86,62 @@ test.describe('Feedback Portal and Report Approval Workflow E2E', () => {
       }
     }
 
-    // Force sign out
-    await page.goto('/login');
-    await page.waitForURL('**/login');
+    // Force sign out safely
+    await performLogout(page);
 
     // ==================================================
     // STEP 2: CC generates and submits a post-event report
     // ==================================================
     console.log('[E2E-03] CC report compilation...');
+    await page.goto('/login');
     await page.fill('input[name="email"]', ccCreds.usn);
     await page.fill('input[name="password"]', ccCreds.pass);
     await page.click('button[type="submit"]');
     await page.waitForURL('**/cc/dashboard');
 
-    // Navigate to cc reports section
-    await page.goto('/cc/events');
-    await page.waitForURL('**/cc/events');
+    // Navigate to CC events details via CCDashboard manage links
+    const manageBtn = page.locator('a:has-text("Manage")').first();
+    if (await manageBtn.isVisible()) {
+      await manageBtn.click();
+      await page.waitForURL('**/cc/events/*');
 
-    // Select the first completed event to build/submit report
-    const buildReportLink = page.locator('a:has-text("Report")').or(page.locator('a:has-text("Compile")')).first();
-    if (await buildReportLink.isVisible()) {
-      await buildReportLink.click();
+      // Select the first completed event report button inside details page
+      const buildReportLink = page.locator('a:has-text("Generate Report")').or(page.locator('a:has-text("Compile")')).first();
+      if (await buildReportLink.isVisible() && !(await buildReportLink.isDisabled())) {
+        await buildReportLink.click();
 
-      // Check for form fields in report compiler (e.g. expenditure, outcomes, student count)
-      const outcomeInput = page.locator('textarea[name="outcomes"]').or(page.locator('textarea')).first();
-      if (await outcomeInput.isVisible()) {
-        await outcomeInput.fill('The workshop resulted in 100% active participation and hands-on coding modules completed.');
-      }
+        // Check for form fields in report compiler (e.g. expenditure, outcomes, student count)
+        const outcomeInput = page.locator('textarea[name="outcomes"]').or(page.locator('textarea')).first();
+        if (await outcomeInput.isVisible()) {
+          await outcomeInput.fill('The workshop resulted in 100% active participation and hands-on coding modules completed.');
+        }
 
-      const budgetInput = page.locator('input[name="expenditure"]').or(page.locator('input[type="number"]')).first();
-      if (await budgetInput.isVisible()) {
-        await budgetInput.fill('2500');
-      }
+        const budgetInput = page.locator('input[name="expenditure"]').or(page.locator('input[type="number"]')).first();
+        if (await budgetInput.isVisible()) {
+          await budgetInput.fill('2500');
+        }
 
-      // Submit report to PR
-      const submitReportBtn = page.locator('button:has-text("Submit to PR")').or(page.locator('button:has-text("Submit Report")')).first();
-      if (await submitReportBtn.isVisible()) {
-        await submitReportBtn.click();
-        await page.waitForTimeout(2000);
+        // Submit report to PR
+        const submitReportBtn = page.locator('button:has-text("Submit to PR")').or(page.locator('button:has-text("Submit Report")')).first();
+        if (await submitReportBtn.isVisible()) {
+          await submitReportBtn.click();
+          await page.waitForTimeout(2000);
+        }
+      } else {
+        console.log('[E2E-03] No ready completed events for CC compilation. Audited forms layout successfully.');
       }
     } else {
-      console.log('[E2E-03] No ready completed events for CC compilation. Audited forms layout successfully.');
+      console.log('[E2E-03] No events in pipeline yet to manage.');
     }
 
-    // Force sign out
-    await page.goto('/login');
-    await page.waitForURL('**/login');
+    // Force sign out safely
+    await performLogout(page);
 
     // ==================================================
     // STEP 3: PR audits and approves the report
     // ==================================================
     console.log('[E2E-03] PR Report Audit & Endorsement...');
+    await page.goto('/login');
     await page.fill('input[name="email"]', prCreds.usn);
     await page.fill('input[name="password"]', prCreds.pass);
     await page.click('button[type="submit"]');
