@@ -48,7 +48,9 @@ export function Navbar({ role, name }: { role?: Role; name?: string }) {
 
   const navLinks = role ? [
     { href: `/${role}/dashboard`, label: 'Dashboard', icon: LayoutDashboard },
-    { href: `/${role}/events`, label: 'Events', icon: Calendar },
+    ...(!['pr', 'teacher', 'hod'].includes(role) ? [
+      { href: `/${role}/events`, label: 'Events', icon: Calendar },
+    ] : []),
     ...(role === 'admin' ? [
       { href: '/admin/users', label: 'Users', icon: Users },
       { href: '/admin/scanner', label: 'Scanner', icon: ScanLine },
@@ -60,7 +62,9 @@ export function Navbar({ role, name }: { role?: Role; name?: string }) {
       { href: `/${role}/scanner`, label: 'Scanner', icon: ScanLine },
     ] : []),
     ...(role === 'pr' ? [
-      { href: '/pr/dashboard', label: 'Audit Queue', icon: ClipboardList },
+      { href: '/pr/events', label: 'Events', icon: Calendar },
+      { href: '/pr/audit', label: 'Audit Queue', icon: ClipboardList },
+      { href: '/pr/scanner', label: 'Scanner', icon: ScanLine },
     ] : []),
     ...(role === 'teacher' ? [
       { href: '/teacher/verify', label: 'Verify', icon: ClipboardList },
@@ -103,7 +107,7 @@ export function Navbar({ role, name }: { role?: Role; name?: string }) {
               <div className="hidden md:flex items-center gap-4 text-sm font-sans text-[#555555]">
                 {navLinks.map(link => (
                   <Link
-                    key={link.href}
+                    key={link.label}
                     href={link.href}
                     className={`hover:text-black transition-colors ${pathname === link.href ? 'text-[#0a0a0a] font-semibold' : ''}`}
                   >
@@ -197,7 +201,7 @@ export function Navbar({ role, name }: { role?: Role; name?: string }) {
             const isActive = pathname === link.href
             return (
               <Link
-                key={link.href}
+                key={link.label}
                 href={link.href}
                 onClick={() => setSidebarOpen(false)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-sans transition-colors

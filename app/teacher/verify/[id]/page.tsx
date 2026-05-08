@@ -6,6 +6,7 @@ import { EventRegistrationStats } from '@/components/admin/EventRegistrationStat
 import { ArrowLeft, User, ShieldAlert, CheckCircle2, Clock, MapPin } from 'lucide-react'
 import Link from 'next/link'
 import { EventStatusTracker } from '@/components/common/EventStatusTracker'
+import { PRAssignmentPanel } from '@/components/faculty/PRAssignmentPanel'
 
 export default async function TeacherVerifyPage({ params }: { params: Promise<{ id: string }> }) {
    const supabase = await createClient()
@@ -105,6 +106,7 @@ export default async function TeacherVerifyPage({ params }: { params: Promise<{ 
                            </div>
                            <p className="text-xs font-mono opacity-80 italic">This event is currently published and open for student registrations. Approval phase is closed.</p>
                         </div>
+                        <PRAssignmentPanel eventId={event.id} />
                         <EventRegistrationStats eventId={event.id} />
                      </div>
                   ) : (

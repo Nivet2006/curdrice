@@ -76,3 +76,102 @@ export async function addReportMarkup(reportId: string, sectionKey: string, comm
   revalidatePath(`/pr/reports/${reportId}`)
   return { success: true }
 }
+
+// ============================================
+// PR Event Assignment Actions
+// ============================================
+
+export async function assignPRToEvent(eventId: string, prId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Unauthorized' }
+
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  if (!profile || !['teacher', 'hod', 'admin'].includes(profile.role)) {
+    return { error: 'Unauthorized: Requires Faculty permissions.' }
+  }
+
+  // Check max 2 PRs per event
+  const { data: existing } = await supabase
+    .from('pr_event_assignments')
+    .select('id')
+    .eq('event_id', eventId)
+
+  if (existing && existing.length >= 2) {
+    return { error: 'Maximum 2 PR officers can be assigned per event.' }
+  }
+
+  const { error } = await supabase
+    .from('pr_event_assignments')
+    .insert({
+      event_id: eventId,
+      pr_id: prId,
+      assigned_by: user.id
+    })
+
+  if (error) {
+    if (error.code === '23505') return { error: 'This PR is already assigned to this event.' }
+    return { error: error.message }
+  }
+
+  revalidatePath(`/teacher/verify/${eventId}`)
+  return { success: true }
+}
+
+export async function removePRFromEvent(eventId: string, prId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Unauthorized' }
+
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  if (!profile || !['teacher', 'hod', 'admin'].includes(profile.role)) {
+    return { error: 'Unauthorized: Requires Faculty permissions.' }
+  }
+
+  const { error } = await supabase
+    .from('pr_event_assignments')
+    .delete()
+    .eq('event_id', eventId)
+    .eq('pr_id', prId)
+
+  if (error) return { error: error.message }
+
+  revalidatePath(`/teacher/verify/${eventId}`)
+  return { success: true }
+}
+
+export async function getAssignedPRs(eventId: string) {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('pr_event_assignments')
+    .select('id, pr_id, assigned_at, profiles!pr_event_assignments_pr_id_fkey(full_name, usn, department)')
+    .eq('event_id', eventId)
+
+  if (error) return { error: error.message, data: [] }
+  return { data: data || [] }
+}
+
+export async function getAvailablePRs() {
+  const { createClient: createSupabaseClient } = await import('@supabase/supabase-js')
+  const supabaseAdmin = createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    {
+      auth: { persistSession: false },
+      global: {
+        fetch: (url: RequestInfo | URL, options?: RequestInit) =>
+          fetch(url, { ...options, cache: 'no-store' })
+      }
+    }
+  )
+
+  const { data, error } = await supabaseAdmin
+    .from('profiles')
+    .select('id, full_name, usn, department')
+    .eq('role', 'pr')
+    .order('full_name')
+
+  if (error) return { error: error.message, data: [] }
+  return { data: data || [] }
+}

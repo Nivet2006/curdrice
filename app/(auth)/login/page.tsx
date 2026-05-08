@@ -12,7 +12,7 @@ import Link from 'next/link'
 import { login } from '@/lib/actions/auth'
 import { Eye, EyeOff } from 'lucide-react'
 import { TotpLoginStep } from '@/components/auth/TotpLoginStep'
-
+import { toast } from 'sonner'
 export default function LoginPage() {
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
@@ -21,6 +21,11 @@ export default function LoginPage() {
   const [step, setStep] = useState<'credentials' | 'totp'>('credentials')
   const [adminData, setAdminData] = useState<{ userId: string; role: string } | null>(null)
   const [showTestCreds, setShowTestCreds] = useState(false)
+
+  const handleCopy = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success('Copied to clipboard');
+  };
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -150,23 +155,23 @@ export default function LoginPage() {
           <div className="space-y-2 text-xs font-mono">
             <div className="flex justify-between gap-4">
               <span className="text-[#555555] dark:text-[#999999]">FACULTY</span>
-              <span className="font-medium text-[#0a0a0a] dark:text-[#f5f5f5] select-all cursor-pointer hover:text-blue-500">1GD24CS008</span>
+              <span onClick={() => handleCopy('1GD24CS008')} className="font-medium text-[#0a0a0a] dark:text-[#f5f5f5] select-all cursor-pointer hover:text-blue-500" title="Click to copy">1GD24CS008</span>
             </div>
             <div className="flex justify-between gap-4">
               <span className="text-[#555555] dark:text-[#999999]">STUDENT</span>
-              <span className="font-medium text-[#0a0a0a] dark:text-[#f5f5f5] select-all cursor-pointer hover:text-blue-500">1GD24CS006</span>
+              <span onClick={() => handleCopy('1GD24CS006')} className="font-medium text-[#0a0a0a] dark:text-[#f5f5f5] select-all cursor-pointer hover:text-blue-500" title="Click to copy">1GD24CS006</span>
             </div>
             <div className="flex justify-between gap-4">
               <span className="text-[#555555] dark:text-[#999999]">HOD</span>
-              <span className="font-medium text-[#0a0a0a] dark:text-[#f5f5f5] select-all cursor-pointer hover:text-blue-500">1GD12CS001</span>
+              <span onClick={() => handleCopy('1GD12CS001')} className="font-medium text-[#0a0a0a] dark:text-[#f5f5f5] select-all cursor-pointer hover:text-blue-500" title="Click to copy">1GD12CS001</span>
             </div>
             <div className="flex justify-between gap-4">
               <span className="text-[#555555] dark:text-[#999999]">PR</span>
-              <span className="font-medium text-[#0a0a0a] dark:text-[#f5f5f5] select-all cursor-pointer hover:text-blue-500">1GD24CS001</span>
+              <span onClick={() => handleCopy('1GD24CS001')} className="font-medium text-[#0a0a0a] dark:text-[#f5f5f5] select-all cursor-pointer hover:text-blue-500" title="Click to copy">1GD24CS001</span>
             </div>
             <div className="flex justify-between gap-4">
               <span className="text-[#555555] dark:text-[#999999]">CC</span>
-              <span className="font-medium text-[#0a0a0a] dark:text-[#f5f5f5] select-all cursor-pointer hover:text-blue-500">1GD24CS073</span>
+              <span onClick={() => handleCopy('1GD24CS073')} className="font-medium text-[#0a0a0a] dark:text-[#f5f5f5] select-all cursor-pointer hover:text-blue-500" title="Click to copy">1GD24CS073</span>
             </div>
             <div className="mt-3 pt-3 border-t border-[#e0e0e0] dark:border-[#333333] text-[10px] text-[#999999] text-center">
               Password is 123456 for all
