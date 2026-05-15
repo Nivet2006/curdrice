@@ -65,41 +65,68 @@ export async function POST(req: Request) {
           addToZip(data, 'audit_logs')
           if (purge) {
             purgeQueue.push(async () => {
-              const firstKey = Object.keys(data[0])[0]
-              await logsClient.from('audit_logs').delete().not(firstKey, 'is', null)
+              const pk = data[0].id !== undefined ? 'id' : Object.keys(data[0])[0]
+              const allIds = data.map((d: any) => d[pk])
+              for (let i = 0; i < allIds.length; i += 100) {
+                const chunk = allIds.slice(i, i + 100)
+                await logsClient.from('audit_logs').delete().in(pk, chunk)
+              }
             })
           }
         }
       } else if (item === 'bucket:iic-reports') {
-        const { data: bucketFiles } = await logsClient.storage.from('iic-reports').list()
-        if (bucketFiles && bucketFiles.length > 0) {
-          const validFiles = bucketFiles.filter(f => f.name && f.id !== null)
+        const { data: rootItems } = await logsClient.storage.from('iic-reports').list()
+        if (rootItems && rootItems.length > 0) {
           const bucketFolder = zip.folder('iic-reports')
+          const filePathsToRemove: string[] = []
           
-          await Promise.all(validFiles.map(async (file) => {
-            const { data: fileData } = await logsClient.storage.from('iic-reports').download(file.name)
-            if (fileData) {
-              const buffer = await fileData.arrayBuffer()
-              bucketFolder?.file(file.name, buffer)
+          for (const rootItem of rootItems) {
+            if (rootItem.id === null) {
+              const { data: subItems } = await logsClient.storage.from('iic-reports').list(rootItem.name)
+              if (subItems) {
+                for (const subItem of subItems) {
+                  if (subItem.id !== null) {
+                    const filePath = `${rootItem.name}/${subItem.name}`
+                    const { data: fileData } = await logsClient.storage.from('iic-reports').download(filePath)
+                    if (fileData) {
+                      const buffer = await fileData.arrayBuffer()
+                      bucketFolder?.file(filePath, buffer)
+                      filePathsToRemove.push(filePath)
+                    }
+                  }
+                }
+              }
+            } else {
+              const { data: fileData } = await logsClient.storage.from('iic-reports').download(rootItem.name)
+              if (fileData) {
+                const buffer = await fileData.arrayBuffer()
+                bucketFolder?.file(rootItem.name, buffer)
+                filePathsToRemove.push(rootItem.name)
+              }
             }
-          }))
+          }
 
-          if (purge) {
+          if (purge && filePathsToRemove.length > 0) {
             purgeQueue.push(async () => {
-              const fileNames = validFiles.map(f => f.name)
-              await logsClient.storage.from('iic-reports').remove(fileNames)
+              for (let i = 0; i < filePathsToRemove.length; i += 100) {
+                const chunk = filePathsToRemove.slice(i, i + 100)
+                await logsClient.storage.from('iic-reports').remove(chunk)
+              }
             })
           }
         }
       } else {
-        // It's a standard table
         const { data } = await supabaseAdmin.from(item).select('*')
         if (data && data.length > 0) {
           addToZip(data, item)
-          if (purge && item !== 'profiles') { // Prevent purging profiles completely if possible, or just allow it if selected
+          if (purge && item !== 'profiles') {
             purgeQueue.push(async () => {
-              const firstKey = Object.keys(data[0])[0]
-              await supabaseAdmin.from(item).delete().not(firstKey, 'is', null)
+              const pk = data[0].id !== undefined ? 'id' : Object.keys(data[0])[0]
+              const allIds = data.map((d: any) => d[pk])
+              for (let i = 0; i < allIds.length; i += 100) {
+                const chunk = allIds.slice(i, i + 100)
+                await supabaseAdmin.from(item).delete().in(pk, chunk)
+              }
             })
           }
         }
@@ -110,7 +137,6 @@ export async function POST(req: Request) {
 
     const zipBuffer = await zip.generateAsync({ type: 'arraybuffer' })
 
-    // If purge was selected, now we delete the data (after successful backup creation)
     if (purge) {
       for (const purgeAction of purgeQueue) {
         await purgeAction()
