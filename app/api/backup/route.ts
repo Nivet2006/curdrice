@@ -51,16 +51,30 @@ export async function GET() {
   addToZip(auditLogs || [], 'audit_logs')
 
   // 3. Backup iic-reports bucket from Logs DB
-  const { data: bucketFiles } = await logsClient.storage.from('iic-reports').list()
-  if (bucketFiles && bucketFiles.length > 0) {
+  const { data: rootItems } = await logsClient.storage.from('iic-reports').list()
+  if (rootItems && rootItems.length > 0) {
     const bucketFolder = zip.folder('iic-reports')
-    await Promise.all(bucketFiles.map(async (file) => {
-      // Don't download directories or empty items
-      if (!file.name || file.id === null) return
-      const { data: fileData } = await logsClient.storage.from('iic-reports').download(file.name)
-      if (fileData) {
-        const buffer = await fileData.arrayBuffer()
-        bucketFolder?.file(file.name, buffer)
+    await Promise.all(rootItems.map(async (rootItem) => {
+      if (rootItem.id === null) {
+        const { data: subItems } = await logsClient.storage.from('iic-reports').list(rootItem.name)
+        if (subItems) {
+          for (const subItem of subItems) {
+            if (subItem.id !== null) {
+              const filePath = `${rootItem.name}/${subItem.name}`
+              const { data: fileData } = await logsClient.storage.from('iic-reports').download(filePath)
+              if (fileData) {
+                const buffer = await fileData.arrayBuffer()
+                bucketFolder?.file(filePath, buffer)
+              }
+            }
+          }
+        }
+      } else {
+        const { data: fileData } = await logsClient.storage.from('iic-reports').download(rootItem.name)
+        if (fileData) {
+          const buffer = await fileData.arrayBuffer()
+          bucketFolder?.file(rootItem.name, buffer)
+        }
       }
     }))
   }
@@ -72,7 +86,10 @@ export async function GET() {
   // Record audit
   await supabaseAdmin.from('backup_logs').insert({
     admin_id: user.id,
-    file_name: filename
+    file_name: filename,
+    backup_type: 'Absolute',
+    is_purged: false,
+    selections: ['all_tables', 'audit_logs', 'bucket:iic-reports']
   })
 
   return new NextResponse(zipBuffer, {

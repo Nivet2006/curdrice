@@ -23,6 +23,7 @@ export default async function BackupPage() {
   const { data: rawLogs } = await supabaseAdmin
     .from('backup_logs')
     .select('*')
+    .order('created_at', { ascending: false })
     .limit(20)
 
   // Fix: column is admin_id not performed_by
@@ -33,7 +34,15 @@ export default async function BackupPage() {
     .select('id, full_name')
     .in('id', adminIds.length ? adminIds : ['00000000-0000-0000-0000-000000000000'])
 
-  const logs = (rawLogs || []).map((log: { id: string; admin_id: string; created_at: string; file_name: string }) => ({
+  const logs = (rawLogs || []).map((log: { 
+    id: string; 
+    admin_id: string; 
+    created_at: string; 
+    file_name: string;
+    backup_type: string;
+    is_purged: boolean;
+    selections: string[];
+  }) => ({
     ...log,
     profiles: profiles?.find(p => p.id === log.admin_id) || { full_name: 'Unknown Admin' }
   }))
@@ -84,6 +93,8 @@ export default async function BackupPage() {
             <tr>
               <th className="px-6 py-4 font-normal">Timestamp</th>
               <th className="px-6 py-4 font-normal">Admin</th>
+              <th className="px-6 py-4 font-normal">Type</th>
+              <th className="px-6 py-4 font-normal">Details</th>
               <th className="px-6 py-4 font-normal">Filename (Hash)</th>
             </tr>
           </thead>
@@ -96,6 +107,25 @@ export default async function BackupPage() {
                 <td className="px-6 py-4 font-bold text-[#0a0a0a]">
                   {(log.profiles as { full_name: string }).full_name}
                 </td>
+                <td className="px-6 py-4">
+                  <div className="flex gap-2">
+                    {log.backup_type === 'Absolute' ? (
+                      <Badge className="bg-[#0a0a0a] text-white hover:bg-[#222]">Absolute</Badge>
+                    ) : (
+                      <Badge className="bg-[#555] text-white hover:bg-[#777]">Selective</Badge>
+                    )}
+                    {log.is_purged && <Badge className="bg-[#eb4b4b] text-white hover:bg-[#d43838]">Purged</Badge>}
+                  </div>
+                </td>
+                <td className="px-6 py-4 text-xs">
+                  {log.backup_type === 'Absolute' ? (
+                    <span className="text-[#555]">Full System Export</span>
+                  ) : (
+                    <span className="font-mono text-[#555] block w-48 truncate" title={(log.selections || []).join(', ')}>
+                      {(log.selections || []).join(', ')}
+                    </span>
+                  )}
+                </td>
                 <td className="px-6 py-4 font-mono text-xs text-[#999999]">
                   {log.file_name}
                 </td>
@@ -103,7 +133,7 @@ export default async function BackupPage() {
             ))}
             {(!logs || logs.length === 0) && (
               <tr>
-                <td colSpan={3} className="px-6 py-12 text-center font-mono text-sm text-[#999999]">
+                <td colSpan={5} className="px-6 py-12 text-center font-mono text-sm text-[#999999]">
                   No backups have been generated yet.
                 </td>
               </tr>

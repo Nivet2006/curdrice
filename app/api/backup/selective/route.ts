@@ -146,7 +146,10 @@ export async function POST(req: Request) {
     // Record audit
     await supabaseAdmin.from('backup_logs').insert({
       admin_id: user.id,
-      file_name: filename
+      file_name: filename,
+      backup_type: 'Selective',
+      is_purged: purge,
+      selections: selections
     })
 
     return new NextResponse(zipBuffer, {
