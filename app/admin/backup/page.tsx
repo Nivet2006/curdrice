@@ -107,11 +107,11 @@ export default async function BackupPage() {
                 <td className="px-6 py-4">
                   <div className="flex gap-2">
                     {log.backup_type === 'Absolute' ? (
-                      <Badge className="bg-[#0a0a0a] text-white hover:bg-[#222]">Absolute</Badge>
+                      <Badge variant="admin">Absolute</Badge>
                     ) : (
-                      <Badge className="bg-[#555] text-white hover:bg-[#777]">Selective</Badge>
+                      <Badge variant="manager">Selective</Badge>
                     )}
-                    {log.is_purged && <Badge className="bg-[#eb4b4b] text-white hover:bg-[#d43838]">Purged</Badge>}
+                    {log.is_purged && <Badge variant="deleted">Purged</Badge>}
                   </div>
                 </td>
                 <td className="px-6 py-4 text-xs">
