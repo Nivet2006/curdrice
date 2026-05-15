@@ -4,6 +4,8 @@ import { DownloadCloud, Archive, History } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 
+import { SelectiveBackupCard } from '@/components/admin/SelectiveBackupCard'
+
 export const dynamic = 'force-dynamic'
 
 export default async function BackupPage() {
@@ -36,6 +38,19 @@ export default async function BackupPage() {
     profiles: profiles?.find(p => p.id === log.admin_id) || { full_name: 'Unknown Admin' }
   }))
 
+  // Fetch tables dynamically
+  let availableTables: string[] = []
+  try {
+    const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/?apikey=${process.env.SUPABASE_SERVICE_ROLE_KEY}`
+    const res = await fetch(url, { cache: 'no-store' })
+    const openapiData = await res.json()
+    availableTables = Object.keys(openapiData.paths)
+      .filter(p => p !== '/' && !p.includes('{') && !p.startsWith('/rpc/'))
+      .map(p => p.slice(1))
+  } catch (error) {
+    console.error('Failed to fetch openapi spec', error)
+  }
+
   return (
     <div className="w-full">
       <div className="mb-8">
@@ -43,13 +58,13 @@ export default async function BackupPage() {
         <p className="font-mono text-sm text-[#555555]">Securely archive database state to a standalone snapshot.</p>
       </div>
       
-      <Card className="p-8 mb-12 flex flex-col md:flex-row items-center justify-between gap-6 border-[#0a0a0a] border-2 bg-[#f9f9f9]">
+      <Card className="p-8 mb-6 flex flex-col md:flex-row items-center justify-between gap-6 border-[#0a0a0a] border-2 bg-[#f9f9f9]">
         <div className="flex items-start gap-4">
           <Archive size={40} className="text-[#0a0a0a]" />
           <div>
             <h3 className="text-lg font-bold">Generate Absolute Backup</h3>
             <p className="text-xs font-mono text-[#555555] max-w-[600px] mt-2 leading-relaxed">
-              Generates an instant ZIP containing standardized Excel (.xlsx) snapshots of all tables (profiles, events, constraints, registrations) bypassing standard API constraints. The action is recorded in the immutable audit log below.
+              Generates an instant ZIP containing standardized Excel (.xlsx) snapshots of all system tables, complete audit logs from the separate logging database, and all contents of the iic-reports bucket. The action is recorded in the immutable audit log below.
             </p>
           </div>
         </div>
@@ -59,6 +74,8 @@ export default async function BackupPage() {
            </Button>
         </form>
       </Card>
+
+      <SelectiveBackupCard availableTables={availableTables} />
 
       <h2 className="text-xl font-bold mb-6 flex items-center gap-2"><History size={20}/> Audit Log</h2>
       <div className="border border-[#e0e0e0] rounded-2xl overflow-hidden bg-white shadow-sm">

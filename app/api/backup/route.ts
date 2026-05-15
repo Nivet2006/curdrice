@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import JSZip from 'jszip'
 import * as XLSX from 'xlsx'
+import { logsClient } from '@/lib/supabase/logs-client'
 
 export async function GET() {
   const supabase = await createClient()
@@ -19,18 +20,6 @@ export async function GET() {
     { auth: { persistSession: false } }
   )
 
-  const [
-    { data: profiles },
-    { data: events },
-    { data: registrations },
-    { data: constraints }
-  ] = await Promise.all([
-    supabaseAdmin.from('profiles').select('*'),
-    supabaseAdmin.from('events').select('*'),
-    supabaseAdmin.from('registrations').select('*'),
-    supabaseAdmin.from('event_constraints').select('*')
-  ])
-
   const zip = new JSZip()
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 15)
   const filename = `Club-Eve_backup_${timestamp}.zip`
@@ -39,15 +28,42 @@ export async function GET() {
     if (!data || data.length === 0) return
     const ws = XLSX.utils.json_to_sheet(data)
     const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, name)
+    XLSX.utils.book_append_sheet(wb, ws, name.slice(0, 31)) // Sheet names max 31 chars
     const b64 = XLSX.write(wb, { type: 'base64', bookType: 'xlsx' })
     zip.file(`${name}.xlsx`, b64, { base64: true })
   }
 
-  addToZip(profiles || [], 'profiles')
-  addToZip(events || [], 'events')
-  addToZip(registrations || [], 'registrations')
-  addToZip(constraints || [], 'constraints')
+  // 1. Fetch all tables from Main DB
+  const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/?apikey=${process.env.SUPABASE_SERVICE_ROLE_KEY}`
+  const openapiRes = await fetch(url)
+  const openapiData = await openapiRes.json()
+  const tables = Object.keys(openapiData.paths)
+    .filter(p => p !== '/' && !p.includes('{') && !p.startsWith('/rpc/'))
+    .map(p => p.slice(1))
+
+  await Promise.all(tables.map(async (table) => {
+    const { data } = await supabaseAdmin.from(table).select('*')
+    addToZip(data || [], table)
+  }))
+
+  // 2. Fetch Audit Logs from Logs DB
+  const { data: auditLogs } = await logsClient.from('audit_logs').select('*')
+  addToZip(auditLogs || [], 'audit_logs')
+
+  // 3. Backup iic-reports bucket from Logs DB
+  const { data: bucketFiles } = await logsClient.storage.from('iic-reports').list()
+  if (bucketFiles && bucketFiles.length > 0) {
+    const bucketFolder = zip.folder('iic-reports')
+    await Promise.all(bucketFiles.map(async (file) => {
+      // Don't download directories or empty items
+      if (!file.name || file.id === null) return
+      const { data: fileData } = await logsClient.storage.from('iic-reports').download(file.name)
+      if (fileData) {
+        const buffer = await fileData.arrayBuffer()
+        bucketFolder?.file(file.name, buffer)
+      }
+    }))
+  }
 
   zip.file('backup_readme.txt', `Club-Eve Absolute Backup Database Snapshot\nGenerated: ${new Date().toISOString()}\nExported by Admin: ${user.id}`)
 
