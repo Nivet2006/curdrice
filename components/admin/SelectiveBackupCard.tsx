@@ -142,11 +142,11 @@ export function SelectiveBackupCard({ availableTables }: SelectiveBackupCardProp
           <Button
             type="button"
             variant="primary"
-            className="bg-[#eb4b4b] text-white font-semibold hover:bg-[#d43838] shadow-lg shadow-red-500/20"
+            className="flex items-center justify-center gap-2 bg-[#eb4b4b] text-white font-semibold hover:bg-[#d43838] shadow-lg shadow-red-500/20"
             disabled={selected.size === 0 || isProcessing}
             onClick={() => handleActionClick('purge')}
           >
-            <Trash2 size={16} className="mr-2" /> Backup & Purge
+            <Trash2 size={16} /> Backup & Purge
           </Button>
         </div>
       </Card>
