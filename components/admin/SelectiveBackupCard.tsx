@@ -5,11 +5,14 @@ import { Card } from '@/components/ui/Card'
 import { Database, ShieldAlert, X, DownloadCloud, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 
+import { useRouter } from 'next/navigation'
+
 type SelectiveBackupCardProps = {
   availableTables: string[]
 }
 
 export function SelectiveBackupCard({ availableTables }: SelectiveBackupCardProps) {
+  const router = useRouter()
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [totpCode, setTotpCode] = useState('')
@@ -87,6 +90,7 @@ export function SelectiveBackupCard({ availableTables }: SelectiveBackupCardProp
       setIsModalOpen(false)
       setTotpCode('')
       setSelected(new Set())
+      router.refresh()
     } catch (err: any) {
       setErrorMsg(err.message || 'Action failed')
     } finally {

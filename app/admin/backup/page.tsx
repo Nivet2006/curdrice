@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 
 import { SelectiveBackupCard } from '@/components/admin/SelectiveBackupCard'
+import { AbsoluteBackupButton } from '@/components/admin/AbsoluteBackupButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -77,11 +78,7 @@ export default async function BackupPage() {
             </p>
           </div>
         </div>
-        <form action="/api/backup" method="GET">
-           <Button type="submit" variant="primary" className="bg-[#0a0a0a] flex items-center gap-2 whitespace-nowrap px-6 py-3">
-             <DownloadCloud size={16} /> Download .zip
-           </Button>
-        </form>
+        <AbsoluteBackupButton />
       </Card>
 
       <SelectiveBackupCard availableTables={availableTables} />
