@@ -154,6 +154,40 @@ export async function deleteEvent(eventId: string) {
   redirect('/manager/dashboard')
 }
 
+export async function deleteEventsBulk(eventIds: string[], totpCode: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Unauthorized' }
+
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  if (profile?.role !== 'admin') return { error: 'Unauthorized. Only admins can perform bulk deletions.' }
+
+  const { supabaseAdmin } = await import('@/lib/supabase/admin')
+  const { data: adminProfile } = await supabaseAdmin.from('profiles').select('totp_secret, totp_enabled').eq('id', user.id).single()
+  
+  if (!adminProfile?.totp_enabled || !adminProfile?.totp_secret) {
+    return { error: '2FA not enabled. You must enable 2FA to perform bulk deletions.' }
+  }
+
+  const { verify } = await import('otplib')
+  const result = await verify({
+    token: totpCode,
+    secret: adminProfile.totp_secret
+  })
+
+  if (!result || (typeof result === 'object' && !result.valid)) {
+    return { error: 'Invalid verification code' }
+  }
+
+  const { error } = await supabase.from('events').delete().in('id', eventIds)
+  if (error) return { error: error.message }
+
+  const { revalidatePath } = await import('next/cache')
+  revalidatePath('/admin/events')
+
+  return { success: true }
+}
+
 export async function registerForEvent(eventId: string) {
   const { revalidatePath } = await import('next/cache')
   const supabase = await createClient()
