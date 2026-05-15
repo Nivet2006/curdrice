@@ -10,22 +10,22 @@ export function Badge({ variant = 'student', children, className = '', ...props 
   
   switch(variant) {
     case 'admin':
-      styleClasses = 'bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950 font-mono rounded-full px-3 py-1 text-xs'
+      styleClasses = 'bg-[#0a0a0a] text-white dark:bg-white dark:text-black font-mono rounded-full px-3 py-1 text-xs'
       break;
     case 'manager':
     case 'cc':
     case 'pr':
-      styleClasses = 'border-[1.5px] border-zinc-950 text-zinc-950 dark:border-zinc-300 dark:text-zinc-300 font-mono rounded-full px-3 py-1 text-xs bg-transparent'
+      styleClasses = 'border-[1.5px] border-[#0a0a0a] text-[#0a0a0a] dark:border-[#e0e0e0] dark:text-[#e0e0e0] font-mono rounded-full px-3 py-1 text-xs bg-transparent'
       break;
     case 'teacher':
     case 'hod':
-      styleClasses = 'bg-zinc-950 text-white dark:bg-zinc-300 dark:text-zinc-950 font-mono rounded-full px-4 py-1.5 text-xs shadow-lg'
+      styleClasses = 'bg-[#0a0a0a] text-white dark:bg-[#e0e0e0] dark:text-[#0a0a0a] font-mono rounded-full px-4 py-1.5 text-xs shadow-lg'
       break;
     case 'student':
-      styleClasses = 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300 font-sans rounded-full px-3 py-1 text-xs'
+      styleClasses = 'bg-[#eeeeee] text-[#555555] dark:bg-[#333] dark:text-[#ddd] font-sans rounded-full px-3 py-1 text-xs'
       break;
     case 'deleted':
-      styleClasses = 'bg-red-50 text-red-600 border border-red-600 dark:bg-red-500/20 dark:text-red-300 dark:border-red-300 rounded-full text-[10px] font-bold px-2 py-0.5 uppercase tracking-widest'
+      styleClasses = 'bg-[#ffeded] text-[#eb4b4b] border border-[#eb4b4b] dark:bg-[#eb4b4b]/20 dark:text-[#ff9999] dark:border-[#ff9999] rounded-full text-[10px] font-bold px-2 py-0.5 uppercase tracking-widest'
       break;
   }
 
