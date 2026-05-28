@@ -4,17 +4,19 @@ import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { FileDown, CheckCircle2, Building, ExternalLink, ShieldCheck, ClipboardCheck } from 'lucide-react'
 import { ExportButton } from '@/components/hod/ExportButton'
+import { ProfileUpdateApprovalQueue } from '@/components/hod/ProfileUpdateApprovalQueue'
 import { createClient } from '@/lib/supabase/client'
-import { Event } from '@/lib/types'
+import { Event, ProfileUpdateRequest } from '@/lib/types'
 
 interface HODDashboardClientProps {
   initialPending: Event[]
   initialApproved: Event[]
   initialReports: any[]
+  initialProfileRequests: ProfileUpdateRequest[]
   dept: string
 }
 
-export function HODDashboardClient({ initialPending, initialApproved, initialReports, dept }: HODDashboardClientProps) {
+export function HODDashboardClient({ initialPending, initialApproved, initialReports, initialProfileRequests, dept }: HODDashboardClientProps) {
   const [pendingApprovals, setPendingApprovals] = useState<Event[]>(initialPending)
   const [approvedEvents, setApprovedEvents] = useState<Event[]>(initialApproved)
   const [deptReports, setDeptReports] = useState<any[]>(initialReports)
@@ -213,6 +215,12 @@ export function HODDashboardClient({ initialPending, initialApproved, initialRep
            </div>
         </div>
       </div>
+
+      {/* Profile Update Requests — full width section below main grid */}
+      <ProfileUpdateApprovalQueue
+        initialRequests={initialProfileRequests}
+        dept={dept}
+      />
     </div>
   )
 }

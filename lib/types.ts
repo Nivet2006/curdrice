@@ -14,6 +14,30 @@ export interface Profile {
   created_at: string
   username: string | null
   profile_edited: boolean
+  has_backlog: boolean
+  year_back: boolean
+}
+
+export type ProfileUpdateStatus = 'pending' | 'approved' | 'rejected'
+
+export interface ProfileUpdateRequest {
+  id: string
+  student_id: string
+  field: string
+  current_value: string | null
+  new_value: string
+  status: ProfileUpdateStatus
+  feedback: string | null
+  reviewed_by: string | null
+  reviewed_at: string | null
+  created_at: string
+  profiles?: {
+    full_name: string
+    usn: string
+    department: string
+    semester: number
+    year: number
+  }
 }
 
 export interface Event {

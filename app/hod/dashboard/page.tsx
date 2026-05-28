@@ -1,7 +1,8 @@
 import React from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { HODDashboardClient } from '@/components/hod/HODDashboardClient'
-import { Event } from '@/lib/types'
+import { Event, ProfileUpdateRequest } from '@/lib/types'
+import { getPendingProfileRequests } from '@/lib/actions/profile-requests'
 
 export default async function HODDashboard() {
   const supabase = await createClient()
@@ -34,11 +35,16 @@ export default async function HODDashboard() {
 
   const deptReports = completedReports?.filter(r => (r.events as any).targeted_department === dept) || []
 
+  // Fetch pending profile update requests for this department
+  const profileRequestsRes = await getPendingProfileRequests(dept)
+  const pendingProfileRequests = (profileRequestsRes.data || []) as ProfileUpdateRequest[]
+
   return (
     <HODDashboardClient 
       initialPending={(pendingApprovals || []) as Event[]}
       initialApproved={(approvedEvents || []) as Event[]}
       initialReports={deptReports}
+      initialProfileRequests={pendingProfileRequests}
       dept={dept}
     />
   )

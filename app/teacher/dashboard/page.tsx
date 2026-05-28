@@ -2,6 +2,8 @@ import React from 'react'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { ShieldAlert, CheckCircle, ArrowRight, User } from 'lucide-react'
+import { ManageStudentsPanel } from '@/components/faculty/ManageStudentsPanel'
+import type { Profile } from '@/lib/types'
 
 export default async function TeacherDashboard() {
   const supabase = await createClient()
@@ -33,6 +35,14 @@ export default async function TeacherDashboard() {
     .in('approval_status', ['pending_hod', 'approved'])
     .eq('targeted_department', dept)
     .order('event_date', { ascending: false })
+
+  // Fetch all students in department for Manage Students section
+  const { data: allStudents } = await supabase
+    .from('profiles')
+    .select('id, full_name, usn, department, semester, year, role, created_at, has_backlog, year_back, username')
+    .eq('role', 'student')
+    .eq('department', dept)
+    .order('full_name')
 
   return (
     <div className="space-y-16 pb-20">
@@ -100,6 +110,12 @@ export default async function TeacherDashboard() {
             )}
           </div>
         </div>
+
+        {/* Manage Students Section */}
+        <ManageStudentsPanel
+          students={(allStudents || []) as Profile[]}
+          dept={dept}
+        />
 
         {/* Verified & Approved Events */}
         <div className="space-y-8 pb-10">
