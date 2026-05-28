@@ -1,0 +1,15 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.clubeve.cc",
+      "sha256_cert_fingerprints": [
+        "B9:3B:DA:1C:39:9F:E2:BA:AF:D3:99:5E:25:E6:B8:34:70:22:29:50:A8:25:8B:5D:21:4E:21:13:CC:4C:23:47",
+        "C9:EC:2E:5C:A3:19:0F:AA:8F:15:6F:39:50:E8:9C:59:79:D4:A3:33:DD:F2:ED:53:09:33:7B:5B:70:00:C0:3A"
+      ]
+    }
+  }
+]

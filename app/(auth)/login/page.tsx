@@ -49,7 +49,13 @@ export default function LoginPage() {
       } else {
         // ✅ Wait for all 4 loader steps to complete before redirecting
         await new Promise(r => setTimeout(r, 4 * 900))
-        router.push(`/${result.role}/dashboard`)
+        const searchParams = new URLSearchParams(window.location.search)
+        const redirectTo = searchParams.get('redirectTo')
+        if (redirectTo && redirectTo.startsWith('/')) {
+          router.push(redirectTo)
+        } else {
+          router.push(`/${result.role}/dashboard`)
+        }
       }
     }
   }

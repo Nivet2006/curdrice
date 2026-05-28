@@ -32,6 +32,7 @@ export interface Event {
   feedback_open: boolean
   targeted_department: string | null
   banner_url: string | null
+  is_public: boolean
   created_by: string
   created_at: string
 }

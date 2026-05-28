@@ -21,6 +21,7 @@ export default function CCCreateEventPage() {
   const [semesters, setSemesters] = useState<number[]>([])
   const [years, setYears] = useState<number[]>([])
   const [questions, setQuestions] = useState<Question[]>([])
+  const [isPublic, setIsPublic] = useState(false)
 
   const toggleSem = (s: number) => setSemesters(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s])
   const toggleYear = (y: number) => setYears(prev => prev.includes(y) ? prev.filter(x => x !== y) : [...prev, y])
@@ -39,6 +40,7 @@ export default function CCCreateEventPage() {
     formData.append('semesters', JSON.stringify(semesters))
     formData.append('years', JSON.stringify(years))
     formData.append('feedbackConfig', JSON.stringify(questions))
+    formData.append('isPublic', isPublic ? 'true' : 'false')
     formData.append('submitForReview', isFinalSubmit ? 'true' : 'false')
 
     const result = await createDraftEvent(formData)
@@ -141,9 +143,23 @@ export default function CCCreateEventPage() {
                            <button type="button" key={y} onClick={() => toggleYear(y)} className={`w-8 h-8 rounded-full border text-[10px] font-mono transition-all ${years.includes(y) ? 'bg-black text-white border-black' : 'border-zinc-200 hover:border-black'}`}>{y}</button>
                          ))}
                       </div>
-                   </div>
-                </div>
-                <p className="text-[9px] text-zinc-400 italic">None selected = Open to all students in targeted department.</p>
+                    </div>
+                    <div>
+                       <p className="text-[10px] font-mono uppercase text-zinc-400 mb-2">Public Shareability</p>
+                       <label className="flex items-center gap-3 cursor-pointer group">
+                          <input 
+                            type="checkbox" 
+                            checked={isPublic}
+                            onChange={e => setIsPublic(e.target.checked)}
+                            className="w-4 h-4 rounded border-zinc-300 text-black focus:ring-black cursor-pointer"
+                          />
+                          <span className="text-xs font-mono text-zinc-600 group-hover:text-black transition-colors">
+                            Make Event Public
+                          </span>
+                       </label>
+                    </div>
+                 </div>
+                 <p className="text-[9px] text-zinc-400 italic">None selected = Open to all students in targeted department.</p>
              </div>
 
              {error && <div className="p-4 bg-rose-50 border border-rose-100 text-rose-600 rounded-2xl text-xs font-mono">{error}</div>}

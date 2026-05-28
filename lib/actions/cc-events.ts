@@ -27,6 +27,7 @@ export async function createDraftEvent(formData: FormData) {
   const max_capacity = capStr && parseInt(capStr) > 0 ? parseInt(capStr) : null
   const targeted_department = (formData.get('targetedDepartment') as string) || null
   const feedback_config = JSON.parse(formData.get('feedbackConfig') as string || '[]')
+  const is_public = formData.get('isPublic') === 'true'
 
   if (!feedback_config || feedback_config.length < 3) {
     return { error: 'Policy: You must define at least 3 feedback questions for the event survey.' }
@@ -79,6 +80,7 @@ export async function createDraftEvent(formData: FormData) {
     approval_status,
     targeted_department,
     feedback_config,
+    is_public,
     status: 'upcoming'
   }).select('id').single()
 
@@ -162,6 +164,7 @@ export async function updateEventDraft(id: string, formData: FormData) {
   const max_capacity = capStr && parseInt(capStr) > 0 ? parseInt(capStr) : null
   const targeted_department = (formData.get('targetedDepartment') as string) || null
   const feedback_config = JSON.parse(formData.get('feedbackConfig') as string || '[]')
+  const is_public = formData.get('isPublic') === 'true'
 
   if (!feedback_config || feedback_config.length < 3) {
     return { error: 'Policy: You must define at least 3 feedback questions before submitting or saving.' }
@@ -212,6 +215,7 @@ export async function updateEventDraft(id: string, formData: FormData) {
     approval_status,
     targeted_department,
     feedback_config,
+    is_public,
     rejection_data: '[]'
   }).eq('id', id).eq('created_by', user.id)
 

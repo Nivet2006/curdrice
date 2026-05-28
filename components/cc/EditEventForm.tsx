@@ -33,6 +33,7 @@ export default function EditEventForm({ event, constraints }: EditEventFormProps
   const [semesters, setSemesters] = useState<number[]>(constraints?.allowed_semesters || [])
   const [years, setYears] = useState<number[]>(constraints?.allowed_years || [])
   const [questions, setQuestions] = useState<Question[]>(event.feedback_config || [])
+  const [isPublic, setIsPublic] = useState(!!event.is_public)
 
   const toggleSem = (s: number) => setSemesters(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s])
   const toggleYear = (y: number) => setYears(prev => prev.includes(y) ? prev.filter(x => x !== y) : [...prev, y])
@@ -49,6 +50,7 @@ export default function EditEventForm({ event, constraints }: EditEventFormProps
     formData.append('semesters', JSON.stringify(semesters))
     formData.append('years', JSON.stringify(years))
     formData.append('feedbackConfig', JSON.stringify(questions))
+    formData.append('isPublic', isPublic ? 'true' : 'false')
     formData.append('submitForReview', isFinalSubmit ? 'true' : 'false')
 
     const result = await updateEventDraft(event.id, formData)
@@ -165,6 +167,20 @@ export default function EditEventForm({ event, constraints }: EditEventFormProps
                          ))}
                       </div>
                    </div>
+                   <div>
+                       <p className="text-[10px] font-mono uppercase text-zinc-400 mb-2">Public Shareability</p>
+                       <label className="flex items-center gap-3 cursor-pointer group">
+                          <input 
+                            type="checkbox" 
+                            checked={isPublic}
+                            onChange={e => setIsPublic(e.target.checked)}
+                            className="w-4 h-4 rounded border-zinc-300 text-black focus:ring-black cursor-pointer"
+                          />
+                          <span className="text-xs font-mono text-zinc-600 group-hover:text-black transition-colors">
+                            Make Event Public
+                          </span>
+                       </label>
+                    </div>
                 </div>
                 
                 <div className="pt-6 border-t border-zinc-100 flex flex-col gap-3">

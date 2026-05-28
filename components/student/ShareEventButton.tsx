@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Share2, X, Check, Users } from 'lucide-react'
+import { Share2, X, Check, Users, Link2, Copy } from 'lucide-react'
 import { getConversations, sendMessage } from '@/lib/actions/messages'
 
 export function ShareEventButton({
@@ -25,6 +25,7 @@ export function ShareEventButton({
   const [loading, setLoading] = useState(false)
   const [shared, setShared] = useState<Record<string, boolean>>({})
   const [activeTheme, setActiveTheme] = useState<any>(null)
+  const [linkCopied, setLinkCopied] = useState(false)
 
   const generatePastelTheme = () => {
     const hue = Math.floor(Math.random() * 360)
@@ -38,9 +39,44 @@ export function ShareEventButton({
     }
   }
 
+  const eventShareUrl = `https://curdrice.nivet2006.in/e/${eventId}`
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(eventShareUrl)
+      setLinkCopied(true)
+      setTimeout(() => setLinkCopied(false), 2000)
+    } catch {
+      // fallback: create a temp textarea
+      const ta = document.createElement('textarea')
+      ta.value = eventShareUrl
+      document.body.appendChild(ta)
+      ta.select()
+      document.execCommand('copy')
+      document.body.removeChild(ta)
+      setLinkCopied(true)
+      setTimeout(() => setLinkCopied(false), 2000)
+    }
+  }
+
+  const handleNativeShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: eventName,
+          text: `Check out ${eventName} by ${clubName}!`,
+          url: eventShareUrl,
+        })
+      } catch {
+        // user cancelled share sheet
+      }
+    }
+  }
+
   useEffect(() => {
     if (open) {
       setActiveTheme(generatePastelTheme())
+      setLinkCopied(false)
       loadFriends()
     }
   }, [open])
@@ -113,6 +149,50 @@ export function ShareEventButton({
               </button>
             </div>
             
+            {/* External share actions */}
+            <div
+              className="px-4 py-3 border-b flex flex-col gap-2"
+              style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}
+            >
+              <p className="font-mono text-[10px] uppercase tracking-widest" style={{ color: 'var(--fg-muted)' }}>
+                Share externally
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleNativeShare}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold border transition-all active:scale-95"
+                  style={{
+                    borderColor: 'var(--border)',
+                    color: 'var(--fg)',
+                    background: 'var(--bg-subtle)',
+                  }}
+                >
+                  <Share2 size={14} />
+                  Share via...
+                </button>
+                <button
+                  onClick={handleCopyLink}
+                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold border transition-all active:scale-95 ${
+                    linkCopied ? 'border-green-300 bg-green-50 text-green-700 dark:bg-green-500/10 dark:border-green-500/30' : ''
+                  }`}
+                  style={!linkCopied ? {
+                    borderColor: 'var(--border)',
+                    color: 'var(--fg)',
+                    background: 'var(--bg-subtle)',
+                  } : {}}
+                >
+                  {linkCopied ? <><Check size={14} /> Copied!</> : <><Copy size={14} /> Copy Link</>}
+                </button>
+              </div>
+              <div
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-[10px] font-mono truncate"
+                style={{ color: 'var(--fg-muted)', background: 'var(--bg-subtle)' }}
+              >
+                <Link2 size={10} className="shrink-0" />
+                <span className="truncate">{eventShareUrl}</span>
+              </div>
+            </div>
+
             <div 
               className="p-4 max-h-[60vh] overflow-y-auto flex flex-col gap-2 transition-colors duration-500" 
               style={{ background: 'var(--bg-subtle)' }}
