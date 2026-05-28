@@ -6,6 +6,8 @@ import Link from 'next/link'
 import type { Event } from '@/lib/types'
 import { withDynamicSingleEventStatus } from '@/lib/event-utils'
 import { EventStatusBadge } from '@/components/ui/EventStatusBadge'
+import { ThemeToggle } from '@/components/shared/ThemeToggle'
+import PatternPicker from '@/components/shared/PatternPicker'
 
 export default async function PublicEventDetailPage({
   params
@@ -59,17 +61,21 @@ export default async function PublicEventDetailPage({
   const progressPct = Math.min((regCount / maxCap) * 100, 100)
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen">
       {/* Sleek Minimal Header */}
-      <header className="border-b border-[#e0e0e0] px-8 py-5">
+      <header className="border-b border-[#e0e0e0] px-8 py-5 sticky top-0 z-50 bg-white/80 dark:bg-[#111111]/80 backdrop-blur-md">
         <div className="max-w-[1280px] mx-auto flex justify-between items-center">
           <div className="font-mono font-bold text-lg">{'>'} Club-Eve</div>
-          <Link 
-            href={`/login?redirectTo=/student/events/${id}`}
-            className="text-xs font-mono font-bold uppercase tracking-wider px-4 py-2 border border-black rounded-xl hover:bg-zinc-50 transition-colors"
-          >
-            Sign In
-          </Link>
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <PatternPicker />
+            <Link 
+              href={`/login?redirectTo=/student/events/${id}`}
+              className="text-xs font-mono font-bold uppercase tracking-wider px-4 py-2 border border-black dark:border-white rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
+            >
+              Sign In
+            </Link>
+          </div>
         </div>
       </header>
 
