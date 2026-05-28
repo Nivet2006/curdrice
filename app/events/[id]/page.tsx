@@ -1,7 +1,7 @@
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
-import { CalendarDays, MapPin, Users, Clock } from 'lucide-react'
+import { CalendarDays, MapPin, Users, Clock, ExternalLink, Download } from 'lucide-react'
 import Link from 'next/link'
 import type { Event } from '@/lib/types'
 import { withDynamicSingleEventStatus } from '@/lib/event-utils'
@@ -144,6 +144,26 @@ export default async function PublicEventDetailPage({
                 >
                   Login to RSVP
                 </Link>
+              </div>
+
+              {/* Open in App + Download */}
+              <div className="border-t border-[#e0e0e0] pt-5 space-y-2">
+                <a
+                  href={`intent://curdrice.nivet2006.in/events/${id}#Intent;scheme=https;package=com.clubeve.cc;S.browser_fallback_url=${encodeURIComponent(`https://curdrice.nivet2006.in/events/${id}`)};end`}
+                  className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-bold transition-all active:scale-[0.98] bg-[#0a0a0a] text-white hover:bg-zinc-800"
+                >
+                  <ExternalLink size={14} />
+                  Open in ClubEve App
+                </a>
+                <a
+                  href="https://github.com/Nivet2006/ClubEve-app/releases/latest"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-xs font-bold border border-[#e0e0e0] text-[#555555] transition-all active:scale-[0.98] hover:bg-zinc-50"
+                >
+                  <Download size={12} />
+                  Don&apos;t have the app? Download
+                </a>
               </div>
             </div>
           </div>
