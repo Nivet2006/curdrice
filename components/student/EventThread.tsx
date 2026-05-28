@@ -8,6 +8,7 @@ import {
   toggleReaction,
   deleteThreadMessage,
   getThreadMembers,
+  getAllThreadMembers,
   pinMessage,
 } from '@/lib/actions/event-threads'
 import type { Message, ThreadMode } from '@/lib/types'
@@ -28,6 +29,8 @@ import {
   PinOff,
   Crown,
   Lock,
+  UserCog,
+  UserX,
 } from 'lucide-react'
 
 const QUICK_EMOJIS = ['👍', '❤️', '😂', '🎉', '🔥', '👀', '💯', '✅', '🙌', '💀']
@@ -63,6 +66,11 @@ export function EventThread({
   const [showScrollBtn, setShowScrollBtn] = useState(false)
   const [profile, setProfile] = useState<{ full_name: string; usn: string } | null>(null)
 
+  // Admin impersonation state
+  const [impersonateUserId, setImpersonateUserId] = useState<string | null>(null)
+  const [allMembers, setAllMembers] = useState<{ id: string; full_name: string; usn: string; role: string }[]>([])
+  const [showImpersonatePicker, setShowImpersonatePicker] = useState(false)
+
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -71,6 +79,7 @@ export function EventThread({
   const canSend = threadMode === 'open' || isPrivileged
   const canPin = ['admin', 'cc', 'manager'].includes(userRole)
   const canDeleteAny = ['admin', 'cc'].includes(userRole)
+  const canImpersonate = userRole === 'admin'
 
   const modeConfig = {
     open: { icon: <Hash size={18} />, label: 'Open Discussion', color: '#5865F2' },
@@ -96,6 +105,13 @@ export function EventThread({
   useEffect(() => {
     getThreadMembers(conversationId).then(setMembers)
   }, [conversationId])
+
+  // Load all members for admin impersonation
+  useEffect(() => {
+    if (canImpersonate) {
+      getAllThreadMembers(conversationId).then(setAllMembers)
+    }
+  }, [conversationId, canImpersonate])
 
   // Realtime subscription
   useEffect(() => {
@@ -140,24 +156,33 @@ export function EventThread({
     setNewMessage('')
     setReplyTo(null)
 
+    // Get the display profile (impersonated user or self)
+    const displayProfile = impersonateUserId
+      ? allMembers.find(m => m.id === impersonateUserId)
+      : null
+
     const optimisticMsg: Message = {
       id: crypto.randomUUID(),
       conversation_id: conversationId,
-      sender_id: userId,
+      sender_id: impersonateUserId || userId,
       body: text,
       reply_to_id: replyId,
       created_at: new Date().toISOString(),
       is_archived: false,
       is_deleted: false,
       is_pinned: false,
-      sender: { full_name: profile?.full_name || 'Me', usn: profile?.usn, role: userRole as any },
+      sender: {
+        full_name: displayProfile?.full_name || profile?.full_name || 'Me',
+        usn: displayProfile?.usn || profile?.usn,
+        role: (displayProfile?.role || userRole) as any,
+      },
       reactions: [],
     }
     setMessages(prev => [...prev, optimisticMsg])
     scrollToBottom()
 
     try {
-      const res = await sendThreadMessage(conversationId, userId, text, replyId)
+      const res = await sendThreadMessage(conversationId, userId, text, replyId, impersonateUserId)
       if (res.error) {
         setMessages(prev => prev.filter(m => m.id !== optimisticMsg.id))
         // Show error briefly
@@ -520,22 +545,91 @@ export function EventThread({
 
       {/* Input or restricted notice */}
       {canSend ? (
-        <form onSubmit={handleSend} className="p-3 border-t shrink-0" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
-          <div className="flex items-center gap-2">
-            <input
-              ref={inputRef}
-              value={newMessage}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-              placeholder={`Message #${eventName.slice(0, 20)}...`}
-              className="flex-1 px-4 py-2 text-sm rounded-lg outline-none border transition-all"
-              style={{ background: 'var(--bg-subtle)', color: 'var(--fg)', borderColor: 'var(--border)' }}
-            />
-            <button type="submit" disabled={!newMessage.trim() || sending} className="bg-[#5865F2] text-white p-2 rounded-lg hover:bg-[#4752C4] transition-all disabled:opacity-30">
-              <Send size={16} />
-            </button>
-          </div>
-        </form>
+        <div className="border-t shrink-0" style={{ borderColor: 'var(--border)' }}>
+          {/* Admin impersonation bar */}
+          {canImpersonate && (
+            <div className="flex items-center gap-2 px-3 py-1.5 border-b" style={{ borderColor: 'var(--border)', background: impersonateUserId ? '#EF444410' : 'var(--bg-subtle)' }}>
+              <UserCog size={12} className={impersonateUserId ? 'text-red-500' : ''} style={!impersonateUserId ? { color: 'var(--fg-muted)' } : {}} />
+              {impersonateUserId ? (
+                <>
+                  <span className="text-[10px] font-mono font-bold text-red-500 uppercase tracking-wider">
+                    Impersonating: {allMembers.find(m => m.id === impersonateUserId)?.full_name || 'Unknown'}
+                  </span>
+                  <button
+                    onClick={() => setImpersonateUserId(null)}
+                    className="ml-auto flex items-center gap-1 text-[10px] font-mono text-red-500 hover:text-red-600 transition-colors px-2 py-0.5 rounded-full bg-red-50 dark:bg-red-950/30"
+                  >
+                    <UserX size={10} /> Stop
+                  </button>
+                </>
+              ) : (
+                <>
+                  <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: 'var(--fg-muted)' }}>Admin Mode</span>
+                  <button
+                    onClick={() => setShowImpersonatePicker(!showImpersonatePicker)}
+                    className="ml-auto flex items-center gap-1 text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border transition-all hover:bg-red-50 dark:hover:bg-red-950/20 hover:border-red-300 dark:hover:border-red-700 hover:text-red-500"
+                    style={{ borderColor: 'var(--border)', color: 'var(--fg-muted)' }}
+                  >
+                    <UserCog size={10} /> Impersonate
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* Impersonation user picker dropdown */}
+          {showImpersonatePicker && !impersonateUserId && (
+            <div className="px-3 py-2 border-b max-h-40 overflow-y-auto" style={{ borderColor: 'var(--border)', background: 'var(--bg-subtle)' }}>
+              <p className="text-[9px] font-mono uppercase tracking-widest mb-2 opacity-50" style={{ color: 'var(--fg-muted)' }}>Send as:</p>
+              <div className="space-y-0.5">
+                {allMembers
+                  .filter(m => m.id !== userId) // Don't show self
+                  .slice(0, 20)
+                  .map(m => (
+                  <button
+                    key={m.id}
+                    onClick={() => { setImpersonateUserId(m.id); setShowImpersonatePicker(false) }}
+                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-left hover:bg-black/[0.03] dark:hover:bg-white/[0.05] transition-colors"
+                  >
+                    <div className="w-5 h-5 rounded-full bg-[#5865F2] flex items-center justify-center text-white text-[8px] font-bold">
+                      {m.full_name[0]}
+                    </div>
+                    <span className="text-xs font-semibold truncate" style={{ color: 'var(--fg)' }}>{m.full_name}</span>
+                    {m.usn && <span className="text-[9px] font-mono opacity-40">{m.usn}</span>}
+                    {m.role !== 'student' && (
+                      <span className="text-[8px] font-mono font-black uppercase px-1 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800" style={{ color: 'var(--fg-muted)' }}>{m.role}</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Message input */}
+          <form onSubmit={handleSend} className="p-3" style={{ background: 'var(--bg)' }}>
+            <div className="flex items-center gap-2">
+              <input
+                ref={inputRef}
+                value={newMessage}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
+                placeholder={impersonateUserId
+                  ? `Message as ${allMembers.find(m => m.id === impersonateUserId)?.full_name || 'user'}...`
+                  : `Message #${eventName.slice(0, 20)}...`
+                }
+                className={`flex-1 px-4 py-2 text-sm rounded-lg outline-none border transition-all ${impersonateUserId ? 'border-red-300 dark:border-red-700 focus:border-red-500' : ''}`}
+                style={{ background: 'var(--bg-subtle)', color: 'var(--fg)', borderColor: impersonateUserId ? undefined : 'var(--border)' }}
+              />
+              <button
+                type="submit"
+                disabled={!newMessage.trim() || sending}
+                className={`p-2 rounded-lg transition-all disabled:opacity-30 ${impersonateUserId ? 'bg-red-500 hover:bg-red-600' : 'bg-[#5865F2] hover:bg-[#4752C4]'} text-white`}
+              >
+                <Send size={16} />
+              </button>
+            </div>
+          </form>
+        </div>
       ) : (
         <div className="p-4 border-t shrink-0 flex items-center justify-center gap-2" style={{ borderColor: 'var(--border)', background: 'var(--bg-subtle)' }}>
           <Lock size={14} style={{ color: currentMode.color }} />

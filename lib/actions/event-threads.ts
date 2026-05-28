@@ -299,15 +299,29 @@ export async function sendThreadMessage(
   conversationId: string,
   senderId: string,
   body: string,
-  replyToId?: string | null
+  replyToId?: string | null,
+  asUserId?: string | null
 ) {
   const supabase = await createClient()
 
-  // Get sender's role
-  const { data: senderProfile } = await supabaseAdmin
+  // Get caller's real role
+  const { data: callerProfile } = await supabaseAdmin
     .from('profiles')
     .select('role')
     .eq('id', senderId)
+    .single()
+
+  const callerRole = callerProfile?.role || 'student'
+  const isAdmin = callerRole === 'admin'
+
+  // Determine actual sender (impersonated or real)
+  const actualSenderId = (isAdmin && asUserId) ? asUserId : senderId
+
+  // Get sender's role (for thread mode check)
+  const { data: senderProfile } = await supabaseAdmin
+    .from('profiles')
+    .select('role')
+    .eq('id', actualSenderId)
     .single()
 
   // Get the event's thread_mode via conversation's event_id
@@ -328,27 +342,29 @@ export async function sendThreadMessage(
     const senderRole = senderProfile?.role || 'student'
     const privilegedRoles = ['admin', 'cc', 'manager', 'teacher', 'hod']
 
-    if (threadMode === 'announcement' && !privilegedRoles.includes(senderRole)) {
+    // Admin always bypasses thread mode restrictions
+    if (threadMode === 'announcement' && !privilegedRoles.includes(senderRole) && !isAdmin) {
       return { error: 'This thread is in announcement mode. Only coordinators can post.' }
     }
   }
 
-  // Verify membership
+  // Verify membership (admin impersonation bypasses this)
   const { data: membership } = await supabase
     .from('conversation_members')
     .select('id')
     .eq('conversation_id', conversationId)
-    .eq('user_id', senderId)
+    .eq('user_id', actualSenderId)
     .eq('invite_status', 'accepted')
     .single()
 
-  if (!membership) return { error: 'Not a member of this thread' }
+  // If impersonating and target isn't a member, admin still can send
+  if (!membership && !isAdmin) return { error: 'Not a member of this thread' }
 
   if (!body.trim()) return { error: 'Message cannot be empty' }
 
   const insertData: any = {
     conversation_id: conversationId,
-    sender_id: senderId,
+    sender_id: actualSenderId,
     body: body.trim(),
   }
 
@@ -356,7 +372,10 @@ export async function sendThreadMessage(
     insertData.reply_to_id = replyToId
   }
 
-  const { data: msg, error } = await supabase
+  // Use admin client when impersonating to bypass RLS
+  const dbClient = (isAdmin && asUserId) ? supabaseAdmin : supabase
+
+  const { data: msg, error } = await dbClient
     .from('messages')
     .insert(insertData)
     .select('id')
@@ -376,11 +395,11 @@ export async function sendThreadMessage(
       .in('usn', mentions)
 
     if (mentionedUsers?.length) {
-      // Get sender name
+      // Get sender name (use actualSenderId for display)
       const { data: sender } = await supabase
         .from('profiles')
         .select('full_name')
-        .eq('id', senderId)
+        .eq('id', actualSenderId)
         .single()
 
       // Get conversation name for notification
@@ -391,7 +410,7 @@ export async function sendThreadMessage(
         .single()
 
       const notifications = mentionedUsers
-        .filter(u => u.id !== senderId) // Don't notify self
+        .filter(u => u.id !== actualSenderId) // Don't notify self
         .map(u => ({
           user_id: u.id,
           type: 'thread_mention' as const,
@@ -503,6 +522,7 @@ export async function pinMessage(messageId: string, userId: string, pinned: bool
 
 /* ─────────────────────────────────────────
    GET THREAD MEMBERS (for @mention autocomplete)
+   Filters out admin users so they can't be @mentioned
 ───────────────────────────────────────── */
 
 export async function getThreadMembers(conversationId: string) {
@@ -512,7 +532,7 @@ export async function getThreadMembers(conversationId: string) {
     .from('conversation_members')
     .select(`
       user_id,
-      profiles(id, full_name, usn)
+      profiles(id, full_name, usn, role)
     `)
     .eq('conversation_id', conversationId)
     .eq('invite_status', 'accepted')
@@ -523,9 +543,44 @@ export async function getThreadMembers(conversationId: string) {
     return []
   }
 
+  // Filter out admin users from @mention list
+  return (data || [])
+    .filter((m: any) => m.profiles?.role !== 'admin')
+    .map((m: any) => ({
+      id: m.user_id,
+      full_name: m.profiles?.full_name || 'Unknown',
+      usn: m.profiles?.usn || '',
+      role: m.profiles?.role || 'student',
+    }))
+}
+
+/* ─────────────────────────────────────────
+   GET ALL THREAD MEMBERS (for admin impersonation)
+   Returns all members regardless of role
+───────────────────────────────────────── */
+
+export async function getAllThreadMembers(conversationId: string) {
+  const supabase = await createClient()
+
+  const { data, error } = await supabaseAdmin
+    .from('conversation_members')
+    .select(`
+      user_id,
+      profiles(id, full_name, usn, role)
+    `)
+    .eq('conversation_id', conversationId)
+    .eq('invite_status', 'accepted')
+    .limit(200)
+
+  if (error) {
+    console.error('getAllThreadMembers error:', error)
+    return []
+  }
+
   return (data || []).map((m: any) => ({
     id: m.user_id,
     full_name: m.profiles?.full_name || 'Unknown',
     usn: m.profiles?.usn || '',
+    role: m.profiles?.role || 'student',
   }))
 }
