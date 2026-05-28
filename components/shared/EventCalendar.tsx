@@ -134,7 +134,6 @@ export function EventCalendar({
     view === 'month' ? d.setMonth(d.getMonth() + 1) : d.setDate(d.getDate() + 7)
     setCurrentDate(d)
   }
-  const goToToday = () => setCurrentDate(new Date())
 
   // ── Month grid (6 rows × 7 cols, null = out-of-month) ──
   const monthGrid = useMemo(() => {
@@ -263,10 +262,6 @@ export function EventCalendar({
             <button onClick={navigatePrev}
               className="w-8 h-8 rounded-full border border-[#e0e0e0] flex items-center justify-center hover:bg-[#f5f5f5] dark:hover:bg-zinc-800 transition-colors">
               <ChevronLeft size={14} />
-            </button>
-            <button onClick={goToToday}
-              className="px-3 h-8 rounded-full border border-[#e0e0e0] text-[11px] font-mono hover:bg-[#f5f5f5] dark:hover:bg-zinc-800 transition-colors uppercase tracking-widest">
-              Today
             </button>
             <button onClick={navigateNext}
               className="w-8 h-8 rounded-full border border-[#e0e0e0] flex items-center justify-center hover:bg-[#f5f5f5] dark:hover:bg-zinc-800 transition-colors">
