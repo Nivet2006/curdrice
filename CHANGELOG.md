@@ -4,6 +4,43 @@ All notable changes to Club-Eve, reverse-chronological.
 
 ---
 
+## 2026-05-29 — Event Discussion Threads
+
+**Discord-like per-event group chat** — CC toggles discussion on/off; group conversation auto-created on first enable; students auto-joined on registration.
+
+**New Components**
+| Component | Path | Purpose |
+|-----------|------|--------|
+| `DiscussionToggle` | `components/cc/` | CC toggle with Discord-themed UI, LIVE/OFFLINE status, member count |
+| `EventThread` | `components/student/` | Discord-like chat: @mention autocomplete, reply threading, emoji reactions, realtime |
+
+**Server Actions** — `lib/actions/event-threads.ts`
+- `toggleDiscussion(eventId, enabled)` — CC/admin toggle, lazy conversation creation
+- `joinEventThread(eventId, userId)` — called from `registerForEvent` after successful registration
+- `getEventThread(eventId)` — returns conversation + member count
+- `getThreadMessages(conversationId)` — messages with sender, reply_to, reactions joins
+- `sendThreadMessage(conversationId, senderId, body, replyToId?)` — sends + parses `@USN` mentions → creates `thread_mention` notifications
+- `toggleReaction(messageId, userId, emoji)` — add/remove emoji reaction
+- `deleteThreadMessage(messageId, userId)` — soft-delete own messages
+- `getThreadMembers(conversationId)` — @mention autocomplete data
+
+**Database** — Migration `0011_event_discussions.sql`
+- `events`: +`discussion_enabled` boolean
+- `conversations`: +`event_id` text FK → events
+- `messages`: +`reply_to_id` uuid FK → messages (self-referencing)
+- New table: `message_reactions` (message_id, user_id, emoji) with unique constraint
+- RLS: members read reactions in their conversations; toggle/delete own
+- Realtime publication: `message_reactions` added to supabase_realtime
+
+**Types** — `lib/types.ts`
+- `discussion_enabled: boolean` on Event
+- `event_id: string | null` on Conversation
+- `reply_to_id`, `sender?`, `reply_to?`, `reactions?` on Message
+- New `MessageReaction` interface
+- `'thread_mention'` added to NotificationType union
+
+---
+
 ## 2026-05-28 — Student Management & Profile Approval
 
 **New Components**
@@ -317,6 +354,7 @@ All notable changes to Club-Eve, reverse-chronological.
 | 0008 | `enable_rls_iic_tables.sql` | RLS on IIC tables |
 | 0009 | `add_is_public_to_events.sql` | `events.is_public` boolean |
 | 0010 | `student_management.sql` | `profile_update_requests` table, `profiles.has_backlog` + `year_back` |
+| 0011 | `event_discussions.sql` | `events.discussion_enabled`, `conversations.event_id`, `messages.reply_to_id`, `message_reactions` table |
 
 ---
 

@@ -268,6 +268,10 @@ export async function registerForEvent(eventId: string) {
   const { createEventNotification } = await import('@/lib/actions/messages')
   await createEventNotification(user.id, eventId, qrToken)
 
+  // Auto-join event discussion thread if enabled
+  const { joinEventThread } = await import('@/lib/actions/event-threads')
+  await joinEventThread(eventId, user.id)
+
   revalidatePath(`/student/events/${eventId}`)
   return { success: true }
 }

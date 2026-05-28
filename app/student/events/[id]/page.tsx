@@ -11,6 +11,9 @@ import { ShareEventButton } from '@/components/student/ShareEventButton'
 import { withDynamicSingleEventStatus } from '@/lib/event-utils'
 import { EventStatusBadge } from '@/components/ui/EventStatusBadge'
 import { StudentFeedbackTerminal } from '@/components/student/StudentFeedbackTerminal'
+import { EventThread } from '@/components/student/EventThread'
+import { getEventThread } from '@/lib/actions/event-threads'
+import { MessageSquare, Lock } from 'lucide-react'
 
 export default async function EventDetailPage({ 
   params,
@@ -60,6 +63,9 @@ export default async function EventDetailPage({
   const regCount = registeredCount || 0
   const maxCap = event.max_capacity || Infinity
   const progressPct = Math.min((regCount / maxCap) * 100, 100)
+
+  // Fetch event thread info
+  const thread = event.discussion_enabled ? await getEventThread(id) : null
 
   return (
     <div className="w-full">
@@ -158,6 +164,34 @@ export default async function EventDetailPage({
           </div>
         </div>
       </div>
+
+      {/* Event Discussion Thread */}
+      {event.discussion_enabled && (
+        <div className="mt-12">
+          <h2 className="text-xl font-black text-[#0a0a0a] mb-4 flex items-center gap-2">
+            <MessageSquare size={20} className="text-[#5865F2]" />
+            Discussion
+          </h2>
+          {isRegistered && thread ? (
+            <EventThread
+              conversationId={thread.id}
+              eventName={event.title}
+              userId={user?.id || ''}
+              memberCount={thread.member_count}
+            />
+          ) : isRegistered && !thread ? (
+            <div className="rounded-2xl border border-dashed border-[#e0e0e0] p-8 text-center bg-[#f9f9f9]">
+              <MessageSquare size={32} className="mx-auto text-[#999] mb-3" />
+              <p className="font-mono text-sm text-[#555555]">Discussion thread is being set up. Check back soon!</p>
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-dashed border-[#e0e0e0] p-8 text-center bg-[#f9f9f9]">
+              <Lock size={32} className="mx-auto text-[#999] mb-3" />
+              <p className="font-mono text-sm text-[#555555]">Register for this event to join the discussion.</p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

@@ -38,6 +38,7 @@ Club-Eve is a premium, full-stack event management platform designed for college
 *   **Client-Side Status Evaluation**: Real-time logical evaluations instantly categorizing events (`upcoming`, `ongoing`, `completed`) without expensive cron jobs.
 
 ### Real-Time Messaging & Networking
+*   **Event Discussion Threads**: Discord-like per-event group chat with @mention autocomplete, reply threading, emoji reactions, and realtime updates — CC toggles on/off, students auto-joined on registration.
 *   **Secure Point-to-Point DMs**: Direct messaging matrix strictly limited to verified students, preserving a safe student networking ecosystem.
 *   **Administrative Broadcasts**: Admins and Managers hold global broadcast capabilities to ping all interconnected users simultaneously.
 *   **Aesthetic Event Sharing**: Users share sophisticated, self-rendering JSON `[EVENT_CARD]` payloads that manifest as premium functional UI elements inside chat feeds.
@@ -114,7 +115,7 @@ See `structure.md` for the full annotated directory tree.
     NEXT_PUBLIC_SUPABASE_ANON_KEY=your_key
     SUPABASE_SERVICE_ROLE_KEY=your_service_key
     ```
-4.  **Run migrations**: Apply all SQL files from `supabase/migrations/` in your Supabase SQL editor (in order 0000 through 0010).
+4.  **Run migrations**: Apply all SQL files from `supabase/migrations/` in your Supabase SQL editor (in order 0000 through 0011).
 5.  **Seed first admin**:
     ```sql
     UPDATE profiles SET role = 'admin' WHERE usn = 'YOUR_USN';

@@ -1,6 +1,6 @@
 # PLANNING.md — EventHub: Club-Event Management System
 > Architecture, goals, style, and constraints for the full-stack build.
-> Last updated: 2026-05-28
+> Last updated: 2026-05-29
 
 ---
 
@@ -63,6 +63,7 @@ Students register for events and receive a branded QR code. The system features 
 │  CC  (Club Coordinator)                                 │
 │  ├── Manage club events with extended permissions       │
 │  ├── Cross-department event coordination                │
+│  ├── Toggle event discussion threads on/off             │
 │  └── Event oversight within assigned clubs              │
 ├─────────────────────────────────────────────────────────┤
 │  MANAGER  (Club / Event Operator)                       │
@@ -84,7 +85,8 @@ Students register for events and receive a branded QR code. The system features 
 │  ├── View + download their QR code per event            │
 │  ├── View their own registration history                │
 │  ├── One-time profile edit (username + details)         │
-│  └── Submit profile update requests (→ HOD approval)   │
+│  ├── Submit profile update requests (→ HOD approval)   │
+│  └── Join event discussion threads (Discord-like chat) │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -153,6 +155,7 @@ targeted_department      text                  -- department-scoped events
 rejection_data          jsonb                 -- rejection reason + metadata
 feedback_config         jsonb                 -- feedback form configuration
 feedback_open           boolean DEFAULT false
+discussion_enabled      boolean DEFAULT false  -- toggle event discussion thread
 created_by              uuid REFERENCES profiles(id)
 created_at              timestamptz DEFAULT now()
 ```
@@ -206,10 +209,11 @@ created_at      timestamptz DEFAULT now()
 ### Additional Tables
 | Table | Purpose |
 |-------|----------|
-| `conversations` | Real-time messaging conversations |
+| `conversations` | Real-time messaging conversations (now includes `event_id` for event threads) |
 | `conversation_members` | Many-to-many: users in conversations |
-| `messages` | Individual chat messages |
-| `notifications` | System notifications for users |
+| `messages` | Individual chat messages (now includes `reply_to_id` for threading) |
+| `message_reactions` | Emoji reactions on messages (message_id, user_id, emoji) |
+| `notifications` | System notifications for users (includes `thread_mention` type) |
 | `iic_feedback` | IIC report feedback entries |
 | `iic_flyers` | IIC event flyers |
 | `iic_photos` | IIC event photos |
@@ -231,6 +235,7 @@ created_at      timestamptz DEFAULT now()
 | `backup_logs` | None | None | None | Full |
 | `conversations` | Read/send own | Read/send own | Read/send own | Full |
 | `messages` | Read/send own | Read/send own | Read/send own | Full |
+| `message_reactions` | Read in own convos; toggle/delete own | Same | Same | Full |
 
 ---
 
@@ -779,7 +784,16 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 - [x] `profile_update_requests` table with RLS
 - [x] `has_backlog` / `year_back` profile columns
 
-### Phase 11 — Future Enhancements (Ongoing)
+### Phase 11 — Event Discussion Threads (Completed)
+- [x] CC toggle for event discussion threads (DiscussionToggle component)
+- [x] Auto-create group conversation on first enable
+- [x] Auto-join students on event registration
+- [x] Discord-like chat: @mentions, reply threading, emoji reactions, realtime
+- [x] `message_reactions` table with RLS
+- [x] `thread_mention` notification type
+- [x] Migration `0011_event_discussions.sql`
+
+### Phase 12 — Future Enhancements (Ongoing)
 - [ ] Multi-region database synchronization (Audit logs)
 - [ ] AI-powered event recommendations (local NLP)
 - [ ] Automated event tagging via Bayesian classifiers
@@ -789,4 +803,4 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 ---
 
-*Last updated: 2026-05-28*
+*Last updated: 2026-05-29*

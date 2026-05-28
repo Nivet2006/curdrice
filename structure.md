@@ -57,6 +57,8 @@ Club-Eve
 │   ├── admin              # Admin UI components (UserTable, StatsCard, BackupPanel, etc.)
 │   ├── auth               # TOTP and auth-related widgets
 │   ├── cc                 # Club Coordinator components
+│   │   ├── DiscussionToggle.tsx  # CC toggle for event discussion threads (Discord-themed)
+│   │   └── ...
 │   ├── common             # Shared UI blocks
 │   ├── faculty            # Teacher/Staff components (ManageStudentsPanel, FacultyReviewForm)
 │   ├── hod                # HOD components (HODDashboardClient, ProfileUpdateApprovalQueue, ExportButton)
@@ -67,6 +69,8 @@ Club-Eve
 │   ├── reports            # Print-ready and downloadable report designs
 │   ├── shared             # Universal components (Navbar, BrandMark, ShieldLoader, ThemeToggle, EveBot)
 │   ├── student            # Student UI (EventCards, QR Modal, ProfileUpdateSlider, CalendarView, etc.)
+│   │   ├── EventThread.tsx       # Discord-like event discussion chat (@mentions, replies, reactions)
+│   │   └── ...
 │   └── ui                 # Atomic design components (Button, Card, Input, Modal, Badge, Spinner)
 ├── deployments            # Deployment logs and configs
 ├── hooks                  # Custom React hooks (useBugCollector, useUser)
@@ -78,7 +82,8 @@ Club-Eve
 │   │   ├── auth.ts        # Login, register, logout server actions
 │   │   ├── cc-events.ts   # CC event CRUD operations
 │   │   ├── eve-bot.ts     # EveBot NLP command processing
-│   │   ├── events.ts      # Core event logic (registration, eligibility, profile edit)
+│   │   ├── events.ts      # Core event logic (registration, eligibility, profile edit, auto-join thread)
+│   │   ├── event-threads.ts # Event discussion thread actions (toggle, join, messages, reactions, @mentions)
 │   │   ├── faculty-actions.ts  # Teacher/HOD verification, PR assignment
 │   │   ├── manager.ts     # Manager scanner and check-in actions
 │   │   ├── messages.ts    # Messaging server actions
@@ -102,7 +107,7 @@ Club-Eve
 │   └── testing_guide.md   # Testing instructions
 ├── public                 # Static assets (logos, IIC assets, .well-known)
 ├── supabase
-│   └── migrations         # DB Schema migrations (0000-0010)
+│   └── migrations         # DB Schema migrations (0000-0011)
 │       ├── 0000_initial_schema.sql
 │       ├── 0001_rls_policies.sql
 │       ├── 0002_messaging.sql
@@ -113,7 +118,8 @@ Club-Eve
 │       ├── 0007_bug_reporter_fixes.sql
 │       ├── 0008_enable_rls_iic_tables.sql
 │       ├── 0009_add_is_public_to_events.sql
-│       └── 0010_student_management.sql
+│       ├── 0010_student_management.sql
+│       └── 0011_event_discussions.sql
 ├── TEST                   # Test suites and configurations
 │   ├── AUTOMATED          # Automated verification tests
 │   └── Playwright         # Playwright end-to-end testing

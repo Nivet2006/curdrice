@@ -57,6 +57,7 @@ export interface Event {
   targeted_department: string | null
   banner_url: string | null
   is_public: boolean
+  discussion_enabled: boolean
   created_by: string
   created_at: string
 }
@@ -116,6 +117,7 @@ export interface Conversation {
   id: string
   type: ConversationType
   name: string | null
+  event_id: string | null
   created_by: string
   created_at: string
   status: 'pending' | 'active'
@@ -135,12 +137,24 @@ export interface Message {
   conversation_id: string
   sender_id: string
   body: string
+  reply_to_id: string | null
   created_at: string
   is_archived: boolean
   is_deleted: boolean
+  sender?: { full_name: string; usn?: string }
+  reply_to?: { body: string; sender?: { full_name: string } } | null
+  reactions?: MessageReaction[]
 }
 
-export type NotificationType = 'event_registration' | 'dm_invite' | 'group_invite' | 'broadcast' | 'system'
+export interface MessageReaction {
+  id: string
+  message_id: string
+  user_id: string
+  emoji: string
+  created_at: string
+}
+
+export type NotificationType = 'event_registration' | 'dm_invite' | 'group_invite' | 'broadcast' | 'system' | 'thread_mention'
 
 export interface Notification {
   id: string

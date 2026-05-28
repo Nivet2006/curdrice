@@ -61,6 +61,14 @@
 
 ## Completed Milestones
 
+### 2026-05 (Event Discussion Threads)
+- [x] **Discord-like Event Chat**: Per-event group discussion threads with @mention autocomplete, reply threading, and emoji reactions.
+- [x] **CC Discussion Toggle**: Club Coordinators can enable/disable discussion threads per event with LIVE/OFFLINE status indicator.
+- [x] **Auto-join on Registration**: Students are automatically added to the event thread when they register for an event with discussions enabled.
+- [x] **Realtime Subscriptions**: Supabase `postgres_changes` for instant message delivery and reaction updates.
+- [x] **@Mention Notifications**: `thread_mention` notification type created when users are mentioned in event threads.
+- [x] **Database Migration 0011**: `events.discussion_enabled`, `conversations.event_id`, `messages.reply_to_id`, `message_reactions` table.
+
 ### 2026-05 (Student Management System)
 - [x] **Teacher Student Management Panel**: Bulk promote, individual editing, semester/year filters, backlog/yearback flags.
 - [x] **Student Profile Update Request Workflow**: Slider-based UI for students to submit change requests routed to HOD.
@@ -89,4 +97,4 @@
 - [x] **Eve Bot AI Assistant**: Localized NLP chatbot with Bayesian classification.
 
 ---
-*Last updated: 2026-05-28*
+*Last updated: 2026-05-29*

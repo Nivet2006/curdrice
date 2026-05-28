@@ -7,6 +7,7 @@ import { redirect } from 'next/navigation'
 import { submitEventForReview } from '@/lib/actions/cc-events'
 import { AdminManualOverride } from '@/components/admin/AdminManualOverride'
 import { FeedbackToggle } from '@/components/cc/FeedbackToggle'
+import { DiscussionToggle } from '@/components/cc/DiscussionToggle'
 import { ReportHubCard } from '@/components/iic/ReportHubCard'
 export default async function CCEventDetailPage({ params }: { params: Promise<{ id: string }> }) {
    const supabase = await createClient()
@@ -221,6 +222,7 @@ export default async function CCEventDetailPage({ params }: { params: Promise<{ 
                {event.approval_status === 'approved' ? (
                   <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
                      <FeedbackToggle eventId={event.id} initialStatus={event.feedback_open} />
+                     <DiscussionToggle eventId={event.id} initialStatus={event.discussion_enabled || false} />
                      {(() => {
                         const isRegistrationsClosed = new Date() > new Date(event.registration_deadline);
                         return (
