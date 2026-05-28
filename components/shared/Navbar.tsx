@@ -51,6 +51,10 @@ export function Navbar({ role, name }: { role?: Role; name?: string }) {
     ...(!['pr', 'teacher', 'hod'].includes(role) ? [
       { href: `/${role}/events`, label: 'Events', icon: Calendar },
     ] : []),
+    // Calendar view for roles that need schedule overview
+    ...(['teacher', 'hod', 'cc'].includes(role) ? [
+      { href: `/${role}/calendar`, label: 'Calendar', icon: Calendar },
+    ] : []),
     ...(role === 'admin' ? [
       { href: '/admin/users', label: 'Users', icon: Users },
       { href: '/admin/scanner', label: 'Scanner', icon: ScanLine },
@@ -237,4 +241,4 @@ export function Navbar({ role, name }: { role?: Role; name?: string }) {
       <EveBot userId={userId || undefined} />
     </>
   )
-}
+}
