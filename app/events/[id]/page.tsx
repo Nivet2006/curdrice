@@ -1,8 +1,10 @@
 import { supabaseAdmin } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { CalendarDays, MapPin, Users, Clock, ExternalLink, Download } from 'lucide-react'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import type { Event } from '@/lib/types'
 import { withDynamicSingleEventStatus } from '@/lib/event-utils'
 import { EventStatusBadge } from '@/components/ui/EventStatusBadge'
@@ -15,6 +17,21 @@ export default async function PublicEventDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
+
+  // Automatic redirect if student is already logged in
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (profile?.role === 'student') {
+      redirect(`/student/events/${id}`)
+    }
+  }
 
   // Fetch using supabaseAdmin to bypass RLS for anonymous public view
   const { data: data, error: fetchError } = await supabaseAdmin
