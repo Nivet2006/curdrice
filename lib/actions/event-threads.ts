@@ -142,7 +142,8 @@ export async function getEventThread(eventId: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
 
-  const { data: conv } = await supabase
+  // Use admin client to find conversation (bypasses RLS)
+  const { data: conv } = await supabaseAdmin
     .from('conversations')
     .select('id, name, created_at')
     .eq('event_id', eventId)
@@ -151,8 +152,41 @@ export async function getEventThread(eventId: string) {
 
   if (!conv) return null
 
+  // Check if user is a member
+  const { data: membership } = await supabaseAdmin
+    .from('conversation_members')
+    .select('id')
+    .eq('conversation_id', conv.id)
+    .eq('user_id', user.id)
+    .eq('invite_status', 'accepted')
+    .maybeSingle()
+
+  // If not a member, check if they're registered for the event → auto-join
+  if (!membership) {
+    const { data: reg } = await supabase
+      .from('registrations')
+      .select('id')
+      .eq('event_id', eventId)
+      .eq('student_id', user.id)
+      .maybeSingle()
+
+    if (reg) {
+      // Student is registered but not in thread — add them
+      await supabaseAdmin
+        .from('conversation_members')
+        .upsert({
+          conversation_id: conv.id,
+          user_id: user.id,
+          role: 'member',
+          invite_status: 'accepted',
+        }, { onConflict: 'conversation_id,user_id', ignoreDuplicates: true })
+    } else {
+      return null // not registered, can't access thread
+    }
+  }
+
   // Get member count
-  const { count } = await supabase
+  const { count } = await supabaseAdmin
     .from('conversation_members')
     .select('*', { count: 'exact', head: true })
     .eq('conversation_id', conv.id)
