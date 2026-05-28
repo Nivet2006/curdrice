@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
+import type { ThreadMode } from '@/lib/types'
 
 /* ─────────────────────────────────────────
    TOGGLE DISCUSSION (CC/Admin)
@@ -16,7 +17,7 @@ export async function toggleDiscussion(eventId: string, enabled: boolean) {
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   if (!profile || !['admin', 'cc'].includes(profile.role)) return { error: 'Unauthorized' }
 
-  const { error } = await supabase
+  const { error } = await supabaseAdmin
     .from('events')
     .update({ discussion_enabled: enabled })
     .eq('id', eventId)
@@ -29,6 +30,30 @@ export async function toggleDiscussion(eventId: string, enabled: boolean) {
   }
 
   revalidatePath(`/cc/events/${eventId}`)
+  return { success: true }
+}
+
+/* ─────────────────────────────────────────
+   UPDATE THREAD SETTINGS (CC/Admin)
+───────────────────────────────────────── */
+
+export async function updateThreadSettings(eventId: string, mode: ThreadMode) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Unauthorized' }
+
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  if (!profile || !['admin', 'cc'].includes(profile.role)) return { error: 'Unauthorized' }
+
+  const { error } = await supabaseAdmin
+    .from('events')
+    .update({ thread_mode: mode })
+    .eq('id', eventId)
+
+  if (error) return { error: error.message }
+
+  revalidatePath(`/cc/events/${eventId}`)
+  revalidatePath(`/student/events/${eventId}`)
   return { success: true }
 }
 
@@ -142,6 +167,20 @@ export async function getEventThread(eventId: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
 
+  // Get event thread_mode
+  const { data: eventData } = await supabaseAdmin
+    .from('events')
+    .select('thread_mode')
+    .eq('id', eventId)
+    .single()
+
+  // Get user role
+  const { data: userProfile } = await supabaseAdmin
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
   // Use admin client to find conversation (bypasses RLS)
   const { data: conv } = await supabaseAdmin
     .from('conversations')
@@ -171,7 +210,6 @@ export async function getEventThread(eventId: string) {
       .maybeSingle()
 
     if (reg) {
-      // Student is registered but not in thread — add them
       await supabaseAdmin
         .from('conversation_members')
         .upsert({
@@ -181,7 +219,7 @@ export async function getEventThread(eventId: string) {
           invite_status: 'accepted',
         }, { onConflict: 'conversation_id,user_id', ignoreDuplicates: true })
     } else {
-      return null // not registered, can't access thread
+      return null
     }
   }
 
@@ -195,6 +233,8 @@ export async function getEventThread(eventId: string) {
   return {
     ...conv,
     member_count: count || 0,
+    thread_mode: (eventData?.thread_mode || 'open') as ThreadMode,
+    user_role: userProfile?.role || 'student',
   }
 }
 
@@ -212,14 +252,16 @@ export async function getThreadMessages(conversationId: string) {
       body,
       sender_id,
       reply_to_id,
+      is_pinned,
       created_at,
       is_deleted,
-      sender:profiles!messages_sender_id_fkey(full_name, usn),
+      sender:profiles!messages_sender_id_fkey(full_name, usn, role),
       reply_to:messages!messages_reply_to_id_fkey(body, sender:profiles!messages_sender_id_fkey(full_name)),
       message_reactions(id, user_id, emoji)
     `)
     .eq('conversation_id', conversationId)
     .eq('is_archived', false)
+    .order('is_pinned', { ascending: false })
     .order('created_at', { ascending: true })
     .limit(200)
 
@@ -234,6 +276,7 @@ export async function getThreadMessages(conversationId: string) {
     sender_id: m.sender_id,
     body: m.body,
     reply_to_id: m.reply_to_id,
+    is_pinned: m.is_pinned || false,
     created_at: m.created_at,
     is_archived: false,
     is_deleted: m.is_deleted,
@@ -254,6 +297,36 @@ export async function sendThreadMessage(
   replyToId?: string | null
 ) {
   const supabase = await createClient()
+
+  // Get sender's role
+  const { data: senderProfile } = await supabaseAdmin
+    .from('profiles')
+    .select('role')
+    .eq('id', senderId)
+    .single()
+
+  // Get the event's thread_mode via conversation's event_id
+  const { data: conv } = await supabaseAdmin
+    .from('conversations')
+    .select('event_id')
+    .eq('id', conversationId)
+    .single()
+
+  if (conv?.event_id) {
+    const { data: event } = await supabaseAdmin
+      .from('events')
+      .select('thread_mode')
+      .eq('id', conv.event_id)
+      .single()
+
+    const threadMode = event?.thread_mode || 'open'
+    const senderRole = senderProfile?.role || 'student'
+    const privilegedRoles = ['admin', 'cc', 'manager', 'teacher', 'hod']
+
+    if (threadMode === 'announcement' && !privilegedRoles.includes(senderRole)) {
+      return { error: 'This thread is in announcement mode. Only coordinators can post.' }
+    }
+  }
 
   // Verify membership
   const { data: membership } = await supabase
@@ -378,12 +451,46 @@ export async function toggleReaction(messageId: string, userId: string, emoji: s
 export async function deleteThreadMessage(messageId: string, userId: string) {
   const supabase = await createClient()
 
-  // Only allow deleting own messages
+  // Get user role to allow CC/admin to delete any message
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', userId).single()
+  const privilegedRoles = ['admin', 'cc']
+
+  if (privilegedRoles.includes(profile?.role || '')) {
+    // CC/admin can delete any message
+    const { error } = await supabase
+      .from('messages')
+      .update({ is_deleted: true, body: '[deleted]' })
+      .eq('id', messageId)
+    if (error) return { error: error.message }
+  } else {
+    // Regular users can only delete own messages
+    const { error } = await supabase
+      .from('messages')
+      .update({ is_deleted: true, body: '[deleted]' })
+      .eq('id', messageId)
+      .eq('sender_id', userId)
+    if (error) return { error: error.message }
+  }
+
+  return { success: true }
+}
+
+/* ─────────────────────────────────────────
+   PIN / UNPIN MESSAGE (CC/Admin)
+───────────────────────────────────────── */
+
+export async function pinMessage(messageId: string, userId: string, pinned: boolean) {
+  const supabase = await createClient()
+
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', userId).single()
+  if (!profile || !['admin', 'cc', 'manager'].includes(profile.role)) {
+    return { error: 'Only coordinators can pin messages' }
+  }
+
   const { error } = await supabase
     .from('messages')
-    .update({ is_deleted: true, body: '[deleted]' })
+    .update({ is_pinned: pinned })
     .eq('id', messageId)
-    .eq('sender_id', userId)
 
   if (error) return { error: error.message }
   return { success: true }

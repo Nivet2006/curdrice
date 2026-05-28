@@ -20,6 +20,8 @@ export interface Profile {
 
 export type ProfileUpdateStatus = 'pending' | 'approved' | 'rejected'
 
+export type ThreadMode = 'open' | 'announcement' | 'moderated'
+
 export interface ProfileUpdateRequest {
   id: string
   student_id: string
@@ -58,6 +60,7 @@ export interface Event {
   banner_url: string | null
   is_public: boolean
   discussion_enabled: boolean
+  thread_mode: ThreadMode
   created_by: string
   created_at: string
 }
@@ -141,7 +144,8 @@ export interface Message {
   created_at: string
   is_archived: boolean
   is_deleted: boolean
-  sender?: { full_name: string; usn?: string }
+  is_pinned?: boolean
+  sender?: { full_name: string; usn?: string; role?: Role }
   reply_to?: { body: string; sender?: { full_name: string } } | null
   reactions?: MessageReaction[]
 }

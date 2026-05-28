@@ -178,6 +178,8 @@ export default async function EventDetailPage({
               eventName={event.title}
               userId={user?.id || ''}
               memberCount={thread.member_count}
+              threadMode={thread.thread_mode}
+              userRole={thread.user_role}
             />
           ) : isRegistered && !thread ? (
             <div className="rounded-2xl border border-dashed border-[#e0e0e0] p-8 text-center bg-[#f9f9f9]">

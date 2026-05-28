@@ -222,7 +222,7 @@ export default async function CCEventDetailPage({ params }: { params: Promise<{ 
                {event.approval_status === 'approved' ? (
                   <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
                      <FeedbackToggle eventId={event.id} initialStatus={event.feedback_open} />
-                     <DiscussionToggle eventId={event.id} initialStatus={event.discussion_enabled || false} />
+                     <DiscussionToggle eventId={event.id} initialStatus={event.discussion_enabled || false} initialMode={event.thread_mode || 'open'} />
                      {(() => {
                         const isRegistrationsClosed = new Date() > new Date(event.registration_deadline);
                         return (
