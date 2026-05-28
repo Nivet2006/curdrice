@@ -1,9 +1,9 @@
-# 🗺️ Club-Eve Development Roadmap
+# Club-Eve Development Roadmap
 > Future features, enhancements, and the long-term vision for a campus-wide event management ecosystem.
 
 ---
 
-## 🏛️ Academic & Operational Excellence
+## Academic & Operational Excellence
 *Focus on college-wide scalability and administrative efficiency.*
 
 *   **Central College Dashboard**: A unified feed showing all clubs, all events, and campus-wide highlights.
@@ -15,7 +15,7 @@
 
 ---
 
-## 🎓 Student Growth & Career Impact
+## Student Growth & Career Impact
 *Features designed to provide tangible value to the student's academic profile.*
 
 *   **Participation History**: A detailed personal record in the student profile showing every event attended.
@@ -25,7 +25,7 @@
 
 ---
 
-## 📢 Communication & Global Reach
+## Communication & Global Reach
 *Boosting awareness and engagement across the campus.*
 
 *   **Global Announcements**: Admin-to-student broadcast system for urgent campus-wide updates.
@@ -35,7 +35,7 @@
 
 ---
 
-## 🧠 Smart System Intelligence
+## Smart System Intelligence
 *Advanced logic to handle complex scheduling and eligibility rules.*
 
 *   **Automated Clash Detection**: Real-time warnings if two major events overlap or if a student registers for two events at the same time.
@@ -45,7 +45,7 @@
 
 ---
 
-## 🏆 Engagement & Gamification
+## Engagement & Gamification
 *Encouraging a vibrant and active student community.*
 
 *   **Campus Leaderboards**: Showcasing the most active students and the most successful clubs on the homepage.
@@ -54,18 +54,39 @@
 
 ---
 
-## 💡 Top 3 Priority Features (High Impact)
+## Top 3 Priority Features (High Impact)
 1.  **Certificate Generation (PDF)**: Immediate reward for students, highly impressive practically.
 2.  **Hall Booking + Clash Detection**: Solves the most common operational headache for college faculty.
 3.  **Resume / Participation Export**: Directly links club activities to student career outcomes.
 
-## ✅ Completed Milestones (2026-04)
+## Completed Milestones
+
+### 2026-05 (Student Management System)
+- [x] **Teacher Student Management Panel**: Bulk promote, individual editing, semester/year filters, backlog/yearback flags.
+- [x] **Student Profile Update Request Workflow**: Slider-based UI for students to submit change requests routed to HOD.
+- [x] **HOD Profile Approval Queue**: Approve/reject student profile update requests with optional feedback.
+- [x] **Database Migration 0010**: `profile_update_requests` table, `has_backlog`/`year_back` profile columns.
+
+### 2026-04 (Security & Authorization)
 - [x] **Real-Time Messaging**: Broadcast system and peer-to-peer event sharing.
 - [x] **Advanced Auth (TOTP)**: Mandatory 2FA for all faculty and administrative roles.
 - [x] **USN-Based Authentication**: Refined login logic prioritizing University Serial Numbers.
 - [x] **Teacher/HOD Authorization Pipeline**: Multi-stage approval flow for new event proposals.
+- [x] **PR Audit Workflow**: Post-event verification of attendance data and feedback quality.
 - [x] **Infrastructure Dashboard**: Real-time server health and security audit logs.
 - [x] **Dark Mode Theme System**: Full accessibility-compliant dark theme implementation.
+- [x] **Combined Attendance Sheet**: Multi-semester Excel export with summary dashboard.
+- [x] **Robust Auth Error Handling**: Stale session purge and graceful cookie clearing in middleware.
+
+### 2026-03 (Core Platform)
+- [x] **Event Eligibility Constraints**: Semester, year, department gating with server-side validation.
+- [x] **Branded QR Attendance**: Dynamic QR generation with `|||··||` watermark + two-step scan confirmation.
+- [x] **Admin User Management**: Role assignment, soft-delete, password-verified destructive actions.
+- [x] **System Backup Centre**: Full ZIP export of all database tables.
+- [x] **Student Profile & One-Time Edit**: Username setup with permanent lock after first save.
+- [x] **ShieldLoader Auth UI**: Full-screen animated security checkpoint overlay.
+- [x] **Mobile Responsive Navbar**: Hamburger menu with slide-in sidebar for mobile.
+- [x] **Eve Bot AI Assistant**: Localized NLP chatbot with Bayesian classification.
 
 ---
-*Last updated: 2026-04-20*
+*Last updated: 2026-05-28*

@@ -1,13 +1,13 @@
 # PLANNING.md — EventHub: Club-Event Management System
 > Architecture, goals, style, and constraints for the full-stack build.
-> Last updated: 2026-04-20
+> Last updated: 2026-05-28
 
 ---
 
 ## 1. Project Overview
 
-A college Club-Event management web app with **dynamic roles** — **Admin**, **Teacher**, **HOD**, **PR**, **Manager**, and **Student**.
-Students register for events and receive a branded QR code. The system now features a robust authorization pipeline (Teacher → HOD), real-time messaging, and enhanced security via TOTP (Two-Factor Authentication).
+A college Club-Event management web app with **dynamic roles** — **Admin**, **Teacher**, **HOD**, **PR**, **CC**, **Manager**, and **Student**.
+Students register for events and receive a branded QR code. The system features a robust authorization pipeline (Teacher → HOD), real-time messaging, student management with profile update approval workflows, and enhanced security via TOTP (Two-Factor Authentication).
 
 **Live reference:** `https://Club-Eve.nivet2006.in/`
 
@@ -40,7 +40,30 @@ Students register for events and receive a branded QR code. The system now featu
 │  ├── Manage all users (promote, demote, soft-delete)    │
 │  ├── Site-wide data backup (full ZIP export)            │
 │  ├── View all events across all clubs/managers          │
+│  ├── Bug reporter dashboard & security audit logs       │
 │  └── QR Scanner                                         │
+├─────────────────────────────────────────────────────────┤
+│  HOD  (Head of Department)                              │
+│  ├── Final approval authority for events (pending_hod)  │
+│  ├── Department-scoped event oversight                  │
+│  ├── Approve/reject student profile update requests     │
+│  └── View department analytics & student roster         │
+├─────────────────────────────────────────────────────────┤
+│  TEACHER  (Faculty Advisor)                             │
+│  ├── First-level event approval (pending_teacher)       │
+│  ├── Manage department students (view, edit, promote)   │
+│  ├── Bulk student promotion by semester/year            │
+│  └── Department-scoped student roster                   │
+├─────────────────────────────────────────────────────────┤
+│  PR  (Public Relations / Auditor)                       │
+│  ├── Post-event attendance verification                 │
+│  ├── Feedback quality auditing                          │
+│  └── Event assignment tracking                          │
+├─────────────────────────────────────────────────────────┤
+│  CC  (Club Coordinator)                                 │
+│  ├── Manage club events with extended permissions       │
+│  ├── Cross-department event coordination                │
+│  └── Event oversight within assigned clubs              │
 ├─────────────────────────────────────────────────────────┤
 │  MANAGER  (Club / Event Operator)                       │
 │  ├── Create / Edit / Delete their own events            │
@@ -59,14 +82,17 @@ Students register for events and receive a branded QR code. The system now featu
 │  ├── Browse and search events                           │
 │  ├── Register for events (if constraints are met)       │
 │  ├── View + download their QR code per event            │
-│  └── View their own registration history                │
+│  ├── View their own registration history                │
+│  ├── One-time profile edit (username + details)         │
+│  └── Submit profile update requests (→ HOD approval)   │
 └─────────────────────────────────────────────────────────┘
 ```
 
 ### Role Assignment Rules
 - All self-registrations default to `student`
-- `manager` and `admin` roles are assigned by an existing `admin` only
+- `manager`, `teacher`, `hod`, `pr`, `cc`, and `admin` roles are assigned by an existing `admin` only
 - No self-promotion — enforced by RLS + server-side validation
+- Role ENUM: `'student' | 'manager' | 'admin' | 'teacher' | 'hod' | 'pr' | 'cc' | 'deleted'`
 
 ---
 
@@ -93,15 +119,19 @@ Students register for events and receive a branded QR code. The system now featu
 
 ### `profiles` (extends Supabase `auth.users`)
 ```sql
-id            uuid PRIMARY KEY REFERENCES auth.users(id)
-full_name     text NOT NULL
-usn           text UNIQUE NOT NULL          -- e.g. 1GD24CS098
-department    text NOT NULL                 -- e.g. CSE
-semester      int NOT NULL
-year          int NOT NULL
-role          text NOT NULL DEFAULT 'student'
-              -- ENUM: 'student' | 'manager' | 'admin' | 'deleted'
-created_at    timestamptz DEFAULT now()
+id              uuid PRIMARY KEY REFERENCES auth.users(id)
+full_name       text NOT NULL
+usn             text UNIQUE NOT NULL          -- e.g. 1GD24CS098
+department      text NOT NULL                 -- e.g. CSE
+semester        int NOT NULL
+year            int NOT NULL
+role            text NOT NULL DEFAULT 'student'
+                -- ENUM: 'student' | 'manager' | 'admin' | 'teacher' | 'hod' | 'pr' | 'cc' | 'deleted'
+username        text UNIQUE                   -- optional vanity username (one-time edit)
+profile_edited  boolean DEFAULT false         -- one-time edit lock
+has_backlog     boolean DEFAULT false         -- academic backlog flag
+year_back       boolean DEFAULT false         -- year-back status flag
+created_at      timestamptz DEFAULT now()
 ```
 
 ### `events`
@@ -114,9 +144,15 @@ location                text
 event_date              timestamptz NOT NULL
 registration_deadline   timestamptz
 max_capacity            int
-status                  text DEFAULT 'upcoming'
-                        -- 'upcoming' | 'ongoing' | 'completed'
+status                  text DEFAULT 'draft'
+                        -- 'draft' | 'pending_teacher' | 'pending_hod' | 'approved' | 'rejected' | 'upcoming' | 'ongoing' | 'completed'
 banner_url              text
+is_public               boolean DEFAULT true
+approval_status         text                  -- approval pipeline status
+targeted_department      text                  -- department-scoped events
+rejection_data          jsonb                 -- rejection reason + metadata
+feedback_config         jsonb                 -- feedback form configuration
+feedback_open           boolean DEFAULT false
 created_by              uuid REFERENCES profiles(id)
 created_at              timestamptz DEFAULT now()
 ```
@@ -143,7 +179,7 @@ registered_at   timestamptz DEFAULT now()
 UNIQUE (event_id, student_id)
 ```
 
-### `backup_logs`  ← NEW
+### `backup_logs`
 ```sql
 id              uuid PRIMARY KEY DEFAULT gen_random_uuid()
 performed_by    uuid REFERENCES profiles(id)
@@ -153,118 +189,56 @@ row_counts      jsonb                       -- { profiles: 80, events: 12, regis
 created_at      timestamptz DEFAULT now()
 ```
 
+### `profile_update_requests`
+```sql
+id              uuid PRIMARY KEY DEFAULT gen_random_uuid()
+student_id      uuid REFERENCES profiles(id) ON DELETE CASCADE
+field           text NOT NULL               -- 'full_name' | 'usn' | 'department' | 'semester' | 'year'
+current_value   text
+new_value       text NOT NULL
+status          text DEFAULT 'pending'      -- 'pending' | 'approved' | 'rejected'
+feedback        text                        -- optional HOD review notes
+reviewed_by     uuid REFERENCES profiles(id)
+reviewed_at     timestamptz
+created_at      timestamptz DEFAULT now()
+```
+
+### Additional Tables
+| Table | Purpose |
+|-------|----------|
+| `conversations` | Real-time messaging conversations |
+| `conversation_members` | Many-to-many: users in conversations |
+| `messages` | Individual chat messages |
+| `notifications` | System notifications for users |
+| `iic_feedback` | IIC report feedback entries |
+| `iic_flyers` | IIC event flyers |
+| `iic_photos` | IIC event photos |
+| `iic_reports` | IIC institutional reports |
+| `bug_reports` | Bug reporter chat sessions |
+| `bug_messages` | Messages within bug reports |
+
 ---
 
 ### Row Level Security (RLS) Summary
 
-| Table | Student | Manager | Admin |
-|-------|---------|---------|-------|
-| `profiles` | Read/update own | Read own | Read + update all |
-| `events` | Read all | Read all; insert/update/delete own | Full |
-| `event_constraints` | Read all | Insert/update/delete for own events | Full |
-| `registrations` | Read/insert own | Read for their events; update `checked_in` | Full |
-| `backup_logs` | None | None | Full |
+| Table | Student | Manager | Teacher/HOD/PR/CC | Admin |
+|-------|---------|---------|-------------------|-------|
+| `profiles` | Read/update own | Read own | Read dept-scoped | Read + update all |
+| `events` | Read approved | CRUD own | Read + approve pipeline | Full |
+| `event_constraints` | Read all | CRUD for own events | Read | Full |
+| `registrations` | Read/insert own | Read own events; update `checked_in` | Read dept-scoped | Full |
+| `profile_update_requests` | Insert/read own | None | Teacher: read; HOD: read/update | Full |
+| `backup_logs` | None | None | None | Full |
+| `conversations` | Read/send own | Read/send own | Read/send own | Full |
+| `messages` | Read/send own | Read/send own | Read/send own | Full |
 
 ---
 
 ## 6. Project File Structure
 
-```
-/
-├── app/
-│   ├── (auth)/
-│   │   ├── login/page.tsx
-│   │   └── register/page.tsx
-│   │
-│   ├── (admin)/
-│   │   ├── layout.tsx
-│   │   ├── dashboard/page.tsx
-│   │   ├── users/
-│   │   │   ├── page.tsx                   -- All users table
-│   │   │   └── [id]/page.tsx              -- Edit role / soft-delete
-│   │   ├── events/
-│   │   │   ├── page.tsx                   -- All events (all managers)
-│   │   │   └── [id]/page.tsx              -- Override any event
-│   │   ├── scanner/page.tsx
-│   │   ├── attendance/
-│   │   │   ├── page.tsx
-│   │   │   └── [eventId]/page.tsx
-│   │   └── backup/page.tsx                -- ← BACKUP CENTRE
-│   │
-│   ├── (manager)/
-│   │   ├── layout.tsx
-│   │   ├── dashboard/page.tsx
-│   │   ├── events/
-│   │   │   ├── page.tsx                   -- Manager's own events
-│   │   │   ├── create/page.tsx
-│   │   │   └── [id]/
-│   │   │       ├── edit/page.tsx
-│   │   │       └── attendance/page.tsx    -- Attendance + downloads
-│   │   └── scanner/page.tsx
-│   │
-│   ├── (student)/
-│   │   ├── layout.tsx
-│   │   ├── dashboard/page.tsx
-│   │   └── events/
-│   │       ├── page.tsx
-│   │       └── [id]/page.tsx              -- Detail + register + QR
-│   │
-│   ├── api/
-│   │   ├── checkin/route.ts               -- POST: mark attendance via token
-│   │   ├── export/
-│   │   │   ├── registered/route.ts        -- GET: XLSX registered students
-│   │   │   └── attendees/route.ts         -- GET: XLSX checked-in only
-│   │   └── backup/
-│   │       └── route.ts                   -- GET: full site backup ZIP
-│   │
-│   ├── layout.tsx
-│   └── page.tsx                           -- Redirect → /login
-│
-├── components/
-│   ├── ui/                                -- Button, Card, Badge, Modal, Toast, Spinner
-│   ├── admin/
-│   │   ├── StatsCard.tsx
-│   │   ├── UserTable.tsx
-│   │   ├── RoleSelector.tsx
-│   │   └── BackupPanel.tsx                -- Backup UI + log table
-│   ├── manager/
-│   │   ├── EventForm.tsx                  -- Includes constraint section
-│   │   ├── ConstraintBuilder.tsx          -- Multi-select semester/year/dept toggles
-│   │   ├── AttendanceTable.tsx
-│   │   └── DownloadButtons.tsx
-│   ├── student/
-│   │   ├── EventCard.tsx
-│   │   └── QRDisplay.tsx                  -- Branded QR with |||··|| overlay
-│   └── shared/
-│       ├── Navbar.tsx
-│       ├── BrandMark.tsx                  -- |||··|| component
-│       ├── QRScanner.tsx
-│       └── ProtectedRoute.tsx
-│
-├── lib/
-│   ├── supabase/
-│   │   ├── client.ts
-│   │   ├── server.ts
-│   │   └── middleware.ts
-│   ├── actions/
-│   │   ├── auth.ts
-│   │   ├── events.ts
-│   │   ├── registrations.ts
-│   │   ├── constraints.ts                 -- Eligibility checker
-│   │   └── users.ts                       -- Admin role management
-│   ├── qr.ts                              -- Branded QR generation
-│   ├── export.ts                          -- SheetJS XLSX helpers
-│   ├── backup.ts                          -- Full ZIP backup logic
-│   └── types.ts                           -- All Zod schemas + TS types
-│
-├── middleware.ts                           -- Route protection by role
-├── public/
-├── styles/globals.css
-├── .env.local
-├── PLANNING.md
-├── TASK.md
-└── tsconfig.json
-```
+> See [`structure.md`](./structure.md) for the complete annotated directory tree.
+>
+> Key directories: `app/` (Next.js routes), `components/` (UI), `lib/actions/` (server actions), `lib/supabase/` (clients), `supabase/migrations/` (schema).
 
 ---
 
@@ -323,6 +297,10 @@ export const BrandMark = ({ className }: { className?: string }) => (
   → supabase.auth.signInWithPassword()
   → fetch profiles.role
   → 'admin'   → /admin/dashboard
+  → 'teacher' → /teacher/dashboard
+  → 'hod'     → /hod/dashboard
+  → 'pr'      → /pr/dashboard
+  → 'cc'      → /cc/dashboard
   → 'manager' → /manager/dashboard
   → 'student' → /student/dashboard
   → 'deleted' → show "Account suspended" error, no redirect
@@ -332,11 +310,16 @@ export const BrandMark = ({ className }: { className?: string }) => (
 ```ts
 const routes = [
   { prefix: '/admin',   roles: ['admin'] },
-  { prefix: '/manager', roles: ['manager', 'admin'] },
+  { prefix: '/teacher', roles: ['teacher', 'admin'] },
+  { prefix: '/hod',     roles: ['hod', 'admin'] },
+  { prefix: '/pr',      roles: ['pr', 'admin'] },
+  { prefix: '/cc',      roles: ['cc', 'admin'] },
+  { prefix: '/manager', roles: ['manager', 'cc', 'admin'] },
   { prefix: '/student', roles: ['student', 'manager', 'admin'] },
 ]
 // Unauthenticated → /login
 // Auth pages with session → redirect to role dashboard
+// TOTP gate enforced for admin, teacher, hod, pr, cc routes
 ```
 
 ---
@@ -620,7 +603,7 @@ export async function generateBackupZip(admin: SupabaseClient): Promise<{
 
 | Route | Role | Description |
 |-------|------|-------------|
-| `/login` | Public | Email/password login |
+| `/login` | Public | USN-first login with TOTP gate |
 | `/register` | Public | Student self-signup |
 | `/admin/dashboard` | Admin | Full stats, all events |
 | `/admin/users` | Admin | User list + role management |
@@ -628,7 +611,19 @@ export async function generateBackupZip(admin: SupabaseClient): Promise<{
 | `/admin/scanner` | Admin | QR scanner |
 | `/admin/attendance` | Admin | Attendance across all events |
 | `/admin/attendance/[id]` | Admin | Per-event table + downloads |
-| `/admin/backup` | Admin | **Site-wide backup download + log** |
+| `/admin/backup` | Admin | Site-wide backup download + log |
+| `/admin/bugs` | Admin | Bug reporter dashboard |
+| `/admin/logs` | Admin | Audit logs |
+| `/admin/security` | Admin | Security settings |
+| `/teacher/dashboard` | Teacher | Pending approvals + manage students |
+| `/teacher/events` | Teacher | Event review queue |
+| `/hod/dashboard` | Hod | Final approvals + profile request queue |
+| `/hod/events` | Hod | Department event oversight |
+| `/pr/dashboard` | PR | Audit feed + event assignments |
+| `/pr/events` | PR | Event audit workflow |
+| `/pr/reports` | PR | Report generation |
+| `/cc/dashboard` | CC | Club coordination dashboard |
+| `/cc/events` | CC | Cross-department event management |
 | `/manager/dashboard` | Manager | Their events stats |
 | `/manager/events` | Manager | Their event list |
 | `/manager/events/create` | Manager | Create event + constraints |
@@ -638,6 +633,8 @@ export async function generateBackupZip(admin: SupabaseClient): Promise<{
 | `/student/dashboard` | Student | Registered events + QR codes |
 | `/student/events` | Student | Browse eligible events |
 | `/student/events/[id]` | Student | Detail, register, view QR |
+| `/student/profile` | Student | Profile view + update request slider |
+| `/reports/iic-generator` | Admin | IIC report generator |
 
 ---
 
@@ -770,13 +767,26 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 - [x] Secure USN-based Login refinement
 - [x] Infrastructure Dashboard & Security Audits
 
-### Phase 9 — Polish & Scale (Ongoing)
+### Phase 9 — Polish & Scale (Completed)
 - [x] Theme-aware UI (Dark/Light mode)
 - [x] Mobile responsiveness optimization
 - [x] Performance audits and RLS hardening
+
+### Phase 10 — Student Management & Profile Approval (Completed)
+- [x] Teacher student management panel with bulk promote
+- [x] Student profile update request system (slider UI)
+- [x] HOD approval queue with realtime subscriptions
+- [x] `profile_update_requests` table with RLS
+- [x] `has_backlog` / `year_back` profile columns
+
+### Phase 11 — Future Enhancements (Ongoing)
 - [ ] Multi-region database synchronization (Audit logs)
+- [ ] AI-powered event recommendations (local NLP)
+- [ ] Automated event tagging via Bayesian classifiers
+- [ ] Student calendar hub
+- [ ] Physical smart-ID integration
 
 
 ---
 
-*Last updated: 2026-03-21*
+*Last updated: 2026-05-28*
