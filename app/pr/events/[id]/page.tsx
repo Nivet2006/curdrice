@@ -5,20 +5,25 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, ScanLine, Lock } from 'lucide-react'
 import { PRAttendeeTableClient } from './PRAttendeeTableClient'
+import { EventThread } from '@/components/student/EventThread'
+import { getEventThread } from '@/lib/actions/event-threads'
 
 export default async function PREventDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
   const { id } = await params
 
+  const { data: { user } } = await supabase.auth.getUser()
+
   const { data: event } = await supabase
     .from('events')
-    .select('id, title, club_name, event_date, location, status, max_capacity')
+    .select('id, title, club_name, event_date, location, status, max_capacity, discussion_enabled, thread_mode')
     .eq('id', id)
     .single()
 
   if (!event) notFound()
 
   const { data: attendees, error } = await getEventAttendees(id)
+  const thread = event.discussion_enabled ? await getEventThread(id) : null
 
   if (error) {
     return (
@@ -76,6 +81,18 @@ export default async function PREventDetailPage({ params }: { params: Promise<{ 
         clubName={event.club_name}
         eventDate={event.event_date}
       />
+
+      {/* Discussion Thread */}
+      {event.discussion_enabled && thread && (
+        <EventThread
+          conversationId={thread.id}
+          eventName={event.title}
+          userId={user?.id || ''}
+          memberCount={thread.member_count}
+          threadMode={thread.thread_mode}
+          userRole={thread.user_role}
+        />
+      )}
     </div>
   )
 }

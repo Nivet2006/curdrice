@@ -7,6 +7,8 @@ import { ArrowLeft, User, ShieldAlert, CheckCircle2, Clock, MapPin } from 'lucid
 import Link from 'next/link'
 import { EventStatusTracker } from '@/components/common/EventStatusTracker'
 import { PRAssignmentPanel } from '@/components/faculty/PRAssignmentPanel'
+import { EventThread } from '@/components/student/EventThread'
+import { getEventThread } from '@/lib/actions/event-threads'
 
 export default async function TeacherVerifyPage({ params }: { params: Promise<{ id: string }> }) {
    const supabase = await createClient()
@@ -19,6 +21,9 @@ export default async function TeacherVerifyPage({ params }: { params: Promise<{ 
       .single()
 
    if (!event) notFound()
+
+   const { data: { user } } = await supabase.auth.getUser()
+   const thread = event.discussion_enabled ? await getEventThread(id) : null
 
    return (
       <div className="max-w-[1400px] mx-auto space-y-12 pb-20 transition-colors">
@@ -115,6 +120,18 @@ export default async function TeacherVerifyPage({ params }: { params: Promise<{ 
                </div>
             </div>
          </div>
+
+         {/* Discussion Thread (Faculty participation) */}
+         {event.discussion_enabled && thread && (
+            <EventThread
+               conversationId={thread.id}
+               eventName={event.title}
+               userId={user?.id || ''}
+               memberCount={thread.member_count}
+               threadMode={thread.thread_mode}
+               userRole={thread.user_role}
+            />
+         )}
       </div>
    )
 }
