@@ -39,7 +39,7 @@ export function ShareEventButton({
     }
   }
 
-  const eventShareUrl = `https://curdrice.nivet2006.in/e/${eventId}`
+  const eventShareUrl = `https://curdrice.nivet2006.in/events/${eventId}`
 
   const handleCopyLink = async () => {
     try {
