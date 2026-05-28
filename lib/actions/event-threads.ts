@@ -200,8 +200,12 @@ export async function getEventThread(eventId: string) {
     .eq('invite_status', 'accepted')
     .maybeSingle()
 
-  // If not a member, check if they're registered for the event → auto-join
+  // If not a member, check if they're registered or privileged → auto-join
   if (!membership) {
+    const userRole = userProfile?.role || 'student'
+    const privilegedRoles = ['admin', 'cc', 'manager', 'teacher', 'hod']
+
+    // Check if registered student
     const { data: reg } = await supabase
       .from('registrations')
       .select('id')
@@ -209,13 +213,14 @@ export async function getEventThread(eventId: string) {
       .eq('student_id', user.id)
       .maybeSingle()
 
-    if (reg) {
+    if (reg || privilegedRoles.includes(userRole)) {
+      // Auto-join: registered students + privileged roles (CC/admin can participate)
       await supabaseAdmin
         .from('conversation_members')
         .upsert({
           conversation_id: conv.id,
           user_id: user.id,
-          role: 'member',
+          role: privilegedRoles.includes(userRole) ? 'admin' : 'member',
           invite_status: 'accepted',
         }, { onConflict: 'conversation_id,user_id', ignoreDuplicates: true })
     } else {

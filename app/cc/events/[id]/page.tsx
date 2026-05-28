@@ -9,6 +9,8 @@ import { AdminManualOverride } from '@/components/admin/AdminManualOverride'
 import { FeedbackToggle } from '@/components/cc/FeedbackToggle'
 import { DiscussionToggle } from '@/components/cc/DiscussionToggle'
 import { ReportHubCard } from '@/components/iic/ReportHubCard'
+import { EventThread } from '@/components/student/EventThread'
+import { getEventThread } from '@/lib/actions/event-threads'
 export default async function CCEventDetailPage({ params }: { params: Promise<{ id: string }> }) {
    const supabase = await createClient()
    const { id } = await params
@@ -46,6 +48,9 @@ export default async function CCEventDetailPage({ params }: { params: Promise<{ 
       const { data: depts } = await supabase.from('profiles').select('department')
       uniqueDepts = Array.from(new Set(depts?.map(d => d.department).filter(Boolean))) as string[]
    }
+
+   // Fetch thread info if discussion is enabled
+   const thread = event.discussion_enabled ? await getEventThread(id) : null
 
    return (
       <div className="max-w-4xl mx-auto space-y-12 pb-20 transition-colors">
@@ -253,6 +258,20 @@ export default async function CCEventDetailPage({ params }: { params: Promise<{ 
                )}
             </aside>
          </div>
+
+         {/* Event Discussion Thread (CC participation) */}
+         {event.discussion_enabled && thread && (
+            <section className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+               <EventThread
+                  conversationId={thread.id}
+                  eventName={event.title}
+                  userId={user?.id || ''}
+                  memberCount={thread.member_count}
+                  threadMode={thread.thread_mode}
+                  userRole={thread.user_role}
+               />
+            </section>
+         )}
 
       </div>
    )
