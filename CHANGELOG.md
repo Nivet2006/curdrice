@@ -23,42 +23,185 @@ All notable changes to Club-Eve, reverse-chronological.
 
 **API** — `GET /api/hod/pending-requests?dept=X` for realtime polling re-fetch
 
-**Dashboard Wiring**
-- `app/teacher/dashboard/page.tsx` → fetches dept students, renders `ManageStudentsPanel`
-- `app/hod/dashboard/page.tsx` → fetches pending requests, passes `initialProfileRequests` to client
-- `app/student/profile/page.tsx` → renders `ProfileUpdateSlider` below profile card
-- `components/hod/HODDashboardClient.tsx` → accepts `initialProfileRequests` prop, mounts approval queue
+**Also**
+- Public event viewing: unauthenticated users can browse `is_public` events via proxy bypass; RSVP redirect for logged-out visitors
+- Event sharing button (`ShareEventButton`) with personalized invitation cards + theme-aware UI
+- Auto-redirect to internal route for logged-in students visiting public event pages
+- Theme toggler + background pattern picker embedded in public event detail header
+- Faculty user promotion with HOD approval flow
 
 ---
 
-## 2026-04-20 — Authorization Pipeline & Security
+## 2026-05-15 — Admin Event Management & Audit Logs
 
-**Teacher/HOD Approval** (`app/teacher/`, `app/hod/`)
-- Event lifecycle: `draft` → `pending_teacher` → `pending_hod` → `approved` | `rejected`
-- HOD scoped by `targeted_department`; realtime status via `postgres_changes` subscriptions
-
-**PR Audit** (`app/pr/`)
-- Post-event attendance verification, feedback quality scoring, faculty assignment tracking
-
-**Combined Attendance Sheet** (`app/api/admin/combined-sheet/`)
-- 8-semester `.xlsx` export + summary sheet; frozen USN/Name cols, `COUNTIF` formulas, `ExcelOverlay` progress UI
-
-**TOTP v13 Migration**
-- `otplib` v12→v13 functional API; multi-stage 2FA gate on all admin/faculty routes via middleware
-
-**Fixes**
-- Stale session: middleware detects `Refresh Token Not Found` → explicit `signOut()` + clean redirect
-- PostgREST join drop: decoupled `registrations` + `profiles` fetches, merged via JS maps
-- Fetch caching: `cache: 'no-store'` on admin Supabase client
+- **Admin Event CRUD** server actions with secure 2FA-verified bulk deletion
+- **Audit log read/write** — admin log viewer with separate log store architecture
+- **Mass backup + selective backup** with purge capability
+- **Auto-refresh** polling in Next.js router for admin dashboards
+- Redesigned audit log badges (dynamic hex for dark mode)
 
 ---
 
-## 2026-03-28 — ShieldLoader Extraction
+## 2026-05-11 — PR System Overhaul & E2E Testing
 
-- Extracted login ShieldLoader into reusable `components/shared/ShieldLoader.tsx`
-- Props: `visible`, `message`, `steps[]` — supports login + logout contexts
-- Navbar logout: specialized steps (Terminating, Clearing, etc.), mobile sidebar auto-close, loading guards
-- `MutationObserver` for live `data-theme` sync on loader backdrop
+**PR System** (`505adce0`)
+- Full PR event audit queue with scanner, annotations, and review workflow
+- PR attendance scanner standardized to shared `QRScanner` component (matching admin flow)
+- PR dashboard with event assignments, feedback auditing, and report generation
+- Android PR application integration handoff (`pr_android_handoff.md`)
+
+**E2E Testing** (`2eb2328d`, `8157ab86`)
+- Comprehensive Playwright test suite across all roles (student, manager, admin)
+- Custom bug reporting utility integrated into test infrastructure
+- Cross-role student registration + dynamic event details navigation stabilized
+- Test report: 100% pass status
+
+---
+
+## 2026-05-03 — Bug Reporter & IIC Report Generator
+
+**Bug Reporter Suite**
+- Real-time chat between reporters and admins in Bug Central (`fbfe365a`)
+- 1000-char limit + bullet instructions on report form (`f379442b`)
+- Auto-save, PDF/Excel exports, secure access key management (`94f13748`)
+- Markdown support with preview, emoji sanitization for WinAnsi PDF encoding
+- History fetched via Access ID (not user ID) for privacy
+- Bug reporter widget: global visibility toggle with realtime publication + robust parsing
+- `BugReporterWidget.tsx` — sleek scrollbar, dark mode contrast fixes
+- PDF export: isolated print layouts to prevent CSS clashes
+- `useBugCollector` hook for programmatic bug collection
+
+**IIC Report Generator** (`fa59a919`, `6e0e7983`)
+- Full-stack PDF synthesis with server-side charting (Chart.js + chartjs-node-canvas)
+- Attendance graphs, feedback charts, signature block pagination
+- Multi-step form with `StudentAutocomplete`, dynamic resource persons schema
+- Strict feedback gates (mandatory 3-question minimum)
+- Routed to second Supabase project (`LOGS_SUPABASE_URL`) for isolated storage
+- Premium header/footer with institutional logos, minimalistic B&W theme
+- Route: `/reports/iic-generator`
+
+---
+
+## 2026-04-21 — CC Feedback, PR Scanner & Bug Widget Hardening
+
+- **CC Feedback Toggle** (`9609b131`) — CC can enable/disable student feedback per event
+- **Student Feedback Terminal** — real-time feedback submission with visibility logic
+- **PR QR Scanner** — upgraded to match admin verification flow (lookup → confirm)
+- **Bug Widget Fixes** — access key realtime sync via PK comparison, history monkey-patching TS fix
+- **HOD Approval View** — display feedback questions + event constraints in approval modal
+- Dark mode fixes: Entered badge, ReportHubCard, button text contrast
+
+---
+
+## 2026-04-19 — Next.js 16 Migration, TOTP & Forensic Audit Portal
+
+**Next.js 14 → 16 Migration** (`fa31f34a`, `1152b13c`, `d8902531`)
+- Upgraded Next.js, ESLint, eslint-config-next for security vulnerability resolution
+- `middleware.ts` → `proxy.ts` migration for Next.js 16 convention
+- `next.config` migrated to Turbopack, deprecated webpack/eslint config
+- `await createClient()` across all files for async `cookies()` compatibility
+- `await params` + `searchParams` for Next.js 15+ compatibility
+
+**TOTP/2FA** (`618ff48a`, `5ed51139`)
+- Mandatory admin TOTP gate with rate limiting
+- `otplib` v12 → v13 functional API migration (Turbopack compatible)
+- `TotpSetupWizard` — interactive secret generation, QR display, manual entry
+- `TotpLoginStep` — dark mode visibility, Suspense-wrapped `useSearchParams`
+
+**Forensic Audit Portal** (`81dd0a13`, `c4c98f87`)
+- Site-wide audit logging with separate log store architecture
+- Admin intelligence portal: log viewer, drain terminal, multi-format export
+- Forensic polling system with manual "Sync Now" button
+- Flat brutalist design (no 3D shadows), production-ready with dynamic rendering
+
+**Event ID Migration** (`2cca3d50`, `83c35ca3`, `a9bb0939`)
+- UUID → 8-digit alphanumeric primary key for events
+- Unique 6-digit alpha-numeric event PID for internal tracking
+- "Auth Code" system for human-readable event identification
+
+**Teacher/HOD Dashboard** (`a7aba4a4`, `9c3f8626`, `d7d540f4`)
+- Unified event status tracker, teacher dashboard overhaul
+- Department-scoped visibility matching HOD logic
+- Live registration stats replacing verification terminal
+- Dynamic greeting + profile name personalization
+- Dark mode: total visibility for Intelligence Portal, badge contrast, Vault Purge modal
+
+**Status Dashboard** (`3395e960`, `958c021e`)
+- Professional system status page at `/status` with Vercel API integration
+- Admin-only access restriction, secret BrandMark portal (double-click entry)
+- ACCESS DENIED overlay: randomized violent shake + ghost fade effects
+- Global navbar branding + pattern selector integration
+
+---
+
+## 2026-04-17 — Guardian CI, EveBot NLP & Easter Eggs
+
+**Guardian CI Pipeline** (`b544a3c1`)
+- Secret scanning, live status dashboard integration
+- Granular CI step failure/warning surfacing
+- Non-blocking security audit for dependency CVEs
+- Status history with commit messages + build duration logs
+
+**EveBot NLP Engine** (`41d84cd0`)
+- Bayesian NLP engine integrated into EveBot — local ML at $0 cost
+- Interactive username configuration cards
+- Strict monochrome UI with advanced beaming animations
+- Recursive exploration queue fixes
+
+**Event Sharing** (`5220b4f9`, `de899837`)
+- Aesthetic event sharing with personalized invitation cards
+- Theme-aware UI, pastel mode easter egg (global toggle)
+- Secret pastel egg relocated to registration badge
+
+---
+
+## 2026-04-16 — Messaging & Rebranding
+
+**Real-Time Messaging** (`14a8a881`, `d019b879`, `4e5cbe2b`)
+- Complete chat system: DM accept flow, conversation management
+- Theme-aware `MessagesPanel` with CSS variables + pattern visibility
+- Dark mode for messaging panel, broadcast modal
+- Event-linked card sharing in chats
+- QR display integration in message panels
+
+**Rebrand: CurdRice → Club-Eve** (`58b2c414`, `237e4a90`)
+- Package rename to `club-eve-app`
+- Synced renaming across all files
+- ROADMAP.md created with academic, student, and admin feature vision
+
+**Background Patterns** (`1098cf41`, `6315b4f7`)
+- 12 selectable background patterns for dashboards
+- Robust auth error handling improvements
+
+**Combined Attendance Sheet** (`89ac8a24`)
+- Multi-semester `.xlsx` export with exceljs
+- Custom loading overlay during generation
+- Delete confirmation modal with event details + registration count
+
+---
+
+## 2026-04-15 — Auth & Event ID
+
+- USN + email dual login support (`97b160a9`)
+- 8-digit event "Auth Code" system for human-readable IDs
+
+---
+
+## 2026-04-12 — Messaging Foundation & Production Prep
+
+- Real-time chat scaffolding with conversation management
+- Theme-aware `MessagesPanel`, dark mode navbar
+- Rebrand from CurdRice → Club Eve initiated
+- Development artifact cleanup for production readiness
+
+---
+
+## 2026-03-29 — ShieldLoader, Calendar & Dashboard
+
+- Refined logout flow with reusable `ShieldLoader` component
+- Realtime dashboard updates via Supabase subscriptions
+- Calendar timeline for student events (keke-style)
+- Enhanced event validation
 
 ---
 
@@ -100,9 +243,13 @@ All notable changes to Club-Eve, reverse-chronological.
 - New columns: `username` (TEXT UNIQUE), `profile_edited` (BOOLEAN)
 - One-time edit lock, live registration + attendance counters
 
-**Skeleton Loaders** — `loading.tsx` for all role layouts, theme-aware `SkeletonLoader` shared component
+**Admin Dashboard** — real-time stats (users, events, registrations, attendance)
 
-**UserTable Sync** — `router.refresh()` post-action, `defaultValue` + `key` pattern for uncontrolled selects
+**Skeleton Loaders** — `loading.tsx` for all role layouts, theme-aware shared component
+
+**Animated 404** — floating gears animation on not-found page
+
+**Vercel Production Build** — ESLint warnings downgraded, seed.ts excluded from TS build
 
 **DB Changes**
 - `profiles`: +`username`, +`profile_edited`
@@ -126,6 +273,12 @@ All notable changes to Club-Eve, reverse-chronological.
 - Next.js 14 App Router + TypeScript, Supabase Postgres + RLS + GoTrue
 - Service Role Key for admin server actions, `@/*` → `./*` path alias
 - Tailwind CSS with CSS variable theming, `qrcode` + Canvas API for QR generation
+
+**Branded QR Engine** (`lib/qr.ts`) — `|||··||` watermark overlay via Canvas API, 300x340 PNG
+
+**Site-Wide Backup** (`/admin/backup`) — full DB ZIP export via SheetJS + jszip, `backup_logs` audit trail
+
+**Export System** — per-event registered/attendee XLSX downloads via `/api/export/`
 
 **Bugs Resolved (18)**
 1. `tsconfig.json` path mapping → deleted `src/`
@@ -164,3 +317,16 @@ All notable changes to Club-Eve, reverse-chronological.
 | 0008 | `enable_rls_iic_tables.sql` | RLS on IIC tables |
 | 0009 | `add_is_public_to_events.sql` | `events.is_public` boolean |
 | 0010 | `student_management.sql` | `profile_update_requests` table, `profiles.has_backlog` + `year_back` |
+
+---
+
+## Infrastructure
+
+| Component | Detail |
+|-----------|--------|
+| CI Pipeline | Guardian — secret scanning, status dashboard, non-blocking CVE audit |
+| Status Page | `/status` — Vercel API integration, build history, admin-only |
+| Audit Logs | Separate Supabase project (`LOGS_SUPABASE_URL`), forensic polling |
+| E2E Tests | Playwright — cross-role coverage, auto bug reporting |
+| Hosting | Vercel (zero-config Next.js) |
+| Native Apps | Android (CC + PR handoffs), Expo cross-platform attendance |
