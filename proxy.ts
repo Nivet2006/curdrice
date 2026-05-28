@@ -2,7 +2,6 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { v4 as uuidv4 } from 'uuid'
 
-// DO NOT import logsClient here — middleware runs on edge if configured, use fetch instead
 async function logNavigation(payload: {
   session_id: string
   user_id?: string
@@ -120,8 +119,10 @@ export async function proxy(request: NextRequest) {
   const isAuthPage = request.nextUrl.pathname.startsWith('/login') ||
     request.nextUrl.pathname.startsWith('/register')
 
-  // Redirect unauthenticated users to login
-  if (!user && !isAuthPage && request.nextUrl.pathname !== '/') {
+  const isPublicEventPage = request.nextUrl.pathname.startsWith('/events/')
+
+  // Redirect unauthenticated users to login, but bypass public event details pages
+  if (!user && !isAuthPage && request.nextUrl.pathname !== '/' && !isPublicEventPage) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
