@@ -507,13 +507,16 @@ export async function getThreadMembers(conversationId: string) {
     .from('conversation_members')
     .select(`
       user_id,
-      profiles(user_id, full_name, usn)
+      profiles(id, full_name, usn)
     `)
     .eq('conversation_id', conversationId)
     .eq('invite_status', 'accepted')
     .limit(100)
 
-  if (error) return []
+  if (error) {
+    console.error('getThreadMembers error:', error)
+    return []
+  }
 
   return (data || []).map((m: any) => ({
     id: m.user_id,

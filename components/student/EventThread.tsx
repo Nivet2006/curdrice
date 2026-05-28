@@ -501,8 +501,8 @@ export function EventThread({
       )}
 
       {/* @Mention dropdown */}
-      {showMentions && (
-        <div className="relative">
+      {showMentions && getFilteredMembers().length > 0 && (
+        <div className="relative border-t" style={{ borderColor: 'var(--border)' }}>
           <div className="absolute bottom-full left-4 mb-1 w-64 max-h-48 overflow-y-auto rounded-xl shadow-lg border z-20" style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}>
             {getFilteredMembers().map((m, i) => (
               <button key={m.id} onClick={() => insertMention(m.usn)} className={`w-full flex items-center gap-3 px-3 py-2 text-left transition-colors ${i === mentionIndex ? 'bg-[#5865F2]/10' : 'hover:bg-black/[0.03]'}`}>
