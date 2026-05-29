@@ -29,17 +29,17 @@ export function Step1UploadTemplate({
     setLoading(true);
     setError(null);
     try {
+      const result = await renderPdfPage(file, 1, 1.5);
       const buffer = await file.arrayBuffer();
-      const pageInfo = await renderPdfPage(buffer, 1);
       
-      onUpload(file, buffer, pageInfo.pageCount, {
-        width: pageInfo.width,
-        height: pageInfo.height,
-        canvasDataUrl: pageInfo.canvasDataUrl
+      onUpload(file, buffer, result.pageCount, {
+        width: result.width,
+        height: result.height,
+        canvasDataUrl: result.dataUrl
       });
     } catch (err) {
-      console.error(err);
-      setError('Failed to parse PDF. Make sure it is not password-protected.');
+      console.error('PDF render error:', err);
+      setError('Could not render this PDF. Please ensure it is a valid, non-encrypted PDF file.');
     } finally {
       setLoading(false);
     }
