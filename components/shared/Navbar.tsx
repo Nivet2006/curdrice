@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import Link from 'next/link'
-import { LogOut, Menu, X, LayoutDashboard, Calendar, Users, ScanLine, ClipboardList, Database, UserCircle, Bug } from 'lucide-react'
+import { LogOut, Menu, X, LayoutDashboard, Calendar, Users, ScanLine, ClipboardList, Database, UserCircle, Bug, Award } from 'lucide-react'
 import { Badge } from '../ui/Badge'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, usePathname } from 'next/navigation'
@@ -53,6 +53,9 @@ export function Navbar({ role, name }: { role?: Role; name?: string }) {
     ] : []),
     // Calendar link for every role
     { href: `/${role}/calendar`, label: 'Calendar', icon: Calendar },
+    ...(role !== 'student' ? [
+      { href: role === 'admin' ? '/admin/cert' : '/dashboard/cert', label: 'Cert', icon: Award },
+    ] : []),
     ...(role === 'admin' ? [
       { href: '/admin/users', label: 'Users', icon: Users },
       { href: '/admin/scanner', label: 'Scanner', icon: ScanLine },

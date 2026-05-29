@@ -1,7 +1,7 @@
 import React from 'react'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { ShieldAlert, CheckCircle, ArrowRight, User } from 'lucide-react'
+import { ShieldAlert, CheckCircle, ArrowRight, User, Award } from 'lucide-react'
 import { ManageStudentsPanel } from '@/components/faculty/ManageStudentsPanel'
 import type { Profile } from '@/lib/types'
 
@@ -60,6 +60,10 @@ export default async function TeacherDashboard() {
             "Ensuring club activities align with institutional standards and student safety."
           </p>
         </div>
+        <Link href="/dashboard/cert" className="flex items-center gap-3 px-6 py-4 bg-[#0a0a0a] text-white hover:bg-zinc-800 rounded-3xl transition-all font-bold text-sm shadow-lg group">
+          <Award size={20} className="group-hover:animate-bounce text-white" />
+          <span className="text-white">CERTIFICATE GENERATOR</span>
+        </Link>
       </div>
 
       <div className="space-y-20">
