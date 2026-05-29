@@ -32,11 +32,7 @@ export function Step1UploadTemplate({
       const buffer = await file.arrayBuffer();
       const pageInfo = await renderPdfPage(buffer, 1);
       
-      // Determine page count safely
-      const pdfjs = await import('pdfjs-dist');
-      const doc = await pdfjs.getDocument({ data: buffer }).promise;
-      
-      onUpload(file, buffer, doc.numPages, {
+      onUpload(file, buffer, pageInfo.pageCount, {
         width: pageInfo.width,
         height: pageInfo.height,
         canvasDataUrl: pageInfo.canvasDataUrl

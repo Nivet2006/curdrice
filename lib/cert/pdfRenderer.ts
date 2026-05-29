@@ -11,6 +11,7 @@ export interface RenderedPageInfo {
   canvasDataUrl: string;
   width: number; // in pt
   height: number; // in pt
+  pageCount: number;
 }
 
 export async function renderPdfPage(pdfBytes: ArrayBuffer, pageIndex = 1): Promise<RenderedPageInfo> {
@@ -47,7 +48,8 @@ export async function renderPdfPage(pdfBytes: ArrayBuffer, pageIndex = 1): Promi
   return {
     canvasDataUrl,
     width: page.view[2] - page.view[0], // Page width in pt
-    height: page.view[3] - page.view[1] // Page height in pt
+    height: page.view[3] - page.view[1], // Page height in pt
+    pageCount: pdf.numPages
   };
 }
 
