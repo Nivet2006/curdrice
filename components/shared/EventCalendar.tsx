@@ -181,17 +181,17 @@ export function EventCalendar({
     const time        = formatTime(ev.event_date)
 
     // Card style
-    let cardBg = 'bg-white border-[#e8e8e8]'
-    let textCls = 'text-[#0a0a0a]'
+    let cardBg = 'bg-white border-[#e8e8e8] dark:bg-zinc-800 dark:border-zinc-700'
+    let textCls = 'text-[#0a0a0a] dark:text-zinc-100'
     if (isCompleted) {
-      cardBg = 'bg-zinc-100 border-zinc-200 opacity-40'
-      textCls = 'text-zinc-400'
+      cardBg = 'bg-zinc-100 border-zinc-200 opacity-40 dark:bg-zinc-800/50 dark:border-zinc-800 dark:opacity-30'
+      textCls = 'text-zinc-400 dark:text-zinc-500'
     } else if (isRegistered) {
-      cardBg = 'bg-emerald-50 border-emerald-400'
-      textCls = 'text-emerald-900'
+      cardBg = 'bg-emerald-50 border-emerald-400 dark:bg-emerald-950/30 dark:border-emerald-700'
+      textCls = 'text-emerald-900 dark:text-emerald-200'
     } else if (isOngoing) {
-      cardBg = 'bg-amber-50 border-amber-400'
-      textCls = 'text-amber-900'
+      cardBg = 'bg-amber-50 border-amber-400 dark:bg-amber-950/30 dark:border-amber-700'
+      textCls = 'text-amber-900 dark:text-amber-200'
     }
 
     return (
@@ -209,27 +209,27 @@ export function EventCalendar({
 
         {/* Meta row */}
         <div className="flex items-center gap-1 mt-0.5 flex-wrap">
-          <span className="font-mono text-[9px] text-zinc-500 flex items-center gap-0.5 shrink-0">
+          <span className="font-mono text-[9px] text-zinc-500 dark:text-zinc-400 flex items-center gap-0.5 shrink-0">
             <Clock size={8} className="opacity-60" />{time}
           </span>
           {full && !isCompleted && (
-            <span className="text-[8px] font-mono font-black uppercase tracking-widest text-rose-600 bg-rose-50 border border-rose-200 px-1 rounded shrink-0">
+            <span className="text-[8px] font-mono font-black uppercase tracking-widest text-rose-600 bg-rose-50 border border-rose-200 px-1 rounded shrink-0 dark:bg-rose-950/40 dark:border-rose-800 dark:text-rose-400">
               Full
             </span>
           )}
           {unlimited && !isCompleted && !full && (
-            <span className="text-[10px] text-indigo-500 font-black shrink-0" title="Unlimited seats">∞</span>
+            <span className="text-[10px] text-indigo-500 dark:text-indigo-400 font-black shrink-0" title="Unlimited seats">∞</span>
           )}
           {isCompleted && (
-            <span className="text-[8px] font-mono uppercase tracking-widest text-zinc-400 bg-zinc-200/70 px-1 rounded shrink-0">Done</span>
+            <span className="text-[8px] font-mono uppercase tracking-widest text-zinc-400 bg-zinc-200/70 px-1 rounded shrink-0 dark:bg-zinc-800 dark:text-zinc-500">Done</span>
           )}
         </div>
 
         {/* Location (optional) */}
         {showLocation && ev.location && (
           <div className="flex items-center gap-0.5 mt-0.5 min-w-0">
-            <MapPin size={8} className="text-zinc-400 flex-shrink-0" />
-            <span className="font-mono text-[9px] text-zinc-500 truncate">{ev.location}</span>
+            <MapPin size={8} className="text-zinc-400 dark:text-zinc-500 flex-shrink-0" />
+            <span className="font-mono text-[9px] text-zinc-500 dark:text-zinc-400 truncate">{ev.location}</span>
           </div>
         )}
       </Link>
