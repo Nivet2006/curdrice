@@ -1,6 +1,6 @@
 # Club-Eve | Event Management System
 
-![Next.js](https://img.shields.io/badge/Next.js-14-black?style=for-the-badge&logo=next.js)
+![Next.js](https://img.shields.io/badge/Next.js-16-black?style=for-the-badge&logo=next.js)
 ![Supabase](https://img.shields.io/badge/Supabase-Database%20%26%20Auth-green?style=for-the-badge&logo=supabase)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-Modern_UI-blue?style=for-the-badge&logo=tailwind-css)
 
@@ -50,6 +50,8 @@ Club-Eve is a premium, full-stack event management platform designed for college
 *   **System-Wide ZIP Backups**: Instant flat-JSON extraction of the core active database packed into a downloadable `.zip` file for cold storage.
 
 ### Premium Modern Design
+*   **High-Fidelity Event Timeline**: A gorgeous, pixel-perfect visual timeline layout showing events grouped chronologically, complete with time indicators (glowing **🔴 LIVE** status for ongoing events), dynamic overlapping circular avatars of real registered users, and attendee offset counts (`+120`).
+*   **Multi-Role Solid Calendar**: High-contrast, fully solid and opaque Month/Week calendar layout. Explicit color styles keep event pills, locations, and details 100% visible and optimized for both Light and Dark modes.
 *   **Global Theme & Pattern Engine**: Deep Light/Dark mode integration alongside a `PatternPicker` enabling users to swap between 10+ dynamic background architectures.
 *   **ShieldLoader Authentication**: Full-screen themed overlay with timed security checkpoint animations during login/logout flows.
 *   **Mobile Optimized**: Responsive hybrid navigation with hamburger menu and slide-in sidebar for mobile devices.
@@ -75,7 +77,7 @@ Club-Eve is a premium, full-stack event management platform designed for college
 
 | Layer | Choice |
 |-------|--------|
-| Framework | Next.js 14 (App Router, TypeScript) |
+| Framework | Next.js 16 (App Router, TypeScript, Turbopack) |
 | Database & Auth | Supabase (Postgres, RLS, GoTrue Auth, Storage) |
 | Styling | Tailwind CSS + CSS Variables (Light/Dark themes) |
 | QR System | `qrcode` (Generation) + `html5-qrcode` (Scanning) |
