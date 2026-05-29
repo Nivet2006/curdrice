@@ -28,9 +28,67 @@ export function StudentEventsView({ initialEvents, registrations, profile }: Pro
     token: string
     eventName: string
   } | null>(null)
+  const [attendees, setAttendees] = useState<Record<string, { initials: string[]; totalCount: number }>>({})
 
   const supabase = createClient()
   const now = useMemo(() => new Date(), [])
+
+  // Fetch dynamic attendance data (total count + first 3 initials)
+  useEffect(() => {
+    async function fetchAttendance() {
+      if (events.length === 0) return
+      const eventIds = events.map(e => e.id)
+      
+      const { data, error } = await supabase
+        .from('registrations')
+        .select('event_id, profiles(full_name)')
+        .in('event_id', eventIds)
+
+      if (error || !data) return
+
+      const mapping: Record<string, { initials: string[]; totalCount: number }> = {}
+      
+      // Initialize empty structure for all events
+      for (const id of eventIds) {
+        mapping[id] = { initials: [], totalCount: 0 }
+      }
+
+      // Populate based on queried data
+      for (const item of data) {
+        const reg = item as any
+        const eId = reg.event_id
+        if (!mapping[eId]) continue
+        
+        mapping[eId].totalCount++
+        
+        const fullName = reg.profiles?.full_name
+        if (fullName && mapping[eId].initials.length < 3) {
+          const firstLetter = fullName.trim().split(/\s+/)[0]?.[0]?.toUpperCase() || '?'
+          mapping[eId].initials.push(firstLetter)
+        }
+      }
+
+      setAttendees(mapping)
+    }
+
+    fetchAttendance()
+
+    // Subscribe to registrations to update live as students join or leave!
+    const channel = supabase
+      .channel('public-registrations-timeline-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'registrations' },
+        () => {
+          fetchAttendance()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [events, supabase])
 
   // Real-time events update
   useEffect(() => {
@@ -206,9 +264,6 @@ export function StudentEventsView({ initialEvents, registrations, profile }: Pro
                     hour12: true
                   })
 
-                  // Random mock attendee count to match premium look of the image
-                  const mockCount = Math.floor(Math.sin(event.id.charCodeAt(0)) * 200) + 120
-
                   return (
                     <div
                       key={event.id}
@@ -285,15 +340,36 @@ export function StudentEventsView({ initialEvents, registrations, profile }: Pro
                             )}
                           </div>
 
-                          {/* Attendee Avatar Cluster */}
-                          <div className="flex items-center gap-1.5">
-                            <div className="flex -space-x-1">
-                              <div className="w-5 h-5 rounded-full bg-blue-100 border-2 border-white flex items-center justify-center text-[7px] font-bold text-blue-700">A</div>
-                              <div className="w-5 h-5 rounded-full bg-emerald-100 border-2 border-white flex items-center justify-center text-[7px] font-bold text-emerald-700">J</div>
-                              <div className="w-5 h-5 rounded-full bg-amber-100 border-2 border-white flex items-center justify-center text-[7px] font-bold text-amber-700">R</div>
-                            </div>
-                            <span className="text-[10px] font-mono text-zinc-400 font-bold">+{mockCount}</span>
-                          </div>
+                          {/* Attendee Avatar Cluster (Dynamic) */}
+                          {(() => {
+                            const attInfo = attendees[event.id] || { initials: [], totalCount: 0 }
+                            const bgColors = ['bg-blue-100 text-blue-700', 'bg-emerald-100 text-emerald-700', 'bg-amber-100 text-amber-700', 'bg-purple-100 text-purple-700', 'bg-pink-100 text-pink-700']
+                            return (
+                              <div className="flex items-center gap-1.5">
+                                {attInfo.totalCount > 0 ? (
+                                  <>
+                                    <div className="flex -space-x-1">
+                                      {attInfo.initials.map((init, i) => (
+                                        <div
+                                          key={i}
+                                          className={`w-5 h-5 rounded-full ${bgColors[i % bgColors.length]} border-2 border-white flex items-center justify-center text-[7px] font-bold uppercase`}
+                                        >
+                                          {init}
+                                        </div>
+                                      ))}
+                                    </div>
+                                    {attInfo.totalCount > attInfo.initials.length && (
+                                      <span className="text-[10px] font-mono text-zinc-400 font-bold">
+                                        +{attInfo.totalCount - attInfo.initials.length}
+                                      </span>
+                                    )}
+                                  </>
+                                ) : (
+                                  <span className="text-[10px] font-mono text-zinc-400 font-medium">0 attending</span>
+                                )}
+                              </div>
+                            )
+                          })()}
                         </div>
                       </div>
 
