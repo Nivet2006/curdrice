@@ -307,7 +307,7 @@ export function EventCalendar({
 
       {/* ─────────────────── MONTH VIEW ─────────────────── */}
       {view === 'month' && (
-        <div className="border border-[#e0e0e0] dark:border-zinc-700 rounded-2xl overflow-hidden select-none">
+        <div className="bg-white dark:bg-zinc-900 border border-[#e0e0e0] dark:border-zinc-700 rounded-2xl overflow-hidden select-none">
           {/* Weekday header */}
           <div className="grid grid-cols-7 border-b border-[#e0e0e0] dark:border-zinc-700 bg-[#fafafa] dark:bg-zinc-900">
             {WEEKDAYS.map((d, i) => (
@@ -322,7 +322,7 @@ export function EventCalendar({
             {monthGrid.map((cellDate, idx) => {
               if (!cellDate) return (
                 <div key={idx}
-                  className="min-h-[96px] md:min-h-[110px] border-r border-b border-[#f0f0f0] dark:border-zinc-800 bg-[#fafafa]/50 dark:bg-zinc-950/30 last:border-r-0" />
+                  className="min-h-[96px] md:min-h-[110px] border-r border-b border-[#f0f0f0] dark:border-zinc-800 bg-[#fafafa] dark:bg-zinc-950 last:border-r-0" />
               )
 
               const k = dateKey(cellDate)
@@ -333,7 +333,7 @@ export function EventCalendar({
               return (
                 <div key={idx}
                   className={`min-h-[96px] md:min-h-[110px] border-r border-b border-[#f0f0f0] dark:border-zinc-800 p-1 last:border-r-0 flex flex-col ${
-                    isToday ? 'bg-blue-50/60 dark:bg-blue-950/20' : ''
+                    isToday ? 'bg-blue-50 dark:bg-blue-950/40' : 'bg-white dark:bg-zinc-900'
                   }`}>
                   {/* Date number */}
                   <div className="flex items-center justify-between mb-0.5 px-0.5">
@@ -363,7 +363,7 @@ export function EventCalendar({
 
       {/* ─────────────────── WEEK VIEW ──────────────────── */}
       {view === 'week' && weekDates.length > 0 && (
-        <div className="border border-[#e0e0e0] dark:border-zinc-700 rounded-2xl overflow-hidden select-none">
+        <div className="bg-white dark:bg-zinc-900 border border-[#e0e0e0] dark:border-zinc-700 rounded-2xl overflow-hidden select-none">
           {/* Day headers with date */}
           <div className="grid grid-cols-7 border-b border-[#e0e0e0] dark:border-zinc-700 bg-[#fafafa] dark:bg-zinc-900">
             {weekDates.map((d, i) => {
@@ -371,7 +371,7 @@ export function EventCalendar({
               return (
                 <div key={i}
                   className={`py-2.5 text-center border-r border-[#e0e0e0] dark:border-zinc-700 last:border-r-0 ${
-                    isToday ? 'bg-blue-50/60 dark:bg-blue-950/20' : ''
+                    isToday ? 'bg-blue-50 dark:bg-blue-950/40' : 'bg-[#fafafa] dark:bg-zinc-900'
                   }`}>
                   <div className="font-mono text-[10px] uppercase tracking-widest text-[#999] dark:text-zinc-500">{WEEKDAYS[i]}</div>
                   <div className={`text-sm font-black mt-0.5 tabular-nums ${
@@ -393,7 +393,7 @@ export function EventCalendar({
               return (
                 <div key={i}
                   className={`min-h-[420px] border-r border-[#f0f0f0] dark:border-zinc-800 last:border-r-0 p-1.5 flex flex-col gap-1 ${
-                    isToday ? 'bg-blue-50/40 dark:bg-blue-950/10' : ''
+                    isToday ? 'bg-blue-50 dark:bg-blue-950/40' : 'bg-white dark:bg-zinc-900'
                   }`}>
                   {dayEvents.length === 0 ? (
                     <div className="flex-1 flex items-center justify-center">
