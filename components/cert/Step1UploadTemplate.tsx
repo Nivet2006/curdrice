@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { renderPdfPage } from '@/lib/cert/pdfRenderer';
+import { renderPdfPageFromBytes } from '@/lib/cert/pdfRenderer';
 
 interface Step1UploadTemplateProps {
   templateFile: File | null;
@@ -29,17 +29,21 @@ export function Step1UploadTemplate({
     setLoading(true);
     setError(null);
     try {
-      const result = await renderPdfPage(file, 1, 1.5);
-      const buffer = await file.arrayBuffer();
+      const bytes = await file.arrayBuffer();
+      const bytesCopy = bytes.slice(0); // Synchronous explicit copy
+      const result = await renderPdfPageFromBytes(bytesCopy, 1, 1.5);
       
-      onUpload(file, buffer, result.pageCount, {
+      onUpload(file, bytes.slice(0), result.pageCount, {
         width: result.width,
         height: result.height,
         canvasDataUrl: result.dataUrl
       });
-    } catch (err) {
-      console.error('PDF render error:', err);
-      setError('Could not render this PDF. Please ensure it is a valid, non-encrypted PDF file.');
+    } catch (err: unknown) {
+      console.error('[PDF DEBUG] Full error:', err);
+      console.error('[PDF DEBUG] Error name:', (err as Error)?.name);
+      console.error('[PDF DEBUG] Error message:', (err as Error)?.message);
+      console.error('[PDF DEBUG] Error stack:', (err as Error)?.stack);
+      setError(`Could not render PDF: ${(err as Error)?.message ?? 'Unknown error'}`);
     } finally {
       setLoading(false);
     }
