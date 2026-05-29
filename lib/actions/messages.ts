@@ -12,10 +12,11 @@ export async function getNotifications(userId: string) {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('notifications')
-    .select('*')
+    .select('id, account_id, type, title, body, metadata, is_read, is_archived, created_at')
     .eq('user_id', userId)
     .eq('is_archived', false)
     .order('created_at', { ascending: false })
+    .limit(50)
   if (error) { console.error(error); return [] }
   return data || []
 }
@@ -24,7 +25,7 @@ export async function getUnreadNotificationsCount(userId: string): Promise<numbe
   const supabase = await createClient()
   const { count, error } = await supabase
     .from('notifications')
-    .select('*', { count: 'exact', head: true })
+    .select('id', { count: 'exact', head: true })
     .eq('user_id', userId)
     .eq('is_read', false)
     .eq('is_archived', false)

@@ -19,7 +19,7 @@ export default async function HODCalendarPage() {
   // Fetch all approved events in HOD's department
   const { data: events } = await supabase
     .from('events')
-    .select('*')
+    .select('id, title, description, club_name, location, event_date, registration_deadline, max_capacity, status, approval_status, rejection_data, feedback_config, feedback_open, targeted_department, banner_url, is_public, discussion_enabled, thread_mode, created_by, created_at')
     .eq('approval_status', 'approved')
     .eq('targeted_department', dept)
     .order('event_date', { ascending: true })

@@ -105,14 +105,14 @@ export default function AdminBugsPage() {
     // Fetch reports
     supabase
       .from('bug_reports')
-      .select('*')
+      .select('id, created_at, user_email, page_url, description, click_trail, js_errors, status, admin_note, access_id_used')
       .order('created_at', { ascending: false })
       .then(({ data }) => { if (data) setReports(data as Report[]) })
 
     // Fetch access IDs
     supabase
       .from('bug_access_ids')
-      .select('*')
+      .select('id, created_at, name, access_id, password, is_active, force_password_reset')
       .order('created_at', { ascending: false })
       .then(({ data, error }) => { 
         if (error) {
@@ -178,7 +178,7 @@ export default function AdminBugsPage() {
 
     supabase
       .from('bug_messages')
-      .select('*')
+      .select('id, bug_id, sender_type, content, created_at')
       .eq('bug_id', selected.id)
       .order('created_at', { ascending: true })
       .then(({ data }) => { if (data) setMessages(data) })
@@ -240,7 +240,7 @@ export default function AdminBugsPage() {
   }
 
   const refreshAccessIds = async () => {
-    const { data } = await supabase.from('bug_access_ids').select('*').order('created_at', { ascending: false })
+    const { data } = await supabase.from('bug_access_ids').select('id, created_at, name, access_id, password, is_active, force_password_reset').order('created_at', { ascending: false })
     if (data) setAccessIds(data as AccessId[])
   }
 

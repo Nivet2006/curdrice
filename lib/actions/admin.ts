@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { supabaseAdmin } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 import type { Role } from '@/lib/types'
 
@@ -18,14 +19,6 @@ async function assertAdmin() {
 export async function createUserAdmin(formData: FormData) {
   try {
     await assertAdmin()
-    
-    // Instantiate Admin client directly to bypass RLS inserts natively from Edge
-    const { createClient: createSupabaseClient } = await import('@supabase/supabase-js')
-    const supabaseAdmin = createSupabaseClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
-      { auth: { persistSession: false } }
-    )
 
     const email = formData.get('email') as string
     const password = formData.get('password') as string
@@ -67,18 +60,6 @@ export async function createUserAdmin(formData: FormData) {
 export async function updateUserRole(userId: string, newRole: Role) {
   try {
     await assertAdmin()
-    const { createClient: createSupabaseClient } = await import('@supabase/supabase-js')
-    const supabaseAdmin = createSupabaseClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
-      {
-        auth: { persistSession: false },
-        global: {
-          fetch: (url: RequestInfo | URL, options?: RequestInit) =>
-            fetch(url, { ...options, cache: 'no-store' })
-        }
-      }
-    )
     const { error } = await supabaseAdmin
       .from('profiles')
       .update({ role: newRole })
@@ -94,18 +75,6 @@ export async function updateUserRole(userId: string, newRole: Role) {
 export async function deleteUser(userId: string) {
   try {
     await assertAdmin()
-    const { createClient: createSupabaseClient } = await import('@supabase/supabase-js')
-    const supabaseAdmin = createSupabaseClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
-      {
-        auth: { persistSession: false },
-        global: {
-          fetch: (url: RequestInfo | URL, options?: RequestInit) =>
-            fetch(url, { ...options, cache: 'no-store' })
-        }
-      }
-    )
     const { error } = await supabaseAdmin
       .from('profiles')
       .update({ role: 'deleted' })
@@ -130,18 +99,6 @@ export async function updateUserDetails(
 ) {
   try {
     await assertAdmin()
-    const { createClient: createSupabaseClient } = await import('@supabase/supabase-js')
-    const supabaseAdmin = createSupabaseClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
-      {
-        auth: { persistSession: false },
-        global: {
-          fetch: (url: RequestInfo | URL, options?: RequestInit) =>
-            fetch(url, { ...options, cache: 'no-store' })
-        }
-      }
-    )
     const { error } = await supabaseAdmin
       .from('profiles')
       .update({
@@ -163,13 +120,6 @@ export async function updateUserDetails(
 export async function manualCheckIn(usn: string, eventId: string) {
   try {
     await assertAdmin()
-    
-    const { createClient: createSupabaseClient } = await import('@supabase/supabase-js')
-    const supabaseAdmin = createSupabaseClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
-      { auth: { persistSession: false } }
-    )
 
     const { data: student, error: studentError } = await supabaseAdmin
       .from('profiles')

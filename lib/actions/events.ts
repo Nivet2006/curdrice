@@ -244,7 +244,7 @@ export async function registerForEvent(eventId: string) {
   if (event?.max_capacity) {
     const { count } = await supabase
       .from('registrations')
-      .select('*', { count: 'exact', head: true })
+      .select('id', { count: 'exact', head: true })
       .eq('event_id', eventId)
 
     if (count !== null && count >= event.max_capacity) {

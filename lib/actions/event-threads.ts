@@ -167,27 +167,29 @@ export async function getEventThread(eventId: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
 
-  // Get event thread_mode
-  const { data: eventData } = await supabaseAdmin
-    .from('events')
-    .select('thread_mode')
-    .eq('id', eventId)
-    .single()
+  // Get event thread_mode, user role, and conversation in parallel
+  const [eventRes, profileRes, convRes] = await Promise.all([
+    supabaseAdmin
+      .from('events')
+      .select('thread_mode')
+      .eq('id', eventId)
+      .single(),
+    supabaseAdmin
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single(),
+    supabaseAdmin
+      .from('conversations')
+      .select('id, name, created_at')
+      .eq('event_id', eventId)
+      .eq('type', 'group')
+      .maybeSingle(),
+  ])
 
-  // Get user role
-  const { data: userProfile } = await supabaseAdmin
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  // Use admin client to find conversation (bypasses RLS)
-  const { data: conv } = await supabaseAdmin
-    .from('conversations')
-    .select('id, name, created_at')
-    .eq('event_id', eventId)
-    .eq('type', 'group')
-    .maybeSingle()
+  const eventData = eventRes.data
+  const userProfile = profileRes.data
+  const conv = convRes.data
 
   if (!conv) return null
 
@@ -317,19 +319,22 @@ export async function sendThreadMessage(
   // Determine actual sender (impersonated or real)
   const actualSenderId = (isAdmin && asUserId) ? asUserId : senderId
 
-  // Get sender's role (for thread mode check)
-  const { data: senderProfile } = await supabaseAdmin
-    .from('profiles')
-    .select('role')
-    .eq('id', actualSenderId)
-    .single()
+  // Get sender's role and conversation in parallel
+  const [senderProfileRes, convRes] = await Promise.all([
+    supabaseAdmin
+      .from('profiles')
+      .select('role')
+      .eq('id', actualSenderId)
+      .single(),
+    supabaseAdmin
+      .from('conversations')
+      .select('event_id')
+      .eq('id', conversationId)
+      .single(),
+  ])
 
-  // Get the event's thread_mode via conversation's event_id
-  const { data: conv } = await supabaseAdmin
-    .from('conversations')
-    .select('event_id')
-    .eq('id', conversationId)
-    .single()
+  const senderProfile = senderProfileRes.data
+  const conv = convRes.data
 
   if (conv?.event_id) {
     const { data: event } = await supabaseAdmin
@@ -395,19 +400,22 @@ export async function sendThreadMessage(
       .in('usn', mentions)
 
     if (mentionedUsers?.length) {
-      // Get sender name (use actualSenderId for display)
-      const { data: sender } = await supabase
-        .from('profiles')
-        .select('full_name')
-        .eq('id', actualSenderId)
-        .single()
+      // Get sender name and conversation name in parallel
+      const [senderRes, convRes] = await Promise.all([
+        supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', actualSenderId)
+          .single(),
+        supabase
+          .from('conversations')
+          .select('name, event_id')
+          .eq('id', conversationId)
+          .single(),
+      ])
 
-      // Get conversation name for notification
-      const { data: conv } = await supabase
-        .from('conversations')
-        .select('name, event_id')
-        .eq('id', conversationId)
-        .single()
+      const sender = senderRes.data
+      const conv = convRes.data
 
       const notifications = mentionedUsers
         .filter(u => u.id !== actualSenderId) // Don't notify self

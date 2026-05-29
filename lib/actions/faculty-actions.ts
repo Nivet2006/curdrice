@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { supabaseAdmin } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 
@@ -153,19 +154,6 @@ export async function getAssignedPRs(eventId: string) {
 }
 
 export async function getAvailablePRs() {
-  const { createClient: createSupabaseClient } = await import('@supabase/supabase-js')
-  const supabaseAdmin = createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-      auth: { persistSession: false },
-      global: {
-        fetch: (url: RequestInfo | URL, options?: RequestInit) =>
-          fetch(url, { ...options, cache: 'no-store' })
-      }
-    }
-  )
-
   const { data, error } = await supabaseAdmin
     .from('profiles')
     .select('id, full_name, usn, department')

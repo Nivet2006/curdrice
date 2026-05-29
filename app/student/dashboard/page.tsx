@@ -11,20 +11,27 @@ export default async function StudentDashboard() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { data: profile } = await supabase.from('profiles').select('*').eq('id', user?.id).single()
+  const eventColumns = 'id, title, description, club_name, location, event_date, registration_deadline, max_capacity, status, banner_url, approval_status, discussion_enabled, thread_mode, created_by, created_at, feedback_open, is_public'
 
-  const { data: registrations } = await supabase
-    .from('registrations')
-    .select('event_id, qr_token, events(*)')
-    .eq('student_id', user?.id)
+  // Run all queries in parallel
+  const [profileRes, registrationsRes, allEventsRes] = await Promise.all([
+    supabase.from('profiles').select('id, full_name, usn, department, semester, year, username, role').eq('id', user?.id).single(),
+    supabase
+      .from('registrations')
+      .select(`event_id, qr_token, events(${eventColumns})`)
+      .eq('student_id', user?.id),
+    supabase
+      .from('events')
+      .select(eventColumns)
+      .eq('approval_status', 'approved')
+      .order('event_date', { ascending: true }),
+  ])
+
+  const profile = profileRes.data
+  const registrations = registrationsRes.data
+  const allEvents = allEventsRes.data
 
   const registeredEvents = withDynamicEventStatus((registrations || []).map(r => r.events as unknown as Event).filter(Boolean))
-
-  const { data: allEvents } = await supabase
-    .from('events')
-    .select('*')
-    .eq('approval_status', 'approved')
-    .order('event_date', { ascending: true })
 
   const dynamicEvents = withDynamicEventStatus((allEvents as Event[]) || [])
   const events = dynamicEvents.filter(e => e.status === 'upcoming')
@@ -84,7 +91,7 @@ export default async function StudentDashboard() {
         <RealtimeDashboard
           initialEvents={events}
           registrations={registrations || []}
-          profile={profile}
+          profile={profile as any}
         />
       </div>
     </div>

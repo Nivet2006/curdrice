@@ -1,23 +1,9 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { supabaseAdmin } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
-
-function getAdminClient() {
-  const { createClient: createSupabaseClient } = require('@supabase/supabase-js')
-  return createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-      auth: { persistSession: false },
-      global: {
-        fetch: (url: RequestInfo | URL, options?: RequestInit) =>
-          fetch(url, { ...options, cache: 'no-store' })
-      }
-    }
-  )
-}
 
 // ============================================
 // Report Review Actions
@@ -78,7 +64,7 @@ export async function declineReportWithAnnotations(
     created_at: new Date().toISOString()
   }))
 
-  const adminClient = getAdminClient()
+  const adminClient = supabaseAdmin
 
   const { error } = await adminClient
     .from('reports')
@@ -121,7 +107,7 @@ export async function declineReportWithAnnotations(
 // ============================================
 
 async function validatePRAssignment(prUserId: string, eventId: string): Promise<boolean> {
-  const adminClient = getAdminClient()
+  const adminClient = supabaseAdmin
   const { data } = await adminClient
     .from('pr_event_assignments')
     .select('id')
@@ -136,7 +122,7 @@ export async function prLookupQRToken(token: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Unauthorized' }
 
-  const adminClient = getAdminClient()
+  const adminClient = supabaseAdmin
 
   // Find registration by QR token
   let cleanToken = token
@@ -197,7 +183,7 @@ export async function prConfirmCheckIn(registrationId: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Unauthorized' }
 
-  const adminClient = getAdminClient()
+  const adminClient = supabaseAdmin
 
   // Get event_id from registration to validate assignment
   const { data: reg } = await adminClient
@@ -236,7 +222,7 @@ export async function prManualCheckInByUSN(usn: string, eventId: string) {
     return { error: 'Access denied: contact faculty. You are not assigned to this event.' }
   }
 
-  const adminClient = getAdminClient()
+  const adminClient = supabaseAdmin
 
   // Find student by USN
   const { data: student } = await adminClient
@@ -289,7 +275,7 @@ export async function getPRAssignedEvents() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Unauthorized', data: [] }
 
-  const adminClient = getAdminClient()
+  const adminClient = supabaseAdmin
 
   // Get all event IDs assigned to this PR
   const { data: assignments } = await adminClient
@@ -304,31 +290,33 @@ export async function getPRAssignedEvents() {
   // Fetch full event data
   const { data: events } = await adminClient
     .from('events')
-    .select('*')
+    .select('id, title, description, club_name, location, event_date, registration_deadline, max_capacity, status, banner_url, created_by, created_at, approval_status, discussion_enabled')
     .in('id', eventIds)
     .order('event_date', { ascending: false })
 
-  // For each event, get registration and attendance counts
-  const eventsWithCounts = await Promise.all(
-    (events || []).map(async (event: Record<string, unknown>) => {
-      const { count: registrationCount } = await adminClient
+  // Batch fetch registration counts for all events at once
+  const { data: allRegs } = eventIds.length > 0
+    ? await adminClient
         .from('registrations')
-        .select('id', { count: 'exact', head: true })
-        .eq('event_id', event.id)
+        .select('event_id, checked_in')
+        .in('event_id', eventIds)
+    : { data: [] }
 
-      const { count: attendanceCount } = await adminClient
-        .from('registrations')
-        .select('id', { count: 'exact', head: true })
-        .eq('event_id', event.id)
-        .eq('checked_in', true)
+  // Build count maps in O(n) instead of N queries
+  const regCountMap = new Map<string, number>()
+  const attendCountMap = new Map<string, number>()
+  for (const r of allRegs || []) {
+    regCountMap.set(r.event_id, (regCountMap.get(r.event_id) || 0) + 1)
+    if (r.checked_in) {
+      attendCountMap.set(r.event_id, (attendCountMap.get(r.event_id) || 0) + 1)
+    }
+  }
 
-      return {
-        ...event,
-        registration_count: registrationCount || 0,
-        attendance_count: attendanceCount || 0
-      }
-    })
-  )
+  const eventsWithCounts = (events || []).map((event: Record<string, unknown>) => ({
+    ...event,
+    registration_count: regCountMap.get(event.id as string) || 0,
+    attendance_count: attendCountMap.get(event.id as string) || 0
+  }))
 
   return { data: eventsWithCounts }
 }
@@ -344,7 +332,7 @@ export async function getEventAttendees(eventId: string) {
     return { error: 'Access denied: contact faculty', data: [] }
   }
 
-  const adminClient = getAdminClient()
+  const adminClient = supabaseAdmin
 
   const { data: registrations } = await adminClient
     .from('registrations')
@@ -362,15 +350,15 @@ export async function getEventAttendees(eventId: string) {
 
   const profileMap = new Map((profiles || []).map((p: { id: string }) => [p.id, p]))
 
-  const attendees = registrations.map((r: Record<string, unknown>) => {
-    const profile = profileMap.get(r.student_id as string) as Record<string, unknown> | undefined
+  const attendees = registrations.map((r: { id: string; student_id: string; checked_in: boolean; checked_in_at: string | null; registered_at: string }) => {
+    const profile = profileMap.get(r.student_id) as { full_name: string; usn: string; department: string; semester: number; year: number } | undefined
     return {
       id: r.id,
       full_name: profile?.full_name || 'Unknown',
       usn: profile?.usn || 'Unknown',
       department: profile?.department || 'Unknown',
-      semester: profile?.semester || '-',
-      year: profile?.year || '-',
+      semester: profile?.semester ?? '-',
+      year: profile?.year ?? '-',
       checked_in: r.checked_in,
       checked_in_at: r.checked_in_at,
       registered_at: r.registered_at,

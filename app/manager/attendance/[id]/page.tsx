@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { supabaseAdmin } from '@/lib/supabase/admin'
 import Link from 'next/link'
 import { CalendarDays, MapPin } from 'lucide-react'
 import { AttendanceManager } from '@/components/admin/AttendanceManager'
@@ -11,40 +12,24 @@ export default async function ManagerEventAttendancePage({ params }: { params: P
   const { id } = await params
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { createClient: createSupabaseClient } = await import('@supabase/supabase-js')
-  const supabaseAdmin = createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-      auth: { persistSession: false },
-      global: {
-        fetch: (url: RequestInfo | URL, options?: RequestInit) =>
-          fetch(url, { ...options, cache: 'no-store' })
-      }
-    }
-  )
-
-  const { data: rawEvent } = await supabaseAdmin.from('events').select('*').eq('id', id).single()
+  const { data: rawEvent } = await supabaseAdmin
+    .from('events')
+    .select('id, title, event_date, location, club_name, status, banner_url, max_capacity, approval_status, created_by')
+    .eq('id', id)
+    .single()
   if (!rawEvent) return <div className="p-8 text-center text-[#999999] font-mono">Event not found.</div>
   const event = withDynamicSingleEventStatus(rawEvent)
 
-  const { data: rawRegistrations, error: regError } = await supabaseAdmin
+  const { data: rawRegistrations } = await supabaseAdmin
     .from('registrations')
-    .select('*')
+    .select('id, student_id, checked_in, checked_in_at, qr_token, registered_at, profiles!student_id(id, full_name, usn, department, semester)')
     .eq('event_id', id)
 
-  const studentIds = (rawRegistrations || []).map((r: { student_id: string }) => r.student_id)
-
-  const { data: profilesData } = studentIds.length
-    ? await supabaseAdmin
-      .from('profiles')
-      .select('id, full_name, usn, department, semester')
-      .in('id', studentIds)
-    : { data: [] }
-
-  const registrations = (rawRegistrations || []).map((reg: { id: string; student_id: string; checked_in: boolean; checked_in_at: string | null }) => ({
-    ...reg,
-    profiles: profilesData?.find(p => p.id === reg.student_id) || null
+  const registrations = (rawRegistrations || []).map((reg: any) => ({
+    id: reg.id,
+    checked_in: reg.checked_in,
+    checked_in_at: reg.checked_in_at,
+    profiles: Array.isArray(reg.profiles) ? reg.profiles[0] || null : reg.profiles || null
   }))
 
   return (

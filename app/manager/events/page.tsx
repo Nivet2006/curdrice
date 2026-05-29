@@ -17,7 +17,7 @@ export default async function ManagerEventsPage() {
 
   const { data: allEvents } = await supabase
     .from('events')
-    .select('*')
+    .select('id, title, description, club_name, location, event_date, registration_deadline, max_capacity, status, banner_url, approval_status, discussion_enabled, created_by, created_at')
     .order('event_date', { ascending: false })
 
   const baseEvents = withDynamicEventStatus((allEvents || []) as EventType[])

@@ -11,8 +11,9 @@ export default async function AdminEventsPage() {
 
   const { data: allEvents } = await supabase
     .from('events')
-    .select('*, registrations(count)')
+    .select('id, title, description, club_name, location, event_date, registration_deadline, max_capacity, status, approval_status, rejection_data, feedback_config, feedback_open, targeted_department, banner_url, is_public, discussion_enabled, thread_mode, created_by, created_at, registrations(count)')
     .order('event_date', { ascending: false })
+    .limit(100)
 
   const events = withDynamicEventStatus((allEvents as (Event & { registrations: { count: number }[] })[]) || [])
 

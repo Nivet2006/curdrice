@@ -128,7 +128,7 @@ export async function processEveBotMessage(message: string, userId: string, hist
   const nlpIntent = classifications.length > 0 ? classifications[0].label : 'UNKNOWN'
 
   // 1. Fetch user context
-  const { data: profile } = await supabase.from('profiles').select('*').eq('id', userId).single()
+  const { data: profile } = await supabase.from('profiles').select('full_name, usn, username, department, role').eq('id', userId).single()
   
   if (!profile) return "I'm having trouble retrieving your profile data right now."
 

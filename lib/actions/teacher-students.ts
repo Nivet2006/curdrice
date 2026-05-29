@@ -1,22 +1,8 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { supabaseAdmin } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
-
-function getAdminClient() {
-  const { createClient: createSupabaseClient } = require('@supabase/supabase-js')
-  return createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-      auth: { persistSession: false },
-      global: {
-        fetch: (url: RequestInfo | URL, options?: RequestInit) =>
-          fetch(url, { ...options, cache: 'no-store' })
-      }
-    }
-  )
-}
 
 async function assertTeacherOrAdmin(supabase: any) {
   const { data: { user } } = await supabase.auth.getUser()
@@ -39,7 +25,7 @@ export async function getDepartmentStudents(dept: string) {
   const supabase = await createClient()
   await assertTeacherOrAdmin(supabase)
 
-  const adminClient = getAdminClient()
+  const adminClient = supabaseAdmin
 
   const { data, error } = await adminClient
     .from('profiles')
@@ -61,7 +47,7 @@ export async function bulkPromoteStudents(
     const supabase = await createClient()
     await assertTeacherOrAdmin(supabase)
 
-    const adminClient = getAdminClient()
+    const adminClient = supabaseAdmin
 
     const { error } = await adminClient
       .from('profiles')
@@ -93,7 +79,7 @@ export async function updateStudentByTeacher(
     const supabase = await createClient()
     await assertTeacherOrAdmin(supabase)
 
-    const adminClient = getAdminClient()
+    const adminClient = supabaseAdmin
 
     // Uppercase USN if provided
     const updateData: Record<string, any> = { ...details }

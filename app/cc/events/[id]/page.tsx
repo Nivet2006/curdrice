@@ -21,7 +21,7 @@ export default async function CCEventDetailPage({ params }: { params: Promise<{ 
    const isAdmin = profile?.role === 'admin'
 
    // If admin, we don't filter by created_by
-   let query = supabase.from('events').select('*').eq('id', id)
+   let query = supabase.from('events').select('id, title, description, club_name, location, event_date, registration_deadline, max_capacity, status, approval_status, rejection_data, feedback_config, feedback_open, targeted_department, banner_url, is_public, discussion_enabled, thread_mode, created_by, created_at').eq('id', id)
    if (!isAdmin) {
       query = query.eq('created_by', user?.id || '')
    }
@@ -39,7 +39,7 @@ export default async function CCEventDetailPage({ params }: { params: Promise<{ 
 
    const { data: constraints } = await supabase
       .from('event_constraints')
-      .select('*')
+      .select('id, event_id, allowed_semesters, allowed_years, allowed_departments, created_at')
       .eq('event_id', id)
       .maybeSingle()
 

@@ -10,7 +10,7 @@ export default async function AdminCalendarPage() {
   // Admin sees all approved events campus-wide
   const { data: events } = await supabase
     .from('events')
-    .select('*')
+    .select('id, title, club_name, event_date, location, status, banner_url, approval_status, max_capacity, registration_deadline')
     .eq('approval_status', 'approved')
     .order('event_date', { ascending: true })
 

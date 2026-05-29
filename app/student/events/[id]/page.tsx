@@ -27,35 +27,40 @@ export default async function EventDetailPage({
   const { invitedBy } = await searchParams
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { data } = await supabase.from('events').select('*').eq('id', id).single()
+  const { data } = await supabase.from('events').select('id, title, description, club_name, location, event_date, registration_deadline, max_capacity, status, banner_url, created_by, created_at, approval_status, discussion_enabled, feedback_open, feedback_config, is_public, targeted_department, rejection_data').eq('id', id).single()
   const event = withDynamicSingleEventStatus(data as Event)
 
   if (!event) return <div>Event not found</div>
 
-  const { count: registeredCount } = await supabase
-    .from('registrations')
-    .select('*', { count: 'exact', head: true })
-    .eq('event_id', id)
+  // Run remaining queries in parallel
+  const [regCountRes, profileRes, registrationRes, feedbackRes] = await Promise.all([
+    supabase
+      .from('registrations')
+      .select('id', { count: 'exact', head: true })
+      .eq('event_id', id),
+    supabase
+      .from('profiles')
+      .select('full_name, usn, role')
+      .eq('id', user?.id)
+      .single(),
+    supabase
+      .from('registrations')
+      .select('id, event_id, student_id, qr_token, checked_in, checked_in_at')
+      .eq('event_id', id)
+      .eq('student_id', user?.id)
+      .maybeSingle(),
+    supabase
+      .from('feedbacks')
+      .select('id')
+      .eq('event_id', id)
+      .eq('student_id', user?.id)
+      .maybeSingle(),
+  ])
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('full_name, usn, role')
-    .eq('id', user?.id)
-    .single()
-
-  const { data: registration } = await supabase
-    .from('registrations')
-    .select('*')
-    .eq('event_id', id)
-    .eq('student_id', user?.id)
-    .maybeSingle()
-
-  const { data: feedbackData } = await supabase
-    .from('feedbacks')
-    .select('id')
-    .eq('event_id', id)
-    .eq('student_id', user?.id)
-    .maybeSingle()
+  const registeredCount = regCountRes.count
+  const profile = profileRes.data
+  const registration = registrationRes.data
+  const feedbackData = feedbackRes.data
 
   const isRegistered = !!registration
   const hasSubmittedFeedback = !!feedbackData

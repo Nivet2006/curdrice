@@ -15,7 +15,7 @@ export default async function ManagerAttendanceDirectory() {
 
   const { data: allEvents } = await supabase
     .from('events')
-    .select('*')
+    .select('id, title, club_name, location, event_date, registration_deadline, max_capacity, status, banner_url, approval_status, created_by, created_at')
     .order('event_date', { ascending: false })
 
   const baseEvents = withDynamicEventStatus((allEvents || []) as EventType[])

@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { supabaseAdmin } from '@/lib/supabase/admin'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -14,9 +15,9 @@ export default async function ManagerEventDetails({ params }: { params: Promise<
   const supabase = await createClient()
   const { id } = await params
 
-  const { data: rawEvent } = await supabase
+  const { data: rawEvent } = await supabaseAdmin
     .from('events')
-    .select('*')
+    .select('id, title, description, club_name, location, event_date, registration_deadline, max_capacity, status, banner_url, approval_status, discussion_enabled, thread_mode, created_by, created_at, feedback_open, is_public, targeted_department')
     .eq('id', id)
     .single()
 
@@ -24,23 +25,15 @@ export default async function ManagerEventDetails({ params }: { params: Promise<
   
   const event = withDynamicSingleEventStatus(rawEvent)
 
-  const { createClient: createSupabaseClient } = await import('@supabase/supabase-js')
-  const supabaseAdmin = createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-      auth: { persistSession: false },
-      global: { fetch: (url, options) => fetch(url, { ...options, cache: 'no-store' }) }
-    }
-  )
-
   const { data: rawRegistrations } = await supabaseAdmin
     .from('registrations')
-    .select('*, profiles(full_name, usn, department, semester)')
+    .select('id, student_id, checked_in, checked_in_at, qr_token, registered_at, profiles(full_name, usn, department, semester)')
     .eq('event_id', event.id)
 
-  const registrations = rawRegistrations || []
-  event.registrations = registrations
+  const registrations = (rawRegistrations || []).map((reg: any) => ({
+    ...reg,
+    profiles: Array.isArray(reg.profiles) ? reg.profiles[0] || null : reg.profiles || null
+  }))
 
   const checkedInCount = registrations.filter((r: { checked_in: boolean }) => r.checked_in).length
 

@@ -8,22 +8,29 @@ export default async function StudentEventsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { data: allEvents } = await supabase
-    .from('events')
-    .select('*')
-    .eq('approval_status', 'approved')
-    .order('event_date', { ascending: true })
+  const eventColumns = 'id, title, description, club_name, location, event_date, registration_deadline, max_capacity, status, banner_url, approval_status, discussion_enabled, thread_mode, created_by, created_at, feedback_open, is_public'
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('full_name, usn')
-    .eq('id', user!.id)
-    .single()
+  // Run all queries in parallel
+  const [allEventsRes, profileRes, registrationsRes] = await Promise.all([
+    supabase
+      .from('events')
+      .select(eventColumns)
+      .eq('approval_status', 'approved')
+      .order('event_date', { ascending: true }),
+    supabase
+      .from('profiles')
+      .select('full_name, usn')
+      .eq('id', user!.id)
+      .single(),
+    supabase
+      .from('registrations')
+      .select('event_id, qr_token')
+      .eq('student_id', user!.id),
+  ])
 
-  const { data: registrations } = await supabase
-    .from('registrations')
-    .select('event_id, qr_token')
-    .eq('student_id', user!.id)
+  const allEvents = allEventsRes.data
+  const profile = profileRes.data
+  const registrations = registrationsRes.data
 
   const events = (allEvents as Event[]) || []
 

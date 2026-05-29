@@ -11,7 +11,7 @@ export default async function CCEditEventPage({ params }: { params: Promise<{ id
 
   const { data: event } = await supabase
     .from('events')
-    .select('*')
+    .select('id, title, description, club_name, location, event_date, registration_deadline, max_capacity, status, approval_status, rejection_data, feedback_config, feedback_open, targeted_department, banner_url, is_public, discussion_enabled, thread_mode, created_by, created_at')
     .eq('id', id)
     .eq('created_by', user.id)
     .single()
@@ -26,7 +26,7 @@ export default async function CCEditEventPage({ params }: { params: Promise<{ id
 
   const { data: constraints } = await supabase
     .from('event_constraints')
-    .select('*')
+    .select('id, event_id, allowed_semesters, allowed_years, allowed_departments, created_at')
     .eq('event_id', id)
     .single()
 

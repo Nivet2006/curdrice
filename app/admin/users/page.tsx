@@ -13,13 +13,15 @@ export default async function AdminUsersPage({
 
   let dbQuery = supabase
     .from('profiles')
-    .select('*')
+    .select('id, full_name, usn, department, semester, year, role, created_at')
 
   if (query) {
     dbQuery = dbQuery.or(`full_name.ilike.%${query}%,usn.ilike.%${query}%`)
   }
 
   const { data: profiles } = await dbQuery
+    .order('created_at', { ascending: false })
+    .limit(500)
 
   return (
     <div className="w-full pb-16">
@@ -30,11 +32,11 @@ export default async function AdminUsersPage({
         </div>
         <div className="flex flex-col items-start md:items-end gap-3 z-10 relative">
           <CreateUserModal />
-          <UserExportMenu users={profiles || []} />
+          <UserExportMenu users={(profiles || []) as any[]} />
         </div>
       </div>
 
-      <UserTable users={profiles || []} />
+      <UserTable users={(profiles || []) as any} />
     </div>
   )
 }

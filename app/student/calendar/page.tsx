@@ -8,22 +8,27 @@ export default async function StudentCalendarPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { data: allEvents } = await supabase
-    .from('events')
-    .select('*')
-    .eq('approval_status', 'approved')
-    .order('event_date', { ascending: true })
+  // Run all queries in parallel
+  const [allEventsRes, profileRes, registrationsRes] = await Promise.all([
+    supabase
+      .from('events')
+      .select('id, title, club_name, event_date, location, status, banner_url, approval_status, max_capacity, registration_deadline')
+      .eq('approval_status', 'approved')
+      .order('event_date', { ascending: true }),
+    supabase
+      .from('profiles')
+      .select('full_name, usn')
+      .eq('id', user!.id)
+      .single(),
+    supabase
+      .from('registrations')
+      .select('event_id, qr_token')
+      .eq('student_id', user!.id),
+  ])
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('full_name, usn')
-    .eq('id', user!.id)
-    .single()
-
-  const { data: registrations } = await supabase
-    .from('registrations')
-    .select('event_id, qr_token')
-    .eq('student_id', user!.id)
+  const allEvents = allEventsRes.data
+  const profile = profileRes.data
+  const registrations = registrationsRes.data
 
   const registrationMap: Record<string, string> = {}
   for (const r of registrations || []) {

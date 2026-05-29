@@ -16,11 +16,11 @@ export default async function ManagerDashboard() {
   // Query 1: just events (no nested join)
   const { data: events, error: eventsError } = await supabase
     .from('events')
-    .select('*')
+    .select('id, title, club_name, location, event_date, registration_deadline, max_capacity, status, banner_url, approval_status, created_by, created_at, discussion_enabled')
     .order('event_date', { ascending: false })
 
   console.log('DEBUG DASHBOARD - EVENTS ERROR:', eventsError)
-  console.log('DEBUG DASHBOARD - EVENTS DATA:', JSON.stringify(events, null, 2))
+  console.log('DEBUG DASHBOARD - EVENTS DATA LENGTH:', events?.length)
   console.log('DEBUG DASHBOARD - USER ID:', user?.id)
 
   const myEvents = withDynamicEventStatus((events || []) as EventType[])

@@ -1,22 +1,8 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { supabaseAdmin } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
-
-function getAdminClient() {
-  const { createClient: createSupabaseClient } = require('@supabase/supabase-js')
-  return createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-      auth: { persistSession: false },
-      global: {
-        fetch: (url: RequestInfo | URL, options?: RequestInit) =>
-          fetch(url, { ...options, cache: 'no-store' })
-      }
-    }
-  )
-}
 
 const ALLOWED_FIELDS = ['full_name', 'usn', 'department', 'semester', 'year']
 
@@ -33,7 +19,7 @@ export async function submitProfileUpdateRequest(field: string, newValue: string
   // Get current profile
   const { data: profile } = await supabase
     .from('profiles')
-    .select('*')
+    .select('id, full_name, usn, department, semester, year')
     .eq('id', user.id)
     .single()
 
@@ -99,7 +85,7 @@ export async function getPendingProfileRequests(dept: string) {
     return { error: 'Unauthorized: Requires HOD permissions.', data: [] }
   }
 
-  const adminClient = getAdminClient()
+  const adminClient = supabaseAdmin
 
   // Fetch pending requests joined with student profiles in the given department
   const { data, error } = await adminClient
@@ -135,7 +121,7 @@ export async function processProfileRequest(
     return { error: 'Unauthorized: Requires HOD permissions.' }
   }
 
-  const adminClient = getAdminClient()
+  const adminClient = supabaseAdmin
 
   if (decision === 'approve') {
     // Fetch the request to get student_id and field/new_value

@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { supabaseAdmin } from '@/lib/supabase/admin'
 import Link from 'next/link'
 import { CalendarDays, MapPin } from 'lucide-react'
 import { AttendanceManager } from '@/components/admin/AttendanceManager'
@@ -9,44 +10,23 @@ export default async function AdminEventAttendancePage({ params }: { params: Pro
   const supabase = await createClient()
   const { id } = await params
 
-  const { createClient: createSupabaseClient } = await import('@supabase/supabase-js')
-  const supabaseAdmin = createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-      auth: { persistSession: false },
-      global: {
-        fetch: (url: RequestInfo | URL, options?: RequestInit) =>
-          fetch(url, { ...options, cache: 'no-store' })
-      }
-    }
-  )
-
-  const { data: event } = await supabaseAdmin.from('events').select('*').eq('id', id).single()
+  const { data: event } = await supabaseAdmin
+    .from('events')
+    .select('id, title, event_date, location, club_name, status, banner_url, max_capacity, approval_status, created_by')
+    .eq('id', id)
+    .single()
   if (!event) return <div className="p-8 text-center text-[#999999] font-mono">Event not found.</div>
 
   const { data: rawRegistrations, error: regError } = await supabaseAdmin
     .from('registrations')
-    .select('*')
+    .select('id, student_id, checked_in, checked_in_at, qr_token, registered_at, profiles!student_id(id, full_name, usn, department, semester)')
     .eq('event_id', id)
 
-
-  console.log('DEBUG EVENT ID FROM URL:', id)
-  console.log('DEBUG RAW REGISTRATIONS:', JSON.stringify(rawRegistrations, null, 2))
-  console.log('DEBUG REGISTRATIONS ERROR:', regError)
-
-  const studentIds = (rawRegistrations || []).map((r: { student_id: string }) => r.student_id)
-
-  const { data: profilesData } = studentIds.length
-    ? await supabaseAdmin
-      .from('profiles')
-      .select('id, full_name, usn, department, semester')
-      .in('id', studentIds)
-    : { data: [] }
-
-  const registrations = (rawRegistrations || []).map((reg: { id: string; student_id: string; checked_in: boolean; checked_in_at: string | null }) => ({
-    ...reg,
-    profiles: profilesData?.find(p => p.id === reg.student_id) || null
+  const registrations = (rawRegistrations || []).map((reg: any) => ({
+    id: reg.id,
+    checked_in: reg.checked_in,
+    checked_in_at: reg.checked_in_at,
+    profiles: Array.isArray(reg.profiles) ? reg.profiles[0] || null : reg.profiles || null
   }))
 
   return (

@@ -36,9 +36,9 @@ export async function getAuditLogs(filters: { from?: string, to?: string, ip?: s
   
   let query = logsClient
     .from('audit_logs')
-    .select('*')
+    .select('id, user_id, user_email, user_name, user_role, action_type, ip_address, user_agent, metadata, created_at, session_id, resource_path, duration_ms, status_code')
     .order('created_at', { ascending: false })
-    .limit(1000)
+    .limit(100)
 
   if (filters.from) query = query.gte('created_at', filters.from)
   if (filters.to) query = query.lte('created_at', filters.to)

@@ -11,7 +11,7 @@ export default async function PRReviewPage({ params }: { params: Promise<{ id: s
   
   const { data: event } = await supabase
     .from('events')
-    .select('*')
+    .select('id, title, description, club_name, location, event_date, registration_deadline, max_capacity, status, banner_url, approval_status, created_by')
     .eq('id', id)
     .single()
 
