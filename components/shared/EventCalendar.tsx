@@ -337,7 +337,7 @@ export function EventCalendar({
                   }`}>
                   {/* Date number */}
                   <div className="flex items-center justify-between mb-0.5 px-0.5">
-                    <span className={`text-[11px] font-bold tabular-nums ${
+                    <span className={`text-sm md:text-base font-black tabular-nums ${
                       isToday
                         ? 'text-blue-600 dark:text-blue-400'
                         : 'text-[#0a0a0a] dark:text-zinc-200'
@@ -374,7 +374,7 @@ export function EventCalendar({
                     isToday ? 'bg-blue-50 dark:bg-blue-950/40' : 'bg-[#fafafa] dark:bg-zinc-900'
                   }`}>
                   <div className="font-mono text-[10px] uppercase tracking-widest text-[#999] dark:text-zinc-500">{WEEKDAYS[i]}</div>
-                  <div className={`text-sm font-black mt-0.5 tabular-nums ${
+                  <div className={`text-base md:text-lg font-black mt-0.5 tabular-nums ${
                     isToday ? 'text-blue-600 dark:text-blue-400' : 'text-[#0a0a0a] dark:text-zinc-200'
                   }`}>
                     {d.getDate()}
