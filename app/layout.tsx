@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   title: 'Club-Eve',
   description: 'Mini Project Sem 4',
   icons: {
-    icon: '/apple-icon.png',
+    icon: '/logo.png',
   }
 }
 

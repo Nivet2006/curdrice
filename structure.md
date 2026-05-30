@@ -46,7 +46,7 @@ Club-Eve
 │   │   ├── dashboard      # Teacher dashboard with manage students panel
 │   │   ├── reports        # Report markup review
 │   │   └── verify         # Event verification detail page
-│   ├── favicon.ico
+│   ├── favicon.ico        # Overwritten with logo.png
 │   ├── globals.css        # Core design system & theme vars
 │   ├── layout.tsx         # Root layout with providers
 │   ├── not-found.tsx      # Custom 404 page

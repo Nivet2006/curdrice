@@ -99,7 +99,7 @@ export default function LoginPage() {
 
       <Card className="max-w-sm w-full px-8 py-10 flex flex-col items-center">
         <div className="w-14 h-14 rounded-2xl bg-[#f5f5f5] flex items-center justify-center mb-1 overflow-hidden border border-[#e0e0e0]">
-          <img src="/favicon.ico" alt="logo" className="w-10 h-10 object-contain" />
+          <img src="/logo.png" alt="logo" className="w-10 h-10 object-contain" />
         </div>
         <h1 className="text-2xl font-black tracking-tight mt-3">Club-Eve</h1>
         <p className="text-sm font-mono text-[#555555] mt-1 text-center font-bold">Mini Project Sem 4</p>
