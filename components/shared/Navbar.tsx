@@ -48,7 +48,7 @@ export function Navbar({ role, name }: { role?: Role; name?: string }) {
 
   const navLinks = role ? [
     { href: `/${role}/dashboard`, label: 'Dashboard', icon: LayoutDashboard },
-    ...(!['pr', 'teacher', 'hod'].includes(role) ? [
+    ...(!['pr', 'teacher', 'hod', 'cc'].includes(role) ? [
       { href: `/${role}/events`, label: 'Events', icon: Calendar },
     ] : []),
     // Calendar link for every role
@@ -63,7 +63,7 @@ export function Navbar({ role, name }: { role?: Role; name?: string }) {
       { href: '/admin/backup', label: 'Backup', icon: Database },
       { href: '/admin/bugs', label: 'Bugs', icon: Bug },
     ] : []),
-    ...(role === 'manager' || role === 'cc' ? [
+    ...(role === 'manager' ? [
       { href: `/${role}/scanner`, label: 'Scanner', icon: ScanLine },
     ] : []),
     ...(role === 'pr' ? [

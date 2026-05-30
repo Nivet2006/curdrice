@@ -1,4 +1,4 @@
-import { reportsClient } from '@/lib/supabase/reports-client';
+import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
@@ -10,7 +10,8 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Event ID is required' }, { status: 400 });
     }
 
-    const { data: report, error } = await reportsClient
+    const supabase = await createClient();
+    const { data: report, error } = await supabase
       .from('iic_event_reports')
       .select('*')
       .eq('event_id', eventId)

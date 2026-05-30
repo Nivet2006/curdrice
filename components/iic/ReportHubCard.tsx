@@ -7,7 +7,7 @@ import { FileText, Lock, CheckCircle2, Download, AlertCircle } from 'lucide-reac
 export function ReportHubCard({ eventId }: { eventId: string }) {
   const [status, setStatus] = useState<{ total: number; submitted: number; isComplete: boolean } | null>(null);
   const [loading, setLoading] = useState(true);
-  const [reportData, setReportData] = useState<{ status: string; pdf_url: string | null } | null>(null);
+  const [reportData, setReportData] = useState<{ id?: string; status: string; pdf_url: string | null } | null>(null);
 
   useEffect(() => {
     async function fetchStatus() {
@@ -111,9 +111,9 @@ export function ReportHubCard({ eventId }: { eventId: string }) {
             </button>
           )}
 
-          {reportData?.pdf_url && (
+          {reportData?.id && (
             <a
-              href={reportData.pdf_url}
+              href={`/api/reports/${reportData.id}/download`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl border-2 border-black dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-black dark:text-white font-bold transition-all"

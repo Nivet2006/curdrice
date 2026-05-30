@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
-import { reportsClient } from '@/lib/supabase/reports-client';
+import { b2Client, B2_BUCKET_NAME } from '@/lib/b2';
+import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { NextResponse } from 'next/server';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import { readFileSync, existsSync } from 'fs';
@@ -356,31 +357,36 @@ export async function POST(request: Request) {
     const pdfBytes = await pdfDoc.save();
 
     // -------------------------------------------------------------
-    // UPLOAD TO SECOND (REPORTS) SUPABASE DB
+    // UPLOAD TO BACKBLAZE B2 OBJECT STORAGE
     // -------------------------------------------------------------
     const timestamp = new Date().getTime();
     const filePath = `${eventId}/${timestamp}_report.pdf`;
 
-    const { error: uploadError } = await reportsClient
-      .storage
-      .from('iic-reports')
-      .upload(filePath, pdfBytes, {
-        contentType: 'application/pdf',
-        upsert: true,
-      });
-
-    if (uploadError) {
-      console.error('[PDF Upload Error]', uploadError);
-      return NextResponse.json({ error: `Failed to upload PDF: ${uploadError.message}` }, { status: 500 });
+    try {
+      await b2Client.send(
+        new PutObjectCommand({
+          Bucket: B2_BUCKET_NAME,
+          Key: filePath,
+          Body: pdfBytes,
+          ContentType: 'application/pdf',
+        })
+      );
+    } catch (uploadError: any) {
+      console.error('[B2 PDF Upload Error]', uploadError);
+      return NextResponse.json({ error: `Failed to upload PDF to Backblaze B2: ${uploadError.message}` }, { status: 500 });
     }
 
-    // Get a long-lived signed URL (30 days)
-    const { data: signedData } = await reportsClient
-      .storage
-      .from('iic-reports')
-      .createSignedUrl(filePath, 60 * 60 * 24 * 30);
-
-    const pdfUrl = signedData?.signedUrl || '';
+    // Construct robust public Backblaze B2 download URL
+    const b2Endpoint = process.env.B2_ENDPOINT || 'https://s3.us-west-004.backblazeb2.com';
+    let pdfUrl = '';
+    if (process.env.B2_DOWNLOAD_URL) {
+      pdfUrl = `${process.env.B2_DOWNLOAD_URL}/${filePath}`;
+    } else {
+      const match = b2Endpoint.match(/s3\.([a-z0-9-]+)\.backblazeb2\.com/);
+      const region = match ? match[1] : 'us-west-004';
+      const b2Domain = region.startsWith('us-west-') ? `f${region.replace('us-west-', '')}.backblazeb2.com` : `f004.backblazeb2.com`;
+      pdfUrl = `https://${b2Domain}/file/${B2_BUCKET_NAME}/${filePath}`;
+    }
 
     // Build the report row
     const reportRow = {
@@ -410,24 +416,35 @@ export async function POST(request: Request) {
       student_coordinators: reportData.student_coordinators || [],
       pdf_path: filePath,
       pdf_url: pdfUrl,
-      status: 'generated',
+      status: 'pending_pr',
+      rejection_feedback: null,
       signatures: {},
     };
 
-    // Upsert into second DB
-    const { error: dbError } = await reportsClient
+    // Upsert into primary DB
+    let reportId = '';
+    const { data: insertedData, error: dbError } = await supabase
       .from('iic_event_reports')
-      .upsert(reportRow, { onConflict: 'event_id' });
+      .upsert(reportRow, { onConflict: 'event_id' })
+      .select('id')
+      .single();
 
     if (dbError) {
       console.error('[DB Upsert Error]', dbError);
       // Fallback: delete old, re-insert
-      await reportsClient.from('iic_event_reports').delete().eq('event_id', eventId);
-      const { error: finalDbError } = await reportsClient.from('iic_event_reports').insert(reportRow);
+      await supabase.from('iic_event_reports').delete().eq('event_id', eventId);
+      const { data: finalData, error: finalDbError } = await supabase
+        .from('iic_event_reports')
+        .insert(reportRow)
+        .select('id')
+        .single();
       if (finalDbError) throw new Error('Database error: ' + finalDbError.message);
+      reportId = finalData?.id || '';
+    } else {
+      reportId = insertedData?.id || '';
     }
 
-    return NextResponse.json({ success: true, pdfUrl });
+    return NextResponse.json({ success: true, pdfUrl, reportId });
   } catch (error: any) {
     console.error(error);
     return NextResponse.json({ error: error.message }, { status: 500 });

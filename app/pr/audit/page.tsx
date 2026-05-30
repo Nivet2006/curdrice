@@ -12,6 +12,13 @@ export default async function PRAuditPage() {
     .select('*, events(title, club_name, targeted_department, event_date, location)')
     .order('created_at', { ascending: false })
 
+  // Fetch all pending IIC reports
+  const { data: iicReports } = await supabase
+    .from('iic_event_reports')
+    .select('*, events(title, club_name, targeted_department, event_date, location)')
+    .eq('status', 'pending_pr')
+    .order('created_at', { ascending: false })
+
   return (
     <div className="space-y-12 pb-20">
       {/* Header */}
@@ -29,7 +36,7 @@ export default async function PRAuditPage() {
       </div>
 
       {/* Client-side filterable queue */}
-      <PRAuditQueueClient reports={reports || []} />
+      <PRAuditQueueClient reports={reports || []} iicReports={iicReports || []} />
     </div>
   )
 }

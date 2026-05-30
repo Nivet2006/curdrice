@@ -31,7 +31,8 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.
   draft: { label: 'Draft', color: 'bg-zinc-50 dark:bg-zinc-800 text-zinc-500 border-zinc-200 dark:border-zinc-700', icon: <AlertTriangle size={10} /> },
 }
 
-export function PRAuditQueueClient({ reports }: { reports: Report[] }) {
+export function PRAuditQueueClient({ reports, iicReports = [] }: { reports: Report[]; iicReports?: any[] }) {
+  const [activeTab, setActiveTab] = useState<'standard' | 'iic'>('standard')
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [clubFilter, setClubFilter] = useState<string>('all')
@@ -41,21 +42,25 @@ export function PRAuditQueueClient({ reports }: { reports: Report[] }) {
   const [dateTo, setDateTo] = useState('')
   const [showAdvanced, setShowAdvanced] = useState(false)
 
+  const activeReports = useMemo(() => {
+    return activeTab === 'standard' ? reports : iicReports;
+  }, [activeTab, reports, iicReports])
+
   // Derive unique clubs and departments
   const clubs = useMemo(() => {
     const set = new Set<string>()
-    reports.forEach(r => { if (r.events?.club_name) set.add(r.events.club_name) })
+    activeReports.forEach(r => { if (r.events?.club_name) set.add(r.events.club_name) })
     return Array.from(set).sort()
-  }, [reports])
+  }, [activeReports])
 
   const departments = useMemo(() => {
     const set = new Set<string>()
-    reports.forEach(r => { if (r.events?.targeted_department) set.add(r.events.targeted_department) })
+    activeReports.forEach(r => { if (r.events?.targeted_department) set.add(r.events.targeted_department) })
     return Array.from(set).sort()
-  }, [reports])
+  }, [activeReports])
 
   const filtered = useMemo(() => {
-    let result = [...reports]
+    let result = [...activeReports]
 
     // Search
     if (search) {
@@ -99,14 +104,34 @@ export function PRAuditQueueClient({ reports }: { reports: Report[] }) {
     })
 
     return result
-  }, [reports, search, statusFilter, clubFilter, deptFilter, sortOrder, dateFrom, dateTo])
+  }, [activeReports, search, statusFilter, clubFilter, deptFilter, sortOrder, dateFrom, dateTo])
 
-  const pendingCount = reports.filter(r => r.status === 'pending_pr').length
-  const completedCount = reports.filter(r => r.status === 'completed').length
-  const declinedCount = reports.filter(r => r.status === 'declined_pr').length
+  const pendingCount = activeReports.filter(r => r.status === 'pending_pr').length
+  const completedCount = activeReports.filter(r => r.status === 'completed' || r.status === 'approved').length
+  const declinedCount = activeReports.filter(r => r.status === 'declined_pr' || r.status === 'rejected_pr').length
 
   return (
     <div className="space-y-8">
+      {/* Tab Navigation */}
+      <div className="flex gap-6 border-b border-zinc-200 dark:border-zinc-800 pb-2 mb-4">
+        <button
+          onClick={() => { setActiveTab('standard'); setStatusFilter('all'); }}
+          className={`pb-2 font-mono text-xs uppercase tracking-widest transition-all font-black ${
+            activeTab === 'standard' ? 'border-b-2 border-black dark:border-white text-black dark:text-white' : 'text-zinc-400 hover:text-zinc-600'
+          }`}
+        >
+          Publicity Reports ({reports.length})
+        </button>
+        <button
+          onClick={() => { setActiveTab('iic'); setStatusFilter('all'); }}
+          className={`pb-2 font-mono text-xs uppercase tracking-widest transition-all font-black ${
+            activeTab === 'iic' ? 'border-b-2 border-black dark:border-white text-black dark:text-white' : 'text-zinc-400 hover:text-zinc-600'
+          }`}
+        >
+          Official IIC Reports ({iicReports.length})
+        </button>
+      </div>
+
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <button onClick={() => setStatusFilter('all')} className={`p-5 rounded-2xl border text-center transition-all ${statusFilter === 'all' ? 'bg-[#0a0a0a] dark:bg-white text-white dark:text-black border-[#0a0a0a] dark:border-white' : 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:border-[#0a0a0a] dark:hover:border-white'}`}>
@@ -314,7 +339,7 @@ export function PRAuditQueueClient({ reports }: { reports: Report[] }) {
                   {/* Action */}
                   <div className="flex items-center justify-end pt-4 border-t border-zinc-100 dark:border-zinc-800">
                     <Link
-                      href={`/pr/reports/${report.id}`}
+                      href={activeTab === 'iic' ? `/pr/reports/iic/${report.id}` : `/pr/reports/${report.id}`}
                       className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all active:scale-95 shadow-lg ${
                         isActionable
                           ? 'bg-[#0a0a0a] dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200'

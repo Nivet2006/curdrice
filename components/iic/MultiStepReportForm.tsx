@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { CheckCircle2, ChevronRight, ChevronLeft, Save, Loader2, Download, ExternalLink, FileText, Eye, Edit2 } from 'lucide-react';
+import { CheckCircle2, ChevronRight, ChevronLeft, Save, Loader2, Download, ExternalLink, FileText, Eye, Edit2, AlertCircle } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -76,6 +76,7 @@ export function MultiStepReportForm({ eventId, eventTitle, eventDate, department
   const [step, setStep] = useState(1);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedPdfUrl, setGeneratedPdfUrl] = useState<string | null>(null);
+  const [generatedReportId, setGeneratedReportId] = useState<string | null>(existingReport?.id || null);
   const [studentsList, setStudentsList] = useState<{name: string, usn: string}[]>([]);
   const [studentSearchMap, setStudentSearchMap] = useState<{[key: number]: string}>({});
   const [activePreview, setActivePreview] = useState<{[key: string]: boolean}>({ objective: false, summary: false, benefits: false });
@@ -146,6 +147,7 @@ export function MultiStepReportForm({ eventId, eventTitle, eventDate, department
       if (res.ok) {
         const data = await res.json();
         setGeneratedPdfUrl(data.pdfUrl || '');
+        setGeneratedReportId(data.reportId || null);
       } else {
         const errorData = await res.json();
         alert(`Failed to generate report: ${errorData.error || 'Unknown error'}`);
@@ -193,9 +195,9 @@ export function MultiStepReportForm({ eventId, eventTitle, eventDate, department
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 w-full max-w-sm">
-            {generatedPdfUrl && (
+            {(generatedReportId || generatedPdfUrl) && (
               <a
-                href={generatedPdfUrl}
+                href={generatedReportId ? `/api/reports/${generatedReportId}/download` : (generatedPdfUrl || '#')}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-black dark:bg-white text-white dark:text-black font-bold rounded-xl shadow-lg transition-all active:scale-95"
@@ -222,6 +224,20 @@ export function MultiStepReportForm({ eventId, eventTitle, eventDate, department
         </div>
       ) : (
         <>
+          {existingReport?.rejection_feedback && (
+            <div className="bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800/30 rounded-2xl p-6 mb-8 space-y-2 animate-in fade-in duration-300">
+              <div className="flex items-center gap-2 text-rose-600 dark:text-rose-400 font-bold text-sm">
+                <AlertCircle size={16} />
+                <span>REPORT REJECTED BY PUBLIC RELATIONS</span>
+              </div>
+              <p className="text-xs text-rose-700 dark:text-rose-300 italic font-mono leading-relaxed">
+                "{existingReport.rejection_feedback}"
+              </p>
+              <p className="text-[10px] text-zinc-500">
+                Please review the feedback above, make necessary corrections, and re-generate the official PDF to re-submit for audit.
+              </p>
+            </div>
+          )}
           {renderStepIndicator()}
 
       <div className="space-y-6 min-h-[400px]">

@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
 import { notFound, redirect } from 'next/navigation';
-import { reportsClient } from '@/lib/supabase/reports-client';
 import { MultiStepReportForm } from '@/components/iic/MultiStepReportForm';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
@@ -36,7 +35,7 @@ export default async function IICReportPage({ params }: { params: Promise<{ even
     .eq('checked_in', true);
 
   // FETCH FROM REPORTS DATABASE
-  const { data: existingReport } = await reportsClient
+  const { data: existingReport } = await supabase
     .from('iic_event_reports')
     .select('*')
     .eq('event_id', eventId)
