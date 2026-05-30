@@ -16,6 +16,7 @@ export const b2Client = new S3Client({
     accessKeyId: b2AccessKeyId,
     secretAccessKey: b2SecretAccessKey,
   },
+  forcePathStyle: true,
 });
 
 export const B2_BUCKET_NAME = process.env.B2_BUCKET_NAME || 'iic-reports';
