@@ -76,10 +76,14 @@ export function MultiStepReportForm({ eventId, eventTitle, eventDate, department
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedPdfUrl, setGeneratedPdfUrl] = useState<string | null>(null);
+  const [generatedPdfUrl, setGeneratedPdfUrl] = useState<string | null>(
+    existingReport?.pdf_path && !['rejected_pr', 'rejected_faculty', 'rejected_hod'].includes(existingReport.status)
+      ? `/api/reports/${existingReport.id}/download`
+      : null
+  );
   const [generatedReportId, setGeneratedReportId] = useState<string | null>(existingReport?.id || null);
   const [isPushing, setIsPushing] = useState(false);
-  const [isPushed, setIsPushed] = useState(false);
+  const [isPushed, setIsPushed] = useState(existingReport?.status !== 'draft' && !['rejected_pr', 'rejected_faculty', 'rejected_hod'].includes(existingReport?.status) && !!existingReport);
   const [studentsList, setStudentsList] = useState<{name: string, usn: string}[]>([]);
 
   const handlePushToPR = async () => {

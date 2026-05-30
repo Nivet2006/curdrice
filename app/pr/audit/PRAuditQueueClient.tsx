@@ -26,8 +26,16 @@ type Report = {
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
   pending_pr: { label: 'Pending Audit', color: 'bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-500/20', icon: <Clock size={10} /> },
+  approved_pr: { label: 'Verified (Pending Push)', color: 'bg-teal-50 dark:bg-teal-500/10 text-teal-700 dark:text-teal-400 border-teal-200 dark:border-teal-500/20', icon: <Clock size={10} /> },
+  pending_faculty: { label: 'Pending Faculty', color: 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border-indigo-200 dark:border-indigo-500/20', icon: <Clock size={10} /> },
+  approved_faculty: { label: 'Faculty Endorsed (Pending Push)', color: 'bg-teal-50 dark:bg-teal-500/10 text-teal-700 dark:text-teal-400 border-teal-200 dark:border-teal-500/20', icon: <Clock size={10} /> },
+  pending_hod: { label: 'Pending HOD', color: 'bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-500/20', icon: <Clock size={10} /> },
   completed: { label: 'Approved', color: 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20', icon: <CheckCircle size={10} /> },
-  declined_pr: { label: 'Declined', color: 'bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-500/20', icon: <XCircle size={10} /> },
+  approved: { label: 'Approved', color: 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20', icon: <CheckCircle size={10} /> },
+  declined_pr: { label: 'Declined by PR', color: 'bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-500/20', icon: <XCircle size={10} /> },
+  rejected_pr: { label: 'Rejected by PR', color: 'bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-500/20', icon: <XCircle size={10} /> },
+  rejected_faculty: { label: 'Rejected by Faculty', color: 'bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-500/20', icon: <XCircle size={10} /> },
+  rejected_hod: { label: 'Rejected by HOD', color: 'bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-500/20', icon: <XCircle size={10} /> },
   draft: { label: 'Draft', color: 'bg-zinc-50 dark:bg-zinc-800 text-zinc-500 border-zinc-200 dark:border-zinc-700', icon: <AlertTriangle size={10} /> },
 }
 
