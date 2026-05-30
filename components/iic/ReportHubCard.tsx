@@ -2,12 +2,31 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { FileText, Lock, CheckCircle2, Download, AlertCircle } from 'lucide-react';
+import { FileText, Lock, CheckCircle2, Download, AlertCircle, Loader2 } from 'lucide-react';
+import { pushIICReportToPR } from '@/lib/actions/iic-approvals';
 
 export function ReportHubCard({ eventId }: { eventId: string }) {
   const [status, setStatus] = useState<{ total: number; submitted: number; isComplete: boolean } | null>(null);
   const [loading, setLoading] = useState(true);
   const [reportData, setReportData] = useState<{ id?: string; status: string; pdf_url: string | null } | null>(null);
+  const [isPushing, setIsPushing] = useState(false);
+
+  const handlePushToPR = async () => {
+    if (!reportData?.id) return;
+    setIsPushing(true);
+    try {
+      const res = await pushIICReportToPR(reportData.id);
+      if (res?.success) {
+        setReportData(prev => prev ? { ...prev, status: 'pending_pr' } : null);
+      } else {
+        alert(res?.error || 'Failed to push to PR.');
+      }
+    } catch (e: any) {
+      alert(`An error occurred: ${e.message}`);
+    } finally {
+      setIsPushing(false);
+    }
+  };
 
   useEffect(() => {
     async function fetchStatus() {
@@ -88,10 +107,35 @@ export function ReportHubCard({ eventId }: { eventId: string }) {
                 <AlertCircle size={14} /> Required for report generation
               </p>
             )}
+
+            {reportData && (
+              <div className="pt-2 flex items-center gap-2">
+                <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">Report Status:</span>
+                <span className={`text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${
+                  reportData.status === 'approved' ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20' :
+                  reportData.status.startsWith('rejected') ? 'bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-500/20' :
+                  reportData.status === 'draft' ? 'bg-zinc-50 dark:bg-zinc-800 text-zinc-500 border-zinc-200 dark:border-zinc-700' :
+                  'bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-500/20'
+                }`}>
+                  {reportData.status.replace(/_/g, ' ')}
+                </span>
+              </div>
+            )}
           </div>
         </div>
 
         <div className="flex flex-col gap-3 min-w-[200px]">
+          {reportData?.status === 'draft' && (
+            <button
+              onClick={handlePushToPR}
+              disabled={isPushing}
+              className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold shadow-lg transition-all active:scale-[0.98] duration-150 animate-in fade-in slide-in-from-top-2"
+            >
+              {isPushing ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
+              Push to PR
+            </button>
+          )}
+
           {isComplete || reportData ? (
             <Link
               href={`/dashboard/events/${eventId}/report`}
