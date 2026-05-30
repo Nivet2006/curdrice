@@ -172,7 +172,7 @@ export default async function PublicEventDetailPage({
               {/* Open in App + Download */}
               <div className="border-t border-[#e0e0e0] pt-5 space-y-2">
                 <a
-                  href={`intent://curdrice.nivet2006.in/events/${id}#Intent;scheme=https;package=com.clubeve.cc;S.browser_fallback_url=${encodeURIComponent(`https://curdrice.nivet2006.in/events/${id}`)};end`}
+                  href={`intent://clubeve.nivet2006.in/events/${id}#Intent;scheme=https;package=com.clubeve.cc;S.browser_fallback_url=${encodeURIComponent(`https://clubeve.nivet2006.in/events/${id}`)};end`}
                   className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-bold transition-all active:scale-[0.98] bg-[#0a0a0a] text-white hover:bg-zinc-800"
                 >
                   <ExternalLink size={14} />
