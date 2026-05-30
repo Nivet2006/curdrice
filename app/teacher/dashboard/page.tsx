@@ -32,7 +32,7 @@ export default async function TeacherDashboard() {
   const { data: pendingIICReports } = await supabase
     .from('iic_event_reports')
     .select('*, events(title, club_name, event_date, location)')
-    .eq('status', 'pending_faculty')
+    .in('status', ['pending_faculty', 'approved_faculty'])
     .eq('department', dept)
     .order('created_at', { ascending: true })
 

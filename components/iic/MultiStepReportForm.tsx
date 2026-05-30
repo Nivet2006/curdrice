@@ -7,6 +7,7 @@ import { CheckCircle2, ChevronRight, ChevronLeft, Save, Loader2, Download, Exter
 import { createClient } from '@/lib/supabase/client';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { pushIICReportToPR } from '@/lib/actions/iic-approvals';
 
 const StudentAutocomplete = ({ rpIdx, isUsn, placeholder, formData, studentsList, updateForm }: { rpIdx: number, isUsn: boolean, placeholder: string, formData: any, studentsList: any[], updateForm: (key: string, value: any) => void }) => {
   const rp = formData.resource_persons[rpIdx];
@@ -77,7 +78,26 @@ export function MultiStepReportForm({ eventId, eventTitle, eventDate, department
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedPdfUrl, setGeneratedPdfUrl] = useState<string | null>(null);
   const [generatedReportId, setGeneratedReportId] = useState<string | null>(existingReport?.id || null);
+  const [isPushing, setIsPushing] = useState(false);
+  const [isPushed, setIsPushed] = useState(false);
   const [studentsList, setStudentsList] = useState<{name: string, usn: string}[]>([]);
+
+  const handlePushToPR = async () => {
+    if (!generatedReportId) return;
+    setIsPushing(true);
+    try {
+      const res = await pushIICReportToPR(generatedReportId);
+      if (res?.success) {
+        setIsPushed(true);
+      } else {
+        alert(res?.error || 'Failed to push to PR.');
+      }
+    } catch (e: any) {
+      alert(`An error occurred: ${e.message}`);
+    } finally {
+      setIsPushing(false);
+    }
+  };
   const [studentSearchMap, setStudentSearchMap] = useState<{[key: number]: string}>({});
   const [activePreview, setActivePreview] = useState<{[key: string]: boolean}>({ objective: false, summary: false, benefits: false });
   
@@ -194,6 +214,22 @@ export function MultiStepReportForm({ eventId, eventTitle, eventDate, department
             </p>
           </div>
 
+          {isPushed ? (
+            <div className="w-full max-w-sm bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/30 rounded-xl p-4 text-emerald-700 dark:text-emerald-300 font-semibold text-sm flex items-center justify-center gap-2 animate-in fade-in zoom-in-95 duration-200">
+              <CheckCircle2 size={16} className="text-emerald-500" />
+              Report successfully pushed to PR!
+            </div>
+          ) : (
+            <button
+              onClick={handlePushToPR}
+              disabled={isPushing || !generatedReportId}
+              className="w-full max-w-sm flex items-center justify-center gap-2 px-6 py-3.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold rounded-xl shadow-lg transition-all active:scale-95 duration-150"
+            >
+              {isPushing ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
+              Push to PR
+            </button>
+          )}
+
           <div className="flex flex-col sm:flex-row gap-3 w-full max-w-sm">
             {(generatedReportId || generatedPdfUrl) && (
               <a
@@ -216,7 +252,10 @@ export function MultiStepReportForm({ eventId, eventTitle, eventDate, department
           </div>
 
           <button
-            onClick={() => setGeneratedPdfUrl(null)}
+            onClick={() => {
+              setGeneratedPdfUrl(null);
+              setIsPushed(false);
+            }}
             className="text-xs text-zinc-400 hover:text-zinc-600 underline underline-offset-2 transition-colors"
           >
             Edit &amp; Re-generate Report

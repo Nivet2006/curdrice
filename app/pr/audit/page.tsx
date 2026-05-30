@@ -16,7 +16,7 @@ export default async function PRAuditPage() {
   const { data: iicReports } = await supabase
     .from('iic_event_reports')
     .select('*, events(title, club_name, targeted_department, event_date, location)')
-    .eq('status', 'pending_pr')
+    .in('status', ['pending_pr', 'approved_pr'])
     .order('created_at', { ascending: false })
 
   return (

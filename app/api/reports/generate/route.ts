@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { b2Client, B2_BUCKET_NAME } from '@/lib/b2';
-import { PutObjectCommand } from '@aws-sdk/client-s3';
+import { PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { NextResponse } from 'next/server';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import { readFileSync, existsSync } from 'fs';
@@ -359,6 +359,27 @@ export async function POST(request: Request) {
     // -------------------------------------------------------------
     // UPLOAD TO BACKBLAZE B2 OBJECT STORAGE
     // -------------------------------------------------------------
+    // Query for existing PDF path to delete it and avoid orphaned files on B2
+    try {
+      const { data: existingRep } = await supabase
+        .from('iic_event_reports')
+        .select('pdf_path')
+        .eq('event_id', eventId)
+        .maybeSingle();
+
+      if (existingRep?.pdf_path) {
+        console.log(`[B2 Cleanup] Deleting old report PDF from B2: ${existingRep.pdf_path}`);
+        await b2Client.send(
+          new DeleteObjectCommand({
+            Bucket: B2_BUCKET_NAME,
+            Key: existingRep.pdf_path,
+          })
+        );
+      }
+    } catch (cleanupErr) {
+      console.warn('[B2 Cleanup Warning] Failed to delete prior report PDF:', cleanupErr);
+    }
+
     const timestamp = new Date().getTime();
     const filePath = `${eventId}/${timestamp}_report.pdf`;
 
@@ -416,7 +437,7 @@ export async function POST(request: Request) {
       student_coordinators: reportData.student_coordinators || [],
       pdf_path: filePath,
       pdf_url: pdfUrl,
-      status: 'pending_pr',
+      status: 'draft',
       rejection_feedback: null,
       signatures: {},
     };

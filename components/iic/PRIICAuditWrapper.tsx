@@ -1,13 +1,15 @@
 'use client'
 
 import React, { useState } from 'react'
-import { processIICReportReview } from '@/lib/actions/iic-approvals'
-import { CheckCircle2, XCircle, Send, Megaphone, AlertTriangle } from 'lucide-react'
+import { processIICReportReview, pushIICReportToFaculty } from '@/lib/actions/iic-approvals'
+import { CheckCircle2, XCircle, Send, Megaphone, AlertTriangle, ArrowRight, Loader2 } from 'lucide-react'
 
 export function PRIICAuditWrapper({ reportId, reportStatus, rejectionFeedback }: { reportId: string; reportStatus: string; rejectionFeedback?: string | null }) {
   const [loading, setLoading] = useState(false)
   const [decision, setDecision] = useState<'approve' | 'decline' | null>(null)
   const [feedback, setFeedback] = useState('')
+  const [isPushed, setIsPushed] = useState(reportStatus !== 'approved_pr' && reportStatus !== 'pending_pr' && reportStatus !== 'rejected_pr')
+  const [pushing, setPushing] = useState(false)
 
   const isApproved = reportStatus !== 'pending_pr' && reportStatus !== 'rejected_pr'
   const isDeclined = reportStatus === 'rejected_pr'
@@ -29,6 +31,18 @@ export function PRIICAuditWrapper({ reportId, reportStatus, rejectionFeedback }:
     }
   }
 
+  async function handlePush() {
+    setPushing(true);
+    const res = await pushIICReportToFaculty(reportId);
+    if (res?.error) {
+      alert(res.error);
+      setPushing(false);
+    } else {
+      setIsPushed(true);
+      window.location.reload();
+    }
+  }
+
   if (isApproved) {
     return (
       <div className="bg-emerald-900 text-white rounded-[3rem] p-12 shadow-2xl space-y-6 border border-emerald-700">
@@ -36,9 +50,26 @@ export function PRIICAuditWrapper({ reportId, reportStatus, rejectionFeedback }:
           <CheckCircle2 size={24} className="text-emerald-400" />
           <h3 className="font-black uppercase text-lg tracking-tighter">IIC Report Verified</h3>
         </div>
-        <p className="text-sm text-emerald-300 font-mono italic">
-          This IIC activity report has been verified by publicity/PR. It has been forwarded to the Faculty Advisor verification queue.
-        </p>
+        
+        {isPushed ? (
+          <p className="text-sm text-emerald-300 font-mono italic">
+            This IIC activity report has been verified by publicity/PR and forwarded to the Faculty Advisor verification queue.
+          </p>
+        ) : (
+          <div className="space-y-4">
+            <p className="text-sm text-emerald-300 font-mono italic">
+              Verification draft finalized. Please push the report to the Faculty Advisor verification queue.
+            </p>
+            <button
+              onClick={handlePush}
+              disabled={pushing}
+              className="w-full flex items-center justify-center gap-2 py-4 bg-white text-emerald-950 font-black uppercase text-xs rounded-2xl shadow-xl active:scale-95 transition-all disabled:opacity-50"
+            >
+              {pushing ? <Loader2 size={14} className="animate-spin" /> : <ArrowRight size={14} />}
+              Push to Faculty
+            </button>
+          </div>
+        )}
       </div>
     )
   }
