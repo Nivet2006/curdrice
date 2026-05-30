@@ -32,6 +32,8 @@ export function Step2PlaceFields({
   const [panStart, setPanStart] = React.useState({ x: 0, y: 0 });
 
   const [showGrid, setShowGrid] = React.useState(false);
+  const [gridSize, setGridSize] = React.useState(20);
+  const [gridStyle, setGridStyle] = React.useState<'dots' | 'lines'>('dots');
   const [snapToGrid, setSnapToGrid] = React.useState(false);
   const [showRulers, setShowRulers] = React.useState(false);
   const [showLabels, setShowLabels] = React.useState(true);
@@ -43,6 +45,17 @@ export function Step2PlaceFields({
     history.push(updatedFields);
     onChange(updatedFields);
   };
+
+  // Inject font previews for all fields to render correctly in browser even if deselected
+  React.useEffect(() => {
+    fields.forEach(f => {
+      if (f.fontFamily) {
+        import('@/lib/cert/fontLoader').then(({ injectFontPreview }) => {
+          injectFontPreview(f.fontFamily);
+        });
+      }
+    });
+  }, [fields]);
 
   // Keyboard undo/redo and spacebar listener
   React.useEffect(() => {
@@ -190,12 +203,12 @@ export function Step2PlaceFields({
   };
 
   // Individual field modification
-  const handleUpdateField = (id: string, updates: Partial<CertField>) => {
+  const handleUpdateField = (id: string, updates: Partial<CertField>, isMouse = false) => {
     let finalUpdates = { ...updates };
     
-    // Grid snapping logic
-    if (snapToGrid) {
-      const snapSize = 10;
+    // Grid snapping logic (only for mouse drag/resize)
+    if (snapToGrid && isMouse) {
+      const snapSize = gridSize;
       if (updates.x !== undefined) finalUpdates.x = Math.round(updates.x / snapSize) * snapSize;
       if (updates.y !== undefined) finalUpdates.y = Math.round(updates.y / snapSize) * snapSize;
       if (updates.width !== undefined) finalUpdates.width = Math.round(updates.width / snapSize) * snapSize;
@@ -260,10 +273,24 @@ export function Step2PlaceFields({
                 + {type}
               </button>
             ))}
+            <span className="w-[1px] h-4 bg-zinc-300 dark:bg-zinc-700 mx-2" />
+            <button
+              type="button"
+              onClick={() => {
+                if (confirm('Are you sure you want to delete all placed overlays? This action cannot be undone.')) {
+                  updateFields([]);
+                  onSelectField(null);
+                }
+              }}
+              className="px-2.5 py-1.5 rounded-lg border border-red-200 hover:border-red-500 hover:bg-red-50 dark:border-red-950 dark:hover:bg-red-950/20 text-red-600 transition-colors uppercase text-[10px]"
+              title="Delete all placed overlays"
+            >
+              🗑 Clear All Overlays
+            </button>
           </div>
 
           {/* Alignment Snaps & Rulers */}
-          <div className="flex items-center gap-2 border-l border-zinc-200 dark:border-zinc-800 pl-4">
+          <div className="flex items-center gap-2 border-l border-zinc-200 dark:border-zinc-800 pl-4 flex-wrap">
             <button
               type="button"
               onClick={() => setShowGrid(!showGrid)}
@@ -274,6 +301,35 @@ export function Step2PlaceFields({
             >
               🌐 Grid
             </button>
+
+            {showGrid && (
+              <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800 p-0.5 rounded-lg border border-zinc-200 dark:border-zinc-700">
+                {/* Size options */}
+                {[10, 20, 40].map(sz => (
+                  <button
+                    key={sz}
+                    type="button"
+                    onClick={() => setGridSize(sz)}
+                    className={`px-1.5 py-0.5 rounded text-[10px] ${gridSize === sz ? 'bg-white dark:bg-zinc-950 font-bold shadow-sm text-black dark:text-white' : 'text-zinc-400'}`}
+                  >
+                    {sz}pt
+                  </button>
+                ))}
+                <span className="w-[1px] h-3 bg-zinc-300 dark:bg-zinc-600 mx-1" />
+                {/* Style options */}
+                {['dots', 'lines'].map(st => (
+                  <button
+                    key={st}
+                    type="button"
+                    onClick={() => setGridStyle(st as any)}
+                    className={`px-1.5 py-0.5 rounded text-[10px] capitalize ${gridStyle === st ? 'bg-white dark:bg-zinc-950 font-bold shadow-sm text-black dark:text-white' : 'text-zinc-400'}`}
+                  >
+                    {st}
+                  </button>
+                ))}
+              </div>
+            )}
+
             <button
               type="button"
               onClick={() => setSnapToGrid(!snapToGrid)}
@@ -304,7 +360,7 @@ export function Step2PlaceFields({
               onClick={() => { setZoom(100); setPan({ x: 0, y: 0 }); }}
               className="p-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:border-black text-xs"
             >
-              Reset
+              Reset View
             </button>
           </div>
         </div>
@@ -348,8 +404,10 @@ export function Step2PlaceFields({
                 style={{
                   position: 'absolute',
                   inset: 0,
-                  backgroundImage: 'radial-gradient(var(--grid-color) 1.2px, transparent 1.2px)',
-                  backgroundSize: `${20 * scale}px ${20 * scale}px`
+                  backgroundImage: gridStyle === 'lines'
+                    ? 'linear-gradient(to right, rgba(120, 120, 120, 0.15) 1px, transparent 1px), linear-gradient(to bottom, rgba(120, 120, 120, 0.15) 1px, transparent 1px)'
+                    : 'radial-gradient(rgba(120, 120, 120, 0.3) 1.2px, transparent 1.2px)',
+                  backgroundSize: `${gridSize * scale}px ${gridSize * scale}px`
                 }}
                 className="absolute inset-0 pointer-events-none"
               />
@@ -363,7 +421,7 @@ export function Step2PlaceFields({
                   field={field}
                   isSelected={field.id === selectedFieldId}
                   onSelect={() => onSelectField(field.id)}
-                  onUpdate={(updates) => handleUpdateField(field.id, updates)}
+                  onUpdate={(updates) => handleUpdateField(field.id, updates, true)}
                   onDelete={deleteSelectedField}
                   scale={scale}
                 />

@@ -1,5 +1,5 @@
 // Google Font TTF Loader and Cache
-// Fetches the TTF buffer via standard HTTP, using Google Fonts CSS2 API to extract the direct .ttf URL.
+// Fetches TTF buffers from Fontsource CDN (pdf-lib requires TTF/OTF, not WOFF2).
 
 export const AVAILABLE_FONTS = [
   'Playfair Display', 'Cinzel', 'Great Vibes', 'Dancing Script', 'Cormorant Garamond',
@@ -12,51 +12,54 @@ export const AVAILABLE_FONTS = [
 
 const fontCache = new Map<string, ArrayBuffer>();
 
-export async function fetchFont(fontName: string, weight = 400): Promise<ArrayBuffer> {
-  const cacheKey = `${fontName}-${weight}`;
+function fontNameToSlug(fontName: string): string {
+  return fontName.toLowerCase().replace(/\s+/g, '-');
+}
+
+function buildFontsourceUrl(slug: string, weight: number, style: string): string {
+  const styleSuffix = style === 'italic' ? 'italic' : 'normal';
+  return `https://cdn.jsdelivr.net/fontsource/fonts/${slug}@latest/latin-${weight}-${styleSuffix}.ttf`;
+}
+
+/** Weights to try when the exact weight is unavailable (e.g. display fonts). */
+function weightsToTry(requested: number): number[] {
+  const candidates = [requested, 400, 700, 300, 500, 600];
+  return [...new Set(candidates)];
+}
+
+export async function fetchFont(fontName: string, weight = 400, style = 'normal'): Promise<ArrayBuffer> {
+  const cacheKey = `${fontName}-${weight}-${style}`;
   if (fontCache.has(cacheKey)) {
     return fontCache.get(cacheKey)!;
   }
 
-  try {
-    // 1. Request CSS from Google Fonts API
-    const formattedName = fontName.replace(/\s+/g, '+');
-    const cssUrl = `https://fonts.googleapis.com/css2?family=${formattedName}:wght@${weight}&display=swap`;
-    
-    const cssResponse = await fetch(cssUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
+  const slug = fontNameToSlug(fontName);
+  let lastError: unknown;
+
+  for (const tryWeight of weightsToTry(weight)) {
+    const url = buildFontsourceUrl(slug, tryWeight, style);
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        lastError = new Error(`Font fetch failed (${response.status}): ${url}`);
+        continue;
       }
-    });
-    
-    if (!cssResponse.ok) {
-      throw new Error(`Google CSS fetch failed: ${cssResponse.statusText}`);
+
+      const buffer = await response.arrayBuffer();
+      if (buffer.byteLength === 0) {
+        lastError = new Error(`Empty font file: ${url}`);
+        continue;
+      }
+
+      fontCache.set(cacheKey, buffer);
+      return buffer;
+    } catch (error) {
+      lastError = error;
     }
-    
-    const cssText = await cssResponse.text();
-    
-    // 2. Extract .ttf direct link
-    const match = cssText.match(/url\((https:\/\/[^)]+\.ttf)\)/);
-    if (!match || !match[1]) {
-      throw new Error(`Failed to find .ttf URL in Google CSS for font ${fontName}`);
-    }
-    
-    const ttfUrl = match[1];
-    
-    // 3. Fetch the actual ArrayBuffer of the TTF
-    const ttfResponse = await fetch(ttfUrl);
-    if (!ttfResponse.ok) {
-      throw new Error(`TTF file fetch failed: ${ttfResponse.statusText}`);
-    }
-    
-    const buffer = await ttfResponse.arrayBuffer();
-    fontCache.set(cacheKey, buffer);
-    return buffer;
-  } catch (error) {
-    console.error(`Error loading font "${fontName}":`, error);
-    // Fallback: we return a simple mock empty buffer or throw error
-    throw error;
   }
+
+  console.error(`Error loading font "${fontName}" (weight ${weight}, style ${style}):`, lastError);
+  throw lastError ?? new Error(`Could not load font "${fontName}"`);
 }
 
 /**

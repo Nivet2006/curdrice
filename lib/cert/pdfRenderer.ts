@@ -14,8 +14,14 @@ export interface PdfRenderResult {
   canvas: HTMLCanvasElement;
   dataUrl: string;
   pageCount: number;
+  /** Canvas pixel width at the render scale */
   width: number;
+  /** Canvas pixel height at the render scale */
   height: number;
+  /** PDF page width in points (1/72 inch) — use for field coordinates */
+  pdfWidth: number;
+  /** PDF page height in points — use for field coordinates */
+  pdfHeight: number;
 }
 
 export async function renderPdfPageFromBytes(
@@ -34,6 +40,7 @@ export async function renderPdfPageFromBytes(
   const loadingTask = pdfjs.getDocument({ data: new Uint8Array(safeBytes) });
   const pdf = await loadingTask.promise;
   const page = await pdf.getPage(pageNumber);
+  const baseViewport = page.getViewport({ scale: 1 });
   const viewport = page.getViewport({ scale });
   
   const canvas = document.createElement('canvas');
@@ -58,6 +65,8 @@ export async function renderPdfPageFromBytes(
     pageCount: pdf.numPages,
     width: canvas.width,
     height: canvas.height,
+    pdfWidth: baseViewport.width,
+    pdfHeight: baseViewport.height,
   };
 }
 

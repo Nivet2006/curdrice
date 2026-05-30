@@ -34,8 +34,8 @@ export function Step1UploadTemplate({
       const result = await renderPdfPageFromBytes(bytesCopy, 1, 1.5);
       
       onUpload(file, bytes.slice(0), result.pageCount, {
-        width: result.width,
-        height: result.height,
+        width: result.pdfWidth,
+        height: result.pdfHeight,
         canvasDataUrl: result.dataUrl
       });
     } catch (err: unknown) {
