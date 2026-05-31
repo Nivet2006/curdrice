@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { b2Client, B2_BUCKET_NAME } from '@/lib/b2';
-import { PutObjectCommand, DeleteObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
+import { PutObjectCommand, DeleteObjectCommand, ListObjectVersionsCommand } from '@aws-sdk/client-s3';
 import { NextResponse } from 'next/server';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import { readFileSync, existsSync } from 'fs';
@@ -359,30 +359,54 @@ export async function POST(request: Request) {
     // -------------------------------------------------------------
     // UPLOAD TO BACKBLAZE B2 OBJECT STORAGE
     // -------------------------------------------------------------
-    // Query and delete any existing files directly from the event's folder prefix inside the B2 bucket to avoid orphans
+    // Query and permanently delete all versions and delete markers directly from the event's folder prefix inside the B2 bucket to bypass versioning and avoid orphans
     try {
-      const listCommand = new ListObjectsV2Command({
+      const listVersionsCommand = new ListObjectVersionsCommand({
         Bucket: B2_BUCKET_NAME,
         Prefix: `${eventId}/`,
       });
-      const listedObjects = await b2Client.send(listCommand);
+      const versionsResult = await b2Client.send(listVersionsCommand);
 
-      if (listedObjects.Contents && listedObjects.Contents.length > 0) {
-        console.log(`[B2 Cleanup] Found ${listedObjects.Contents.length} old report files in folder: ${eventId}/`);
-        for (const object of listedObjects.Contents) {
-          if (object.Key) {
-            console.log(`[B2 Cleanup] Deleting: ${object.Key}`);
-            await b2Client.send(
-              new DeleteObjectCommand({
-                Bucket: B2_BUCKET_NAME,
-                Key: object.Key,
-              })
-            );
+      const deleteObjects = [];
+
+      // Gather all file versions under this event folder
+      if (versionsResult.Versions && versionsResult.Versions.length > 0) {
+        for (const version of versionsResult.Versions) {
+          if (version.Key) {
+            deleteObjects.push({
+              Key: version.Key,
+              VersionId: version.VersionId,
+            });
           }
         }
       }
+
+      // Gather all delete/hide markers under this event folder to fully purge
+      if (versionsResult.DeleteMarkers && versionsResult.DeleteMarkers.length > 0) {
+        for (const marker of versionsResult.DeleteMarkers) {
+          if (marker.Key) {
+            deleteObjects.push({
+              Key: marker.Key,
+              VersionId: marker.VersionId,
+            });
+          }
+        }
+      }
+
+      if (deleteObjects.length > 0) {
+        console.log(`[B2 Purge] Permanently deleting ${deleteObjects.length} file version(s)/marker(s) in folder: ${eventId}/`);
+        for (const obj of deleteObjects) {
+          await b2Client.send(
+            new DeleteObjectCommand({
+              Bucket: B2_BUCKET_NAME,
+              Key: obj.Key,
+              VersionId: obj.VersionId,
+            })
+          );
+        }
+      }
     } catch (cleanupErr) {
-      console.warn('[B2 Cleanup Warning] Failed to delete prior report PDFs from the event folder:', cleanupErr);
+      console.warn('[B2 Cleanup Warning] Failed to permanently delete prior report versions from the event folder:', cleanupErr);
     }
 
     const timestamp = new Date().getTime();
