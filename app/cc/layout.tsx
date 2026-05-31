@@ -1,5 +1,5 @@
 import { Navbar } from '@/components/shared/Navbar'
-import { createClient } from '@/lib/supabase/server'
+import { getCachedAuthUser, getCachedUserProfile } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import type { Role } from '@/lib/types'
 
@@ -8,12 +8,11 @@ export default async function CCLayout({
 }: {
   children: React.ReactNode
 }) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getCachedAuthUser()
 
   if (!user) redirect('/login')
 
-  const { data: profile } = await supabase.from('profiles').select('full_name, role').eq('id', user.id).single()
+  const profile = await getCachedUserProfile(user.id)
 
   if (!profile || !['admin', 'cc'].includes(profile.role)) {
     redirect('/login')

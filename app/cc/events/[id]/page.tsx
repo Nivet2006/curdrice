@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getCachedAuthUser, getCachedUserProfile } from '@/lib/supabase/server'
 import { ArrowLeft, Clock, XCircle, FileText, Send, Edit3, Heart } from 'lucide-react'
 import { EventRegistrationStats } from '@/components/admin/EventRegistrationStats'
 import Link from 'next/link'
@@ -14,16 +14,15 @@ import { getEventThread } from '@/lib/actions/event-threads'
 export default async function CCEventDetailPage({ params }: { params: Promise<{ id: string }> }) {
    const supabase = await createClient()
    const { id } = await params
-   const { data: { user } } = await supabase.auth.getUser()
+   const user = await getCachedAuthUser()
+   const profile = user ? await getCachedUserProfile(user.id) : null
 
-   // Fetch profile, event and constraints in parallel to eliminate sequential database roundtrips
-   const [profileRes, eventRes, constraintsRes] = await Promise.all([
-      supabase.from('profiles').select('role').eq('id', user?.id || '').single(),
+   // Fetch event and constraints in parallel to eliminate sequential database roundtrips
+   const [eventRes, constraintsRes] = await Promise.all([
       supabase.from('events').select('id, title, description, club_name, location, event_date, registration_deadline, max_capacity, status, approval_status, rejection_data, feedback_config, feedback_open, targeted_department, banner_url, is_public, discussion_enabled, thread_mode, created_by, created_at').eq('id', id).maybeSingle(),
       supabase.from('event_constraints').select('id, event_id, allowed_semesters, allowed_years, allowed_departments, created_at').eq('event_id', id).maybeSingle()
    ])
 
-   const profile = profileRes.data
    const event = eventRes.data
    const constraints = constraintsRes.data
 

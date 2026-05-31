@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getCachedAuthUser } from '@/lib/supabase/server'
 import { RealtimeStaffCalendar } from '@/components/shared/RealtimeStaffCalendar'
 import type { Event } from '@/lib/types'
 
@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic'
 
 export default async function CCCalendarPage() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getCachedAuthUser()
 
   // CC sees all approved events campus-wide (their own events + others)
   const { data: events } = await supabase
