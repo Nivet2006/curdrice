@@ -143,7 +143,7 @@ export function PRAuditQueueClient({ reports, iicReports = [] }: { reports: Repo
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <button onClick={() => setStatusFilter('all')} className={`p-5 rounded-2xl border text-center transition-all ${statusFilter === 'all' ? 'bg-[#0a0a0a] dark:bg-white text-white dark:text-black border-[#0a0a0a] dark:border-white' : 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:border-[#0a0a0a] dark:hover:border-white'}`}>
-          <p className="text-2xl font-black">{reports.length}</p>
+          <p className="text-2xl font-black">{activeReports.length}</p>
           <p className="text-[9px] font-mono uppercase tracking-widest opacity-60">Total</p>
         </button>
         <button onClick={() => setStatusFilter('pending_pr')} className={`p-5 rounded-2xl border text-center transition-all ${statusFilter === 'pending_pr' ? 'bg-amber-500 text-white border-amber-500' : 'bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/20 hover:border-amber-500'}`}>
