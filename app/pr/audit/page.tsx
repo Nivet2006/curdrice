@@ -17,7 +17,7 @@ export default async function PRAuditPage() {
     .from('iic_event_reports')
     .select('*, events(title, club_name, targeted_department, event_date, location)')
     .in('status', ['pending_pr', 'approved_pr'])
-    .order('created_at', { ascending: false })
+    .order('generated_at', { ascending: false })
 
   return (
     <div className="space-y-12 pb-20">

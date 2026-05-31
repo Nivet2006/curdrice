@@ -11,7 +11,8 @@ type Report = {
   id: string
   event_id: string
   status: string
-  created_at: string
+  created_at?: string
+  generated_at?: string
   updated_at: string
   decline_annotations: unknown[] | null
   declined_at: string | null
@@ -97,17 +98,19 @@ export function PRAuditQueueClient({ reports, iicReports = [] }: { reports: Repo
 
     // Date range
     if (dateFrom) {
-      result = result.filter(r => new Date(r.created_at) >= new Date(dateFrom))
+      result = result.filter(r => new Date(r.created_at || r.generated_at || '') >= new Date(dateFrom))
     }
     if (dateTo) {
       const endDate = new Date(dateTo)
       endDate.setHours(23, 59, 59, 999)
-      result = result.filter(r => new Date(r.created_at) <= endDate)
+      result = result.filter(r => new Date(r.created_at || r.generated_at || '') <= endDate)
     }
 
     // Sort
     result.sort((a, b) => {
-      const diff = new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      const dateA = new Date(a.created_at || a.generated_at || '').getTime()
+      const dateB = new Date(b.created_at || b.generated_at || '').getTime()
+      const diff = dateB - dateA
       return sortOrder === 'newest' ? diff : -diff
     })
 
@@ -307,7 +310,7 @@ export function PRAuditQueueClient({ reports, iicReports = [] }: { reports: Repo
                         {statusConf.label}
                       </span>
                       <span className="text-[9px] font-mono text-zinc-400">
-                        {new Date(report.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        {new Date(report.created_at || report.generated_at || '').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </span>
                     </div>
 

@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { b2Client, B2_BUCKET_NAME } from '@/lib/b2';
-import { PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { PutObjectCommand, DeleteObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
 import { NextResponse } from 'next/server';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import { readFileSync, existsSync } from 'fs';
@@ -359,25 +359,30 @@ export async function POST(request: Request) {
     // -------------------------------------------------------------
     // UPLOAD TO BACKBLAZE B2 OBJECT STORAGE
     // -------------------------------------------------------------
-    // Query for existing PDF path to delete it and avoid orphaned files on B2
+    // Query and delete any existing files directly from the event's folder prefix inside the B2 bucket to avoid orphans
     try {
-      const { data: existingRep } = await supabase
-        .from('iic_event_reports')
-        .select('pdf_path')
-        .eq('event_id', eventId)
-        .maybeSingle();
+      const listCommand = new ListObjectsV2Command({
+        Bucket: B2_BUCKET_NAME,
+        Prefix: `${eventId}/`,
+      });
+      const listedObjects = await b2Client.send(listCommand);
 
-      if (existingRep?.pdf_path) {
-        console.log(`[B2 Cleanup] Deleting old report PDF from B2: ${existingRep.pdf_path}`);
-        await b2Client.send(
-          new DeleteObjectCommand({
-            Bucket: B2_BUCKET_NAME,
-            Key: existingRep.pdf_path,
-          })
-        );
+      if (listedObjects.Contents && listedObjects.Contents.length > 0) {
+        console.log(`[B2 Cleanup] Found ${listedObjects.Contents.length} old report files in folder: ${eventId}/`);
+        for (const object of listedObjects.Contents) {
+          if (object.Key) {
+            console.log(`[B2 Cleanup] Deleting: ${object.Key}`);
+            await b2Client.send(
+              new DeleteObjectCommand({
+                Bucket: B2_BUCKET_NAME,
+                Key: object.Key,
+              })
+            );
+          }
+        }
       }
     } catch (cleanupErr) {
-      console.warn('[B2 Cleanup Warning] Failed to delete prior report PDF:', cleanupErr);
+      console.warn('[B2 Cleanup Warning] Failed to delete prior report PDFs from the event folder:', cleanupErr);
     }
 
     const timestamp = new Date().getTime();
