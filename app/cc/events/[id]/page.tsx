@@ -16,19 +16,21 @@ export default async function CCEventDetailPage({ params }: { params: Promise<{ 
    const { id } = await params
    const { data: { user } } = await supabase.auth.getUser()
 
-   // Get user role for permissions
-   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user?.id || '').single()
+   // Fetch profile, event and constraints in parallel to eliminate sequential database roundtrips
+   const [profileRes, eventRes, constraintsRes] = await Promise.all([
+      supabase.from('profiles').select('role').eq('id', user?.id || '').single(),
+      supabase.from('events').select('id, title, description, club_name, location, event_date, registration_deadline, max_capacity, status, approval_status, rejection_data, feedback_config, feedback_open, targeted_department, banner_url, is_public, discussion_enabled, thread_mode, created_by, created_at').eq('id', id).maybeSingle(),
+      supabase.from('event_constraints').select('id, event_id, allowed_semesters, allowed_years, allowed_departments, created_at').eq('event_id', id).maybeSingle()
+   ])
+
+   const profile = profileRes.data
+   const event = eventRes.data
+   const constraints = constraintsRes.data
+
    const isAdmin = profile?.role === 'admin'
 
-   // If admin, we don't filter by created_by
-   let query = supabase.from('events').select('id, title, description, club_name, location, event_date, registration_deadline, max_capacity, status, approval_status, rejection_data, feedback_config, feedback_open, targeted_department, banner_url, is_public, discussion_enabled, thread_mode, created_by, created_at').eq('id', id)
-   if (!isAdmin) {
-      query = query.eq('created_by', user?.id || '')
-   }
-
-   const { data: event } = await query.single()
-
-   if (!event) {
+   // Security check: if the event doesn't exist, or the user is not an admin and is not the creator of the event, deny access
+   if (!event || (!isAdmin && event.created_by !== user?.id)) {
       return (
          <div className="flex flex-col items-center justify-center py-20 space-y-4">
             <h2 className="text-2xl font-bold">Event not found or access denied.</h2>
@@ -37,20 +39,14 @@ export default async function CCEventDetailPage({ params }: { params: Promise<{ 
       )
    }
 
-   const { data: constraints } = await supabase
-      .from('event_constraints')
-      .select('id, event_id, allowed_semesters, allowed_years, allowed_departments, created_at')
-      .eq('event_id', id)
-      .maybeSingle()
-
    let uniqueDepts: string[] = []
    if (isAdmin) {
       const { data: depts } = await supabase.from('profiles').select('department')
       uniqueDepts = Array.from(new Set(depts?.map(d => d.department).filter(Boolean))) as string[]
    }
 
-   // Fetch thread info if discussion is enabled
-   const thread = event.discussion_enabled ? await getEventThread(id) : null
+   // Fetch thread info if discussion is enabled (passing prefetched user, role and thread mode to optimize speed)
+   const thread = event.discussion_enabled ? await getEventThread(id, user, profile?.role, event.thread_mode) : null
 
    return (
       <div className="max-w-4xl mx-auto space-y-12 pb-20 transition-colors">

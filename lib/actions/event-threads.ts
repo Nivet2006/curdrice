@@ -162,23 +162,32 @@ export async function joinEventThread(eventId: string, userId: string) {
    GET EVENT THREAD INFO
 ───────────────────────────────────────── */
 
-export async function getEventThread(eventId: string) {
+export async function getEventThread(
+  eventId: string,
+  prefetchedUser?: any,
+  prefetchedRole?: string,
+  prefetchedThreadMode?: string
+) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = prefetchedUser || (await supabase.auth.getUser()).data.user
   if (!user) return null
 
   // Get event thread_mode, user role, and conversation in parallel
   const [eventRes, profileRes, convRes] = await Promise.all([
-    supabaseAdmin
-      .from('events')
-      .select('thread_mode')
-      .eq('id', eventId)
-      .single(),
-    supabaseAdmin
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single(),
+    prefetchedThreadMode
+      ? { data: { thread_mode: prefetchedThreadMode } }
+      : supabaseAdmin
+          .from('events')
+          .select('thread_mode')
+          .eq('id', eventId)
+          .single(),
+    prefetchedRole
+      ? { data: { role: prefetchedRole } }
+      : supabaseAdmin
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single(),
     supabaseAdmin
       .from('conversations')
       .select('id, name, created_at')
