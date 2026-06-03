@@ -53,7 +53,7 @@ export function Navbar({ role, name }: { role?: Role; name?: string }) {
     ] : []),
     // Calendar link for every role
     { href: `/${role}/calendar`, label: 'Calendar', icon: Calendar },
-    ...(role !== 'student' ? [
+    ...(role !== 'student' && role !== 'pr' ? [
       { href: role === 'admin' ? '/admin/cert' : '/dashboard/cert', label: 'Cert', icon: Award },
     ] : []),
     ...(role === 'admin' ? [
