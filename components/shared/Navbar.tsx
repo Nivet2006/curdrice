@@ -77,6 +77,7 @@ export function Navbar({ role, name }: { role?: Role; name?: string }) {
       { href: '/hod/approvals', label: 'Approvals', icon: ClipboardList },
     ] : []),
     ...(role === 'student' ? [
+      { href: '/student/attendance', label: 'Attendance', icon: ClipboardList },
       { href: '/student/profile', label: 'Profile', icon: UserCircle },
     ] : []),
   ] : []
