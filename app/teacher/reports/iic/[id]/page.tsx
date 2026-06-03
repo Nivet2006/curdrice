@@ -117,7 +117,7 @@ export default async function FacultyIICReportAuditPage({ params }: { params: Pr
                         </td>
                       </tr>
                     ) : (
-                      registrations.map((reg: any) => (
+                      (registrations || []).map((reg: any) => (
                         <tr key={reg.id} className="hover:bg-[#fcfcfc] dark:hover:bg-zinc-900/50 transition-colors">
                           <td className="p-3 font-semibold text-[#0a0a0a] dark:text-white">{reg.profiles?.full_name || 'Unknown'}</td>
                           <td className="p-3 font-mono text-[#555555] dark:text-[#a0a0a0]">{reg.profiles?.usn || '-'}</td>
