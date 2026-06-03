@@ -193,22 +193,30 @@ export default async function CCEventDetailPage({ params }: { params: Promise<{ 
                   </div>
                </section>
 
-               {event.rejection_data && event.rejection_data.length > 0 && (
-                  <section className="bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/50 rounded-3xl p-8 space-y-4">
-                     <div className="flex items-center gap-2 text-rose-600 dark:text-rose-400">
-                        <XCircle size={20} />
-                        <h2 className="font-bold text-xl uppercase tracking-tight">Revision Required</h2>
-                     </div>
-                     <div className="space-y-4">
-                        {event.rejection_data.map((item: any, i: number) => (
-                           <div key={i} className="bg-white dark:bg-black/40 p-4 rounded-xl border border-rose-100 dark:border-rose-900/30">
-                              <p className="text-[10px] font-mono uppercase text-rose-600 dark:text-rose-400 mb-1">{item.field}</p>
-                              <p className="text-sm font-medium text-rose-900 dark:text-rose-200">{item.reason}</p>
-                           </div>
-                        ))}
-                     </div>
-                  </section>
-               )}
+                {(() => {
+                   const rejectionData = Array.isArray(event.rejection_data)
+                      ? event.rejection_data
+                      : (typeof event.rejection_data === 'string'
+                         ? (JSON.parse(event.rejection_data) || [])
+                         : []);
+                   if (!rejectionData || rejectionData.length === 0) return null;
+                   return (
+                      <section className="bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/50 rounded-3xl p-8 space-y-4">
+                         <div className="flex items-center gap-2 text-rose-600 dark:text-rose-400">
+                            <XCircle size={20} />
+                            <h2 className="font-bold text-xl uppercase tracking-tight">Revision Required</h2>
+                         </div>
+                         <div className="space-y-4">
+                            {rejectionData.map((item: any, i: number) => (
+                               <div key={i} className="bg-white dark:bg-black/40 p-4 rounded-xl border border-rose-100 dark:border-rose-900/30">
+                                  <p className="text-[10px] font-mono uppercase text-rose-600 dark:text-rose-400 mb-1">{item.field}</p>
+                                  <p className="text-sm font-medium text-rose-900 dark:text-rose-200">{item.reason}</p>
+                               </div>
+                            ))}
+                         </div>
+                      </section>
+                   );
+                })()}
 
                {/* Section 1 — Event Report Hub Card moved here */}
                <ReportHubCard eventId={event.id} />

@@ -81,19 +81,27 @@ export default function EditEventForm({ event, constraints }: EditEventFormProps
       <form className="space-y-12">
         <header className="space-y-4">
           <h1 className="text-4xl font-bold tracking-tight text-[#0a0a0a]">Revise Proposal</h1>
-          {event.rejection_data && event.rejection_data.length > 0 && (
-            <div className="bg-rose-50 border border-rose-100 p-4 rounded-2xl flex gap-3">
-              <AlertCircle className="text-rose-600 shrink-0" size={20} />
-              <div>
-                <p className="text-xs font-bold text-rose-600 uppercase tracking-widest mb-2">Reviewer Feedback</p>
-                <div className="space-y-2">
-                  {event.rejection_data.map((r: any, i: number) => (
-                    <p key={i} className="text-sm text-rose-900 border-l-2 border-rose-200 pl-3"><span className="font-bold">{r.field}:</span> {r.reason}</p>
-                  ))}
+          {(() => {
+            const rejectionData = Array.isArray(event.rejection_data)
+              ? event.rejection_data
+              : (typeof event.rejection_data === 'string'
+                ? (JSON.parse(event.rejection_data) || [])
+                : []);
+            if (!rejectionData || rejectionData.length === 0) return null;
+            return (
+              <div className="bg-rose-50 border border-rose-100 p-4 rounded-2xl flex gap-3">
+                <AlertCircle className="text-rose-600 shrink-0" size={20} />
+                <div>
+                  <p className="text-xs font-bold text-rose-600 uppercase tracking-widest mb-2">Reviewer Feedback</p>
+                  <div className="space-y-2">
+                    {rejectionData.map((r: any, i: number) => (
+                      <p key={i} className="text-sm text-rose-900 border-l-2 border-rose-200 pl-3"><span className="font-bold">{r.field}:</span> {r.reason}</p>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">

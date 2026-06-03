@@ -230,7 +230,7 @@ export async function updateEventDraft(id: string, formData: FormData) {
     targeted_department,
     feedback_config,
     is_public,
-    rejection_data: '[]'
+    rejection_data: []
   }).eq('id', id).eq('created_by', user.id)
 
   if (eventError) return { error: eventError.message }
