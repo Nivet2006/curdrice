@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
-import { b2Client, B2_BUCKET_NAME } from '@/lib/b2';
+import { b2ImagesClient, B2_IMAGES_BUCKET_NAME } from '@/lib/b2';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
@@ -27,9 +27,9 @@ export async function POST(request: Request) {
     const extension = file.type === 'image/png' ? 'png' : 'jpg';
     const filePath = `images/${uuidv4()}_image.${extension}`;
 
-    await b2Client.send(
+    await b2ImagesClient.send(
       new PutObjectCommand({
-        Bucket: B2_BUCKET_NAME,
+        Bucket: B2_IMAGES_BUCKET_NAME,
         Key: filePath,
         Body: buffer,
         ContentType: file.type || 'image/jpeg',

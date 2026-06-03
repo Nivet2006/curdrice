@@ -1,4 +1,4 @@
-import { b2Client, B2_BUCKET_NAME } from '@/lib/b2';
+import { b2ImagesClient, B2_IMAGES_BUCKET_NAME } from '@/lib/b2';
 import { GetObjectCommand } from '@aws-sdk/client-s3';
 import { NextResponse } from 'next/server';
 
@@ -10,9 +10,9 @@ export async function GET(
     const { path } = await params;
     const key = path.join('/');
 
-    const response = await b2Client.send(
+    const response = await b2ImagesClient.send(
       new GetObjectCommand({
-        Bucket: B2_BUCKET_NAME,
+        Bucket: B2_IMAGES_BUCKET_NAME,
         Key: key,
       })
     );
