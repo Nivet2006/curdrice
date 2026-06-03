@@ -59,7 +59,7 @@ export default function EditEventForm({ event, constraints }: EditEventFormProps
       setError(result.error)
       setLoading(false)
     } else {
-      toast.success(isFinalSubmit ? "Event submitted for review!" : "Changes saved successfully!")
+      toast.success(isFinalSubmit ? "Event updated successfully!" : "Changes saved successfully!")
       router.push(`/cc/events/${event.id}`)
       router.refresh()
     }
