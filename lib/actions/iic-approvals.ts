@@ -156,3 +156,43 @@ export async function pushIICReportToHOD(reportId: string) {
   
   return { success: true };
 }
+
+export async function declineIICReportWithAnnotations(
+  reportId: string,
+  annotations: { section: string; comment: string }[],
+  feedback: string
+) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'Unauthorized: Session missing.' };
+
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+  if (!profile || !['pr', 'teacher', 'admin'].includes(profile.role)) {
+    return { error: 'Unauthorized.' };
+  }
+
+  // If PR declines: goes to rejected_pr (back to CC)
+  // If Faculty/Teacher declines: goes to rejected_faculty (back to PR)
+  const nextStatus = profile.role === 'pr' ? 'rejected_pr' : 'rejected_faculty';
+
+  const { error } = await supabase
+    .from('iic_event_reports')
+    .update({
+      status: nextStatus,
+      rejection_feedback: feedback,
+      decline_annotations: annotations
+    })
+    .eq('id', reportId);
+
+  if (error) {
+    console.error('[IIC Decline Error]', error);
+    return { error: `Failed to decline report: ${error.message}` };
+  }
+
+  revalidatePath('/pr/dashboard');
+  revalidatePath('/pr/audit');
+  revalidatePath('/teacher/dashboard');
+  revalidatePath('/hod/dashboard');
+
+  return { success: true };
+}

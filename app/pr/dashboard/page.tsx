@@ -24,7 +24,7 @@ export default async function PRDashboard() {
     supabase
       .from('iic_event_reports')
       .select('id', { count: 'exact', head: true })
-      .eq('status', 'pending_pr')
+      .in('status', ['pending_pr', 'rejected_faculty'])
   ])
 
   const pendingCount = (standardPendingRes.count || 0) + (iicPendingRes.count || 0)
@@ -46,7 +46,7 @@ export default async function PRDashboard() {
     supabase
       .from('iic_event_reports')
       .select('id, status, generated_at, events(title, club_name)')
-      .eq('status', 'pending_pr')
+      .in('status', ['pending_pr', 'rejected_faculty'])
       .order('generated_at', { ascending: true })
       .limit(3)
   ])

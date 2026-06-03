@@ -40,3 +40,7 @@ CREATE TRIGGER trg_populate_registration_event_details
 BEFORE INSERT ON registrations
 FOR EACH ROW
 EXECUTE FUNCTION populate_registration_event_details();
+
+-- Add decline_annotations to iic_event_reports
+ALTER TABLE iic_event_reports 
+ADD COLUMN IF NOT EXISTS decline_annotations jsonb DEFAULT '[]'::jsonb;

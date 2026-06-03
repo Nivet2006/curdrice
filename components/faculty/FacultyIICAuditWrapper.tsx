@@ -1,45 +1,112 @@
 'use client'
 
 import React, { useState } from 'react'
-import { processIICReportReview, pushIICReportToHOD } from '@/lib/actions/iic-approvals'
-import { CheckCircle2, XCircle, Send, Award, AlertTriangle, ArrowRight, Loader2 } from 'lucide-react'
+import { declineIICReportWithAnnotations, processIICReportReview, pushIICReportToHOD } from '@/lib/actions/iic-approvals'
+import { CheckCircle2, XCircle, Send, Award, AlertTriangle, ArrowRight, Loader2, Plus, X, FileText } from 'lucide-react'
 
-export function FacultyIICAuditWrapper({ reportId, reportStatus, rejectionFeedback }: { reportId: string; reportStatus: string; rejectionFeedback?: string | null }) {
+const REPORT_SECTIONS = [
+  { id: 'executive_summary', label: 'Executive Summary' },
+  { id: 'objective', label: 'Objectives' },
+  { id: 'benefits', label: 'Benefits' },
+  { id: 'resource_persons', label: 'Resource Persons' },
+  { id: 'coordinators', label: 'Coordinators' },
+  { id: 'photos', label: 'Photos (Evidence)' },
+  { id: 'general', label: 'General / Other' },
+]
+
+type Annotation = {
+  section: string
+  sectionLabel: string
+  comment: string
+}
+
+export function FacultyIICAuditWrapper({ 
+  reportId, 
+  reportStatus, 
+  rejectionFeedback,
+  initialAnnotations = []
+}: { 
+  reportId: string 
+  reportStatus: string 
+  rejectionFeedback?: string | null
+  initialAnnotations?: { section: string; comment: string }[]
+}) {
   const [loading, setLoading] = useState(false)
   const [decision, setDecision] = useState<'approve' | 'decline' | null>(null)
   const [feedback, setFeedback] = useState('')
-  const [isPushed, setIsPushed] = useState(reportStatus !== 'approved_faculty' && reportStatus !== 'pending_pr' && reportStatus !== 'rejected_pr' && reportStatus !== 'pending_faculty' && reportStatus !== 'rejected_faculty')
+  const [annotations, setAnnotations] = useState<Annotation[]>(
+    initialAnnotations.map(a => ({
+      section: a.section,
+      sectionLabel: REPORT_SECTIONS.find(s => s.id === a.section)?.label || a.section,
+      comment: a.comment
+    }))
+  )
+  const [activeSection, setActiveSection] = useState<string | null>(null)
+  const [annotationText, setAnnotationText] = useState('')
+
+  const [isPushed, setIsPushed] = useState(
+    reportStatus !== 'approved_faculty' && 
+    reportStatus !== 'pending_pr' && 
+    reportStatus !== 'rejected_pr' && 
+    reportStatus !== 'pending_faculty' && 
+    reportStatus !== 'rejected_faculty'
+  )
   const [pushing, setPushing] = useState(false)
 
   const isApproved = reportStatus !== 'pending_pr' && reportStatus !== 'rejected_pr' && reportStatus !== 'pending_faculty' && reportStatus !== 'rejected_faculty'
   const isDeclined = reportStatus === 'rejected_faculty'
 
-  async function handleAction() {
-    if (!decision) return;
-    if (decision === 'decline' && !feedback.trim()) {
-      alert('Please add comments before declining.');
-      return;
-    }
+  const addAnnotation = () => {
+    if (!activeSection || !annotationText.trim()) return
+    const sectionLabel = REPORT_SECTIONS.find(s => s.id === activeSection)?.label || activeSection
+    setAnnotations(prev => [...prev, { section: activeSection, sectionLabel, comment: annotationText.trim() }])
+    setAnnotationText('')
+    setActiveSection(null)
+  }
 
-    setLoading(true);
-    const res = await processIICReportReview(reportId, 'teacher', decision === 'approve' ? 'approve' : 'reject', feedback);
+  const removeAnnotation = (index: number) => {
+    setAnnotations(prev => prev.filter((_, i) => i !== index))
+  }
+
+  async function handleApprove() {
+    setLoading(true)
+    const res = await processIICReportReview(reportId, 'teacher', 'approve', feedback)
     if (res?.error) {
-      alert(res.error);
-      setLoading(false);
+      alert(res.error)
+      setLoading(false)
     } else {
-      window.location.reload();
+      window.location.reload()
+    }
+  }
+
+  async function handleDecline() {
+    if (annotations.length === 0 && !feedback.trim()) {
+      alert('Please add at least one annotation or provide feedback before declining.')
+      return
+    }
+    setLoading(true)
+    const res = await declineIICReportWithAnnotations(
+      reportId,
+      annotations.map(a => ({ section: a.section, comment: a.comment })),
+      feedback
+    )
+    if (res?.error) {
+      alert(res.error)
+      setLoading(false)
+    } else {
+      window.location.reload()
     }
   }
 
   async function handlePush() {
-    setPushing(true);
-    const res = await pushIICReportToHOD(reportId);
+    setPushing(true)
+    const res = await pushIICReportToHOD(reportId)
     if (res?.error) {
-      alert(res.error);
-      setPushing(false);
+      alert(res.error)
+      setPushing(false)
     } else {
-      setIsPushed(true);
-      window.location.reload();
+      setIsPushed(true)
+      window.location.reload()
     }
   }
 
@@ -82,13 +149,13 @@ export function FacultyIICAuditWrapper({ reportId, reportStatus, rejectionFeedba
           <h3 className="font-black uppercase text-lg tracking-tighter">Report Declined</h3>
         </div>
         <div className="space-y-2">
-          <p className="text-xs font-mono uppercase text-rose-300 tracking-widest">Feedback sent to CC:</p>
+          <p className="text-xs font-mono uppercase text-rose-300 tracking-widest">Feedback sent to PR:</p>
           <p className="text-sm bg-black/30 border border-rose-500/20 p-4 rounded-xl text-rose-100 font-serif italic">
-            "{rejectionFeedback || 'No specific reason provided.'}"
+            "{rejectionFeedback || 'No specific feedback annotation provided.'}"
           </p>
         </div>
         <p className="text-xs text-rose-300 font-mono italic">
-          Waiting for CC to revise and re-submit.
+          Returned to Publicity / PR Queue for revision.
         </p>
       </div>
     )
@@ -107,7 +174,7 @@ export function FacultyIICAuditWrapper({ reportId, reportStatus, rejectionFeedba
         <div className="grid grid-cols-2 gap-4">
           <button
             type="button"
-            onClick={() => setDecision('approve')}
+            onClick={() => { setDecision('approve'); setAnnotations([]) }}
             className={`flex items-center justify-center gap-3 py-5 rounded-3xl border-2 transition-all font-black text-sm uppercase italic ${
               decision === 'approve' ? 'bg-white text-black border-white' : 'border-zinc-800 text-zinc-500 hover:border-zinc-600'
             }`}
@@ -123,27 +190,105 @@ export function FacultyIICAuditWrapper({ reportId, reportStatus, rejectionFeedba
             }`}
           >
             <XCircle size={18} />
-            Send Back
+            Send Back to PR
           </button>
         </div>
       </div>
 
-      {/* Rejection / Approval Annotations */}
+      {/* Annotation System (only on Decline) */}
+      {decision === 'decline' && (
+        <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-300">
+          <div className="flex items-center gap-2 mb-2">
+            <AlertTriangle size={14} className="text-amber-500" />
+            <p className="text-[10px] font-mono text-amber-400 uppercase tracking-widest font-bold">Per-Section Annotations</p>
+          </div>
+          <p className="text-[11px] text-zinc-500 italic">
+            Add specific comments for sections you want corrected. PR will receive these comments and correct them.
+          </p>
+
+          {/* Existing Annotations */}
+          {annotations.length > 0 && (
+            <div className="space-y-2">
+              {annotations.map((a, i) => (
+                <div key={i} className="flex items-start justify-between bg-zinc-900 border border-zinc-800 p-3 rounded-xl group">
+                  <div className="flex-1">
+                    <p className="text-[9px] font-mono text-rose-400 uppercase tracking-widest mb-1">{a.sectionLabel}</p>
+                    <p className="text-xs text-zinc-300">{a.comment}</p>
+                  </div>
+                  <button
+                    onClick={() => removeAnnotation(i)}
+                    className="p-1 text-zinc-600 hover:text-rose-400 transition-colors opacity-0 group-hover:opacity-100"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Add Annotation Form */}
+          {!activeSection ? (
+            <div className="space-y-2">
+              <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">Select section to annotate:</p>
+              <div className="flex flex-wrap gap-2">
+                {REPORT_SECTIONS.map(section => (
+                  <button
+                    key={section.id}
+                    onClick={() => setActiveSection(section.id)}
+                    className="flex items-center gap-1.5 px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-[10px] font-mono text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
+                  >
+                    <FileText size={10} />
+                    {section.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3 bg-zinc-900 border border-zinc-800 p-4 rounded-2xl">
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] font-mono text-rose-400 uppercase tracking-widest font-bold">
+                  {REPORT_SECTIONS.find(s => s.id === activeSection)?.label}
+                </p>
+                <button onClick={() => { setActiveSection(null); setAnnotationText('') }} className="text-zinc-600 hover:text-white">
+                  <X size={12} />
+                </button>
+              </div>
+              <textarea
+                value={annotationText}
+                onChange={e => setAnnotationText(e.target.value)}
+                placeholder="Describe what needs to be changed..."
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-xl p-3 text-xs text-white outline-none focus:ring-1 focus:ring-zinc-600 h-20 resize-none font-mono"
+                autoFocus
+              />
+              <button
+                onClick={addAnnotation}
+                disabled={!annotationText.trim()}
+                className="flex items-center gap-2 px-4 py-2 bg-rose-600 text-white rounded-xl text-[10px] font-bold uppercase tracking-wider disabled:opacity-30 hover:bg-rose-500 transition-colors"
+              >
+                <Plus size={12} />
+                Add Annotation
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Global Remarks */}
       <div className="space-y-3">
         <p className="text-xs font-mono font-bold uppercase tracking-widest text-zinc-400">
-          {decision === 'decline' ? 'Rejection Feedback & Annotations' : 'Review Remarks'}
+          {decision === 'decline' ? 'Global Remarks (sent to PR)' : 'Verification Remarks'}
         </p>
         <textarea
-          placeholder={decision === 'decline' ? "Provide specific annotations, corrections, or reasons for rejection..." : "Optional verification remarks..."}
+          placeholder={decision === 'decline' ? "Describe the corrections required by PR..." : "Optional verification comments..."}
           value={feedback}
           onChange={e => setFeedback(e.target.value)}
           className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-5 text-sm outline-none focus:ring-2 focus:ring-zinc-600 h-32 resize-none font-medium italic text-white"
         />
       </div>
 
-      {/* Submit */}
+      {/* Submit Action */}
       <button
-        onClick={handleAction}
+        onClick={decision === 'approve' ? handleApprove : handleDecline}
         disabled={loading || !decision}
         className={`w-full py-5 rounded-[2rem] font-black uppercase tracking-[0.2em] text-xs flex items-center justify-center gap-3 transition-all disabled:opacity-20 active:scale-95 shadow-[0_0_50px_rgba(255,255,255,0.1)] ${
           decision === 'decline'
