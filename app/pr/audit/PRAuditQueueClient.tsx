@@ -41,7 +41,6 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.
 }
 
 export function PRAuditQueueClient({ reports, iicReports = [] }: { reports: Report[]; iicReports?: any[] }) {
-  const [activeTab, setActiveTab] = useState<'standard' | 'iic'>('standard')
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [clubFilter, setClubFilter] = useState<string>('all')
@@ -52,8 +51,10 @@ export function PRAuditQueueClient({ reports, iicReports = [] }: { reports: Repo
   const [showAdvanced, setShowAdvanced] = useState(false)
 
   const activeReports = useMemo(() => {
-    return activeTab === 'standard' ? reports : iicReports;
-  }, [activeTab, reports, iicReports])
+    const stdMapped = (reports || []).map(r => ({ ...r, reportType: 'standard' }));
+    const iicMapped = (iicReports || []).map(r => ({ ...r, reportType: 'iic' }));
+    return [...stdMapped, ...iicMapped];
+  }, [reports, iicReports])
 
   // Derive unique clubs and departments
   const clubs = useMemo(() => {
@@ -123,25 +124,6 @@ export function PRAuditQueueClient({ reports, iicReports = [] }: { reports: Repo
 
   return (
     <div className="space-y-8">
-      {/* Tab Navigation */}
-      <div className="flex gap-6 border-b border-zinc-200 dark:border-zinc-800 pb-2 mb-4">
-        <button
-          onClick={() => { setActiveTab('standard'); setStatusFilter('all'); }}
-          className={`pb-2 font-mono text-xs uppercase tracking-widest transition-all font-black ${
-            activeTab === 'standard' ? 'border-b-2 border-black dark:border-white text-black dark:text-white' : 'text-zinc-400 hover:text-zinc-600'
-          }`}
-        >
-          Publicity Reports ({reports.length})
-        </button>
-        <button
-          onClick={() => { setActiveTab('iic'); setStatusFilter('all'); }}
-          className={`pb-2 font-mono text-xs uppercase tracking-widest transition-all font-black ${
-            activeTab === 'iic' ? 'border-b-2 border-black dark:border-white text-black dark:text-white' : 'text-zinc-400 hover:text-zinc-600'
-          }`}
-        >
-          Official IIC Reports ({iicReports.length})
-        </button>
-      </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -281,7 +263,7 @@ export function PRAuditQueueClient({ reports, iicReports = [] }: { reports: Repo
 
       {/* Results Count */}
       <p className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest">
-        Showing {filtered.length} of {reports.length} reports
+        Showing {filtered.length} of {activeReports.length} reports
       </p>
 
       {/* Reports List */}
@@ -305,10 +287,17 @@ export function PRAuditQueueClient({ reports, iicReports = [] }: { reports: Repo
                   <div className="space-y-3">
                     {/* Status Badge */}
                     <div className="flex items-center justify-between">
-                      <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] font-mono font-bold uppercase tracking-widest border ${statusConf.color}`}>
-                        {statusConf.icon}
-                        {statusConf.label}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] font-mono font-bold uppercase tracking-widest border ${statusConf.color}`}>
+                          {statusConf.icon}
+                          {statusConf.label}
+                        </span>
+                        {report.reportType === 'iic' && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-mono font-bold uppercase tracking-widest bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20">
+                            IIC Report
+                          </span>
+                        )}
+                      </div>
                       <span className="text-[9px] font-mono text-zinc-400">
                         {new Date(report.created_at || report.generated_at || '').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </span>
@@ -350,7 +339,7 @@ export function PRAuditQueueClient({ reports, iicReports = [] }: { reports: Repo
                   {/* Action */}
                   <div className="flex items-center justify-end pt-4 border-t border-zinc-100 dark:border-zinc-800">
                     <Link
-                      href={activeTab === 'iic' ? `/pr/reports/iic/${report.id}` : `/pr/reports/${report.id}`}
+                      href={report.reportType === 'iic' ? `/pr/reports/iic/${report.id}` : `/pr/reports/${report.id}`}
                       className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all active:scale-95 shadow-lg ${
                         isActionable
                           ? 'bg-[#0a0a0a] dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200'
