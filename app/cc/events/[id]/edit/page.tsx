@@ -29,12 +29,6 @@ export default async function CCEditEventPage({ params }: { params: Promise<{ id
 
   if (!event) notFound()
 
-  // Only allow editing if it's a draft OR has rejection data (meaning it needs revision)
-  const isEditable = event.approval_status === 'draft' || (event.rejection_data && event.rejection_data.length > 0)
-  if (!isEditable) {
-    redirect(`/cc/events/${id}`)
-  }
-
   return (
     <div className="pb-20">
       <EditEventForm event={event} constraints={constraints} />

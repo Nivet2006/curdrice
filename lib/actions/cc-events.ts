@@ -204,8 +204,15 @@ export async function updateEventDraft(id: string, formData: FormData) {
     }
   }
 
+  const { data: currentEvent } = await supabase
+    .from('events')
+    .select('approval_status')
+    .eq('id', id)
+    .single()
+
+  const isAlreadyApproved = currentEvent?.approval_status === 'approved'
   const isSubmission = formData.get('submitForReview') === 'true'
-  const approval_status = isSubmission ? 'pending_teacher' : 'draft'
+  const approval_status = isAlreadyApproved ? 'approved' : (isSubmission ? 'pending_teacher' : 'draft')
 
   const { error: eventError } = await supabase.from('events').update({
     title, club_name, description, location,
