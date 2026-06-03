@@ -24,15 +24,20 @@ export function PRIICAuditWrapper({
   reportId, 
   reportStatus, 
   rejectionFeedback,
-  initialAnnotations = []
+  initialAnnotations = [],
+  pdfAnnotations = [],
+  decision,
+  onDecisionChange
 }: { 
   reportId: string 
   reportStatus: string 
   rejectionFeedback?: string | null
   initialAnnotations?: { section: string; comment: string }[]
+  pdfAnnotations?: any[]
+  decision: 'approve' | 'decline' | null
+  onDecisionChange: (val: 'approve' | 'decline' | null) => void
 }) {
   const [loading, setLoading] = useState(false)
-  const [decision, setDecision] = useState<'approve' | 'decline' | null>(null)
   const [feedback, setFeedback] = useState('')
   const [annotations, setAnnotations] = useState<Annotation[]>(
     initialAnnotations.map(a => ({
@@ -79,15 +84,16 @@ export function PRIICAuditWrapper({
   }
 
   async function handleDecline() {
-    if (annotations.length === 0 && !feedback.trim()) {
-      alert('Please add at least one annotation or provide feedback before declining.')
+    if (annotations.length === 0 && pdfAnnotations.length === 0 && !feedback.trim()) {
+      alert('Please add at least one annotation, draw on the PDF, or provide feedback before declining.')
       return
     }
     setLoading(true)
     const res = await declineIICReportWithAnnotations(
       reportId,
       annotations.map(a => ({ section: a.section, comment: a.comment })),
-      feedback
+      feedback,
+      pdfAnnotations
     )
     if (res?.error) {
       alert(res.error)
@@ -182,7 +188,7 @@ export function PRIICAuditWrapper({
         <div className="grid grid-cols-2 gap-4">
           <button
             type="button"
-            onClick={() => { setDecision('approve'); setAnnotations([]) }}
+            onClick={() => { onDecisionChange('approve'); setAnnotations([]) }}
             className={`flex items-center justify-center gap-3 py-5 rounded-3xl border-2 transition-all font-black text-sm uppercase italic ${
               decision === 'approve' ? 'bg-white text-black border-white' : 'border-zinc-800 text-zinc-500 hover:border-zinc-600'
             }`}
@@ -192,7 +198,7 @@ export function PRIICAuditWrapper({
           </button>
           <button
             type="button"
-            onClick={() => setDecision('decline')}
+            onClick={() => onDecisionChange('decline')}
             className={`flex items-center justify-center gap-3 py-5 rounded-3xl border-2 transition-all font-black text-sm uppercase italic ${
               decision === 'decline' ? 'bg-rose-600 text-white border-rose-600' : 'border-zinc-800 text-zinc-500 hover:border-zinc-600'
             }`}

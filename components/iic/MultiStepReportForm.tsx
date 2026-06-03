@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/client';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { pushIICReportToPR } from '@/lib/actions/iic-approvals';
+import { InteractivePDFViewer } from './InteractivePDFViewer';
 
 const StudentAutocomplete = ({ rpIdx, isUsn, placeholder, formData, studentsList, updateForm }: { rpIdx: number, isUsn: boolean, placeholder: string, formData: any, studentsList: any[], updateForm: (key: string, value: any) => void }) => {
   const rp = formData.resource_persons[rpIdx];
@@ -268,7 +269,7 @@ export function MultiStepReportForm({ eventId, eventTitle, eventDate, department
       ) : (
         <>
           {existingReport?.rejection_feedback && (
-            <div className="bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800/30 rounded-2xl p-6 mb-8 space-y-2 animate-in fade-in duration-300">
+            <div className="bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800/30 rounded-2xl p-6 mb-8 space-y-4 animate-in fade-in duration-300">
               <div className="flex items-center gap-2 text-rose-600 dark:text-rose-400 font-bold text-sm">
                 <AlertCircle size={16} />
                 <span>REPORT REJECTED BY PUBLIC RELATIONS</span>
@@ -276,8 +277,36 @@ export function MultiStepReportForm({ eventId, eventTitle, eventDate, department
               <p className="text-xs text-rose-700 dark:text-rose-300 italic font-mono leading-relaxed">
                 "{existingReport.rejection_feedback}"
               </p>
+
+              {/* Display existing section-level annotations if any */}
+              {existingReport.decline_annotations && existingReport.decline_annotations.length > 0 && (
+                <div className="space-y-2 bg-white dark:bg-zinc-900 p-4 rounded-xl border border-rose-200 dark:border-rose-800">
+                  <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">Section Annotations:</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {existingReport.decline_annotations.map((a: any, idx: number) => (
+                      <div key={idx} className="p-2.5 bg-zinc-50 dark:bg-zinc-950 rounded-lg text-xs text-left">
+                        <span className="font-mono text-[9px] text-rose-500 uppercase tracking-widest block mb-0.5">{a.section.replace('_', ' ')}</span>
+                        <span className="text-zinc-700 dark:text-zinc-300 font-mono">{a.comment}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Display PDF Annotations Viewer if drawings/pins exist */}
+              {existingReport.pdf_annotations && existingReport.pdf_annotations.length > 0 && (
+                <div className="space-y-2 text-left">
+                  <p className="text-[10px] font-mono text-rose-400 uppercase tracking-widest font-bold">Visual PDF Markups & Pins:</p>
+                  <InteractivePDFViewer
+                    reportId={existingReport.id}
+                    readOnly={true}
+                    initialAnnotations={existingReport.pdf_annotations}
+                  />
+                </div>
+              )}
+
               <p className="text-[10px] text-zinc-500">
-                Please review the feedback above, make necessary corrections, and re-generate the official PDF to re-submit for audit.
+                Please review the feedback and visual markups above, make necessary corrections, and re-generate the official PDF to re-submit for audit.
               </p>
             </div>
           )}

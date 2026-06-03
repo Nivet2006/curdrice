@@ -160,7 +160,8 @@ export async function pushIICReportToHOD(reportId: string) {
 export async function declineIICReportWithAnnotations(
   reportId: string,
   annotations: { section: string; comment: string }[],
-  feedback: string
+  feedback: string,
+  pdfAnnotations: any[] = []
 ) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -180,7 +181,8 @@ export async function declineIICReportWithAnnotations(
     .update({
       status: nextStatus,
       rejection_feedback: feedback,
-      decline_annotations: annotations
+      decline_annotations: annotations,
+      pdf_annotations: pdfAnnotations
     })
     .eq('id', reportId);
 
