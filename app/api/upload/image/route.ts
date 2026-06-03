@@ -36,17 +36,9 @@ export async function POST(request: Request) {
       })
     );
 
-    // Construct download URL
-    const b2Endpoint = process.env.B2_ENDPOINT || 'https://s3.us-west-004.backblazeb2.com';
-    let imageUrl = '';
-    if (process.env.B2_DOWNLOAD_URL) {
-      imageUrl = `${process.env.B2_DOWNLOAD_URL}/${filePath}`;
-    } else {
-      const match = b2Endpoint.match(/s3\.([a-z0-9-]+)\.backblazeb2\.com/);
-      const region = match ? match[1] : 'us-west-004';
-      const b2Domain = region.startsWith('us-west-') ? `f${region.replace('us-west-', '')}.backblazeb2.com` : `f004.backblazeb2.com`;
-      imageUrl = `https://${b2Domain}/file/${B2_BUCKET_NAME}/${filePath}`;
-    }
+    // Construct download URL pointing to the local proxy endpoint
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    const imageUrl = `${siteUrl}/api/assets/${filePath}`;
 
     return NextResponse.json({ success: true, url: imageUrl });
   } catch (error: any) {
