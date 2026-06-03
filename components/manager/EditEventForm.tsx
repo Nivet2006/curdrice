@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { updateEvent } from '@/lib/actions/events'
 import Link from 'next/link'
 import type { Event, EventConstraint } from '@/lib/types'
+import { ImageUploadInput } from '@/components/ui/ImageUploadInput'
 
 export function EditEventForm({ event, constraints }: { event: Event, constraints: EventConstraint | null }) {
   const [loading, setLoading] = useState(false)
@@ -77,13 +78,7 @@ export function EditEventForm({ event, constraints }: { event: Event, constraint
             <Input label="Attendee Capacity Maximum (0/blank for infinite)" name="capacity" type="number" min="0" defaultValue={event.max_capacity?.toString() || "0"} />
 
             <div className="w-full flex flex-col gap-1">
-              <label className="text-xs font-mono text-[#555555] uppercase tracking-widest">Poster / Banner Image URL</label>
-              <div className="border border-[#d0d0d0] rounded-xl p-6 bg-[#f9f9f9] flex flex-col items-center justify-center">
-                 {event.banner_url && (
-                   <img src={event.banner_url} alt="Current Poster Preview" className="h-24 w-auto rounded object-cover border border-[#e0e0e0] mb-4 shadow-sm" />
-                 )}
-                 <Input className="w-full" name="bannerUrl" defaultValue={event.banner_url || ''} placeholder="https://cdn.example.com/poster.jpg" />
-              </div>
+              <ImageUploadInput label="Poster / Banner Image" name="bannerUrl" defaultValue={event.banner_url || ''} />
             </div>
           </div>
         </div>

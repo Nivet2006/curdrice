@@ -9,6 +9,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { pushIICReportToPR } from '@/lib/actions/iic-approvals';
 import { InteractivePDFViewer } from './InteractivePDFViewer';
+import { ImageUploadInput } from '@/components/ui/ImageUploadInput';
 
 const StudentAutocomplete = ({ rpIdx, isUsn, placeholder, formData, studentsList, updateForm }: { rpIdx: number, isUsn: boolean, placeholder: string, formData: any, studentsList: any[], updateForm: (key: string, value: any) => void }) => {
   const rp = formData.resource_persons[rpIdx];
@@ -497,14 +498,8 @@ export function MultiStepReportForm({ eventId, eventTitle, eventDate, department
             
             <div className="space-y-4 mt-6">
                <h3 className="font-bold text-sm text-black dark:text-white">Photo Collages</h3>
-               <div>
-                 <label className="block text-sm font-medium mb-1">Image Link 1</label>
-                 <input type="text" className="w-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 rounded-lg p-3 text-sm text-black dark:text-white transition-colors" placeholder="https://example.com/image1.jpg" value={formData.photo_1_url || ''} onChange={e => updateForm('photo_1_url', e.target.value)} />
-               </div>
-               <div>
-                 <label className="block text-sm font-medium mb-1">Image Link 2</label>
-                 <input type="text" className="w-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 rounded-lg p-3 text-sm text-black dark:text-white transition-colors" placeholder="https://example.com/image2.jpg" value={formData.photo_2_url || ''} onChange={e => updateForm('photo_2_url', e.target.value)} />
-               </div>
+               <ImageUploadInput label="Image Collage 1" name="photo_1_url" defaultValue={formData.photo_1_url || ''} onChange={url => updateForm('photo_1_url', url)} />
+               <ImageUploadInput label="Image Collage 2" name="photo_2_url" defaultValue={formData.photo_2_url || ''} onChange={url => updateForm('photo_2_url', url)} />
             </div>
           </div>
         )}
