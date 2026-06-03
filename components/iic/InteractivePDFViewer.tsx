@@ -8,7 +8,7 @@ import {
 } from 'lucide-react'
 
 // Configure pdfjs worker using a compatible version matching package.json
-pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.worker.min.mjs`
+pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.7.284/pdf.worker.min.mjs`
 
 export type PDFStroke = {
   type: 'stroke'
