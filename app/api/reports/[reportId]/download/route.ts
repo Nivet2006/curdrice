@@ -44,20 +44,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ repo
     // Optionally update the DB with the new URL
     await supabase.from('iic_event_reports').update({ pdf_url: signedUrl }).eq('id', reportId);
 
-    // Fetch the PDF from the signed URL on the server side to proxy it and avoid client-side CORS issues
-    const pdfResponse = await fetch(signedUrl);
-    if (!pdfResponse.ok) {
-      return NextResponse.json({ error: 'Failed to fetch PDF from storage' }, { status: 500 });
-    }
-
-    const pdfBuffer = await pdfResponse.arrayBuffer();
-
-    return new Response(pdfBuffer, {
-      headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': 'inline; filename="report.pdf"',
-      },
-    });
+    // Redirect to the pre-signed URL
+    return NextResponse.redirect(signedUrl);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
