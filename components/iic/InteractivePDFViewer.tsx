@@ -8,7 +8,7 @@ import {
 } from 'lucide-react'
 
 // Configure pdfjs worker using a compatible version matching package.json
-pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.7.284/pdf.worker.min.mjs`
+pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs'
 
 export type PDFStroke = {
   type: 'stroke'
@@ -103,7 +103,10 @@ export function InteractivePDFViewer({
     async function loadPdf() {
       try {
         setLoading(true)
-        const loadingTask = pdfjs.getDocument(`/api/reports/${reportId}/download`)
+        const loadingTask = pdfjs.getDocument({
+          url: `/api/reports/${reportId}/download`,
+          withCredentials: true
+        })
         const pdfDoc = await loadingTask.promise
         setPdf(pdfDoc)
         setNumPages(pdfDoc.numPages)
