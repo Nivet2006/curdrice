@@ -204,13 +204,20 @@ export async function updateEventDraft(id: string, formData: FormData) {
     }
   }
 
-  const { data: currentEvent } = await supabase
+  const { data: currentEvent, error: fetchError } = await supabase
     .from('events')
     .select('approval_status')
     .eq('id', id)
-    .single()
+    .maybeSingle()
 
-  const isAlreadyApproved = currentEvent?.approval_status === 'approved'
+  if (fetchError) {
+    return { error: `Database error: ${fetchError.message}` }
+  }
+  if (!currentEvent) {
+    return { error: 'Event not found or access denied.' }
+  }
+
+  const isAlreadyApproved = currentEvent.approval_status === 'approved'
   const isSubmission = formData.get('submitForReview') === 'true'
   const approval_status = isAlreadyApproved ? 'approved' : (isSubmission ? 'pending_teacher' : 'draft')
 
