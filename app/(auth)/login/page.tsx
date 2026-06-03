@@ -13,8 +13,6 @@ import { login } from '@/lib/actions/auth'
 import { Eye, EyeOff } from 'lucide-react'
 import { TotpLoginStep } from '@/components/auth/TotpLoginStep'
 import { toast } from 'sonner'
-import { CoolCatHero } from '@/components/shared/CoolCatHero'
-
 export default function LoginPage() {
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
@@ -99,9 +97,7 @@ export default function LoginPage() {
         <BrandMark />
       </div>
 
-      <div className="flex flex-col md:flex-row items-center justify-center gap-8 lg:gap-16 max-w-4xl w-full z-10 py-12">
-        <CoolCatHero />
-        <Card className="max-w-sm w-full px-8 py-10 flex flex-col items-center">
+      <Card className="max-w-sm w-full px-8 py-10 flex flex-col items-center">
         <div className="w-14 h-14 rounded-2xl bg-[#f5f5f5] flex items-center justify-center mb-1 overflow-hidden border border-[#e0e0e0]">
           <img src="/logo.png" alt="logo" className="w-10 h-10 object-contain" />
         </div>
@@ -153,7 +149,6 @@ export default function LoginPage() {
           Don&apos;t have an account? Register →
         </Link>
       </Card>
-      </div>
 
       {/* Test Credentials Helper */}
       <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
