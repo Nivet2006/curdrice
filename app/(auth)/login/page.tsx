@@ -102,7 +102,6 @@ export default function LoginPage() {
           <img src="/logo.png" alt="logo" className="w-10 h-10 object-contain" />
         </div>
         <h1 className="text-2xl font-black tracking-tight mt-3">Club-Eve</h1>
-        <p className="text-sm font-mono text-[#555555] mt-1 text-center font-bold">Mini Project Sem 4</p>
 
         <hr className="w-full border-[#e0e0e0] my-6" />
 

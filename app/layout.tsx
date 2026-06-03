@@ -10,7 +10,7 @@ const mono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono' })
 
 export const metadata: Metadata = {
   title: 'Club-Eve',
-  description: 'Mini Project Sem 4',
+  description: 'Club-Eve portal',
   icons: {
     icon: '/logo.png',
   }
