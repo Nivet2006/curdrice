@@ -15,11 +15,19 @@ export default async function PRDashboard() {
   if (hour >= 12 && hour < 17) greeting = 'Good Afternoon'
   if (hour >= 17) greeting = 'Good Evening'
 
-  // Count pending reports
-  const { count: pendingCount } = await supabase
-    .from('reports')
-    .select('id', { count: 'exact', head: true })
-    .eq('status', 'pending_pr')
+  // Count pending reports from both standard and IIC tables
+  const [standardPendingRes, iicPendingRes] = await Promise.all([
+    supabase
+      .from('reports')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'pending_pr'),
+    supabase
+      .from('iic_event_reports')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'pending_pr')
+  ])
+
+  const pendingCount = (standardPendingRes.count || 0) + (iicPendingRes.count || 0)
 
   // Count assigned events
   const { count: assignedCount } = await supabase
@@ -27,13 +35,26 @@ export default async function PRDashboard() {
     .select('id', { count: 'exact', head: true })
     .eq('pr_id', user?.id || '')
 
-  // Recent pending reports (top 3)
-  const { data: recentPending } = await supabase
-    .from('reports')
-    .select('id, status, created_at, events(title, club_name)')
-    .eq('status', 'pending_pr')
-    .order('created_at', { ascending: true })
-    .limit(3)
+  // Recent pending reports (top 3 combined)
+  const [recentStandardRes, recentIicRes] = await Promise.all([
+    supabase
+      .from('reports')
+      .select('id, status, created_at, events(title, club_name)')
+      .eq('status', 'pending_pr')
+      .order('created_at', { ascending: true })
+      .limit(3),
+    supabase
+      .from('iic_event_reports')
+      .select('id, status, generated_at, events(title, club_name)')
+      .eq('status', 'pending_pr')
+      .order('generated_at', { ascending: true })
+      .limit(3)
+  ])
+
+  const recentPending = [
+    ...(recentStandardRes.data || []).map(r => ({ ...r, type: 'standard', date: r.created_at })),
+    ...(recentIicRes.data || []).map(r => ({ ...r, type: 'iic', date: r.generated_at }))
+  ].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).slice(0, 3)
 
   return (
     <div className="space-y-16 pb-20">
@@ -130,8 +151,8 @@ export default async function PRDashboard() {
                 </div>
                 <h4 className="font-black text-lg text-[#0a0a0a] dark:text-white uppercase tracking-tighter mb-1">{(report.events as any)?.title}</h4>
                 <p className="text-[10px] font-mono text-zinc-400 mb-4">{(report.events as any)?.club_name}</p>
-                <Link
-                  href={`/pr/reports/${report.id}`}
+                 <Link
+                  href={report.type === 'iic' ? `/pr/reports/iic/${report.id}` : `/pr/reports/${report.id}`}
                   className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-zinc-400 group-hover:text-black dark:group-hover:text-white transition-colors"
                 >
                   <Eye size={12} />
