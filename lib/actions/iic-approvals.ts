@@ -51,7 +51,7 @@ export async function processIICReportReview(
 
   updateData.status = nextStatus;
 
-  const { error } = await supabase
+  const { error } = await supabaseAdmin
     .from('iic_event_reports')
     .update(updateData)
     .eq('id', reportId);
@@ -80,7 +80,7 @@ export async function pushIICReportToPR(reportId: string) {
     return { error: 'Unauthorized: Only Club Coordinators or Admins can push reports to PR.' };
   }
 
-  const { error } = await supabase
+  const { error } = await supabaseAdmin
     .from('iic_event_reports')
     .update({
       status: 'pending_pr',
@@ -110,7 +110,7 @@ export async function pushIICReportToFaculty(reportId: string) {
     return { error: 'Unauthorized: Only PR or Admins can push reports to Faculty.' };
   }
 
-  const { error } = await supabase
+  const { error } = await supabaseAdmin
     .from('iic_event_reports')
     .update({
       status: 'pending_faculty',
@@ -139,7 +139,7 @@ export async function pushIICReportToHOD(reportId: string) {
     return { error: 'Unauthorized: Only Faculty Advisors or Admins can push reports to HOD.' };
   }
 
-  const { error } = await supabase
+  const { error } = await supabaseAdmin
     .from('iic_event_reports')
     .update({
       status: 'pending_hod',
@@ -176,7 +176,7 @@ export async function declineIICReportWithAnnotations(
   // If Faculty/Teacher declines: goes to rejected_faculty (back to PR)
   const nextStatus = profile.role === 'pr' ? 'rejected_pr' : 'rejected_faculty';
 
-  const { error } = await supabase
+  const { error } = await supabaseAdmin
     .from('iic_event_reports')
     .update({
       status: nextStatus,

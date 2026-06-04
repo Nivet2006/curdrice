@@ -7,11 +7,21 @@ import { v4 as uuidv4 } from 'uuid';
 export async function POST(request: Request) {
   try {
     const supabase = await createClient();
-    
-    // Check auth
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    const role = profile?.role;
+    const allowedRoles = ['cc', 'teacher', 'hod', 'pr', 'admin'];
+    if (!role || !allowedRoles.includes(role)) {
+      return NextResponse.json({ error: 'Unauthorized: Only CC, Faculty, HOD, and PR can upload images' }, { status: 403 });
     }
 
     const formData = await request.formData();
