@@ -5,6 +5,7 @@ import { PRIICAuditWrapper } from './PRIICAuditWrapper'
 import { InteractivePDFViewer, PDFPageAnnotations } from './InteractivePDFViewer'
 import { ArrowLeft, Award, CheckCircle, AlertTriangle, ExternalLink } from 'lucide-react'
 import Link from 'next/link'
+import { IICReportPipelineStatus } from './IICReportPipelineStatus'
 
 type PRIICAuditPageClientProps = {
   report: any
@@ -52,6 +53,9 @@ export function PRIICAuditPageClient({
           <span className="text-black dark:text-white italic">Target Dept: {report.department}</span>
         </div>
       </header>
+
+      {/* Live Pipeline Status */}
+      <IICReportPipelineStatus status={report.status} rejectedTo={report.rejected_to} />
 
       {/* Show previous decline annotations if declined */}
       {existingAnnotations.length > 0 && report.status === 'rejected_pr' && (

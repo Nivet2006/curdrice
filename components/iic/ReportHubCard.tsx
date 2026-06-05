@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { FileText, Lock, CheckCircle2, Download, AlertCircle, Loader2 } from 'lucide-react';
 import { pushIICReportToPR } from '@/lib/actions/iic-approvals';
+import { IICReportPipelineStatus } from './IICReportPipelineStatus';
 
 export function ReportHubCard({ eventId }: { eventId: string }) {
   const [status, setStatus] = useState<{ total: number; submitted: number; isComplete: boolean } | null>(null);
@@ -109,16 +110,19 @@ export function ReportHubCard({ eventId }: { eventId: string }) {
             )}
 
             {reportData && (
-              <div className="pt-2 flex items-center gap-2">
-                <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">Report Status:</span>
-                <span className={`text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${
-                  reportData.status === 'approved' ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20' :
-                  reportData.status.startsWith('rejected') ? 'bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-500/20' :
-                  reportData.status === 'draft' ? 'bg-zinc-50 dark:bg-zinc-800 text-zinc-500 border-zinc-200 dark:border-zinc-700' :
-                  'bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-500/20'
-                }`}>
-                  {reportData.status.replace(/_/g, ' ')}
-                </span>
+              <div className="pt-2 flex flex-col gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">Report Status:</span>
+                  <span className={`text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${
+                    reportData.status === 'approved' ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20' :
+                    reportData.status.startsWith('rejected') ? 'bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-500/20' :
+                    reportData.status === 'draft' ? 'bg-zinc-50 dark:bg-zinc-800 text-zinc-500 border-zinc-200 dark:border-zinc-700' :
+                    'bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-500/20'
+                  }`}>
+                    {reportData.status.replace(/_/g, ' ')}
+                  </span>
+                </div>
+                <IICReportPipelineStatus status={reportData.status} rejectedTo={(reportData as any).rejected_to} />
               </div>
             )}
           </div>
