@@ -85,6 +85,7 @@ export async function pushIICReportToPR(reportId: string) {
     .update({
       status: 'pending_pr',
       rejection_feedback: null,
+      rejected_to: null,
     })
     .eq('id', reportId);
 
@@ -114,6 +115,7 @@ export async function pushIICReportToFaculty(reportId: string) {
     .from('iic_event_reports')
     .update({
       status: 'pending_faculty',
+      rejected_to: null,
     })
     .eq('id', reportId);
 
@@ -143,6 +145,7 @@ export async function pushIICReportToHOD(reportId: string) {
     .from('iic_event_reports')
     .update({
       status: 'pending_hod',
+      rejected_to: null,
     })
     .eq('id', reportId);
 
@@ -161,7 +164,8 @@ export async function declineIICReportWithAnnotations(
   reportId: string,
   annotations: { section: string; comment: string }[],
   feedback: string,
-  pdfAnnotations: any[] = []
+  pdfAnnotations: any[] = [],
+  rejectedTo?: 'pr' | 'cc'
 ) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -173,8 +177,9 @@ export async function declineIICReportWithAnnotations(
   }
 
   // If PR declines: goes to rejected_pr (back to CC)
-  // If Faculty/Teacher declines: goes to rejected_faculty (back to PR)
+  // If Faculty/Teacher declines: goes to rejected_faculty (can be back to PR or CC)
   const nextStatus = profile.role === 'pr' ? 'rejected_pr' : 'rejected_faculty';
+  const target = rejectedTo || (profile.role === 'pr' ? 'cc' : 'pr');
 
   const { error } = await supabaseAdmin
     .from('iic_event_reports')
@@ -182,7 +187,8 @@ export async function declineIICReportWithAnnotations(
       status: nextStatus,
       rejection_feedback: feedback,
       decline_annotations: annotations,
-      pdf_annotations: pdfAnnotations
+      pdf_annotations: pdfAnnotations,
+      rejected_to: target
     })
     .eq('id', reportId);
 

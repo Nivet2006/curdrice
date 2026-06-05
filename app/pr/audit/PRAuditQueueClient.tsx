@@ -11,6 +11,7 @@ type Report = {
   id: string
   event_id: string
   status: string
+  rejected_to?: string | null
   created_at?: string
   generated_at?: string
   updated_at: string
@@ -288,9 +289,13 @@ export function PRAuditQueueClient({ reports, iicReports = [] }: { reports: Repo
                     {/* Status Badge */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] font-mono font-bold uppercase tracking-widest border ${statusConf.color}`}>
-                          {statusConf.icon}
-                          {statusConf.label}
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] font-mono font-bold uppercase tracking-widest border ${
+                          report.status === 'rejected_faculty' && report.rejected_to === 'cc'
+                            ? 'bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-500/20'
+                            : statusConf.color
+                        }`}>
+                          {report.status === 'rejected_faculty' && report.rejected_to === 'cc' ? <XCircle size={10} /> : statusConf.icon}
+                          {report.status === 'rejected_faculty' && report.rejected_to === 'cc' ? 'Faculty Rejected to CC' : statusConf.label}
                         </span>
                         {report.reportType === 'iic' && (
                           <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-mono font-bold uppercase tracking-widest bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20">

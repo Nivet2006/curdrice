@@ -24,15 +24,20 @@ export function FacultyIICAuditWrapper({
   reportId, 
   reportStatus, 
   rejectionFeedback,
-  initialAnnotations = []
+  initialAnnotations = [],
+  pdfAnnotations = [],
+  decision,
+  onDecisionChange
 }: { 
   reportId: string 
   reportStatus: string 
   rejectionFeedback?: string | null
   initialAnnotations?: { section: string; comment: string }[]
+  pdfAnnotations?: any[]
+  decision: 'approve' | 'decline' | null
+  onDecisionChange: (val: 'approve' | 'decline' | null) => void
 }) {
   const [loading, setLoading] = useState(false)
-  const [decision, setDecision] = useState<'approve' | 'decline' | null>(null)
   const [feedback, setFeedback] = useState('')
   const [annotations, setAnnotations] = useState<Annotation[]>(
     initialAnnotations.map(a => ({
@@ -79,16 +84,18 @@ export function FacultyIICAuditWrapper({
     }
   }
 
-  async function handleDecline() {
-    if (annotations.length === 0 && !feedback.trim()) {
-      alert('Please add at least one annotation or provide feedback before declining.')
+  async function handleDecline(rejectedTo: 'pr' | 'cc') {
+    if (annotations.length === 0 && pdfAnnotations.length === 0 && !feedback.trim()) {
+      alert('Please add at least one annotation, draw on the PDF, or provide feedback before declining.')
       return
     }
     setLoading(true)
     const res = await declineIICReportWithAnnotations(
       reportId,
       annotations.map(a => ({ section: a.section, comment: a.comment })),
-      feedback
+      feedback,
+      pdfAnnotations,
+      rejectedTo
     )
     if (res?.error) {
       alert(res.error)
@@ -149,13 +156,13 @@ export function FacultyIICAuditWrapper({
           <h3 className="font-black uppercase text-lg tracking-tighter">Report Declined</h3>
         </div>
         <div className="space-y-2">
-          <p className="text-xs font-mono uppercase text-rose-300 tracking-widest">Feedback sent to PR:</p>
+          <p className="text-xs font-mono uppercase text-rose-300 tracking-widest">Feedback sent:</p>
           <p className="text-sm bg-black/30 border border-rose-500/20 p-4 rounded-xl text-rose-100 font-serif italic">
             "{rejectionFeedback || 'No specific feedback annotation provided.'}"
           </p>
         </div>
         <p className="text-xs text-rose-300 font-mono italic">
-          Returned to Publicity / PR Queue for revision.
+          Returned to {reportStatus === 'rejected_faculty' ? 'PR' : 'CC'} Queue for revision.
         </p>
       </div>
     )
@@ -174,7 +181,7 @@ export function FacultyIICAuditWrapper({
         <div className="grid grid-cols-2 gap-4">
           <button
             type="button"
-            onClick={() => { setDecision('approve'); setAnnotations([]) }}
+            onClick={() => { onDecisionChange('approve'); setAnnotations([]) }}
             className={`flex items-center justify-center gap-3 py-5 rounded-3xl border-2 transition-all font-black text-sm uppercase italic ${
               decision === 'approve' ? 'bg-white text-black border-white' : 'border-zinc-800 text-zinc-500 hover:border-zinc-600'
             }`}
@@ -184,13 +191,13 @@ export function FacultyIICAuditWrapper({
           </button>
           <button
             type="button"
-            onClick={() => setDecision('decline')}
+            onClick={() => onDecisionChange('decline')}
             className={`flex items-center justify-center gap-3 py-5 rounded-3xl border-2 transition-all font-black text-sm uppercase italic ${
               decision === 'decline' ? 'bg-rose-600 text-white border-rose-600' : 'border-zinc-800 text-zinc-500 hover:border-zinc-600'
             }`}
           >
             <XCircle size={18} />
-            Send Back to PR
+            Send Back
           </button>
         </div>
       </div>
@@ -203,7 +210,7 @@ export function FacultyIICAuditWrapper({
             <p className="text-[10px] font-mono text-amber-400 uppercase tracking-widest font-bold">Per-Section Annotations</p>
           </div>
           <p className="text-[11px] text-zinc-500 italic">
-            Add specific comments for sections you want corrected. PR will receive these comments and correct them.
+            Add specific comments for sections you want corrected.
           </p>
 
           {/* Existing Annotations */}
@@ -276,10 +283,10 @@ export function FacultyIICAuditWrapper({
       {/* Global Remarks */}
       <div className="space-y-3">
         <p className="text-xs font-mono font-bold uppercase tracking-widest text-zinc-400">
-          {decision === 'decline' ? 'Global Remarks (sent to PR)' : 'Verification Remarks'}
+          {decision === 'decline' ? 'Global Remarks' : 'Verification Remarks'}
         </p>
         <textarea
-          placeholder={decision === 'decline' ? "Describe the corrections required by PR..." : "Optional verification comments..."}
+          placeholder={decision === 'decline' ? "Describe the corrections required..." : "Optional verification comments..."}
           value={feedback}
           onChange={e => setFeedback(e.target.value)}
           className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-5 text-sm outline-none focus:ring-2 focus:ring-zinc-600 h-32 resize-none font-medium italic text-white"
@@ -287,18 +294,35 @@ export function FacultyIICAuditWrapper({
       </div>
 
       {/* Submit Action */}
-      <button
-        onClick={decision === 'approve' ? handleApprove : handleDecline}
-        disabled={loading || !decision}
-        className={`w-full py-5 rounded-[2rem] font-black uppercase tracking-[0.2em] text-xs flex items-center justify-center gap-3 transition-all disabled:opacity-20 active:scale-95 shadow-[0_0_50px_rgba(255,255,255,0.1)] ${
-          decision === 'decline'
-            ? 'bg-rose-600 text-white hover:bg-rose-500'
-            : 'bg-white text-black hover:bg-zinc-200'
-        }`}
-      >
-        {loading ? 'Processing...' : decision === 'decline' ? `Submit Rejection` : 'Finalize Endorsement'}
-        <Send size={16} />
-      </button>
+      {decision === 'decline' ? (
+        <div className="grid grid-cols-2 gap-4">
+          <button
+            onClick={() => handleDecline('pr')}
+            disabled={loading}
+            className="py-5 rounded-[2rem] font-black uppercase tracking-wider text-[10px] flex items-center justify-center gap-2 transition-all bg-amber-600 text-white hover:bg-amber-500 disabled:opacity-20 active:scale-95"
+          >
+            {loading ? 'Processing...' : 'Reject to PR'}
+            <Send size={12} />
+          </button>
+          <button
+            onClick={() => handleDecline('cc')}
+            disabled={loading}
+            className="py-5 rounded-[2rem] font-black uppercase tracking-wider text-[10px] flex items-center justify-center gap-2 transition-all bg-rose-600 text-white hover:bg-rose-500 disabled:opacity-20 active:scale-95"
+          >
+            {loading ? 'Processing...' : 'Reject to CC'}
+            <Send size={12} />
+          </button>
+        </div>
+      ) : (
+        <button
+          onClick={handleApprove}
+          disabled={loading || !decision}
+          className="w-full py-5 rounded-[2rem] font-black uppercase tracking-[0.2em] text-xs flex items-center justify-center gap-3 transition-all disabled:opacity-20 active:scale-95 bg-white text-black hover:bg-zinc-200"
+        >
+          {loading ? 'Processing...' : 'Finalize Endorsement'}
+          <Send size={16} />
+        </button>
+      )}
     </div>
   )
 }
