@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
-import { b2Client, B2_BUCKET_NAME } from '@/lib/b2';
-import { PutObjectCommand, DeleteObjectCommand, ListObjectVersionsCommand } from '@aws-sdk/client-s3';
+import { b2Client, B2_BUCKET_NAME, b2ImagesClient, B2_IMAGES_BUCKET_NAME } from '@/lib/b2';
+import { PutObjectCommand, DeleteObjectCommand, ListObjectVersionsCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { NextResponse } from 'next/server';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import { readFileSync, existsSync } from 'fs';
@@ -308,9 +308,26 @@ export async function POST(request: Request) {
        
        const drawRemoteImage = async (url: string, yPos: number) => {
          try {
-           const res = await fetch(url);
-           if (!res.ok) throw new Error(`HTTP ${res.status}`);
-           const imageBytes = await res.arrayBuffer();
+           let imageBytes: Uint8Array;
+
+           // If the URL is our proxy asset endpoint, retrieve it directly using the authenticated S3 client
+           if (url.includes('/api/assets/')) {
+             const urlParts = url.split('/api/assets/');
+             const key = urlParts[urlParts.length - 1];
+             const response = await b2ImagesClient.send(
+               new GetObjectCommand({
+                 Bucket: B2_IMAGES_BUCKET_NAME,
+                 Key: key,
+               })
+             );
+             if (!response.Body) throw new Error('Empty response body from B2');
+             imageBytes = await response.Body.transformToByteArray();
+           } else {
+             const res = await fetch(url);
+             if (!res.ok) throw new Error(`HTTP ${res.status}`);
+             const buffer = await res.arrayBuffer();
+             imageBytes = new Uint8Array(buffer);
+           }
            
            let img;
            try {
