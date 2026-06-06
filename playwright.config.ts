@@ -19,7 +19,7 @@ export default defineConfig({
     ['junit', { outputFile: './TEST/Playwright/test-results/junit.xml' }]
   ],
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL: 'http://localhost:3002',
     trace: 'on',          // Capture trace for every test
     screenshot: 'on',     // Capture screenshot for every test
     video: 'on',          // Capture video for every test
@@ -37,9 +37,9 @@ export default defineConfig({
   ],
   // Start local server automatically if not running
   webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: true,
+    command: 'npm run dev -- -p 3002',
+    url: 'http://localhost:3002',
+    reuseExistingServer: false,
     timeout: 120 * 1000,
   },
 });

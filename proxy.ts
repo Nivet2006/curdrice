@@ -120,9 +120,10 @@ export async function proxy(request: NextRequest) {
     request.nextUrl.pathname.startsWith('/register')
 
   const isPublicEventPage = request.nextUrl.pathname.startsWith('/events/')
+  const isRedirectPage = request.nextUrl.pathname.startsWith('/redirect/')
 
-  // Redirect unauthenticated users to login, but bypass public event details pages
-  if (!user && !isAuthPage && request.nextUrl.pathname !== '/' && !isPublicEventPage) {
+  // Redirect unauthenticated users to login, but bypass public event details and redirect pages
+  if (!user && !isAuthPage && request.nextUrl.pathname !== '/' && !isPublicEventPage && !isRedirectPage) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
