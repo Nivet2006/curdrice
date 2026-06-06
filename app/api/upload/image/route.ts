@@ -57,20 +57,32 @@ export async function POST(request: Request) {
       })
     );
 
-    // Bulletproof URL construction
-    function buildProxyUrl(filePath: string): string {
-      const raw = process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL;
-      if (!raw) {
-        // Last-resort fallback — works locally
-        return `http://localhost:3000/api/assets/${filePath}`;
+    // Bulletproof URL construction (self-healing, never uses localhost in production)
+    function buildProxyUrl(req: Request, filePath: string): string {
+      // 1. Prefer explicit env var (most reliable)
+      const envUrl = process.env.NEXT_PUBLIC_SITE_URL;
+      if (envUrl) {
+        return `${envUrl.replace(/\/$/, '')}/api/assets/${filePath}`;
       }
-      // Strip trailing slash, enforce https in prod
-      const base = raw.replace(/\/$/, '');
-      const siteUrl = base.startsWith('http') ? base : `https://${base}`;
-      return `${siteUrl}/api/assets/${filePath}`;
+
+      // 2. Derive from the incoming request's Host header (works on any host)
+      const host = req.headers.get('host') || '';
+      const proto = req.headers.get('x-forwarded-proto') || 'https';
+      if (host) {
+        return `${proto}://${host}/api/assets/${filePath}`;
+      }
+
+      // 3. Vercel auto-injects this — no scheme, so we add https
+      const vercelUrl = process.env.VERCEL_URL;
+      if (vercelUrl) {
+        return `https://${vercelUrl}/api/assets/${filePath}`;
+      }
+
+      // 4. True last resort — only ever correct locally
+      return `http://localhost:3000/api/assets/${filePath}`;
     }
 
-    const imageUrl = buildProxyUrl(filePath);
+    const imageUrl = buildProxyUrl(request, filePath);
 
     // Validate constructed URL before returning
     try {
