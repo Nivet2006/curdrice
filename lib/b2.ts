@@ -37,4 +37,4 @@ export const b2ImagesClient = new S3Client({
   forcePathStyle: true,
 });
 
-export const B2_IMAGES_BUCKET_NAME = process.env.B2_IMAGES_BUCKET_NAME || B2_BUCKET_NAME;
+export const B2_IMAGES_BUCKET_NAME = process.env.B2_IMAGES_BUCKET_NAME || 'clubeve-public-images';
