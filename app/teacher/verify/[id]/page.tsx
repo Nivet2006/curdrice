@@ -9,6 +9,7 @@ import { EventStatusTracker } from '@/components/common/EventStatusTracker'
 import { PRAssignmentPanel } from '@/components/faculty/PRAssignmentPanel'
 import { EventThread } from '@/components/student/EventThread'
 import { getEventThread } from '@/lib/actions/event-threads'
+import { ImageWithFallback } from '@/components/ui/ImageWithFallback'
 
 export default async function TeacherVerifyPage({ params }: { params: Promise<{ id: string }> }) {
    const supabase = await createClient()
@@ -88,8 +89,12 @@ export default async function TeacherVerifyPage({ params }: { params: Promise<{ 
                </div>
 
                <div className="bg-zinc-900 text-white rounded-[2.5rem] overflow-hidden aspect-[16/9] relative group border border-zinc-200 dark:border-zinc-800 shadow-2xl">
-                  <img src={event.banner_url || ''} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="Poster" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-10 flex flex-col justify-end">
+                  <ImageWithFallback
+                     src={event.banner_url}
+                     alt="Event Poster"
+                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-10 flex flex-col justify-end pointer-events-none">
                      <p className="font-mono text-[10px] uppercase tracking-[0.5em] text-zinc-400 mb-2">Visual Asset Preview</p>
                      <h4 className="text-xl font-bold">Publicity Banner</h4>
                   </div>

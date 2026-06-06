@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { PRReviewForm } from '@/components/pr/PRReviewForm'
 import { ArrowLeft, Clock } from 'lucide-react'
 import Link from 'next/link'
+import { ImageWithFallback } from '@/components/ui/ImageWithFallback'
 
 export default async function PRReviewPage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
@@ -67,11 +68,12 @@ export default async function PRReviewPage({ params }: { params: Promise<{ id: s
                  Visual Identity
               </h2>
               <div className="relative aspect-video rounded-3xl overflow-hidden border border-zinc-200 bg-zinc-50 flex items-center justify-center">
-                 {event.banner_url ? (
-                   <img src={event.banner_url} alt="Event Poster" className="w-full h-full object-cover" />
-                 ) : (
-                   <div className="text-zinc-300 font-mono text-xs italic">No banner uploaded</div>
-                 )}
+                 <ImageWithFallback
+                   src={event.banner_url}
+                   alt="Event Poster"
+                   className="w-full h-full"
+                   fallbackText="No banner uploaded"
+                 />
               </div>
            </section>
         </div>

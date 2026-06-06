@@ -1,13 +1,16 @@
+import { NextResponse } from 'next/server';
+import { PutObjectCommand } from '@aws-sdk/client-s3';
+import { v4 as uuidv4 } from 'uuid';
 import { createClient } from '@/lib/supabase/server';
 import { b2ImagesClient, B2_IMAGES_BUCKET_NAME } from '@/lib/b2';
-import { PutObjectCommand } from '@aws-sdk/client-s3';
-import { NextResponse } from 'next/server';
-import { v4 as uuidv4 } from 'uuid';
+
+export const runtime = 'nodejs';
 
 export async function POST(request: Request) {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
+
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -20,8 +23,9 @@ export async function POST(request: Request) {
 
     const role = profile?.role;
     const allowedRoles = ['cc', 'teacher', 'hod', 'pr', 'admin'];
+
     if (!role || !allowedRoles.includes(role)) {
-      return NextResponse.json({ error: 'Unauthorized: Only CC, Faculty, HOD, and PR can upload images' }, { status: 403 });
+      return NextResponse.json({ error: 'Unauthorized: Access Denied' }, { status: 403 });
     }
 
     const formData = await request.formData();
@@ -31,11 +35,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    
+    const buffer = Buffer.from(await file.arrayBuffer());
     const extension = file.type === 'image/png' ? 'png' : 'jpg';
     const filePath = `images/${uuidv4()}_image.${extension}`;
+
+    console.log(`[Upload] Uploading to B2: bucket=${B2_IMAGES_BUCKET_NAME}, key=${filePath}`);
 
     await b2ImagesClient.send(
       new PutObjectCommand({
@@ -46,13 +50,22 @@ export async function POST(request: Request) {
       })
     );
 
-    // Construct download URL pointing to the local proxy endpoint
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-    const imageUrl = `${siteUrl}/api/assets/${filePath}`;
+    // CRITICAL: Use NEXT_PUBLIC_SITE_URL — must be set correctly in .env
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+    if (!siteUrl) {
+      throw new Error('NEXT_PUBLIC_SITE_URL env var is not set');
+    }
+
+    // Always use relative path for same-origin — avoids localhost in production
+    const imageUrl = `/api/assets/${filePath}`;
+
+    console.log(`[Upload] Success. Proxy URL: ${imageUrl}`);
 
     return NextResponse.json({ success: true, url: imageUrl });
+
   } catch (error: any) {
-    console.error('[Image Upload Route Error]', error);
+    console.error('[Upload] ERROR:', error.message);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+

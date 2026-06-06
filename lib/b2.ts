@@ -1,17 +1,20 @@
 import { S3Client } from '@aws-sdk/client-s3';
 
-const b2Endpoint = process.env.B2_ENDPOINT || '';
-const b2Region = process.env.B2_REGION || '';
-const b2AccessKeyId = process.env.B2_KEY_ID || '';
-const b2SecretAccessKey = process.env.B2_APPLICATION_KEY || '';
-
-if (!b2Endpoint || !b2AccessKeyId || !b2SecretAccessKey) {
-  console.warn('[B2 Client] Backblaze configuration is incomplete. Ensure B2_ENDPOINT, B2_KEY_ID, and B2_APPLICATION_KEY are set.');
+function requireEnv(name: string): string {
+  const val = process.env[name];
+  if (!val) throw new Error(`Missing required env var: ${name}`);
+  return val;
 }
+
+// General B2 client (for non-image buckets)
+const b2Endpoint = requireEnv('B2_ENDPOINT');
+const b2Region = process.env.B2_REGION || 'us-west-004';
+const b2AccessKeyId = requireEnv('B2_KEY_ID');
+const b2SecretAccessKey = requireEnv('B2_APPLICATION_KEY');
 
 export const b2Client = new S3Client({
   endpoint: b2Endpoint,
-  region: b2Region || 'us-west-004',
+  region: b2Region,
   credentials: {
     accessKeyId: b2AccessKeyId,
     secretAccessKey: b2SecretAccessKey,
@@ -19,17 +22,17 @@ export const b2Client = new S3Client({
   forcePathStyle: true,
 });
 
-export const B2_BUCKET_NAME = process.env.B2_BUCKET_NAME || 'iic-reports';
+export const B2_BUCKET_NAME = requireEnv('B2_BUCKET_NAME');
 
-// Separate bucket and client configuration for images
-const b2ImagesEndpoint = process.env.B2_IMAGES_ENDPOINT || b2Endpoint;
-const b2ImagesRegion = process.env.B2_IMAGES_REGION || b2Region;
-const b2ImagesAccessKeyId = process.env.B2_IMAGES_KEY_ID || b2AccessKeyId;
-const b2ImagesSecretAccessKey = process.env.B2_IMAGES_APPLICATION_KEY || b2SecretAccessKey;
+// Dedicated images client — uses its OWN vars, no fallback to general client
+const b2ImagesEndpoint = requireEnv('B2_IMAGES_ENDPOINT');
+const b2ImagesRegion = process.env.B2_IMAGES_REGION || 'us-west-004';
+const b2ImagesAccessKeyId = requireEnv('B2_IMAGES_KEY_ID');
+const b2ImagesSecretAccessKey = requireEnv('B2_IMAGES_APPLICATION_KEY');
 
 export const b2ImagesClient = new S3Client({
   endpoint: b2ImagesEndpoint,
-  region: b2ImagesRegion || 'us-west-004',
+  region: b2ImagesRegion,
   credentials: {
     accessKeyId: b2ImagesAccessKeyId,
     secretAccessKey: b2ImagesSecretAccessKey,
@@ -37,4 +40,5 @@ export const b2ImagesClient = new S3Client({
   forcePathStyle: true,
 });
 
-export const B2_IMAGES_BUCKET_NAME = process.env.B2_IMAGES_BUCKET_NAME || 'clubeve-public-images';
+export const B2_IMAGES_BUCKET_NAME = requireEnv('B2_IMAGES_BUCKET_NAME');
+

@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Search, MapPin, Clock, Video, QrCode } from 'lucide-react'
 import type { Event, Profile } from '@/lib/types'
 import { QRDisplay } from '@/components/student/QRDisplay'
+import { ImageWithFallback } from '@/components/ui/ImageWithFallback'
 
 interface Props {
   initialEvents: Event[]
@@ -375,17 +376,12 @@ export function StudentEventsView({ initialEvents, registrations, profile }: Pro
 
                       {/* Event Banner Poster (Right side of card) */}
                       <div className="w-full md:w-[130px] md:h-[130px] aspect-square rounded-2xl overflow-hidden bg-zinc-50 border border-zinc-100/80 flex-shrink-0 flex items-center justify-center relative md:self-center">
-                        {event.banner_url ? (
-                          <img
-                            src={event.banner_url}
-                            alt={event.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-tr from-zinc-100 to-zinc-50 font-mono text-zinc-300 text-[10px] uppercase font-bold tracking-widest text-center px-2 select-none">
-                            Poster
-                          </div>
-                        )}
+                        <ImageWithFallback
+                          src={event.banner_url}
+                          alt={event.title}
+                          className="w-full h-full"
+                          fallbackText="Poster"
+                        />
                       </div>
 
                     </div>
