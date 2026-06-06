@@ -37,7 +37,4 @@ export const b2ImagesClient = new S3Client({
   forcePathStyle: true,
 });
 
-const isSeparateImagesKey = !!(process.env.B2_IMAGES_KEY_ID && process.env.B2_IMAGES_KEY_ID !== process.env.B2_KEY_ID);
-export const B2_IMAGES_BUCKET_NAME = isSeparateImagesKey 
-  ? (process.env.B2_IMAGES_BUCKET_NAME || 'clubeve-public-images')
-  : B2_BUCKET_NAME;
+export const B2_IMAGES_BUCKET_NAME = process.env.B2_IMAGES_BUCKET_NAME || 'clubeve-public-images';
