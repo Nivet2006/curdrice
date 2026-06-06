@@ -4,6 +4,10 @@ import { v4 as uuidv4 } from 'uuid';
 import { createClient } from '@/lib/supabase/server';
 import { b2ImagesClient, B2_IMAGES_BUCKET_NAME } from '@/lib/b2';
 
+if (!process.env.NEXT_PUBLIC_SITE_URL && process.env.NODE_ENV === 'production') {
+  console.error('[FATAL] NEXT_PUBLIC_SITE_URL is not set. Image proxy URLs will be wrong.');
+}
+
 export const runtime = 'nodejs';
 
 export async function POST(request: Request) {
@@ -22,9 +26,12 @@ export async function POST(request: Request) {
       .single();
 
     const role = profile?.role;
+    console.log('[upload] user role:', role, 'user id:', user.id);
+
     const allowedRoles = ['cc', 'teacher', 'hod', 'pr', 'admin'];
 
     if (!role || !allowedRoles.includes(role)) {
+      console.error('[upload] Blocked role:', role);
       return NextResponse.json({ error: 'Unauthorized: Access Denied' }, { status: 403 });
     }
 
@@ -50,14 +57,31 @@ export async function POST(request: Request) {
       })
     );
 
-    // CRITICAL: Use NEXT_PUBLIC_SITE_URL — must be set correctly in .env
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
-    if (!siteUrl) {
-      throw new Error('NEXT_PUBLIC_SITE_URL env var is not set');
+    // Bulletproof URL construction
+    function buildProxyUrl(filePath: string): string {
+      const raw = process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL;
+      if (!raw) {
+        // Last-resort fallback — works locally
+        return `http://localhost:3000/api/assets/${filePath}`;
+      }
+      // Strip trailing slash, enforce https in prod
+      const base = raw.replace(/\/$/, '');
+      const siteUrl = base.startsWith('http') ? base : `https://${base}`;
+      return `${siteUrl}/api/assets/${filePath}`;
     }
 
-    // Always use relative path for same-origin — avoids localhost in production
-    const imageUrl = `/api/assets/${filePath}`;
+    const imageUrl = buildProxyUrl(filePath);
+
+    // Validate constructed URL before returning
+    try {
+      new URL(imageUrl);
+    } catch {
+      console.error('[upload] Invalid imageUrl constructed:', imageUrl);
+      return NextResponse.json(
+        { error: `Server misconfiguration: could not build a valid image URL. Check NEXT_PUBLIC_SITE_URL env var. Got: "${imageUrl}"` },
+        { status: 500 }
+      );
+    }
 
     console.log(`[Upload] Success. Proxy URL: ${imageUrl}`);
 
@@ -68,4 +92,5 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
 
