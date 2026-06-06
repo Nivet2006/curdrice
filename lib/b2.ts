@@ -2,7 +2,18 @@ import { S3Client } from '@aws-sdk/client-s3';
 
 function requireEnv(name: string): string {
   const val = process.env[name];
-  if (!val) throw new Error(`Missing required env var: ${name}`);
+  if (!val) {
+    const isBuildTime = 
+      process.env.NEXT_PHASE === 'phase-production-build' || 
+      process.env.CI || 
+      process.env.VERCEL;
+      
+    if (isBuildTime) {
+      console.warn(`[B2 Client Warning] Missing env var: ${name} during build-time compilation. Using placeholder.`);
+      return 'placeholder';
+    }
+    throw new Error(`Missing required env var: ${name}`);
+  }
   return val;
 }
 
