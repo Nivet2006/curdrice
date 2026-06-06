@@ -5,9 +5,10 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ path: string[] }> }
 ) {
+  let key = '';
   try {
     const { path } = await params;
-    const key = path.join('/');
+    key = path.join('/');
 
     const command = new GetObjectCommand({
       Bucket: B2_IMAGES_BUCKET_NAME,
@@ -38,7 +39,11 @@ export async function GET(
       headers,
     });
   } catch (error: any) {
-    console.error('[Asset Proxy Error]', error);
+    if (error.Code === 'NoSuchKey' || error.$metadata?.httpStatusCode === 404) {
+      console.warn(`[Asset Proxy] File not found in clubeve-public-images: ${key}`);
+    } else {
+      console.error('[Asset Proxy Error]', error);
+    }
     return new Response('Not Found', { status: 404 });
   }
 }
