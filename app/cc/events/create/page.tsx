@@ -7,7 +7,6 @@ import { createDraftEvent } from '@/lib/actions/cc-events'
 import Link from 'next/link'
 import { ArrowLeft, Save, Send } from 'lucide-react'
 import { FeedbackFormBuilder, Question } from '@/components/cc/FeedbackFormBuilder'
-import { ImageUploadInput } from '@/components/ui/ImageUploadInput'
 
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -116,13 +115,18 @@ export default function CCCreateEventPage() {
                 />
              </section>
 
-             <section className="space-y-6">
-                <h2 className="font-mono text-[10px] uppercase tracking-widest text-zinc-400 border-b border-zinc-100 pb-2">Visual Branding</h2>
-                <div className="bg-zinc-50 dark:bg-zinc-950 p-6 rounded-3xl border border-zinc-200 dark:border-zinc-800 space-y-4">
-                   <ImageUploadInput label="Banner / Poster Image *" name="bannerUrl" required />
-                   <p className="text-[10px] font-mono text-zinc-400 italic">This will appear on the student dashboard once approved by HOD.</p>
-                </div>
-             </section>
+              <section className="space-y-6">
+                 <h2 className="font-mono text-[10px] uppercase tracking-widest text-zinc-400 border-b border-zinc-100 pb-2">Visual Branding</h2>
+                 <div className="bg-zinc-50 dark:bg-zinc-950 p-6 rounded-3xl border border-zinc-200 dark:border-zinc-800 space-y-4">
+                    <Input 
+                      label="Banner / Poster Image URL (e.g. .png, .jpg, .jpeg) *" 
+                      name="bannerUrl" 
+                      placeholder="https://example.com/poster.jpg"
+                      required 
+                    />
+                    <p className="text-[10px] font-mono text-zinc-400 italic">This will appear on the student dashboard once approved by HOD.</p>
+                 </div>
+              </section>
           </div>
 
           <aside className="space-y-8">

@@ -9,7 +9,6 @@ import { ArrowLeft, Save, Send, AlertCircle } from 'lucide-react'
 import { FeedbackFormBuilder, Question } from '@/components/cc/FeedbackFormBuilder'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { ImageUploadInput } from '@/components/ui/ImageUploadInput'
 
 interface EditEventFormProps {
   event: any
@@ -149,9 +148,15 @@ export default function EditEventForm({ event, constraints }: EditEventFormProps
 
              <section className="space-y-6">
                 <h2 className="font-mono text-[10px] uppercase tracking-widest text-zinc-400 border-b border-zinc-100 pb-2">Visual Branding</h2>
-                <div className="bg-zinc-50 dark:bg-zinc-950 p-6 rounded-3xl border border-zinc-200 dark:border-zinc-800 space-y-4">
-                   <ImageUploadInput label="Banner / Poster Image *" name="bannerUrl" defaultValue={event.banner_url} required />
-                </div>
+                 <div className="bg-zinc-50 dark:bg-zinc-950 p-6 rounded-3xl border border-zinc-200 dark:border-zinc-800 space-y-4">
+                    <Input 
+                      label="Banner / Poster Image URL (e.g. .png, .jpg, .jpeg) *" 
+                      name="bannerUrl" 
+                      defaultValue={event.banner_url} 
+                      placeholder="https://example.com/poster.jpg"
+                      required 
+                    />
+                 </div>
              </section>
           </div>
 
