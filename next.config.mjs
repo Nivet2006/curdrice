@@ -1,3 +1,13 @@
+const getHostname = (urlStr) => {
+  if (!urlStr) return 'localhost';
+  try {
+    const withProto = urlStr.startsWith('http') ? urlStr : `https://${urlStr}`;
+    return new URL(withProto).hostname;
+  } catch {
+    return 'localhost';
+  }
+};
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     typescript: {
@@ -20,9 +30,7 @@ const nextConfig = {
             {
                 // Allow your own proxy route — handles both dev and prod
                 protocol: 'https',
-                hostname: process.env.NEXT_PUBLIC_SITE_URL
-                    ? new URL(process.env.NEXT_PUBLIC_SITE_URL).hostname
-                    : 'localhost',
+                hostname: getHostname(process.env.NEXT_PUBLIC_SITE_URL),
                 pathname: '/api/assets/**',
             },
             {
