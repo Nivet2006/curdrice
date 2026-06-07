@@ -36,6 +36,15 @@ export default async function TeacherDashboard() {
     .eq('department', dept)
     .order('created_at', { ascending: true })
 
+  // PR Approved Post-Event Reports (status = 'completed')
+  const { data: completedReports } = await supabase
+    .from('reports')
+    .select('*, events(title, club_name, targeted_department)')
+    .eq('status', 'completed')
+    .order('updated_at', { ascending: false })
+
+  const deptReports = completedReports?.filter(r => (r.events as any)?.targeted_department === dept) || []
+
   // Events already approved or forwarded to HOD (scoped to department)
   const { data: approvedEvents } = await supabase
     .from('events')
@@ -166,6 +175,54 @@ export default async function TeacherDashboard() {
                 <CheckCircle size={32} className="mx-auto text-zinc-300 dark:text-zinc-700 mb-4" />
                 <p className="text-zinc-600 dark:text-zinc-400 font-black text-md uppercase tracking-widest">Queue Clear</p>
                 <p className="text-zinc-400 dark:text-zinc-500 text-xs mt-2">No IIC post-event reports awaiting your verification.</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* PR Approved Reports Queue/Archive */}
+        <div className="space-y-8">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-indigo-500/10 rounded-lg">
+              <FileText size={20} className="text-indigo-600" />
+            </div>
+            <h2 className="text-lg font-black uppercase tracking-tighter text-zinc-800 dark:text-zinc-200">PR Approved Reports ({deptReports.length})</h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {deptReports.length > 0 ? (
+              deptReports.map(report => (
+                <div key={report.id} className="group bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-[2rem] p-8 hover:shadow-2xl hover:border-indigo-500 dark:hover:border-indigo-500 transition-all cursor-pointer relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500"></div>
+                  <div className="flex justify-between items-start mb-6">
+                    <div className="space-y-1">
+                      <h3 className="text-2xl font-black text-[#0a0a0a] dark:text-white leading-tight group-hover:underline transition-all uppercase tracking-tighter">{(report.events as any)?.title || 'Untitled Event'}</h3>
+                      <p className="font-mono text-[10px] text-zinc-400 uppercase tracking-widest">{(report.events as any)?.club_name || 'Club'}</p>
+                    </div>
+                    <Link
+                      href={`/teacher/reports/${report.id}`}
+                      className="bg-[#0a0a0a] text-white w-12 h-12 rounded-full flex items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-xl"
+                    >
+                      <ArrowRight size={20} />
+                    </Link>
+                  </div>
+                  <div className="space-y-4">
+                    <p className="text-sm text-zinc-500 font-medium leading-relaxed line-clamp-3 italic">
+                      {report.content?.summary || 'No summary available.'}
+                    </p>
+                    <div className="pt-4 border-t border-zinc-100 flex items-center gap-4 text-[10px] font-mono text-zinc-400 uppercase tracking-widest">
+                      <span>PR Approved</span>
+                      <span className="w-1 h-1 rounded-full bg-zinc-200"></span>
+                      <span>{new Date(report.updated_at).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="col-span-full py-16 text-center bg-zinc-50/50 dark:bg-zinc-900/30 border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-[3rem]">
+                <CheckCircle size={32} className="mx-auto text-zinc-300 dark:text-zinc-700 mb-4" />
+                <p className="text-zinc-600 dark:text-zinc-400 font-black text-md uppercase tracking-widest">No Reports</p>
+                <p className="text-zinc-400 dark:text-zinc-500 text-xs mt-2">No PR approved post-event reports for your department.</p>
               </div>
             )}
           </div>

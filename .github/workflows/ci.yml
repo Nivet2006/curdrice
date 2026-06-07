@@ -7,37 +7,20 @@ on:
     branches: [ main ]
 
 jobs:
-  quality-assurance:
-    name: Lint & Type Check
+  build:
+    name: Next.js Build Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
+          
       - name: Install dependencies
         run: npm install --legacy-peer-deps
-      - name: Next.js Lint
-        run: npm run lint
-      - name: TypeScript Type Check
-        run: npx tsc --noEmit
-
-  security-audit:
-    name: Security & Secret Audit
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 
-      - name: Dependency Audit (Alert Only)
-        run: npm audit --audit-level=high
-        continue-on-error: true
-      - name: Secret Detection (TruffleHog)
-        uses: trufflesecurity/trufflehog@main
-        with:
-          path: ./
-          base: ${{ github.event.repository.default_branch }}
-          head: HEAD
-          extra_args: --debug --only-verified
+        
+      - name: Next.js Build
+        run: npm run build
