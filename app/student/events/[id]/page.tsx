@@ -27,17 +27,23 @@ export default async function EventDetailPage({
   const { invitedBy } = await searchParams
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { data } = await supabase.from('events').select('id, title, description, club_name, location, event_date, registration_deadline, max_capacity, status, banner_url, created_by, created_at, approval_status, discussion_enabled, feedback_open, feedback_config, is_public, targeted_department, rejection_data').eq('id', id).single()
+  const { data } = await supabase.from('events').select('id, title, description, club_name, location, event_date, registration_deadline, max_capacity, waitlist_max, status, banner_url, created_by, created_at, approval_status, discussion_enabled, feedback_open, feedback_config, is_public, targeted_department, rejection_data').eq('id', id).single()
   const event = withDynamicSingleEventStatus(data as Event)
 
   if (!event) return <div>Event not found</div>
 
   // Run remaining queries in parallel
-  const [regCountRes, profileRes, registrationRes, feedbackRes] = await Promise.all([
+  const [activeRegCountRes, waitlistRegCountRes, profileRes, registrationRes, feedbackRes] = await Promise.all([
     supabase
       .from('registrations')
       .select('id', { count: 'exact', head: true })
-      .eq('event_id', id),
+      .eq('event_id', id)
+      .eq('is_waitlisted', false),
+    supabase
+      .from('registrations')
+      .select('id', { count: 'exact', head: true })
+      .eq('event_id', id)
+      .eq('is_waitlisted', true),
     supabase
       .from('profiles')
       .select('full_name, usn, role')
@@ -45,7 +51,7 @@ export default async function EventDetailPage({
       .single(),
     supabase
       .from('registrations')
-      .select('id, event_id, student_id, qr_token, checked_in, checked_in_at')
+      .select('id, event_id, student_id, qr_token, checked_in, checked_in_at, is_waitlisted, registered_at')
       .eq('event_id', id)
       .eq('student_id', user?.id)
       .maybeSingle(),
@@ -57,7 +63,8 @@ export default async function EventDetailPage({
       .maybeSingle(),
   ])
 
-  const registeredCount = regCountRes.count
+  const activeCount = activeRegCountRes.count || 0
+  const waitlistCount = waitlistRegCountRes.count || 0
   const profile = profileRes.data
   const registration = registrationRes.data
   const feedbackData = feedbackRes.data
@@ -65,9 +72,19 @@ export default async function EventDetailPage({
   const isRegistered = !!registration
   const hasSubmittedFeedback = !!feedbackData
   const isEligible = true
-  const regCount = registeredCount || 0
   const maxCap = event.max_capacity || Infinity
-  const progressPct = Math.min((regCount / maxCap) * 100, 100)
+  const progressPct = Math.min((activeCount / maxCap) * 100, 100)
+
+  let waitlistPosition = 0
+  if (registration && registration.is_waitlisted) {
+    const { count: pos } = await supabase
+      .from('registrations')
+      .select('id', { count: 'exact', head: true })
+      .eq('event_id', id)
+      .eq('is_waitlisted', true)
+      .lte('registered_at', registration.registered_at)
+    waitlistPosition = pos || 1
+  }
 
   // Fetch event thread info
   const thread = event.discussion_enabled ? await getEventThread(id) : null
@@ -111,7 +128,7 @@ export default async function EventDetailPage({
             </div>
             <div className="flex items-center gap-3">
               <Users className="text-[#555555]" size={18} />
-              <span>{regCount} {event.max_capacity ? `/ ${event.max_capacity}` : ''} attending</span>
+              <span>{activeCount} {event.max_capacity ? `/ ${event.max_capacity}` : ''} attending {waitlistCount > 0 ? `(${waitlistCount} on waitlist)` : ''}</span>
             </div>
           </div>
         </div>
@@ -123,7 +140,7 @@ export default async function EventDetailPage({
                 {invitedBy} invites you to join this event
               </p>
             )}
-            <p className="font-mono text-sm text-[#555555] mb-3">{regCount} / {event.max_capacity || '∞'} registered</p>
+            <p className="font-mono text-sm text-[#555555] mb-3">{activeCount} / {event.max_capacity || '∞'} registered {waitlistCount > 0 ? `(${waitlistCount} on waitlist)` : ''}</p>
             <div className="w-full h-1.5 bg-[#f5f5f5] rounded-full overflow-hidden">
               <div className="h-full bg-[#0a0a0a]" style={{ width: `${progressPct}%` }} />
             </div>
@@ -133,23 +150,38 @@ export default async function EventDetailPage({
 
             {isRegistered ? (
               <div className="mt-6 space-y-4">
-                <Button className="w-full opacity-50 cursor-not-allowed">Registered ✓</Button>
-                
-                <StudentFeedbackTerminal 
-                  event={event} 
-                  studentId={user?.id || ''} 
-                  hasSubmitted={hasSubmittedFeedback} 
-                />
+                {registration.is_waitlisted ? (
+                  <Button className="w-full opacity-90 bg-amber-500 hover:bg-amber-600 text-white cursor-not-allowed">
+                    Waitlisted (Position #{waitlistPosition})
+                  </Button>
+                ) : (
+                  <>
+                    <Button className="w-full opacity-50 cursor-not-allowed">Registered ✓</Button>
+                    
+                    <StudentFeedbackTerminal 
+                      event={event} 
+                      studentId={user?.id || ''} 
+                      hasSubmitted={hasSubmittedFeedback} 
+                    />
 
-                <QRButton 
-                  token={registration?.qr_token || ''} 
-                  studentName={profile?.full_name || ''} 
-                  usn={profile?.usn || ''} 
-                  eventName={event.title} 
-                />
+                    <QRButton 
+                      token={registration?.qr_token || ''} 
+                      studentName={profile?.full_name || ''} 
+                      usn={profile?.usn || ''} 
+                      eventName={event.title} 
+                    />
+                  </>
+                )}
               </div>
             ) : isEligible ? (
-               <RegisterButton eventId={id} />
+               <div>
+                 {event.max_capacity && activeCount >= event.max_capacity && (
+                   <p className="text-xs font-mono text-amber-600 bg-amber-50 border border-amber-200 rounded-lg p-2.5 mb-3">
+                     ⚠️ Event capacity reached. Registering will put you on the waitlist (max capacity: {event.waitlist_max}).
+                   </p>
+                 )}
+                 <RegisterButton eventId={id} />
+               </div>
             ) : (
               <div className="mt-6 border border-dashed border-[#e0e0e0] rounded-xl p-4 bg-[#f9f9f9]">
                 <p className="text-xs font-mono text-[#555555]">You are not eligible for this event based on the current constraints.</p>

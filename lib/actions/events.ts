@@ -19,6 +19,8 @@ export async function createEvent(formData: FormData) {
   const banner_url = (formData.get('bannerUrl') as string)?.trim() || null
   const capStr = formData.get('capacity') as string
   const max_capacity = capStr && parseInt(capStr) > 0 ? parseInt(capStr) : null
+  const waitlistCapStr = formData.get('waitlistMax') as string
+  const waitlist_max = waitlistCapStr && parseInt(waitlistCapStr) > 0 ? parseInt(waitlistCapStr) : 0
 
   if (!title) return { error: 'Event Title is required.' }
   if (!club_name) return { error: 'Club / Host Identity is required.' }
@@ -46,7 +48,7 @@ export async function createEvent(formData: FormData) {
     title, club_name, status, description, location,
     event_date: eventDt.toISOString(),
     registration_deadline: deadlineDt.toISOString(),
-    max_capacity, banner_url,
+    max_capacity, banner_url, waitlist_max,
     created_by: user.id
   }).select('id').single()
 
@@ -85,6 +87,8 @@ export async function updateEvent(eventId: string, formData: FormData) {
   const banner_url = (formData.get('bannerUrl') as string)?.trim() || null
   const capStr = formData.get('capacity') as string
   const max_capacity = capStr && parseInt(capStr) > 0 ? parseInt(capStr) : null
+  const waitlistCapStr = formData.get('waitlistMax') as string
+  const waitlist_max = waitlistCapStr && parseInt(waitlistCapStr) > 0 ? parseInt(waitlistCapStr) : 0
 
   if (!title) return { error: 'Event Title is required.' }
   if (!club_name) return { error: 'Club / Host Identity is required.' }
@@ -112,7 +116,7 @@ export async function updateEvent(eventId: string, formData: FormData) {
     title, club_name, status, description, location,
     event_date: eventDt.toISOString(),
     registration_deadline: deadlineDt.toISOString(),
-    max_capacity, banner_url
+    max_capacity, banner_url, waitlist_max
   }).eq('id', eventId)
 
   if (updateError) return { error: updateError.message }
@@ -231,7 +235,7 @@ export async function registerForEvent(eventId: string) {
 
   const { data: event } = await supabase
     .from('events')
-    .select('registration_deadline, max_capacity')
+    .select('registration_deadline, max_capacity, waitlist_max')
     .eq('id', eventId)
     .single()
 
@@ -241,13 +245,29 @@ export async function registerForEvent(eventId: string) {
     }
   }
 
-  if (event?.max_capacity) {
-    const { count } = await supabase
-      .from('registrations')
-      .select('id', { count: 'exact', head: true })
-      .eq('event_id', eventId)
+  // Count active registrations
+  const { count: activeCount } = await supabase
+    .from('registrations')
+    .select('id', { count: 'exact', head: true })
+    .eq('event_id', eventId)
+    .eq('is_waitlisted', false)
 
-    if (count !== null && count >= event.max_capacity) {
+  // Count waitlisted registrations
+  const { count: waitlistCount } = await supabase
+    .from('registrations')
+    .select('id', { count: 'exact', head: true })
+    .eq('event_id', eventId)
+    .eq('is_waitlisted', true)
+
+  const activeRegs = activeCount || 0
+  const waitlistRegs = waitlistCount || 0
+
+  let shouldWaitlist = false
+  if (event?.max_capacity && event.max_capacity > 0 && activeRegs >= event.max_capacity) {
+    const maxWaitlist = event.waitlist_max || 0
+    if (maxWaitlist > 0 && waitlistRegs < maxWaitlist) {
+      shouldWaitlist = true
+    } else {
       return { error: 'This event is full. No seats remaining.' }
     }
   }
@@ -256,7 +276,8 @@ export async function registerForEvent(eventId: string) {
   const { error } = await supabase.from('registrations').insert({
     event_id: eventId,
     student_id: user.id,
-    qr_token: qrToken
+    qr_token: qrToken,
+    is_waitlisted: shouldWaitlist
   })
 
   if (error) {
@@ -264,16 +285,18 @@ export async function registerForEvent(eventId: string) {
     return { error: error.message }
   }
 
-  // Trigger notification
-  const { createEventNotification } = await import('@/lib/actions/messages')
-  await createEventNotification(user.id, eventId, qrToken)
+  // Trigger notification only if NOT waitlisted
+  if (!shouldWaitlist) {
+    const { createEventNotification } = await import('@/lib/actions/messages')
+    await createEventNotification(user.id, eventId, qrToken)
 
-  // Auto-join event discussion thread if enabled
-  const { joinEventThread } = await import('@/lib/actions/event-threads')
-  await joinEventThread(eventId, user.id)
+    // Auto-join event discussion thread if enabled
+    const { joinEventThread } = await import('@/lib/actions/event-threads')
+    await joinEventThread(eventId, user.id)
+  }
 
   revalidatePath(`/student/events/${eventId}`)
-  return { success: true }
+  return { success: true, waitlisted: shouldWaitlist }
 }
 
 export async function updateStudentProfile(data: {

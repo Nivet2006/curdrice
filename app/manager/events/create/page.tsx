@@ -148,13 +148,22 @@ export default function CreateEventPage() {
               </div>
             </div>
 
-            <Input
-              label="Max Capacity (0 for unlimited)"
-              name="capacity"
-              type="number"
-              min="0"
-              defaultValue="0"
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Input
+                label="Max Capacity (0 for unlimited)"
+                name="capacity"
+                type="number"
+                min="0"
+                defaultValue="0"
+              />
+              <Input
+                label="Waitlist Max Capacity (0 for no waitlist)"
+                name="waitlistMax"
+                type="number"
+                min="0"
+                defaultValue="0"
+              />
+            </div>
 
             {/* Banner URL — required */}
             <div className="w-full flex flex-col gap-1">

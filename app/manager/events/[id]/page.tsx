@@ -17,7 +17,7 @@ export default async function ManagerEventDetails({ params }: { params: Promise<
 
   const { data: rawEvent } = await supabaseAdmin
     .from('events')
-    .select('id, title, description, club_name, location, event_date, registration_deadline, max_capacity, status, banner_url, approval_status, discussion_enabled, thread_mode, created_by, created_at, feedback_open, is_public, targeted_department')
+    .select('id, title, description, club_name, location, event_date, registration_deadline, max_capacity, waitlist_max, status, banner_url, approval_status, discussion_enabled, thread_mode, created_by, created_at, feedback_open, is_public, targeted_department')
     .eq('id', id)
     .single()
 
@@ -27,7 +27,7 @@ export default async function ManagerEventDetails({ params }: { params: Promise<
 
   const { data: rawRegistrations } = await supabaseAdmin
     .from('registrations')
-    .select('id, student_id, checked_in, checked_in_at, qr_token, registered_at, profiles(full_name, usn, department, semester)')
+    .select('id, student_id, checked_in, checked_in_at, qr_token, registered_at, is_waitlisted, profiles(full_name, usn, department, semester)')
     .eq('event_id', event.id)
 
   const registrations = (rawRegistrations || []).map((reg: any) => ({
@@ -35,7 +35,9 @@ export default async function ManagerEventDetails({ params }: { params: Promise<
     profiles: Array.isArray(reg.profiles) ? reg.profiles[0] || null : reg.profiles || null
   }))
 
-  const checkedInCount = registrations.filter((r: { checked_in: boolean }) => r.checked_in).length
+  const activeRegistrations = registrations.filter((r: any) => !r.is_waitlisted)
+  const waitlistRegistrations = registrations.filter((r: any) => r.is_waitlisted)
+  const checkedInCount = activeRegistrations.filter((r: { checked_in: boolean }) => r.checked_in).length
 
   return (
     <div className="w-full flex-1 pb-32">
@@ -92,8 +94,13 @@ export default async function ManagerEventDetails({ params }: { params: Promise<
               <div className="flex items-center gap-4">
                 <span className="text-[#0a0a0a]">List</span>
                 <span className="font-mono text-xs text-[#0a0a0a] bg-[#f5f5f5] px-3 py-1.5 rounded-md border border-[#d0d0d0]">
-                  Checked In: {checkedInCount} / {registrations.length}
+                  Checked In: {checkedInCount} / {activeRegistrations.length}
                 </span>
+                {waitlistRegistrations.length > 0 && (
+                  <span className="font-mono text-xs text-amber-700 bg-amber-50 px-3 py-1.5 rounded-md border border-amber-200">
+                    Waitlist: {waitlistRegistrations.length}
+                  </span>
+                )}
               </div>
               <RegistrationExportMenu registrations={registrations} eventTitle={event.title} />
             </h3>
@@ -108,7 +115,7 @@ export default async function ManagerEventDetails({ params }: { params: Promise<
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#f0f0f0] bg-white">
-                  {registrations.map((reg: { id: string; profiles: { full_name: string; usn: string; department: string; semester: number }; checked_in: boolean }) => (
+                  {registrations.map((reg: { id: string; profiles: { full_name: string; usn: string; department: string; semester: number }; checked_in: boolean; is_waitlisted: boolean }) => (
                     <tr key={reg.id} className="hover:bg-[#fafafa]">
                       <td className="px-6 py-3">
                         <div className="font-bold text-[#0a0a0a] truncate max-w-[200px]">{reg.profiles.full_name}</div>
@@ -118,10 +125,13 @@ export default async function ManagerEventDetails({ params }: { params: Promise<
                         {reg.profiles.department} (S{reg.profiles.semester})
                       </td>
                       <td className="px-6 py-3 text-right">
-                        {reg.checked_in
-                          ? <span className="text-[10px] font-mono bg-[#f0fdf4] text-[#166534] px-2.5 py-1 rounded-sm border border-[#bbf7d0]">Present</span>
-                          : <span className="text-[10px] font-mono bg-[#fefce8] text-[#854d0e] px-2.5 py-1 rounded-sm border border-[#fef08a]">Pending</span>
-                        }
+                        {reg.is_waitlisted ? (
+                          <span className="text-[10px] font-mono bg-amber-50 text-amber-700 px-2.5 py-1 rounded-sm border border-amber-200">Waitlist</span>
+                        ) : reg.checked_in ? (
+                          <span className="text-[10px] font-mono bg-[#f0fdf4] text-[#166534] px-2.5 py-1 rounded-sm border border-[#bbf7d0]">Present</span>
+                        ) : (
+                          <span className="text-[10px] font-mono bg-[#fefce8] text-[#854d0e] px-2.5 py-1 rounded-sm border border-[#fef08a]">Pending</span>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -143,12 +153,22 @@ export default async function ManagerEventDetails({ params }: { params: Promise<
                 <p className="text-3xl font-black font-mono text-[#0a0a0a]">{event.max_capacity === 0 || !event.max_capacity ? 'Unlimited' : event.max_capacity}</p>
               </div>
               <div>
-                <p className="font-mono text-xs uppercase tracking-widest text-[#555555] mb-1">Tickets Claimed</p>
-                <p className="text-3xl font-black font-mono text-[#0a0a0a]">{registrations.length}</p>
+                <p className="font-mono text-xs uppercase tracking-widest text-[#555555] mb-1">Waitlist Max</p>
+                <p className="text-3xl font-black font-mono text-[#0a0a0a]">{event.waitlist_max === 0 || !event.waitlist_max ? 'No Waitlist' : event.waitlist_max}</p>
               </div>
               <div>
+                <p className="font-mono text-xs uppercase tracking-widest text-[#555555] mb-1">Active Registrations</p>
+                <p className="text-3xl font-black font-mono text-[#0a0a0a]">{activeRegistrations.length}</p>
+              </div>
+              {waitlistRegistrations.length > 0 && (
+                <div>
+                  <p className="font-mono text-xs uppercase tracking-widest text-[#555555] mb-1">Waitlisted Students</p>
+                  <p className="text-3xl font-black font-mono text-amber-600">{waitlistRegistrations.length}</p>
+                </div>
+              )}
+              <div>
                 <p className="font-mono text-xs uppercase tracking-widest text-[#555555] mb-1">Attendance Ratio</p>
-                <p className="text-3xl font-black font-mono text-[#0a0a0a]">{registrations.length > 0 ? Math.round((checkedInCount / registrations.length) * 100) : 0}%</p>
+                <p className="text-3xl font-black font-mono text-[#0a0a0a]">{activeRegistrations.length > 0 ? Math.round((checkedInCount / activeRegistrations.length) * 100) : 0}%</p>
               </div>
             </div>
           </Card>

@@ -10,7 +10,7 @@ import { ImageWithFallback } from '@/components/ui/ImageWithFallback'
 
 interface Props {
   initialEvents: Event[]
-  registrations: { event_id: string; qr_token: string }[]
+  registrations: { event_id: string; qr_token: string; is_waitlisted?: boolean }[]
   profile: Profile | null
 }
 
@@ -312,17 +312,25 @@ export function StudentEventsView({ initialEvents, registrations, profile }: Pro
                           <div className="flex items-center gap-2">
                             {isRegistered ? (
                               <div className="flex gap-2">
-                                <span className="inline-flex items-center gap-1 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider font-mono">
-                                  Going ✓
-                                </span>
-                                {qrToken && (
-                                  <button
-                                    onClick={() => setActiveQR({ token: qrToken, eventName: event.title })}
-                                    className="flex items-center gap-1 px-3 py-1 rounded-full border border-zinc-200 font-mono text-[10px] uppercase font-bold text-[#555] hover:bg-zinc-50 transition-colors"
-                                  >
-                                    <QrCode size={11} />
-                                    QR
-                                  </button>
+                                {reg?.is_waitlisted ? (
+                                  <span className="inline-flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-700 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider font-mono">
+                                    Waitlisted ⌛
+                                  </span>
+                                ) : (
+                                  <>
+                                    <span className="inline-flex items-center gap-1 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider font-mono">
+                                      Going ✓
+                                    </span>
+                                    {qrToken && (
+                                      <button
+                                        onClick={() => setActiveQR({ token: qrToken, eventName: event.title })}
+                                        className="flex items-center gap-1 px-3 py-1 rounded-full border border-zinc-200 font-mono text-[10px] uppercase font-bold text-[#555] hover:bg-zinc-50 transition-colors"
+                                      >
+                                        <QrCode size={11} />
+                                        QR
+                                      </button>
+                                    )}
+                                  </>
                                 )}
                               </div>
                             ) : (

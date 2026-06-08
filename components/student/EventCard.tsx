@@ -11,6 +11,7 @@ type EventCardProps = {
   event: Event
   registeredCount?: number
   isRegistered?: boolean
+  isWaitlisted?: boolean
   isEligible?: boolean
   hrefOverride?: string
   qrToken?: string
@@ -19,14 +20,14 @@ type EventCardProps = {
   adminActions?: React.ReactNode
 }
 
-export function EventCard({ event, registeredCount = 0, isRegistered = false, isEligible = true, hrefOverride, qrToken, studentName, usn, adminActions }: EventCardProps) {
+export function EventCard({ event, registeredCount = 0, isRegistered = false, isWaitlisted = false, isEligible = true, hrefOverride, qrToken, studentName, usn, adminActions }: EventCardProps) {
   return (
     <Link href={hrefOverride || `/student/events/${event.id}`} className={!isEligible ? 'pointer-events-none opacity-60 relative' : ''}>
       <Card className="overflow-hidden flex flex-col h-full bg-white relative">
         {isRegistered && (
-          <div className="bg-black text-white text-xs font-mono px-4 py-2 w-full flex justify-between items-center tracking-widest uppercase relative z-20">
-            <span>Registered ✓</span>
-            {qrToken && studentName && usn && (
+          <div className={`${isWaitlisted ? 'bg-amber-500' : 'bg-black'} text-white text-xs font-mono px-4 py-2 w-full flex justify-between items-center tracking-widest uppercase relative z-20`}>
+            <span>{isWaitlisted ? 'Waitlisted ⌛' : 'Registered ✓'}</span>
+            {!isWaitlisted && qrToken && studentName && usn && (
               <QRButton
                 token={qrToken}
                 studentName={studentName}

@@ -61,6 +61,7 @@ export interface Event {
   is_public: boolean
   discussion_enabled: boolean
   thread_mode: ThreadMode
+  waitlist_max?: number | null
   created_by: string
   created_at: string
 }
@@ -100,6 +101,7 @@ export interface Registration {
   qr_token: string
   checked_in: boolean
   checked_in_at: string | null
+  is_waitlisted?: boolean
   registered_at: string
 }
 

@@ -74,7 +74,10 @@ export function EditEventForm({ event, constraints }: { event: Event, constraint
               <Input label="Registration Hard Deadline" name="deadline" type="datetime-local" defaultValue={formatForInput(event.registration_deadline)} />
             </div>
 
-            <Input label="Attendee Capacity Maximum (0/blank for infinite)" name="capacity" type="number" min="0" defaultValue={event.max_capacity?.toString() || "0"} />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Input label="Attendee Capacity Maximum (0/blank for infinite)" name="capacity" type="number" min="0" defaultValue={event.max_capacity?.toString() || "0"} />
+              <Input label="Waitlist Max Capacity (0 for no waitlist)" name="waitlistMax" type="number" min="0" defaultValue={event.waitlist_max?.toString() || "0"} />
+            </div>
 
             <Input 
               label="Poster / Banner Image URL (e.g. .png, .jpg, .jpeg)" 

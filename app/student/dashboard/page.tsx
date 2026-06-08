@@ -18,7 +18,7 @@ export default async function StudentDashboard() {
     supabase.from('profiles').select('id, full_name, usn, department, semester, year, username, role').eq('id', user?.id).single(),
     supabase
       .from('registrations')
-      .select(`event_id, qr_token, events(${eventColumns})`)
+      .select(`event_id, qr_token, is_waitlisted, events(${eventColumns})`)
       .eq('student_id', user?.id),
     supabase
       .from('events')
@@ -76,6 +76,7 @@ export default async function StudentDashboard() {
                   <EventCard
                     event={event}
                     isRegistered={true}
+                    isWaitlisted={reg.is_waitlisted}
                     qrToken={reg.qr_token}
                     studentName={profile?.full_name}
                     usn={profile?.usn}

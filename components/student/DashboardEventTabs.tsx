@@ -12,7 +12,7 @@ export function DashboardEventTabs({
   profile 
 }: { 
   initialEvents: Event[], 
-  registrations: { event_id: string; qr_token: string }[],
+  registrations: { event_id: string; qr_token: string; is_waitlisted?: boolean }[],
   profile: Profile | null
 }) {
   const [activeTab, setActiveTab] = useState<'upcoming' | 'ongoing' | 'completed'>('upcoming')
@@ -53,6 +53,7 @@ export function DashboardEventTabs({
                  key={event.id} 
                  event={event} 
                  isRegistered={!!reg}
+                 isWaitlisted={reg?.is_waitlisted}
                  qrToken={reg?.qr_token}
                  studentName={profile?.full_name}
                  usn={profile?.usn}

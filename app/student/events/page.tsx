@@ -24,7 +24,7 @@ export default async function StudentEventsPage() {
       .single(),
     supabase
       .from('registrations')
-      .select('event_id, qr_token')
+      .select('event_id, qr_token, is_waitlisted')
       .eq('student_id', user!.id),
   ])
 
