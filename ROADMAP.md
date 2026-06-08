@@ -69,6 +69,7 @@
 *   **Faculty Event Proposals**: Allow faculty members to directly create guest lectures, alumni talks, and industrial visits.
 *   **Bypassed Approval Pipeline**: Faculty-created events bypass CC and PR review stages, routing directly to HOD for instant approval, going straight to students for registration.
 *   **Compulsory Closed/Selective Events**: Override options to forcefully auto-register targeted students (generating direct QR codes without registration required).
+*   **Allow Open Registrations alongside Compulsory Attendance**: A checkbox option that ensures targeted students are forcefully pre-registered and must attend, while concurrently allowing other students to manually register for any remaining event slots.
 *   **Faculty-Led Auditing**: Post-event validation and report checking bypasses PR and goes directly from the assigned Faculty to HOD review.
 
 ---
