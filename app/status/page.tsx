@@ -31,7 +31,7 @@ async function getWorkflowRuns() {
   if (!token) return null
 
   try {
-    const res = await fetch(`https://api.github.com/repos/${repo}/actions/runs?per_page=5`, {
+    const res = await fetch(`https://api.github.com/repos/${repo}/actions/runs?path=.github/workflows/ci.yml&per_page=5`, {
       headers: { 
         Authorization: `Bearer ${token}`,
         'Accept': 'application/vnd.github.v3+json'
@@ -39,7 +39,7 @@ async function getWorkflowRuns() {
       next: { revalidate: 60 }
     })
     const data = await res.json()
-    const runs = data.workflow_runs
+    const runs = data.workflow_runs || []
 
     // Fetch jobs for each run to find detailed warnings/failures
     const runsWithDetails = await Promise.all(runs.map(async (run: any) => {
