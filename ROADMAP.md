@@ -40,7 +40,7 @@
 
 *   **Automated Clash Detection**: Real-time warnings if two major events overlap or if a student registers for two events at the same time.
 *   **Enhanced Eligibility Auto-Check**: Expanded rules including CGPA requirements, prerequisite event attendance, or specific student group access.
-*   **Waitlist + Auto-Fill**: Automated queue management when capacity is reached; users are bumped into active slots when cancellations occur.
+*   [x] **Waitlist + Auto-Fill**: Automated queue management when capacity is reached; users are bumped into active slots when cancellations occur.
 *   **Live Event Mode**: Real-time dashboard showing live check-in counts and attendee statistics during an event.
 
 ---
@@ -60,6 +60,13 @@
 3.  **Resume / Participation Export**: Directly links club activities to student career outcomes.
 
 ## Completed Milestones
+
+### 2026-06 (Smart Queue & Waitlists)
+- [x] **Waitlist + Auto-Fill**: Automated waitlist slots with queue management set during and post event creation.
+- [x] **Postgres Trigger Promotion**: Automated first-in-first-out promotion of the oldest waitlisted student when cancellations or capacity increases occur.
+- [x] **Automatic Chat & Notifications**: Promoted students automatically get added to discussion threads and receive instant notification alerts.
+- [x] **Waitlisted Cards & UI Badge**: Clean orange badge for waitlisted events on student dashboards, cards, and list views.
+- [x] **Database Migration 0020**: `events.waitlist_max`, `registrations.is_waitlisted` column additions, triggers.
 
 ### 2026-05 (Event Discussion Threads)
 - [x] **Discord-like Event Chat**: Per-event group discussion threads with @mention autocomplete, reply threading, and emoji reactions.
@@ -97,4 +104,4 @@
 - [x] **Eve Bot AI Assistant**: Localized NLP chatbot with Bayesian classification.
 
 ---
-*Last updated: 2026-05-29*
+*Last updated: 2026-06-09*
