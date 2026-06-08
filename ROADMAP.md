@@ -63,6 +63,16 @@
 
 ---
 
+## Requested by GCEM (Special Administrative Features)
+*Custom operational flows designed for institutional academic requirements.*
+
+*   **Faculty Event Proposals**: Allow faculty members to directly create guest lectures, alumni talks, and industrial visits.
+*   **Bypassed Approval Pipeline**: Faculty-created events bypass CC and PR review stages, routing directly to HOD for instant approval, going straight to students for registration.
+*   **Compulsory Closed/Selective Events**: Override options to forcefully auto-register targeted students (generating direct QR codes without registration required).
+*   **Faculty-Led Auditing**: Post-event validation and report checking bypasses PR and goes directly from the assigned Faculty to HOD review.
+
+---
+
 ## Top 3 Priority Features (High Impact)
 1.  **Certificate Generation (PDF)**: Immediate reward for students, highly impressive practically.
 2.  **Hall Booking + Clash Detection**: Solves the most common operational headache for college faculty.
