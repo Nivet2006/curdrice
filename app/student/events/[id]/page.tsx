@@ -1,9 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
-import { CalendarDays, MapPin, Users, Clock } from 'lucide-react'
+import { CalendarDays, MapPin, Users, Clock, ShieldAlert } from 'lucide-react'
 import Link from 'next/link'
 import type { Event } from '@/lib/types'
+import { LocationMapEmbed } from '@/components/shared/LocationMapEmbed'
 import { RegisterButton } from '@/components/student/RegisterButton'
 import { registerForEvent } from '@/lib/actions/events'
 import { QRButton } from '@/components/student/QRButton'
@@ -27,7 +28,7 @@ export default async function EventDetailPage({
   const { invitedBy } = await searchParams
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { data } = await supabase.from('events').select('id, title, description, club_name, location, event_date, registration_deadline, max_capacity, waitlist_max, status, banner_url, created_by, created_at, approval_status, discussion_enabled, feedback_open, feedback_config, is_public, targeted_department, rejection_data').eq('id', id).single()
+  const { data } = await supabase.from('events').select('id, title, description, club_name, location, location_lat, location_lng, event_date, registration_deadline, max_capacity, waitlist_max, status, banner_url, created_by, created_at, approval_status, discussion_enabled, feedback_open, feedback_config, is_public, targeted_department, rejection_data, is_compulsory').eq('id', id).single()
   const event = withDynamicSingleEventStatus(data as Event)
 
   if (!event) return <div>Event not found</div>
@@ -111,6 +112,17 @@ export default async function EventDetailPage({
           </div>
           
           <h1 className="text-3xl font-black text-[#0a0a0a] mb-6">{event.title}</h1>
+          
+          {/* Compulsory event banner */}
+          {(event as any).is_compulsory && (
+            <div className="mb-6 flex items-start gap-3 p-4 bg-rose-50 dark:bg-rose-900/20 rounded-2xl border border-rose-100 dark:border-rose-800">
+              <ShieldAlert size={18} className="text-rose-500 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-xs font-mono font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">Compulsory Event</p>
+                <p className="text-xs text-rose-500 dark:text-rose-400 mt-0.5">You have been auto-registered for this event. Your QR code is available below.</p>
+              </div>
+            </div>
+          )}
           <p className="text-base text-[#555555] mb-8 leading-relaxed whitespace-pre-wrap">{event.description}</p>
           
           <div className="space-y-4 font-mono text-sm text-[#0a0a0a]">
@@ -126,6 +138,15 @@ export default async function EventDetailPage({
               <MapPin className="text-[#555555]" size={18} />
               <span>{event.location || 'TBA'}</span>
             </div>
+            {event.location_lat && event.location_lng && (
+              <div className="mt-4">
+                <LocationMapEmbed
+                  lat={event.location_lat}
+                  lng={event.location_lng}
+                  name={event.location || 'Visit Location'}
+                />
+              </div>
+            )}
             <div className="flex items-center gap-3">
               <Users className="text-[#555555]" size={18} />
               <span>{activeCount} {event.max_capacity ? `/ ${event.max_capacity}` : ''} attending {waitlistCount > 0 ? `(${waitlistCount} on waitlist)` : ''}</span>

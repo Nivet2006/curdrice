@@ -62,10 +62,12 @@ export interface Event {
   discussion_enabled: boolean
   thread_mode: ThreadMode
   waitlist_max?: number | null
-  event_category?: 'guest_lecture' | 'alumni_talk' | 'industrial_visit' | 'standard'
+  event_category?: 'guest_lecture' | 'alumni_talk' | 'industrial_visit' | 'standard' | 'faculty' | 'workshop' | 'seminar' | 'others'
   is_compulsory?: boolean
   allow_open_registration?: boolean
   assigned_faculty_id?: string | null
+  location_lat?: number | null
+  location_lng?: number | null
   created_by: string
   created_at: string
 }

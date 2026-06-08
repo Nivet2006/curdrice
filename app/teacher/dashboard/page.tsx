@@ -1,7 +1,7 @@
 import React from 'react'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { ShieldAlert, CheckCircle, ArrowRight, User, Award, FileText } from 'lucide-react'
+import { ShieldAlert, CheckCircle, ArrowRight, User, Award, FileText, PlusCircle } from 'lucide-react'
 import { ManageStudentsPanel } from '@/components/faculty/ManageStudentsPanel'
 import type { Profile } from '@/lib/types'
 
@@ -83,10 +83,16 @@ export default async function TeacherDashboard() {
             "Ensuring club activities align with institutional standards and student safety."
           </p>
         </div>
-        <Link href="/dashboard/cert" className="flex items-center gap-3 px-6 py-4 bg-[#0a0a0a] text-white hover:bg-zinc-800 rounded-3xl transition-all font-bold text-sm shadow-lg group">
-          <Award size={20} className="group-hover:animate-bounce text-white" />
-          <span className="text-white">CERTIFICATE GENERATOR</span>
-        </Link>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <Link href="/teacher/events/create" className="flex items-center gap-3 px-6 py-4 bg-amber-500 text-white hover:bg-amber-600 rounded-3xl transition-all font-bold text-sm shadow-lg group">
+            <PlusCircle size={20} className="group-hover:rotate-90 transition-transform" />
+            <span>CREATE EVENT</span>
+          </Link>
+          <Link href="/dashboard/cert" className="flex items-center gap-3 px-6 py-4 bg-[#0a0a0a] text-white hover:bg-zinc-800 rounded-3xl transition-all font-bold text-sm shadow-lg group">
+            <Award size={20} className="group-hover:animate-bounce text-white" />
+            <span className="text-white">CERTIFICATE GENERATOR</span>
+          </Link>
+        </div>
       </div>
 
       <div className="space-y-20">

@@ -3,10 +3,11 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import { HODActionWrapper } from './HODActionWrapper'
 import { EventRegistrationStats } from '@/components/admin/EventRegistrationStats'
-import { ArrowLeft, Building, ShieldCheck, CheckCircle2 } from 'lucide-react'
+import { ArrowLeft, Building, ShieldCheck, CheckCircle2, ShieldAlert } from 'lucide-react'
 import Link from 'next/link'
 import { EventThread } from '@/components/student/EventThread'
 import { getEventThread } from '@/lib/actions/event-threads'
+import { LocationMapEmbed } from '@/components/shared/LocationMapEmbed'
 
 export default async function HODApprovalPage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
@@ -49,6 +50,12 @@ export default async function HODApprovalPage({ params }: { params: Promise<{ id
             </div>
             <h1 className="text-7xl font-black tracking-tightest leading-[0.9] text-[#0a0a0a] uppercase">{event.title}</h1>
             <p className="font-mono text-sm font-bold text-zinc-500 uppercase tracking-widest">Formal Activity Request by {(event.profiles as any)?.full_name}</p>
+            {event.is_compulsory && (
+              <div className="inline-flex items-center gap-2 bg-rose-500 text-white px-4 py-2 rounded-full text-xs font-mono font-black uppercase tracking-widest mt-2 w-fit">
+                <ShieldAlert size={12} />
+                Compulsory — Students Auto-Registered on Approval
+              </div>
+            )}
           </header>
 
           <div className="grid grid-cols-2 gap-12 border-y-2 border-zinc-100 py-12">
@@ -63,6 +70,18 @@ export default async function HODApprovalPage({ params }: { params: Promise<{ id
               <p className="text-xs font-mono text-zinc-500 uppercase">{event.targeted_department || 'General Institutional'}</p>
             </div>
           </div>
+
+          {/* Industrial Visit Map */}
+          {event.location_lat && event.location_lng && (
+            <div className="space-y-4">
+              <h3 className="font-mono text-xs font-black uppercase text-zinc-300 tracking-[0.3em]">Visit Location Map</h3>
+              <LocationMapEmbed
+                lat={event.location_lat}
+                lng={event.location_lng}
+                name={event.location || 'Industrial Visit'}
+              />
+            </div>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 border-b-2 border-zinc-100 pb-12">
              <div className="space-y-1">
