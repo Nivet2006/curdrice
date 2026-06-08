@@ -97,11 +97,17 @@ export default async function StatusPage() {
     dbStatus = 'offline'
   }
 
+  // Simple B2 Storage check
+  let b2Status = 'operational'
+  if (!process.env.B2_ENDPOINT || !process.env.B2_KEY_ID || !process.env.B2_APPLICATION_KEY || !process.env.B2_BUCKET_NAME) {
+    b2Status = 'degraded'
+  }
+
   const systems = [
     { name: 'Core Platform', status: 'operational', icon: Zap },
     { name: 'Supabase Database', status: dbStatus, icon: Database },
-    { name: 'Authentication (Auth0)', status: 'operational', icon: ShieldCheck },
-    { name: 'Edge Functions', status: 'operational', icon: Activity },
+    { name: 'Authentication (Supabase Auth)', status: 'operational', icon: ShieldCheck },
+    { name: 'Backblaze B2 Storage', status: b2Status, icon: Activity },
   ]
 
   const isAllGood = systems.every(s => s.status === 'operational')
