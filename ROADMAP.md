@@ -2,6 +2,8 @@
 > Future features, enhancements, and the long-term vision for a campus-wide event management ecosystem.
 
 ---
+### ongoing:
+give an option to save an event creation as draft by teacher... and set a max limit of only 5 drafts.. after that any old draft should be deleted or pushed... 
 
 ## Academic & Operational Excellence
 *Focus on college-wide scalability and administrative efficiency.*
