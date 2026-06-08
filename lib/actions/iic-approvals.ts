@@ -33,7 +33,15 @@ export async function processIICReportReview(
     }
   } else if (role === 'teacher') {
     if (decision === 'approve') {
-      nextStatus = 'approved_faculty';
+      // Check if GCEM event
+      const { data: report } = await supabaseAdmin
+        .from('iic_event_reports')
+        .select('event_id, events(event_category)')
+        .eq('id', reportId)
+        .single();
+      const isGcem = (report as any)?.events?.event_category && (report as any).events.event_category !== 'standard';
+
+      nextStatus = isGcem ? 'pending_hod' : 'approved_faculty';
       updateData.approved_by_faculty = user.id;
     } else {
       nextStatus = 'rejected_faculty';
@@ -76,14 +84,24 @@ export async function pushIICReportToPR(reportId: string) {
   if (!user) return { error: 'Unauthorized: Session missing.' };
 
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-  if (!profile || !['cc', 'admin'].includes(profile.role)) {
-    return { error: 'Unauthorized: Only Club Coordinators or Admins can push reports to PR.' };
+  if (!profile || !['cc', 'admin', 'teacher'].includes(profile.role)) {
+    return { error: 'Unauthorized: Only Club Coordinators, Faculty, or Admins can push reports.' };
   }
+
+  // Check if this is a GCEM event
+  const { data: report } = await supabaseAdmin
+    .from('iic_event_reports')
+    .select('event_id, events(event_category)')
+    .eq('id', reportId)
+    .single();
+  const isGcem = (report as any)?.events?.event_category && (report as any).events.event_category !== 'standard';
+
+  const nextStatus = isGcem ? 'pending_hod' : 'pending_pr';
 
   const { error } = await supabaseAdmin
     .from('iic_event_reports')
     .update({
-      status: 'pending_pr',
+      status: nextStatus,
       rejection_feedback: null,
       rejected_to: null,
     })
@@ -91,12 +109,13 @@ export async function pushIICReportToPR(reportId: string) {
 
   if (error) {
     console.error('[IIC Push Error]', error);
-    return { error: `Failed to push report to PR: ${error.message}` };
+    return { error: `Failed to push report: ${error.message}` };
   }
 
   revalidatePath('/pr/dashboard');
   revalidatePath('/pr/audit');
   revalidatePath('/cc/dashboard');
+  revalidatePath('/teacher/dashboard');
   
   return { success: true };
 }
@@ -176,10 +195,18 @@ export async function declineIICReportWithAnnotations(
     return { error: 'Unauthorized.' };
   }
 
+  // Check if GCEM
+  const { data: report } = await supabaseAdmin
+    .from('iic_event_reports')
+    .select('event_id, events(event_category)')
+    .eq('id', reportId)
+    .single();
+  const isGcem = (report as any)?.events?.event_category && (report as any).events.event_category !== 'standard';
+
   // If PR declines: goes to rejected_pr (back to CC)
   // If Faculty/Teacher declines: goes to rejected_faculty (can be back to PR or CC)
   const nextStatus = profile.role === 'pr' ? 'rejected_pr' : 'rejected_faculty';
-  const target = rejectedTo || (profile.role === 'pr' ? 'cc' : 'pr');
+  const target = isGcem ? 'cc' : (rejectedTo || (profile.role === 'pr' ? 'cc' : 'pr'));
 
   const { error } = await supabaseAdmin
     .from('iic_event_reports')

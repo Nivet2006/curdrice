@@ -1,10 +1,11 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { createEvent } from '@/lib/actions/events'
 import Link from 'next/link'
+import { createClient } from '@/lib/supabase/client'
 
 export default function CreateEventPage() {
   const [loading, setLoading] = useState(false)
@@ -15,6 +16,16 @@ export default function CreateEventPage() {
   const [semesters, setSemesters] = useState<number[]>([])
   const [years, setYears] = useState<number[]>([])
   const [depts, setDepts] = useState<string[]>([])
+  const [teachers, setTeachers] = useState<{ id: string; full_name: string }[]>([])
+
+  useEffect(() => {
+    async function loadTeachers() {
+      const supabase = createClient()
+      const { data } = await supabase.from('profiles').select('id, full_name').eq('role', 'teacher').order('full_name')
+      if (data) setTeachers(data)
+    }
+    loadTeachers()
+  }, [])
 
   const toggleSem = (s: number) => setSemesters(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s])
   const toggleYear = (y: number) => setYears(prev => prev.includes(y) ? prev.filter(x => x !== y) : [...prev, y])
@@ -163,6 +174,67 @@ export default function CreateEventPage() {
                 min="0"
                 defaultValue="0"
               />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="w-full flex flex-col gap-1">
+                <label className="text-xs font-mono text-[#555555] uppercase tracking-widest">
+                  Event Category *
+                </label>
+                <select
+                  name="eventCategory"
+                  defaultValue="standard"
+                  className="rounded-xl border border-[#d0d0d0] bg-white px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0a0a0a]"
+                >
+                  <option value="standard">Standard</option>
+                  <option value="guest_lecture">Guest Lecture</option>
+                  <option value="alumni_talk">Alumni Talk</option>
+                  <option value="industrial_visit">Industrial Visit</option>
+                </select>
+              </div>
+
+              <div className="w-full flex flex-col gap-1">
+                <label className="text-xs font-mono text-[#555555] uppercase tracking-widest">
+                  Assigned Faculty Advisor (Validator)
+                </label>
+                <select
+                  name="assignedFacultyId"
+                  className="rounded-xl border border-[#d0d0d0] bg-white px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0a0a0a]"
+                >
+                  <option value="">-- None --</option>
+                  {teachers.map(t => (
+                    <option key={t.id} value={t.id}>{t.full_name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="border border-[#e0e0e0] rounded-2xl p-6 bg-zinc-50/50 dark:bg-zinc-900/30 space-y-4">
+              <div className="flex items-center gap-3">
+                <input
+                  id="isCompulsory"
+                  name="isCompulsory"
+                  type="checkbox"
+                  value="true"
+                  className="w-4 h-4 rounded border-zinc-300 text-black focus:ring-black"
+                />
+                <label htmlFor="isCompulsory" className="text-sm font-semibold text-black dark:text-zinc-200 select-none">
+                  Compulsory Selective Event (Forcefully auto-register targeted students)
+                </label>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <input
+                  id="allowOpenRegistration"
+                  name="allowOpenRegistration"
+                  type="checkbox"
+                  value="true"
+                  className="w-4 h-4 rounded border-zinc-300 text-black focus:ring-black"
+                />
+                <label htmlFor="allowOpenRegistration" className="text-sm font-semibold text-black dark:text-zinc-200 select-none">
+                  Allow Open Registrations alongside Compulsory Attendance
+                </label>
+              </div>
             </div>
 
             {/* Banner URL — required */}

@@ -28,13 +28,16 @@ export default async function TeacherDashboard() {
     .eq('targeted_department', dept)
     .order('created_at', { ascending: true })
 
-  // Post-Event IIC Reports pending teacher verification
-  const { data: pendingIICReports } = await supabase
+  // Post-Event IIC Reports pending teacher verification (assigned to teacher or matching department)
+  const { data: allPendingReports } = await supabase
     .from('iic_event_reports')
-    .select('*, events(title, club_name, event_date, location)')
+    .select('*, events(title, club_name, event_date, location, assigned_faculty_id, event_category)')
     .in('status', ['pending_faculty', 'approved_faculty'])
-    .eq('department', dept)
     .order('created_at', { ascending: true })
+
+  const pendingIICReports = allPendingReports?.filter(r => 
+    r.department === dept || (r.events as any)?.assigned_faculty_id === user?.id
+  ) || []
 
   // PR Approved Post-Event Reports (status = 'completed')
   const { data: completedReports } = await supabase
@@ -45,13 +48,16 @@ export default async function TeacherDashboard() {
 
   const deptReports = completedReports?.filter(r => (r.events as any)?.targeted_department === dept) || []
 
-  // Events already approved or forwarded to HOD (scoped to department)
-  const { data: approvedEvents } = await supabase
+  // Events already approved or forwarded to HOD (scoped to department or created by teacher)
+  const { data: allApprovedEvents } = await supabase
     .from('events')
-    .select('id, title, description, club_name, location, event_date, registration_deadline, max_capacity, status, approval_status, rejection_data, feedback_config, feedback_open, targeted_department, banner_url, is_public, discussion_enabled, thread_mode, created_by, created_at')
+    .select('id, title, description, club_name, location, event_date, registration_deadline, max_capacity, status, approval_status, rejection_data, feedback_config, feedback_open, targeted_department, banner_url, is_public, discussion_enabled, thread_mode, created_by, created_at, event_category')
     .in('approval_status', ['pending_hod', 'approved'])
-    .eq('targeted_department', dept)
     .order('event_date', { ascending: false })
+
+  const approvedEvents = allApprovedEvents?.filter(e => 
+    e.targeted_department === dept || e.created_by === user?.id
+  ) || []
 
   // Fetch all students in department for Manage Students section
   const { data: allStudents } = await supabase

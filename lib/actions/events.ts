@@ -9,6 +9,8 @@ export async function createEvent(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Unauthorized' }
 
+  const { data: profile } = await supabase.from('profiles').select('role, department').eq('id', user.id).single()
+
   const title = (formData.get('title') as string)?.trim()
   const club_name = (formData.get('clubName') as string)?.trim()
   const status = formData.get('status') as string
@@ -21,6 +23,11 @@ export async function createEvent(formData: FormData) {
   const max_capacity = capStr && parseInt(capStr) > 0 ? parseInt(capStr) : null
   const waitlistCapStr = formData.get('waitlistMax') as string
   const waitlist_max = waitlistCapStr && parseInt(waitlistCapStr) > 0 ? parseInt(waitlistCapStr) : 0
+
+  const event_category = (formData.get('eventCategory') as string) || 'standard'
+  const is_compulsory = formData.get('isCompulsory') === 'true'
+  const allow_open_registration = formData.get('allowOpenRegistration') === 'true'
+  const assigned_faculty_id = (formData.get('assignedFacultyId') as string) || null
 
   if (!title) return { error: 'Event Title is required.' }
   if (!club_name) return { error: 'Club / Host Identity is required.' }
@@ -49,7 +56,13 @@ export async function createEvent(formData: FormData) {
     event_date: eventDt.toISOString(),
     registration_deadline: deadlineDt.toISOString(),
     max_capacity, banner_url, waitlist_max,
-    created_by: user.id
+    created_by: user.id,
+    event_category,
+    is_compulsory,
+    allow_open_registration,
+    assigned_faculty_id,
+    approval_status: profile?.role === 'teacher' ? 'pending_hod' : 'draft',
+    targeted_department: profile?.role === 'teacher' ? (profile?.department || null) : null
   }).select('id').single()
 
   if (error || !event) return { error: error?.message || 'Failed to create event' }
@@ -63,7 +76,11 @@ export async function createEvent(formData: FormData) {
 
   if (constraintError) return { error: constraintError.message }
 
-  redirect('/manager/dashboard')
+  if (profile?.role === 'teacher') {
+    redirect('/teacher/dashboard')
+  } else {
+    redirect('/manager/dashboard')
+  }
 }
 
 export async function updateEvent(eventId: string, formData: FormData) {
@@ -75,7 +92,9 @@ export async function updateEvent(eventId: string, formData: FormData) {
   const { data: event } = await supabase.from('events').select('created_by').eq('id', eventId).single()
 
   if (!event) return { error: 'Event not found' }
-  if (profile?.role !== 'admin' && profile?.role !== 'manager') return { error: 'Unauthorized' }
+  if (profile?.role !== 'admin' && profile?.role !== 'manager' && !(profile?.role === 'teacher' && event.created_by === user.id)) {
+    return { error: 'Unauthorized' }
+  }
 
   const title = (formData.get('title') as string)?.trim()
   const club_name = (formData.get('clubName') as string)?.trim()
@@ -89,6 +108,11 @@ export async function updateEvent(eventId: string, formData: FormData) {
   const max_capacity = capStr && parseInt(capStr) > 0 ? parseInt(capStr) : null
   const waitlistCapStr = formData.get('waitlistMax') as string
   const waitlist_max = waitlistCapStr && parseInt(waitlistCapStr) > 0 ? parseInt(waitlistCapStr) : 0
+
+  const event_category = (formData.get('eventCategory') as string) || 'standard'
+  const is_compulsory = formData.get('isCompulsory') === 'true'
+  const allow_open_registration = formData.get('allowOpenRegistration') === 'true'
+  const assigned_faculty_id = (formData.get('assignedFacultyId') as string) || null
 
   if (!title) return { error: 'Event Title is required.' }
   if (!club_name) return { error: 'Club / Host Identity is required.' }
@@ -116,7 +140,11 @@ export async function updateEvent(eventId: string, formData: FormData) {
     title, club_name, status, description, location,
     event_date: eventDt.toISOString(),
     registration_deadline: deadlineDt.toISOString(),
-    max_capacity, banner_url, waitlist_max
+    max_capacity, banner_url, waitlist_max,
+    event_category,
+    is_compulsory,
+    allow_open_registration,
+    assigned_faculty_id
   }).eq('id', eventId)
 
   if (updateError) return { error: updateError.message }
@@ -132,7 +160,11 @@ export async function updateEvent(eventId: string, formData: FormData) {
 
   if (constraintError) return { error: constraintError.message }
 
-  redirect(`/manager/events/${eventId}`)
+  if (profile?.role === 'teacher') {
+    redirect(`/teacher/dashboard`)
+  } else {
+    redirect(`/manager/events/${eventId}`)
+  }
 }
 
 export async function deleteEvent(eventId: string) {
@@ -144,7 +176,7 @@ export async function deleteEvent(eventId: string) {
   const { data: event } = await supabase.from('events').select('created_by').eq('id', eventId).single()
 
   if (!event) return { error: 'Event not found' }
-  if (profile?.role !== 'admin' && profile?.role !== 'manager') {
+  if (profile?.role !== 'admin' && profile?.role !== 'manager' && !(profile?.role === 'teacher' && event.created_by === user.id)) {
     return { error: 'Unauthorized' }
   }
 
@@ -153,6 +185,8 @@ export async function deleteEvent(eventId: string) {
 
   if (profile?.role === 'admin') {
     redirect('/admin/events')
+  } else if (profile?.role === 'teacher') {
+    redirect('/teacher/dashboard')
   }
 
   redirect('/manager/dashboard')
@@ -235,9 +269,13 @@ export async function registerForEvent(eventId: string) {
 
   const { data: event } = await supabase
     .from('events')
-    .select('registration_deadline, max_capacity, waitlist_max')
+    .select('registration_deadline, max_capacity, waitlist_max, is_compulsory, allow_open_registration')
     .eq('id', eventId)
     .single()
+
+  if (event?.is_compulsory && !event.allow_open_registration) {
+    return { error: 'Registration is closed for this selective compulsory event.' }
+  }
 
   if (event?.registration_deadline) {
     if (new Date() > new Date(event.registration_deadline)) {
