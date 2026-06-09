@@ -1,6 +1,7 @@
 import { PDFDocument, rgb, degrees, StandardFonts, PDFFont } from 'pdf-lib';
 import { CertField } from './types';
 import { fetchFont } from './fontLoader';
+import fontkit from '@pdf-lib/fontkit';
 
 // Helper to convert hex color to normalized pdf-lib rgb values
 function hexToColor(hex: string) {
@@ -103,6 +104,7 @@ export async function generateSingleCertificate({
   dateFormat = 'DD/MM/YYYY'
 }: GenerateSingleCertOptions): Promise<Blob> {
   const pdfDoc = await PDFDocument.load(pdfBytes);
+  pdfDoc.registerFontkit(fontkit);
   const pages = pdfDoc.getPages();
   const firstPageSize = pages[0]?.getSize();
   const legacyCoordScale = firstPageSize
