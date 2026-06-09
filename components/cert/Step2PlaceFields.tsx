@@ -170,7 +170,8 @@ export function Step2PlaceFields({
       textShadow: null,
       zIndex: fields.length + 1,
       locked: false,
-      pageIndex: 0
+      pageIndex: 0,
+      coordSpace: 'pdf-points'
     };
 
     updateFields([...fields, newField]);
@@ -422,6 +423,7 @@ export function Step2PlaceFields({
                   isSelected={field.id === selectedFieldId}
                   onSelect={() => onSelectField(field.id)}
                   onUpdate={(updates) => handleUpdateField(field.id, updates, true)}
+                  onUpdateEnd={() => history.push(fields)}
                   onDelete={deleteSelectedField}
                   scale={scale}
                 />

@@ -8,6 +8,7 @@ interface FieldBoxProps {
   isSelected: boolean;
   onSelect: () => void;
   onUpdate: (fields: Partial<CertField>) => void;
+  onUpdateEnd?: () => void;
   onDelete: () => void;
   scale: number; // For canvas zoom factor
 }
@@ -17,6 +18,7 @@ export function FieldBox({
   isSelected,
   onSelect,
   onUpdate,
+  onUpdateEnd,
   onDelete,
   scale
 }: FieldBoxProps) {
@@ -112,6 +114,9 @@ export function FieldBox({
       setIsDragging(false);
       setIsResizing(false);
       setResizeHandle(null);
+      if (onUpdateEnd) {
+        onUpdateEnd();
+      }
     };
 
     if (isDragging || isResizing) {

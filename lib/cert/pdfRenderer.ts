@@ -56,13 +56,15 @@ export async function renderPdfPageFromBytes(
   await page.render({ canvasContext: ctx, viewport, canvas }).promise;
   const dataUrl = canvas.toDataURL('image/png');
   
+  const pageCount = pdf.numPages;
+
   // Clean up to free memory
   pdf.destroy();
   
   return {
     canvas,
     dataUrl,
-    pageCount: pdf.numPages,
+    pageCount,
     width: canvas.width,
     height: canvas.height,
     pdfWidth: baseViewport.width,

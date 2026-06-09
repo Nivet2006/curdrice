@@ -34,113 +34,12 @@ export function Step5Generate({
     rowsRef.current = project.rows;
   }, [project.rows]);
 
-  const startGeneration = async () => {
-    if (project.rows.length === 0) return;
-    
-    setIsRunning(true);
-    setIsPaused(false);
-    runRef.current = true;
-    pauseRef.current = false;
-    
-    const startTime = Date.now();
-    const totalCount = project.rows.length;
-    const nextRows = [...project.rows];
-
-    for (let i = indexRef.current; i < totalCount; i++) {
-      // 1. Check if paused or stopped
-      if (!runRef.current) break;
-      while (pauseRef.current) {
-        await new Promise(r => setTimeout(r, 200));
-        if (!runRef.current) break;
-      }
-      if (!runRef.current) break;
-
-      setCurrentIndex(i + 1);
-      indexRef.current = i;
-
-      const row = nextRows[i];
-      const recipientName = row.data['Name'] || row.data['Recipient Name'] || Object.values(row.data)[0] || `Record ${i + 1}`;
-
-      const tStart = Date.now();
-      try {
-        if (!project.templatePdfBytes) {
-          throw new Error('Template PDF bytes missing');
-        }
-
-        // Generate the PDF Blob
-        const certBlob = await generateSingleCertificate({
-          pdfBytes: project.templatePdfBytes,
-          fields: project.fields,
-          rowData: row.data,
-          globalFont: project.globalFont,
-          globalColor: project.globalColor,
-          globalFontScale: project.globalFontScale
-        });
-
-        nextRows[i] = {
-          ...row,
-          outputBlob: certBlob,
-          status: 'approved' // Automatically mark approved in full-auto mode
-        };
-
-        const duration = ((Date.now() - tStart) / 1000).toFixed(2);
-        setLogs(prev => [`✓ Generated cert for ${recipientName} — ${duration}s`, ...prev]);
-      } catch (err) {
-        console.error(err);
-        nextRows[i] = {
-          ...row,
-          status: 'skipped'
-        };
-        setLogs(prev => [`✕ Failed to generate for ${recipientName}`, ...prev]);
-      }
-
-      // Calculate ETA
-      const elapsed = Date.now() - startTime;
-      const avgTime = elapsed / (i + 1 - indexRef.current);
-      const remainingCount = totalCount - (i + 1);
-      setEta(Math.round((avgTime * remainingCount) / 1000));
-
-      // Propagate progress updates
-      onChangeRows([...nextRows]);
-    }
-
-    setIsRunning(false);
-    if (runRef.current && !pauseRef.current) {
-      setLogs(prev => [`🎉 Batch Completed! Generated ${totalCount} certificates successfully.`, ...prev]);
-      
-      // Save current run log to localStorage for admins
-      if (typeof window !== 'undefined') {
-        const storedLogs = JSON.parse(localStorage.getItem('cert_generator_logs') || '[]');
-        const runLog = {
-          id: `log_${Date.now()}`,
-          date: new Date().toLocaleString(),
-          facultyName: 'Faculty User',
-          templateName: project.templateFile?.name || 'Manual Template',
-          count: totalCount,
-          format: project.exportFormat.toUpperCase()
-        };
-        localStorage.setItem('cert_generator_logs', JSON.stringify([runLog, ...storedLogs]));
-      }
-
-      if (reviewMode) {
-        onAdvanceToReview();
-      }
-    }
-  };
-
   const handlePause = () => {
-    setIsPaused(!isPaused);
-    pauseRef.current = !pauseRef.current;
-    setLogs(prev => [pauseRef.current ? '⏸ Generation Paused' : '▶ Resuming Generation...', ...prev]);
+    setLogs(prev => ['⏸ Pausing is disabled in batch pipeline mode.', ...prev]);
   };
 
   const handleCancel = () => {
-    setIsRunning(false);
-    setIsPaused(false);
-    runRef.current = false;
-    pauseRef.current = false;
-    indexRef.current = 0;
-    setLogs(prev => ['🛑 Generation Cancelled by user', ...prev]);
+    setLogs(prev => ['🛑 Cancellation is disabled during active API dispatch.', ...prev]);
   };
 
   // ZIP Download Trigger
@@ -181,6 +80,60 @@ export function Step5Generate({
     }
   };
 
+  const [sendEmails, setSendEmails] = React.useState(false);
+  const [downloadZip, setDownloadZip] = React.useState(true);
+
+  const startGeneration = async () => {
+    if (project.rows.length === 0) return;
+    
+    setIsRunning(true);
+    setIsPaused(false);
+    setLogs(['🚀 Starting certificate automation pipeline...']);
+    
+    const { runCertificatePipeline } = await import('@/lib/cert/pipeline');
+    
+    const res = await runCertificatePipeline({
+      project,
+      sendEmail: sendEmails,
+      downloadZip: downloadZip,
+      onProgress: (p) => {
+        setCurrentIndex(p.processedCount);
+        if (p.status === 'generating') {
+          setLogs(prev => [`⚙️ Generated ${p.processedCount}/${p.totalCount}...`, ...prev]);
+        } else if (p.status === 'packaging') {
+          setLogs(prev => [`📦 Packaging ZIP bundle...`, ...prev]);
+        } else if (p.status === 'sending') {
+          setLogs(prev => [`✉️ Sending email to ${p.currentEmail || 'recipient'}...`, ...prev]);
+        }
+      }
+    });
+
+    setIsRunning(false);
+    
+    if (res.success) {
+      setLogs(prev => [`🎉 Batch Completed successfully!`, ...prev]);
+      
+      if (typeof window !== 'undefined') {
+        const storedLogs = JSON.parse(localStorage.getItem('cert_generator_logs') || '[]');
+        const runLog = {
+          id: `log_${Date.now()}`,
+          date: new Date().toLocaleString(),
+          facultyName: 'Faculty User',
+          templateName: project.templateFile?.name || 'Manual Template',
+          count: totalCount,
+          format: project.exportFormat.toUpperCase()
+        };
+        localStorage.setItem('cert_generator_logs', JSON.stringify([runLog, ...storedLogs]));
+      }
+
+      if (reviewMode) {
+        onAdvanceToReview();
+      }
+    } else {
+      setLogs(prev => [`❌ Pipeline failed: ${res.error}`, ...prev]);
+    }
+  };
+
   const totalCount = project.rows.length;
   const progressPercent = totalCount > 0 ? Math.round((currentIndex / totalCount) * 100) : 0;
   const completedGeneration = currentIndex === totalCount && totalCount > 0 && !isRunning;
@@ -196,25 +149,53 @@ export function Step5Generate({
       </div>
 
       {/* Settings Row */}
-      <div className="flex items-center justify-between border-t border-b border-zinc-200 dark:border-zinc-800 py-4">
-        <div>
-          <span className="font-bold text-sm block dark:text-white">Review each before saving</span>
-          <span className="text-xs text-zinc-400">Feed items into the interactive filmstrip preview grid on complete.</span>
-        </div>
-        <button
-          type="button"
-          disabled={isRunning}
-          onClick={() => setReviewMode(!reviewMode)}
-          className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-            reviewMode ? 'bg-[#0a0a0a] dark:bg-white' : 'bg-zinc-200 dark:bg-zinc-800'
-          }`}
-        >
-          <span
-            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white dark:bg-zinc-950 shadow ring-0 transition duration-200 ease-in-out ${
-              reviewMode ? 'translate-x-5' : 'translate-x-0'
+      <div className="flex flex-col space-y-4 border-t border-b border-zinc-200 dark:border-zinc-800 py-4 text-sm">
+        <div className="flex items-center justify-between">
+          <div>
+            <span className="font-bold block dark:text-white">Review each before saving</span>
+            <span className="text-xs text-zinc-400">Feed items into the interactive filmstrip preview grid on complete.</span>
+          </div>
+          <button
+            type="button"
+            disabled={isRunning}
+            onClick={() => setReviewMode(!reviewMode)}
+            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+              reviewMode ? 'bg-[#0a0a0a] dark:bg-white' : 'bg-zinc-200 dark:bg-zinc-800'
             }`}
+          >
+            <span
+              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white dark:bg-zinc-950 shadow ring-0 transition duration-200 ease-in-out ${
+                reviewMode ? 'translate-x-5' : 'translate-x-0'
+              }`}
+            />
+          </button>
+        </div>
+
+        <div className="flex items-center justify-between border-t border-zinc-200 dark:border-zinc-800 pt-4">
+          <div>
+            <span className="font-bold block dark:text-white">Download ZIP bundle when finished</span>
+            <span className="text-xs text-zinc-400">Export all generated PDF files compiled into a single ZIP archive.</span>
+          </div>
+          <input
+            type="checkbox"
+            checked={downloadZip}
+            onChange={(e) => setDownloadZip(e.target.checked)}
+            className="w-4 h-4 rounded border-zinc-300 text-black focus:ring-black"
           />
-        </button>
+        </div>
+
+        <div className="flex items-center justify-between border-t border-zinc-200 dark:border-zinc-800 pt-4">
+          <div>
+            <span className="font-bold block dark:text-white">Email certificates to attendees</span>
+            <span className="text-xs text-zinc-400">Automatically dispatch certificates as PDF attachments to mapped student emails.</span>
+          </div>
+          <input
+            type="checkbox"
+            checked={sendEmails}
+            onChange={(e) => setSendEmails(e.target.checked)}
+            className="w-4 h-4 rounded border-zinc-300 text-black focus:ring-black"
+          />
+        </div>
       </div>
 
       {/* Main trigger view */}
@@ -224,7 +205,7 @@ export function Step5Generate({
           onClick={startGeneration}
           className="w-full py-4 bg-[#0a0a0a] text-white dark:bg-white dark:text-black font-black uppercase tracking-widest hover:scale-101 active:scale-99 transition-all rounded-3xl text-sm shadow-xl"
         >
-          🚀 Generate All Certificates ({totalCount} items)
+          🚀 Run Automation Pipeline ({totalCount} items)
         </button>
       )}
 

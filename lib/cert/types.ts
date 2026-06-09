@@ -18,6 +18,7 @@ export interface CertField {
   fontSize: number;
   fontWeight: number;
   fontStyle: 'normal' | 'italic';
+  coordSpace?: 'pdf-points' | 'legacy';
   underline: boolean;
   strikethrough: boolean;
   color: string;              // hex
