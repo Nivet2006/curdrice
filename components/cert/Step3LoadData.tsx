@@ -367,6 +367,12 @@ export function Step3LoadData({
                       className="w-full px-3 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 focus:outline-none focus:border-black"
                     >
                       <option value="">-- Manual Fallback Text --</option>
+                      {(field.label.toLowerCase().includes('school') || field.label.toLowerCase().includes('institution')) && (
+                        <>
+                          <option value="Gopalan College of Engineering and Management">Gopalan College of Engineering and Management</option>
+                          <option value="GCEM">GCEM</option>
+                        </>
+                      )}
                       {parsedData.headers.map(h => (
                         <option key={h} value={h}>{h}</option>
                       ))}
@@ -461,6 +467,12 @@ export function Step3LoadData({
                       className="w-full px-3 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 focus:outline-none focus:border-black"
                     >
                       <option value="">-- Manual Fallback Text --</option>
+                      {(field.label.toLowerCase().includes('school') || field.label.toLowerCase().includes('institution')) && (
+                        <>
+                          <option value="Gopalan College of Engineering and Management">Gopalan College of Engineering and Management</option>
+                          <option value="GCEM">GCEM</option>
+                        </>
+                      )}
                       {parsedData.headers.map(h => (
                         <option key={h} value={h}>{h}</option>
                       ))}
