@@ -21,53 +21,73 @@ function buildFontsourceUrl(slug: string, weight: number, style: string): string
   return `https://cdn.jsdelivr.net/fontsource/fonts/${slug}@5/latin-${weight}-${styleSuffix}.ttf`;
 }
 
-/** Weights to try when the exact weight is unavailable (e.g. display fonts). */
-function weightsToTry(requested: number): number[] {
-  const candidates = [requested, 400, 700, 300, 500, 600];
-  return [...new Set(candidates)];
+const FONT_WEIGHTS_MAP: Record<string, number[]> = {
+  'playfair-display': [400, 500, 600, 700, 800, 900],
+  'cinzel': [400, 500, 600, 700, 800, 900],
+  'great-vibes': [400],
+  'dancing-script': [400, 500, 600, 700],
+  'cormorant-garamond': [300, 400, 500, 600, 700],
+  'eb-garamond': [400, 500, 600, 700, 800],
+  'libre-baskerville': [400, 700],
+  'merriweather': [300, 400, 700, 900],
+  'lora': [400, 500, 600, 700],
+  'raleway': [100, 200, 300, 400, 500, 600, 700, 800, 900],
+  'montserrat': [100, 200, 300, 400, 500, 600, 700, 800, 900],
+  'poppins': [100, 200, 300, 400, 500, 600, 700, 800, 900],
+  'inter': [100, 200, 300, 400, 500, 600, 700, 800, 900],
+  'nunito': [200, 300, 400, 500, 600, 700, 800, 900],
+  'oswald': [200, 300, 400, 500, 600, 700],
+  'bebas-neue': [400],
+  'abril-fatface': [400],
+  'pacifico': [400],
+  'sacramento': [400],
+  'allura': [400],
+  'alex-brush': [400],
+  'pinyon-script': [400],
+  'satisfy': [400],
+  'tangerine': [400],
+  'italiana': [400],
+  'uncial-antiqua': [400],
+  'medievalsharp': [400],
+  'almendra': [400, 700],
+  'metamorphous': [400],
+  'philosopher': [400, 700]
+};
+
+function getClosestWeight(slug: string, requested: number): number {
+  const available = FONT_WEIGHTS_MAP[slug] || [400];
+  return available.reduce((prev, curr) => {
+    return Math.abs(curr - requested) < Math.abs(prev - requested) ? curr : prev;
+  });
 }
 
 export async function fetchFont(fontName: string, weight = 400, style = 'normal'): Promise<ArrayBuffer> {
-  const cacheKey = `${fontName}-${weight}-${style}`;
+  const slug = fontNameToSlug(fontName);
+  const resolvedWeight = getClosestWeight(slug, weight);
+
+  const cacheKey = `${fontName}-${resolvedWeight}-${style}`;
   if (fontCache.has(cacheKey)) {
     return fontCache.get(cacheKey)!;
   }
 
-  const slug = fontNameToSlug(fontName);
-  let lastError: unknown;
-
-  for (const tryWeight of weightsToTry(weight)) {
-    const tryCacheKey = `${fontName}-${tryWeight}-${style}`;
-    if (fontCache.has(tryCacheKey)) {
-      const cached = fontCache.get(tryCacheKey)!;
-      fontCache.set(cacheKey, cached);
-      return cached;
+  const url = buildFontsourceUrl(slug, resolvedWeight, style);
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Font fetch failed (${response.status}): ${url}`);
     }
 
-    const url = buildFontsourceUrl(slug, tryWeight, style);
-    try {
-      const response = await fetch(url);
-      if (!response.ok) {
-        lastError = new Error(`Font fetch failed (${response.status}): ${url}`);
-        continue;
-      }
-
-      const buffer = await response.arrayBuffer();
-      if (buffer.byteLength === 0) {
-        lastError = new Error(`Empty font file: ${url}`);
-        continue;
-      }
-
-      fontCache.set(tryCacheKey, buffer);
-      fontCache.set(cacheKey, buffer);
-      return buffer;
-    } catch (error) {
-      lastError = error;
+    const buffer = await response.arrayBuffer();
+    if (buffer.byteLength === 0) {
+      throw new Error(`Empty font file: ${url}`);
     }
+
+    fontCache.set(cacheKey, buffer);
+    return buffer;
+  } catch (error) {
+    console.error(`Error loading font "${fontName}" (weight ${weight} resolved to ${resolvedWeight}, style ${style}):`, error);
+    throw error;
   }
-
-  console.error(`Error loading font "${fontName}" (weight ${weight}, style ${style}):`, lastError);
-  throw lastError ?? new Error(`Could not load font "${fontName}"`);
 }
 
 /**
