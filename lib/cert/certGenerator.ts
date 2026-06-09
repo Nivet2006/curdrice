@@ -118,11 +118,14 @@ export async function generateSingleCertificate({
     const { height: pageDocHeight } = page.getSize();
     const scaledField = scaleFieldForLegacyCoords(field, legacyCoordScale);
 
-    let text = scaledField.dataColumn && rowData[scaledField.dataColumn] !== undefined
-      ? rowData[scaledField.dataColumn]
-      : `[${scaledField.label}]`;
-
-    if (!text && scaledField.label) {
+    let text = '';
+    if (scaledField.dataColumn) {
+      if (rowData[scaledField.dataColumn] !== undefined) {
+        text = rowData[scaledField.dataColumn];
+      } else {
+        text = scaledField.dataColumn;
+      }
+    } else {
       text = `[${scaledField.label}]`;
     }
 
