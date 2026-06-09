@@ -250,6 +250,7 @@ export function CertificateGeneratorWorkspace({ isAdmin = false }: WorkspaceProp
                     pdfHeight={pdfDimensions.height}
                     selectedFieldId={selectedFieldId}
                     onSelectField={setSelectedFieldId}
+                    rows={project.rows}
                   />
                 )}
 
@@ -268,6 +269,9 @@ export function CertificateGeneratorWorkspace({ isAdmin = false }: WorkspaceProp
                     project={project}
                     onChangeProject={updateProjectDetails}
                     headers={columnHeaders}
+                    canvasDataUrl={canvasDataUrl}
+                    pdfWidth={pdfDimensions.width}
+                    pdfHeight={pdfDimensions.height}
                   />
                 )}
 

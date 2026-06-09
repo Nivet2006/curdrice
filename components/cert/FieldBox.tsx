@@ -11,6 +11,11 @@ interface FieldBoxProps {
   onUpdateEnd?: () => void;
   onDelete: () => void;
   scale: number; // For canvas zoom factor
+  previewText?: string;
+  globalFont?: string | null;
+  globalColor?: string | null;
+  globalFontScale?: number;
+  readOnly?: boolean;
 }
 
 export function FieldBox({
@@ -20,7 +25,12 @@ export function FieldBox({
   onUpdate,
   onUpdateEnd,
   onDelete,
-  scale
+  scale,
+  previewText,
+  globalFont,
+  globalColor,
+  globalFontScale = 1.0,
+  readOnly = false
 }: FieldBoxProps) {
   const boxRef = React.useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = React.useState(false);
@@ -33,7 +43,7 @@ export function FieldBox({
 
   // Handle drag selection and move start
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (field.locked) return;
+    if (readOnly || field.locked) return;
     
     // Ignore trigger if clicking handles or close button
     const target = e.target as HTMLElement;
@@ -50,7 +60,7 @@ export function FieldBox({
 
   // Handle resizing start
   const handleResizeStart = (e: React.MouseEvent, handle: string) => {
-    if (field.locked) return;
+    if (readOnly || field.locked) return;
     e.preventDefault();
     e.stopPropagation();
     
@@ -62,6 +72,7 @@ export function FieldBox({
   };
 
   React.useEffect(() => {
+    if (readOnly) return;
     const handleMouseMove = (e: MouseEvent) => {
       if (isDragging) {
         const dx = (e.clientX - dragStart.x) / scale;
@@ -128,7 +139,11 @@ export function FieldBox({
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isDragging, isResizing, dragStart, boxStart, sizeStart, resizeHandle, scale]);
+  }, [isDragging, isResizing, dragStart, boxStart, sizeStart, resizeHandle, scale, readOnly]);
+
+  const activeFontFamily = globalFont || field.fontFamily || 'Inter';
+  const activeColor = globalColor || field.color || '#0a0a0a';
+  const activeFontSize = (field.fontSize || 14) * globalFontScale;
 
   // Apply custom typography and formatting styles
   const style: React.CSSProperties = {
@@ -137,19 +152,19 @@ export function FieldBox({
     top: `${field.y * scale}px`,
     width: `${field.width * scale}px`,
     height: `${field.height * scale}px`,
-    fontFamily: field.fontFamily || 'Inter',
-    fontSize: `${field.fontSize * scale}px`,
+    fontFamily: activeFontFamily,
+    fontSize: `${activeFontSize * scale}px`,
     fontWeight: field.fontWeight,
     fontStyle: field.fontStyle,
     textDecoration: `${field.underline ? 'underline' : ''} ${field.strikethrough ? 'line-through' : ''}`.trim(),
-    color: field.color,
+    color: activeColor,
     opacity: field.opacity / 100,
     textAlign: field.textAlign,
     letterSpacing: `${field.letterSpacing}em`,
     lineHeight: field.lineHeight,
     transform: `rotate(${field.rotation}deg)`,
     zIndex: field.zIndex,
-    cursor: field.locked ? 'not-allowed' : 'move'
+    cursor: readOnly ? 'default' : (field.locked ? 'not-allowed' : 'move')
   };
 
   return (
@@ -159,21 +174,27 @@ export function FieldBox({
       onMouseDown={handleMouseDown}
       onClick={(e) => {
         e.stopPropagation();
-        onSelect();
+        if (!readOnly) {
+          onSelect();
+        }
       }}
       className={`group absolute select-none flex flex-col justify-center border ${
-        isSelected
+        readOnly
+          ? 'border-transparent'
+          : isSelected
           ? 'border-black dark:border-white ring-2 ring-black/10 dark:ring-white/10'
           : 'border-dashed border-zinc-400 dark:border-zinc-700 hover:border-black dark:hover:border-zinc-300'
       } transition-shadow duration-150`}
     >
       {/* Label Chip */}
-      <span className="absolute -top-5 left-0 px-2 py-0.5 text-[9px] font-mono font-bold uppercase tracking-wider bg-black dark:bg-white text-white dark:text-black rounded-md pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
-        {field.label}
-      </span>
+      {!readOnly && (
+        <span className="absolute -top-5 left-0 px-2 py-0.5 text-[9px] font-mono font-bold uppercase tracking-wider bg-black dark:bg-white text-white dark:text-black rounded-md pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
+          {field.label}
+        </span>
+      )}
 
       {/* Close button */}
-      {isSelected && !field.locked && (
+      {isSelected && !field.locked && !readOnly && (
         <button
           type="button"
           onClick={(e) => {
@@ -190,12 +211,12 @@ export function FieldBox({
       {/* Preview Text */}
       <div className="w-full h-full overflow-hidden flex items-center px-1">
         <span className="w-full block truncate">
-          {field.dataColumn ? `[${field.dataColumn}]` : field.label}
+          {previewText !== undefined ? previewText : (field.dataColumn ? `[${field.dataColumn}]` : field.label)}
         </span>
       </div>
 
       {/* Resize Handles */}
-      {isSelected && !field.locked && (
+      {isSelected && !field.locked && !readOnly && (
         <>
           {/* Edges */}
           <div onMouseDown={(e) => handleResizeStart(e, 'n')} className="resize-handle absolute top-0 left-0 w-full h-1 cursor-ns-resize" />

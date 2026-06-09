@@ -64,3 +64,45 @@ export function autoMapFields(fields: CertField[], headers: string[]): CertField
     };
   });
 }
+
+/**
+ * Resolves a preview value for a given field based on the active row, or returns a default fallback.
+ */
+export function getFieldPreviewText(field: CertField, rowData?: Record<string, string>): string {
+  // If we have row data, check if there is a match for the dataColumn
+  if (rowData) {
+    if (field.dataColumn && rowData[field.dataColumn] !== undefined) {
+      return rowData[field.dataColumn];
+    }
+    // Try alias matching if not directly mapped but label matches a header
+    for (const header of Object.keys(rowData)) {
+      if (isHeaderMatch(header, field.label)) {
+        return rowData[header];
+      }
+    }
+  }
+
+  // Fallbacks if no data exists or no column matches
+  const labelLower = field.label.toLowerCase();
+  if (labelLower.includes('name')) {
+    return 'John Doe';
+  }
+  if (labelLower.includes('school') || labelLower.includes('institution') || labelLower.includes('college')) {
+    return 'Gopalan College of Engineering and Management';
+  }
+  if (labelLower.includes('date')) {
+    return 'June 9, 2026';
+  }
+  if (labelLower.includes('course') || labelLower.includes('title') || labelLower.includes('event')) {
+    return 'Introduction to Web Development';
+  }
+  if (labelLower.includes('grade') || labelLower.includes('score')) {
+    return 'A+';
+  }
+  if (labelLower.includes('roll') || labelLower.includes('usn')) {
+    return '1GC22CS001';
+  }
+  
+  return field.label;
+}
+

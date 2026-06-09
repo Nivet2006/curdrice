@@ -1,10 +1,11 @@
 'use client';
 
 import * as React from 'react';
-import { CertField } from '@/lib/cert/types';
+import { CertField, CertRow } from '@/lib/cert/types';
 import { FieldBox } from './FieldBox';
 import { FieldPropertyPanel } from './FieldPropertyPanel';
 import { history } from '@/lib/cert/certStore';
+import { getFieldPreviewText } from '@/lib/cert/columnMapper';
 
 interface Step2PlaceFieldsProps {
   fields: CertField[];
@@ -14,6 +15,7 @@ interface Step2PlaceFieldsProps {
   pdfHeight: number; // in pt
   selectedFieldId: string | null;
   onSelectField: (id: string | null) => void;
+  rows?: CertRow[];
 }
 
 export function Step2PlaceFields({
@@ -23,13 +25,18 @@ export function Step2PlaceFields({
   pdfWidth,
   pdfHeight,
   selectedFieldId,
-  onSelectField
+  onSelectField,
+  rows = []
 }: Step2PlaceFieldsProps) {
   const [zoom, setZoom] = React.useState(100);
   const [pan, setPan] = React.useState({ x: 0, y: 0 });
   const [isSpacePressed, setIsSpacePressed] = React.useState(false);
   const [isPanning, setIsPanning] = React.useState(false);
   const [panStart, setPanStart] = React.useState({ x: 0, y: 0 });
+
+  const [showSamplePreview, setShowSamplePreview] = React.useState(false);
+  const [previewRowIndex, setPreviewRowIndex] = React.useState(0);
+
 
   const [showGrid, setShowGrid] = React.useState(false);
   const [gridSize, setGridSize] = React.useState(20);
@@ -341,6 +348,32 @@ export function Step2PlaceFields({
             >
               🧲 Snap
             </button>
+
+            <button
+              type="button"
+              onClick={() => setShowSamplePreview(!showSamplePreview)}
+              className={`p-1.5 rounded-lg border text-xs ${
+                showSamplePreview ? 'bg-black text-white dark:bg-white dark:text-black border-black' : 'border-zinc-200 dark:border-zinc-800'
+              }`}
+              title="Show preview values instead of placeholder names"
+            >
+              👁 Preview
+            </button>
+
+            {showSamplePreview && rows.length > 0 && (
+              <select
+                value={previewRowIndex}
+                onChange={(e) => setPreviewRowIndex(parseInt(e.target.value))}
+                className="p-1 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-xs focus:outline-none max-w-[120px]"
+              >
+                {rows.slice(0, 10).map((r, idx) => (
+                  <option key={r.id} value={idx}>
+                    Row {idx + 1}: {r.data['Name'] || r.data['Recipient Name'] || Object.values(r.data)[0] || r.id}
+                  </option>
+                ))}
+              </select>
+            )}
+
             <button
               type="button"
               onClick={() => setZoom(Math.max(50, zoom - 10))}
@@ -416,18 +449,24 @@ export function Step2PlaceFields({
 
             {/* Transparent Drag Box Layer Overlay */}
             <div className="absolute inset-0">
-              {fields.map((field) => (
-                <FieldBox
-                  key={field.id}
-                  field={field}
-                  isSelected={field.id === selectedFieldId}
-                  onSelect={() => onSelectField(field.id)}
-                  onUpdate={(updates) => handleUpdateField(field.id, updates, true)}
-                  onUpdateEnd={() => history.push(fields)}
-                  onDelete={deleteSelectedField}
-                  scale={scale}
-                />
-              ))}
+              {fields.map((field) => {
+                const previewText = showSamplePreview
+                  ? getFieldPreviewText(field, rows[previewRowIndex]?.data)
+                  : undefined;
+                return (
+                  <FieldBox
+                    key={field.id}
+                    field={field}
+                    isSelected={field.id === selectedFieldId}
+                    onSelect={() => onSelectField(field.id)}
+                    onUpdate={(updates) => handleUpdateField(field.id, updates, true)}
+                    onUpdateEnd={() => history.push(fields)}
+                    onDelete={deleteSelectedField}
+                    scale={scale}
+                    previewText={previewText}
+                  />
+                );
+              })}
             </div>
           </div>
         </div>
