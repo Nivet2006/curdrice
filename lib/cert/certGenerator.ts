@@ -149,8 +149,8 @@ export async function generateSingleCertificate({
     // ── FIXED: Get real ascent/descent from font embedder ─────────────────────
     const fontAny  = embeddedFont as any;
     const embedder = fontAny.embedder;
-    let ascent  =  activeFontSize * 0.8;   // safe defaults
-    let descent = -activeFontSize * 0.2;
+    let ascent  =  activeFontSize * 0.75;   // safe defaults
+    let descent = -activeFontSize * 0.25;
 
     if (embedder?.font) {
       const scale = embedder.scale ?? 1;
@@ -225,12 +225,14 @@ export async function generateSingleCertificate({
       const lineSlotTopCanvas =
         scaledField.y + blockTopFromBoxTop + i * lineSlotHeight;
 
-      const lineSlotMidCanvas = lineSlotTopCanvas + lineSlotHeight / 2;
+      // Total glyph height from descent to ascent (descent is negative, so subtract)
+      const glyphHeight = ascent - descent;
 
-      // Baseline is above visual center by half the font's total em height offset
-      // (ascent is positive, descent is negative)
+      // Center the glyph height within the line slot:
+      // lineSlotTop + (lineSlotHeight - glyphHeight) / 2 gives top of glyph (ascent line)
+      // baseline = that top + ascent ... simplified:
       const baselineCanvas =
-        lineSlotMidCanvas - (ascent + descent) / 2;
+        lineSlotTopCanvas + (lineSlotHeight - glyphHeight) / 2 + ascent;
 
       const ty = pageDocHeight - baselineCanvas;
 
