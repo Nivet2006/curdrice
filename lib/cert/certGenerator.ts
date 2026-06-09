@@ -196,8 +196,31 @@ export async function generateSingleCertificate({
         tx = scaledField.x + scaledField.width - textWidth;
       }
 
-      // Line Y position relative to box top, plus font size offset to align baseline
-      const lineYFromBoxTop = blockTopFromBoxTop + i * activeFontSize * lh + activeFontSize;
+      // Bypass pdf-lib typings constraint to retrieve actual font design metrics from the embedder
+      const fontAny = embeddedFont as any;
+      const embedder = fontAny.embedder;
+      let ascent = activeFontSize * 0.8;
+      let descent = -activeFontSize * 0.2;
+
+      if (embedder && embedder.font) {
+        const scale = embedder.scale !== undefined ? embedder.scale : 1;
+        if (embedder.font.ascent !== undefined) {
+          ascent = (embedder.font.ascent * scale / 1000) * activeFontSize;
+          descent = (embedder.font.descent * scale / 1000) * activeFontSize;
+        } else if (embedder.font.Ascender !== undefined) {
+          ascent = (embedder.font.Ascender / 1000) * activeFontSize;
+          descent = (embedder.font.Descender / 1000) * activeFontSize;
+        }
+      }
+
+      // Calculate baseline offset to vertically center the font's active height (ascent + descent)
+      // inside the line box of height (activeFontSize * lh)
+      const lineCenterOfs = (activeFontSize * lh) / 2;
+      const fontCenterOfs = (ascent + descent) / 2;
+      const baselineOffset = lineCenterOfs + fontCenterOfs;
+
+      // Line Y position relative to box top, plus baseline offset to align baseline
+      const lineYFromBoxTop = blockTopFromBoxTop + i * activeFontSize * lh + baselineOffset;
       const ty = pageDocHeight - (scaledField.y + lineYFromBoxTop);
 
       // Vector from center of field to unrotated text baseline
