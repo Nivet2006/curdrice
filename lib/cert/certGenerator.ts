@@ -90,6 +90,7 @@ interface GenerateSingleCertOptions {
   globalFont?: string | null;
   globalColor?: string | null;
   globalFontScale?: number;
+  dateFormat?: string;
 }
 
 export async function generateSingleCertificate({
@@ -98,7 +99,8 @@ export async function generateSingleCertificate({
   rowData,
   globalFont,
   globalColor,
-  globalFontScale = 1.0
+  globalFontScale = 1.0,
+  dateFormat = 'DD/MM/YYYY'
 }: GenerateSingleCertOptions): Promise<Blob> {
   const pdfDoc = await PDFDocument.load(pdfBytes);
   const pages = pdfDoc.getPages();
@@ -124,6 +126,21 @@ export async function generateSingleCertificate({
       text = `[${scaledField.label}]`;
     }
 
+    // Format date field if applicable
+    if (text && (scaledField.label.toLowerCase().includes('date') || scaledField.dataColumn?.toLowerCase().includes('date'))) {
+      const parsedDate = new Date(text);
+      if (!isNaN(parsedDate.getTime())) {
+        const day = String(parsedDate.getDate()).padStart(2, '0');
+        const month = String(parsedDate.getMonth() + 1).padStart(2, '0');
+        const year = String(parsedDate.getFullYear());
+        text = dateFormat
+          .replace('YYYY', year)
+          .replace('YY', year.substring(2))
+          .replace('MM', month)
+          .replace('DD', day);
+      }
+    }
+
     text = transformText(text, scaledField.textTransform);
 
     const activeFontFamily = globalFont || scaledField.fontFamily || 'Inter';
@@ -144,18 +161,58 @@ export async function generateSingleCertificate({
       }
     }
 
-    const textX = computeTextX(scaledField, text, embeddedFont, activeFontSize);
-    const textY = computeTextY(scaledField, pageDocHeight, activeFontSize);
+    const lines = text.split('\n');
+    const lh = scaledField.lineHeight || 1.2;
+    const totalHeight = lines.length * activeFontSize * lh;
 
-    page.drawText(text, {
-      x: textX,
-      y: textY,
-      size: activeFontSize,
-      font: embeddedFont,
-      color: hexToColor(activeColor),
-      opacity: scaledField.opacity / 100,
-      rotate: degrees(scaledField.rotation),
-    });
+    let blockTopFromBoxTop = 0;
+    if (scaledField.verticalAlign === 'middle') {
+      blockTopFromBoxTop = (scaledField.height - totalHeight) / 2;
+    } else if (scaledField.verticalAlign === 'bottom') {
+      blockTopFromBoxTop = scaledField.height - totalHeight;
+    }
+
+    const rad = (scaledField.rotation * Math.PI) / 180;
+    const cos = Math.cos(rad);
+    const sin = Math.sin(rad);
+
+    // Center of the field box in PDF coordinates (origin bottom-left)
+    const cx = scaledField.x + scaledField.width / 2;
+    const cy = pageDocHeight - (scaledField.y + scaledField.height / 2);
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const textWidth = embeddedFont.widthOfTextAtSize(line, activeFontSize);
+
+      let tx = scaledField.x;
+      if (scaledField.textAlign === 'center') {
+        tx = scaledField.x + (scaledField.width - textWidth) / 2;
+      } else if (scaledField.textAlign === 'right') {
+        tx = scaledField.x + scaledField.width - textWidth;
+      }
+
+      // Line Y position relative to box top, plus font size offset to align baseline
+      const lineYFromBoxTop = blockTopFromBoxTop + i * activeFontSize * lh + activeFontSize;
+      const ty = pageDocHeight - (scaledField.y + lineYFromBoxTop);
+
+      // Vector from center of field to unrotated text baseline
+      const dx = tx - cx;
+      const dy = ty - cy;
+
+      // Rotate around the center of the field box
+      const textX = cx + dx * cos - dy * sin;
+      const textY = cy + dx * sin + dy * cos;
+
+      page.drawText(line, {
+        x: textX,
+        y: textY,
+        size: activeFontSize,
+        font: embeddedFont,
+        color: hexToColor(activeColor),
+        opacity: scaledField.opacity / 100,
+        rotate: degrees(scaledField.rotation),
+      });
+    }
   }
 
   const outputBytes = await pdfDoc.save();

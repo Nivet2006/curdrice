@@ -18,7 +18,7 @@ function fontNameToSlug(fontName: string): string {
 
 function buildFontsourceUrl(slug: string, weight: number, style: string): string {
   const styleSuffix = style === 'italic' ? 'italic' : 'normal';
-  return `https://cdn.jsdelivr.net/fontsource/fonts/${slug}@latest/latin-${weight}-${styleSuffix}.ttf`;
+  return `https://cdn.jsdelivr.net/fontsource/fonts/${slug}@5/latin-${weight}-${styleSuffix}.ttf`;
 }
 
 /** Weights to try when the exact weight is unavailable (e.g. display fonts). */
@@ -37,6 +37,13 @@ export async function fetchFont(fontName: string, weight = 400, style = 'normal'
   let lastError: unknown;
 
   for (const tryWeight of weightsToTry(weight)) {
+    const tryCacheKey = `${fontName}-${tryWeight}-${style}`;
+    if (fontCache.has(tryCacheKey)) {
+      const cached = fontCache.get(tryCacheKey)!;
+      fontCache.set(cacheKey, cached);
+      return cached;
+    }
+
     const url = buildFontsourceUrl(slug, tryWeight, style);
     try {
       const response = await fetch(url);
@@ -51,6 +58,7 @@ export async function fetchFont(fontName: string, weight = 400, style = 'normal'
         continue;
       }
 
+      fontCache.set(tryCacheKey, buffer);
       fontCache.set(cacheKey, buffer);
       return buffer;
     } catch (error) {

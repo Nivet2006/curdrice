@@ -223,7 +223,8 @@ export function CertificateGeneratorWorkspace({ isAdmin = false }: WorkspaceProp
                     textShadow: null,
                     zIndex: project.fields.length + 1,
                     locked: false,
-                    pageIndex: 0
+                    pageIndex: 0,
+                    coordSpace: 'pdf-points'
                   };
                   setProject(prev => ({ ...prev, fields: [...prev.fields, newF] }));
                 }}
@@ -258,6 +259,7 @@ export function CertificateGeneratorWorkspace({ isAdmin = false }: WorkspaceProp
                     rows={project.rows}
                     onChangeRows={handleUpdateRows}
                     onUpdateFieldMapping={handleUpdateFieldMapping}
+                    initialEventId={typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('eventId') : null}
                   />
                 )}
 
