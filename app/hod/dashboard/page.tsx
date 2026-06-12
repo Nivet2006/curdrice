@@ -4,6 +4,8 @@ import { HODDashboardClient } from '@/components/hod/HODDashboardClient'
 import { Event, ProfileUpdateRequest } from '@/lib/types'
 import { getPendingProfileRequests } from '@/lib/actions/profile-requests'
 
+export const dynamic = 'force-dynamic'
+
 export default async function HODDashboard() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
