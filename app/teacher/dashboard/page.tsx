@@ -48,7 +48,31 @@ export default async function TeacherDashboard() {
     .eq('status', 'completed')
     .order('updated_at', { ascending: false })
 
-  const deptReports = completedReports?.filter(r => (r.events as any)?.targeted_department === dept) || []
+  const standardReports = completedReports?.filter(r => (r.events as any)?.targeted_department === dept) || []
+
+  // Combine standard completed reports and IIC reports that are pushed by PR (pending_faculty / approved_faculty)
+  const deptReports = [
+    ...standardReports.map(r => ({
+      id: r.id,
+      status: r.status,
+      updated_at: r.updated_at,
+      events: r.events,
+      content: r.content,
+      isIIC: false
+    })),
+    ...(pendingIICReports || []).map(r => ({
+      id: r.id,
+      status: r.status,
+      updated_at: r.generated_at || r.created_at,
+      events: {
+        title: r.activity_name,
+        club_name: (r.events as any)?.club_name || 'IIC Committee',
+        targeted_department: r.department
+      },
+      content: { summary: r.summary },
+      isIIC: true
+    }))
+  ].sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
 
   // Events already approved or forwarded to HOD (scoped to department or created by teacher)
   const { data: allApprovedEvents } = await supabase
@@ -152,7 +176,7 @@ export default async function TeacherDashboard() {
             <div className="p-2 bg-emerald-500/10 rounded-lg">
               <FileText size={20} className="text-emerald-600" />
             </div>
-            <h2 className="text-lg font-black uppercase tracking-tighter text-zinc-800 dark:text-zinc-200">Post-Event IIC Reports Verification ({pendingIICReports?.length || 0})</h2>
+            <h2 className="text-lg font-black uppercase tracking-tighter text-zinc-800 dark:text-zinc-200"> post event report final ({pendingIICReports?.length || 0})</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -214,7 +238,7 @@ export default async function TeacherDashboard() {
                       <p className="font-mono text-[10px] text-zinc-400 uppercase tracking-widest">{(report.events as any)?.club_name || 'Club'}</p>
                     </div>
                     <Link
-                      href={`/teacher/reports/${report.id}`}
+                      href={report.isIIC ? `/teacher/reports/iic/${report.id}` : `/teacher/reports/${report.id}`}
                       className="bg-[#0a0a0a] text-white w-12 h-12 rounded-full flex items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-xl"
                     >
                       <ArrowRight size={20} />
@@ -222,10 +246,10 @@ export default async function TeacherDashboard() {
                   </div>
                   <div className="space-y-4">
                     <p className="text-sm text-zinc-500 font-medium leading-relaxed line-clamp-3 italic">
-                      {report.content?.summary || 'No summary available.'}
+                      {(report.content as any)?.summary || 'No summary available.'}
                     </p>
                     <div className="pt-4 border-t border-zinc-100 flex items-center gap-4 text-[10px] font-mono text-zinc-400 uppercase tracking-widest">
-                      <span>PR Approved</span>
+                      <span>{report.isIIC ? 'PR Pushed' : 'PR Approved'}</span>
                       <span className="w-1 h-1 rounded-full bg-zinc-200"></span>
                       <span>{new Date(report.updated_at).toLocaleDateString()}</span>
                     </div>
