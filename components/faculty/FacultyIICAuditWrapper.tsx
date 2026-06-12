@@ -172,7 +172,7 @@ export function FacultyIICAuditWrapper({
     <div className="bg-black text-white rounded-[3rem] p-10 shadow-2xl space-y-8">
       <div className="flex items-center gap-3">
         <Award className="text-zinc-500" size={20} />
-        <h3 className="font-mono text-xs uppercase tracking-widest text-zinc-400">Faculty Review Terminal</h3>
+        <h3 className="font-mono text-xs uppercase tracking-widest text-zinc-400">Faculty IIC Audit Terminal</h3>
       </div>
 
       {/* Decision Buttons */}
