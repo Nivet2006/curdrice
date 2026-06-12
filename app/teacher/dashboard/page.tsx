@@ -176,7 +176,7 @@ export default async function TeacherDashboard() {
             <div className="p-2 bg-emerald-500/10 rounded-lg">
               <FileText size={20} className="text-emerald-600" />
             </div>
-            <h2 className="text-lg font-black uppercase tracking-tighter text-zinc-800 dark:text-zinc-200"> post event report final ({pendingIICReports?.length || 0})</h2>
+            <h2 className="text-lg font-black uppercase tracking-tighter text-zinc-800 dark:text-zinc-200"> post event report audit ({pendingIICReports?.length || 0})</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
