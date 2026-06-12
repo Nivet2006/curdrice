@@ -34,8 +34,8 @@ export function FacultyIICAuditWrapper({
   rejectionFeedback?: string | null
   initialAnnotations?: { section: string; comment: string }[]
   pdfAnnotations?: any[]
-  decision: 'approve' | 'decline' | null
-  onDecisionChange: (val: 'approve' | 'decline' | null) => void
+  decision: 'hod' | 'cc' | 'pr' | null
+  onDecisionChange: (val: 'hod' | 'cc' | 'pr' | null) => void
 }) {
   const [loading, setLoading] = useState(false)
   const [feedback, setFeedback] = useState('')
@@ -168,42 +168,65 @@ export function FacultyIICAuditWrapper({
     )
   }
 
+  let containerBorderClass = "border border-zinc-800"
+  if (decision === 'hod') {
+    containerBorderClass = "border-2 border-emerald-500/50 shadow-[0_0_50px_rgba(16,185,129,0.15)]"
+  } else if (decision === 'cc' || decision === 'pr') {
+    containerBorderClass = "border-2 border-rose-500/50 shadow-[0_0_50px_rgba(244,63,94,0.15)]"
+  }
+
   return (
-    <div className="bg-black text-white rounded-[3rem] p-10 shadow-2xl space-y-8">
+    <div className={`bg-black text-white rounded-[3rem] p-10 shadow-2xl space-y-8 transition-all duration-300 ${containerBorderClass}`}>
       <div className="flex items-center gap-3">
         <Award className="text-zinc-500" size={20} />
-        <h3 className="font-mono text-xs uppercase tracking-widest text-zinc-400">Faculty IIC Audit Terminal</h3>
+        <h3 className="font-mono text-xs uppercase tracking-widest text-zinc-400">Faculty Review Terminal</h3>
       </div>
 
       {/* Decision Buttons */}
       <div className="space-y-4">
         <p className="font-black text-2xl uppercase italic tracking-tighter">Audit Ruling</p>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-3 gap-3">
           <button
             type="button"
-            onClick={() => { onDecisionChange('approve'); setAnnotations([]) }}
-            className={`flex items-center justify-center gap-3 py-5 rounded-3xl border-2 transition-all font-black text-sm uppercase italic ${
-              decision === 'approve' ? 'bg-white text-black border-white' : 'border-zinc-800 text-zinc-500 hover:border-zinc-600'
+            onClick={() => { onDecisionChange('hod'); setAnnotations([]) }}
+            className={`flex flex-col items-center justify-center gap-2 py-4 px-2 rounded-2xl border-2 transition-all font-black text-[10px] uppercase tracking-tight text-center ${
+              decision === 'hod'
+                ? 'bg-emerald-600 text-white border-emerald-600 shadow-[0_0_20px_rgba(16,185,129,0.3)]'
+                : 'border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300'
             }`}
           >
-            <CheckCircle2 size={18} />
-            Endorse Report
+            <CheckCircle2 size={16} />
+            <span>Push to HOD</span>
           </button>
           <button
             type="button"
-            onClick={() => onDecisionChange('decline')}
-            className={`flex items-center justify-center gap-3 py-5 rounded-3xl border-2 transition-all font-black text-sm uppercase italic ${
-              decision === 'decline' ? 'bg-rose-600 text-white border-rose-600' : 'border-zinc-800 text-zinc-500 hover:border-zinc-600'
+            onClick={() => onDecisionChange('cc')}
+            className={`flex flex-col items-center justify-center gap-2 py-4 px-2 rounded-2xl border-2 transition-all font-black text-[10px] uppercase tracking-tight text-center ${
+              decision === 'cc'
+                ? 'bg-rose-600 text-white border-rose-600 shadow-[0_0_20px_rgba(244,63,94,0.3)]'
+                : 'border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300'
             }`}
           >
-            <XCircle size={18} />
-            Send Back
+            <XCircle size={16} />
+            <span>Push to CC</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => onDecisionChange('pr')}
+            className={`flex flex-col items-center justify-center gap-2 py-4 px-2 rounded-2xl border-2 transition-all font-black text-[10px] uppercase tracking-tight text-center ${
+              decision === 'pr'
+                ? 'bg-rose-600 text-white border-rose-600 shadow-[0_0_20px_rgba(244,63,94,0.3)]'
+                : 'border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300'
+            }`}
+          >
+            <XCircle size={16} />
+            <span>Push to PR</span>
           </button>
         </div>
       </div>
 
       {/* Annotation System (only on Decline) */}
-      {decision === 'decline' && (
+      {(decision === 'cc' || decision === 'pr') && (
         <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-300">
           <div className="flex items-center gap-2 mb-2">
             <AlertTriangle size={14} className="text-amber-500" />
@@ -283,10 +306,10 @@ export function FacultyIICAuditWrapper({
       {/* Global Remarks */}
       <div className="space-y-3">
         <p className="text-xs font-mono font-bold uppercase tracking-widest text-zinc-400">
-          {decision === 'decline' ? 'Global Remarks' : 'Verification Remarks'}
+          {decision === 'cc' || decision === 'pr' ? `Global Remarks (sent to ${decision.toUpperCase()})` : 'Verification Remarks'}
         </p>
         <textarea
-          placeholder={decision === 'decline' ? "Describe the corrections required..." : "Optional verification comments..."}
+          placeholder={decision === 'cc' || decision === 'pr' ? `Describe the corrections required for ${decision.toUpperCase()}...` : "Optional verification comments..."}
           value={feedback}
           onChange={e => setFeedback(e.target.value)}
           className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-5 text-sm outline-none focus:ring-2 focus:ring-zinc-600 h-32 resize-none font-medium italic text-white"
@@ -294,32 +317,20 @@ export function FacultyIICAuditWrapper({
       </div>
 
       {/* Submit Action */}
-      {decision === 'decline' ? (
-        <div className="grid grid-cols-2 gap-4">
-          <button
-            onClick={() => handleDecline('pr')}
-            disabled={loading}
-            className="py-5 rounded-[2rem] font-black uppercase tracking-wider text-[10px] flex items-center justify-center gap-2 transition-all bg-amber-600 text-white hover:bg-amber-500 disabled:opacity-20 active:scale-95"
-          >
-            {loading ? 'Processing...' : 'Reject to PR'}
-            <Send size={12} />
-          </button>
-          <button
-            onClick={() => handleDecline('cc')}
-            disabled={loading}
-            className="py-5 rounded-[2rem] font-black uppercase tracking-wider text-[10px] flex items-center justify-center gap-2 transition-all bg-rose-600 text-white hover:bg-rose-500 disabled:opacity-20 active:scale-95"
-          >
-            {loading ? 'Processing...' : 'Reject to CC'}
-            <Send size={12} />
-          </button>
-        </div>
-      ) : (
+      {decision && (
         <button
-          onClick={handleApprove}
-          disabled={loading || !decision}
-          className="w-full py-5 rounded-[2rem] font-black uppercase tracking-[0.2em] text-xs flex items-center justify-center gap-3 transition-all disabled:opacity-20 active:scale-95 bg-white text-black hover:bg-zinc-200"
+          onClick={() => {
+            if (decision === 'hod') handleApprove()
+            else handleDecline(decision)
+          }}
+          disabled={loading}
+          className={`w-full py-5 rounded-[2rem] font-black uppercase tracking-[0.2em] text-xs flex items-center justify-center gap-3 transition-all disabled:opacity-20 active:scale-95 shadow-[0_0_50px_rgba(255,255,255,0.1)] ${
+            decision === 'hod'
+              ? 'bg-emerald-600 text-white hover:bg-emerald-500'
+              : 'bg-rose-600 text-white hover:bg-rose-500'
+          }`}
         >
-          {loading ? 'Processing...' : 'Finalize Endorsement'}
+          {loading ? 'Processing...' : decision === 'hod' ? 'Finalize Endorsement' : `Submit Rejection to ${decision.toUpperCase()}`}
           <Send size={16} />
         </button>
       )}
