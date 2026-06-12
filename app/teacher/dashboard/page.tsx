@@ -1,7 +1,7 @@
 import React from 'react'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { ShieldAlert, CheckCircle, ArrowRight, User, Award, FileText, PlusCircle } from 'lucide-react'
+import { ShieldAlert, CheckCircle, ArrowRight, User, Award, FileText, PlusCircle, FileDown } from 'lucide-react'
 import { ManageStudentsPanel } from '@/components/faculty/ManageStudentsPanel'
 import type { Profile } from '@/lib/types'
 
@@ -50,7 +50,18 @@ export default async function TeacherDashboard() {
 
   const standardReports = completedReports?.filter(r => (r.events as any)?.targeted_department === dept) || []
 
-  // Combine standard completed reports and IIC reports that are pushed by PR (pending_faculty / approved_faculty)
+  // Fetch IIC reports that are approved or pending HOD approval (status in ['pending_hod', 'approved_faculty', 'approved'])
+  const { data: allApprovedIICReports } = await supabase
+    .from('iic_event_reports')
+    .select('*, events(title, club_name, event_date, location, assigned_faculty_id, event_category)')
+    .in('status', ['pending_hod', 'approved_faculty', 'approved'])
+    .order('generated_at', { ascending: false })
+
+  const approvedDeptIICReports = allApprovedIICReports?.filter(r => 
+    r.department === dept || (r.events as any)?.assigned_faculty_id === user?.id
+  ) || []
+
+  // Combine standard completed reports and IIC reports that are approved or pushed by faculty
   const deptReports = [
     ...standardReports.map(r => ({
       id: r.id,
@@ -58,19 +69,21 @@ export default async function TeacherDashboard() {
       updated_at: r.updated_at,
       events: r.events,
       content: r.content,
-      isIIC: false
+      isIIC: false,
+      eventId: r.event_id
     })),
-    ...(pendingIICReports || []).map(r => ({
+    ...(approvedDeptIICReports || []).map(r => ({
       id: r.id,
       status: r.status,
-      updated_at: r.generated_at || r.created_at,
+      updated_at: r.generated_at,
       events: {
         title: r.activity_name,
         club_name: (r.events as any)?.club_name || 'IIC Committee',
         targeted_department: r.department
       },
       content: { summary: r.summary },
-      isIIC: true
+      isIIC: true,
+      eventId: r.event_id
     }))
   ].sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
 
@@ -218,40 +231,68 @@ export default async function TeacherDashboard() {
           </div>
         </div>
 
-        {/* PR Approved Reports Queue/Archive */}
+        {/* APPROVED REPORTS Queue/Archive */}
         <div className="space-y-8">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-indigo-500/10 rounded-lg">
               <FileText size={20} className="text-indigo-600" />
             </div>
-            <h2 className="text-lg font-black uppercase tracking-tighter text-zinc-800 dark:text-zinc-200">PR Approved Reports ({deptReports.length})</h2>
+            <h2 className="text-lg font-black uppercase tracking-tighter text-zinc-800 dark:text-zinc-200">APPROVED REPORTS ({deptReports.length})</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {deptReports.length > 0 ? (
               deptReports.map(report => (
-                <div key={report.id} className="group bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-[2rem] p-8 hover:shadow-2xl hover:border-indigo-500 dark:hover:border-indigo-500 transition-all cursor-pointer relative overflow-hidden">
+                <div key={report.id} className="group bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-[2rem] p-8 hover:shadow-2xl hover:border-indigo-500 dark:hover:border-indigo-500 transition-all relative overflow-hidden">
                   <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500"></div>
                   <div className="flex justify-between items-start mb-6">
                     <div className="space-y-1">
-                      <h3 className="text-2xl font-black text-[#0a0a0a] dark:text-white leading-tight group-hover:underline transition-all uppercase tracking-tighter">{(report.events as any)?.title || 'Untitled Event'}</h3>
+                      <h3 className="text-2xl font-black text-[#0a0a0a] dark:text-white leading-tight uppercase tracking-tighter">{(report.events as any)?.title || 'Untitled Event'}</h3>
                       <p className="font-mono text-[10px] text-zinc-400 uppercase tracking-widest">{(report.events as any)?.club_name || 'Club'}</p>
                     </div>
-                    <Link
-                      href={report.isIIC ? `/teacher/reports/iic/${report.id}` : `/teacher/reports/${report.id}`}
-                      className="bg-[#0a0a0a] text-white w-12 h-12 rounded-full flex items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-xl"
-                    >
-                      <ArrowRight size={20} />
-                    </Link>
                   </div>
                   <div className="space-y-4">
                     <p className="text-sm text-zinc-500 font-medium leading-relaxed line-clamp-3 italic">
                       {(report.content as any)?.summary || 'No summary available.'}
                     </p>
-                    <div className="pt-4 border-t border-zinc-100 flex items-center gap-4 text-[10px] font-mono text-zinc-400 uppercase tracking-widest">
-                      <span>{report.isIIC ? 'PR Pushed' : 'PR Approved'}</span>
+                    <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800/50 flex items-center gap-4 text-[10px] font-mono text-zinc-400 uppercase tracking-widest">
+                      <span className="font-bold text-indigo-600 dark:text-indigo-400">
+                        {report.isIIC 
+                          ? (report.status === 'approved' ? 'HOD APPROVED' : 'FACULTY APPROVED') 
+                          : 'PR APPROVED'}
+                      </span>
                       <span className="w-1 h-1 rounded-full bg-zinc-200"></span>
                       <span>{new Date(report.updated_at).toLocaleDateString()}</span>
+                    </div>
+
+                    {/* Download options */}
+                    <div className="pt-6 border-t border-zinc-100 dark:border-zinc-800/50 flex gap-3 mt-4">
+                      {report.isIIC ? (
+                        <a
+                          href={`/api/reports/${report.id}/download`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 flex items-center justify-center gap-1.5 py-3 px-3 border border-zinc-300 dark:border-zinc-700 hover:border-black dark:hover:border-white rounded-xl text-[10px] font-mono font-bold uppercase tracking-wider text-[#0a0a0a] dark:text-white transition-colors"
+                        >
+                          <FileDown size={12} />
+                          Report PDF
+                        </a>
+                      ) : (
+                        <Link
+                          href={`/teacher/reports/${report.id}`}
+                          className="flex-1 flex items-center justify-center gap-1.5 py-3 px-3 border border-zinc-300 dark:border-zinc-700 hover:border-black dark:hover:border-white rounded-xl text-[10px] font-mono font-bold uppercase tracking-wider text-[#0a0a0a] dark:text-white transition-colors"
+                        >
+                          <FileText size={12} />
+                          View Report
+                        </Link>
+                      )}
+                      <Link
+                        href={`/cc/events/${report.eventId}`}
+                        className="flex-1 flex items-center justify-center gap-1.5 py-3 px-3 bg-black hover:bg-zinc-800 text-white rounded-xl text-[10px] font-mono font-bold uppercase tracking-wider transition-all"
+                      >
+                        <FileDown size={12} />
+                        Event Bundle
+                      </Link>
                     </div>
                   </div>
                 </div>
@@ -260,7 +301,7 @@ export default async function TeacherDashboard() {
               <div className="col-span-full py-16 text-center bg-zinc-50/50 dark:bg-zinc-900/30 border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-[3rem]">
                 <CheckCircle size={32} className="mx-auto text-zinc-300 dark:text-zinc-700 mb-4" />
                 <p className="text-zinc-600 dark:text-zinc-400 font-black text-md uppercase tracking-widest">No Reports</p>
-                <p className="text-zinc-400 dark:text-zinc-500 text-xs mt-2">No PR approved post-event reports for your department.</p>
+                <p className="text-zinc-400 dark:text-zinc-500 text-xs mt-2">No approved post-event reports for your department.</p>
               </div>
             )}
           </div>

@@ -27,13 +27,16 @@ export default async function CCEventDetailPage({ params }: { params: Promise<{ 
    const constraints = constraintsRes.data
 
    const isAdmin = profile?.role === 'admin'
+   const isTeacher = profile?.role === 'teacher'
+   const isCreator = event?.created_by === user?.id
+   const hasAccess = isAdmin || isTeacher || isCreator
 
-   // Security check: if the event doesn't exist, or the user is not an admin and is not the creator of the event, deny access
-   if (!event || (!isAdmin && event.created_by !== user?.id)) {
+   // Security check: if the event doesn't exist, or the user is not allowed to view it, deny access
+   if (!event || !hasAccess) {
       return (
          <div className="flex flex-col items-center justify-center py-20 space-y-4">
             <h2 className="text-2xl font-bold">Event not found or access denied.</h2>
-            <Link href="/cc/dashboard" className="text-sm font-mono text-zinc-500 hover:underline">← Back to Dashboard</Link>
+            <Link href={isTeacher ? "/teacher/dashboard" : "/cc/dashboard"} className="text-sm font-mono text-zinc-500 hover:underline">← Back to Dashboard</Link>
          </div>
       )
    }
