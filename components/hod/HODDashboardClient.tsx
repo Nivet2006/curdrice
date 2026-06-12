@@ -7,6 +7,8 @@ import { ExportButton } from '@/components/hod/ExportButton'
 import { ProfileUpdateApprovalQueue } from '@/components/hod/ProfileUpdateApprovalQueue'
 import { createClient } from '@/lib/supabase/client'
 import { Event, ProfileUpdateRequest } from '@/lib/types'
+import { ImageUploadInput } from '@/components/ui/ImageUploadInput'
+import { saveHODSignature } from '@/lib/actions/faculty-actions'
 
 interface HODDashboardClientProps {
   initialPending: Event[]
@@ -16,6 +18,7 @@ interface HODDashboardClientProps {
   initialPendingIIC: any[]
   initialApprovedIIC: any[]
   dept: string
+  signatureUrl?: string
 }
 
 export function HODDashboardClient({
@@ -25,14 +28,36 @@ export function HODDashboardClient({
   initialProfileRequests,
   initialPendingIIC,
   initialApprovedIIC,
-  dept
+  dept,
+  signatureUrl = ''
 }: HODDashboardClientProps) {
   const [pendingApprovals, setPendingApprovals] = useState<Event[]>(initialPending)
   const [approvedEvents, setApprovedEvents] = useState<Event[]>(initialApproved)
   const [deptReports, setDeptReports] = useState<any[]>(initialReports)
   const [pendingIIC, setPendingIIC] = useState<any[]>(initialPendingIIC)
   const [approvedIIC, setApprovedIIC] = useState<any[]>(initialApprovedIIC)
+  const [sigUrl, setSigUrl] = useState(signatureUrl)
+  const [updatingSig, setUpdatingSig] = useState(false)
+  const [sigMessage, setSigMessage] = useState('')
   const supabase = createClient()
+
+  const handleSaveSignature = async (url: string) => {
+    setUpdatingSig(true)
+    setSigMessage('')
+    try {
+      const res = await saveHODSignature(url)
+      if (res?.success) {
+        setSigUrl(url)
+        setSigMessage('Signature updated successfully!')
+      } else {
+        setSigMessage(res?.error || 'Failed to save signature.')
+      }
+    } catch (err: any) {
+      setSigMessage(err.message || 'An error occurred.')
+    } finally {
+      setUpdatingSig(false)
+    }
+  }
 
   useEffect(() => {
     const channel = supabase
@@ -284,6 +309,31 @@ export function HODDashboardClient({
 
         {/* Sidebar: Historical & Actions */}
         <div className="space-y-12">
+           {/* HOD Signature upload */}
+           <div className="bg-white border-2 border-black p-8 rounded-[2.5rem] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] space-y-6">
+              <div className="flex items-center gap-3">
+                 <Building size={20} className="text-black" />
+                 <h2 className="text-xs font-mono font-black uppercase tracking-widest text-black">Official Signature</h2>
+              </div>
+              <p className="text-xs text-zinc-500 leading-relaxed font-mono">
+                 Upload your official signature image. This will be automatically embedded into verified IIC reports upon final approval.
+              </p>
+              
+              <ImageUploadInput
+                name="hod_signature"
+                defaultValue={sigUrl}
+                onChange={handleSaveSignature}
+              />
+              
+              {sigMessage && (
+                <p className={`text-[10px] font-mono uppercase tracking-widest font-bold ${
+                  sigMessage.includes('successfully') ? 'text-emerald-600' : 'text-rose-500'
+                }`}>
+                  {sigMessage}
+                </p>
+              )}
+           </div>
+
            <div className="bg-zinc-950 text-white p-8 rounded-3xl space-y-6 shadow-2xl">
               <div className="flex items-center gap-3">
                  <ClipboardCheck size={20} className="text-zinc-500" />

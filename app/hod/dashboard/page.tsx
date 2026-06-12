@@ -10,9 +10,10 @@ export default async function HODDashboard() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   
-  // Get HOD department
-  const { data: profile } = await supabase.from('profiles').select('department').eq('id', user?.id || '').single()
+  // Get HOD department & signature
+  const { data: profile } = await supabase.from('profiles').select('department, signature_url').eq('id', user?.id || '').single()
   const dept = profile?.department || 'General'
+  const signatureUrl = profile?.signature_url || ''
 
   // Initial Fetches (Server Side)
   const { data: pendingApprovals } = await supabase
@@ -66,6 +67,7 @@ export default async function HODDashboard() {
       initialPendingIIC={pendingIICReports || []}
       initialApprovedIIC={approvedIICReports || []}
       dept={dept}
+      signatureUrl={signatureUrl}
     />
   )
 }
