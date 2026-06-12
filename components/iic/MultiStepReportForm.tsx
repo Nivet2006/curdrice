@@ -8,7 +8,12 @@ import { createClient } from '@/lib/supabase/client';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { pushIICReportToPR } from '@/lib/actions/iic-approvals';
-import { InteractivePDFViewer } from './InteractivePDFViewer';
+import dynamic from 'next/dynamic';
+
+const InteractivePDFViewer = dynamic(
+  () => import('./InteractivePDFViewer').then(mod => mod.InteractivePDFViewer),
+  { ssr: false }
+);
 import { ImageUploadInput } from '@/components/ui/ImageUploadInput';
 
 const StudentAutocomplete = ({ rpIdx, isUsn, placeholder, formData, studentsList, updateForm }: { rpIdx: number, isUsn: boolean, placeholder: string, formData: any, studentsList: any[], updateForm: (key: string, value: any) => void }) => {
