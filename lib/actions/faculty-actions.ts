@@ -163,3 +163,24 @@ export async function getAvailablePRs() {
   if (error) return { error: error.message, data: [] }
   return { data: data || [] }
 }
+
+export async function saveHODSignature(signatureUrl: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Unauthorized' }
+
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  if (!profile || !['hod', 'admin'].includes(profile.role)) {
+    return { error: 'Unauthorized: Requires HOD or Admin permissions.' }
+  }
+
+  const { error } = await supabase
+    .from('profiles')
+    .update({ signature_url: signatureUrl })
+    .eq('id', user.id)
+
+  if (error) return { error: error.message }
+
+  revalidatePath('/hod/dashboard')
+  return { success: true }
+}

@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { compileIICReportPDF } from '@/lib/reports/pdf-compiler';
 
 export async function processIICReportReview(
   reportId: string,
@@ -67,6 +68,14 @@ export async function processIICReportReview(
   if (error) {
     console.error('[IIC Review Error]', error);
     return { error: `Failed to update report status: ${error.message}` };
+  }
+
+  // If approved by HOD, re-generate report PDF to place signatures
+  if (nextStatus === 'approved') {
+    const compileResult = await compileIICReportPDF(reportId);
+    if (!compileResult.success) {
+      console.error('[HOD Signature PDF Compile Error]', compileResult.error);
+    }
   }
 
   // Clear caches
