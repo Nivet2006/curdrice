@@ -2,7 +2,13 @@
 
 import React, { useState } from 'react'
 import { FacultyIICAuditWrapper } from './FacultyIICAuditWrapper'
-import { InteractivePDFViewer, PDFPageAnnotations } from '../iic/InteractivePDFViewer'
+import type { PDFPageAnnotations } from '../iic/InteractivePDFViewer'
+import dynamic from 'next/dynamic'
+
+const InteractivePDFViewer = dynamic(
+  () => import('../iic/InteractivePDFViewer').then(mod => mod.InteractivePDFViewer),
+  { ssr: false }
+)
 import { ArrowLeft, Award, CheckCircle, AlertTriangle, ExternalLink } from 'lucide-react'
 import Link from 'next/link'
 import { IICReportPipelineStatus } from '../iic/IICReportPipelineStatus'
