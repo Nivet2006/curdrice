@@ -27,7 +27,7 @@ export function FacultyIICAuditPageClient({
   initialPdfAnnotations = []
 }: FacultyIICAuditPageClientProps) {
   const [pdfAnnotations, setPdfAnnotations] = useState<PDFPageAnnotations[]>(initialPdfAnnotations)
-  const [decision, setDecision] = useState<'approve' | 'decline' | null>(null)
+  const [decision, setDecision] = useState<'hod' | 'cc' | 'pr' | null>(null)
 
   return (
     <div className="max-w-[1200px] mx-auto space-y-12 pb-24 px-4 sm:px-6">
@@ -182,7 +182,7 @@ export function FacultyIICAuditPageClient({
               </div>
               <InteractivePDFViewer
                 reportId={report.id}
-                readOnly={decision !== 'decline'}
+                readOnly={decision !== 'cc' && decision !== 'pr'}
                 initialAnnotations={pdfAnnotations}
                 onChange={setPdfAnnotations}
               />
