@@ -43,7 +43,7 @@ export default async function HODDashboard() {
     .select('*, events(title, club_name, event_date, location)')
     .eq('status', 'pending_hod')
     .eq('department', dept)
-    .order('created_at', { ascending: true })
+    .order('generated_at', { ascending: true })
 
   // Fetch approved HOD IIC reports
   const { data: approvedIICReports } = await supabase
@@ -51,7 +51,7 @@ export default async function HODDashboard() {
     .select('*, events(title, club_name, event_date, location)')
     .eq('status', 'approved')
     .eq('department', dept)
-    .order('created_at', { ascending: false })
+    .order('generated_at', { ascending: false })
 
   // Fetch pending profile update requests for this department
   const profileRequestsRes = await getPendingProfileRequests(dept)

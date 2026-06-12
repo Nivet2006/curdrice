@@ -35,7 +35,7 @@ export default async function TeacherDashboard() {
     .from('iic_event_reports')
     .select('*, events(title, club_name, event_date, location, assigned_faculty_id, event_category)')
     .in('status', ['pending_faculty', 'approved_faculty'])
-    .order('created_at', { ascending: true })
+    .order('generated_at', { ascending: true })
 
   const pendingIICReports = allPendingReports?.filter(r => 
     r.department === dept || (r.events as any)?.assigned_faculty_id === user?.id
