@@ -16,12 +16,11 @@ type IICReportPipelineStatusProps = {
 }
 
 export function IICReportPipelineStatus({ status, rejectedTo }: IICReportPipelineStatusProps) {
-  // Determine states for each of the 5 pipeline steps:
+  // Determine states for each of the 4 pipeline steps:
   // 1. Draft (CC)
   // 2. PR Audit
   // 3. Faculty Review
-  // 4. HOD Authorization
-  // 5. Published
+  // 4. HOD
 
   const steps: Step[] = [
     {
@@ -41,12 +40,7 @@ export function IICReportPipelineStatus({ status, rejectedTo }: IICReportPipelin
     },
     {
       id: 'hod_auth',
-      label: 'HOD Authorization',
-      status: 'upcoming',
-    },
-    {
-      id: 'published',
-      label: 'Event Published',
+      label: 'HOD',
       status: 'upcoming',
     },
   ]
@@ -95,20 +89,15 @@ export function IICReportPipelineStatus({ status, rejectedTo }: IICReportPipelin
     }
   }
 
-  // Step 4: HOD Authorization
+  // Step 4: HOD
   if (steps[2].status === 'completed') {
     if (status === 'pending_hod') {
       steps[3].status = 'active'
       steps[3].description = 'Pending HOD approval'
     } else if (status === 'approved') {
       steps[3].status = 'completed'
+      steps[3].description = 'Report is fully authorized'
     }
-  }
-
-  // Step 5: Published
-  if (status === 'approved') {
-    steps[4].status = 'completed'
-    steps[4].description = 'Report is fully authorized'
   }
 
   return (
@@ -122,7 +111,7 @@ export function IICReportPipelineStatus({ status, rejectedTo }: IICReportPipelin
         </div>
 
         {/* Stepper Pipeline */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 md:gap-2 pt-2">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-2 pt-2">
           {steps.map((step, idx) => {
             const isLast = idx === steps.length - 1
 
