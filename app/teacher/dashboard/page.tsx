@@ -5,6 +5,8 @@ import { ShieldAlert, CheckCircle, ArrowRight, User, Award, FileText, PlusCircle
 import { ManageStudentsPanel } from '@/components/faculty/ManageStudentsPanel'
 import type { Profile } from '@/lib/types'
 
+export const dynamic = 'force-dynamic'
+
 export default async function TeacherDashboard() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
