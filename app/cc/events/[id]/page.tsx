@@ -51,244 +51,256 @@ export default async function CCEventDetailPage({ params }: { params: Promise<{ 
    // Fetch thread info if discussion is enabled (passing prefetched user, role and thread mode to optimize speed)
    const thread = event.discussion_enabled ? await getEventThread(id, user, profile?.role, event.thread_mode) : null
 
+   const bg = parseCustomBackground(event.custom_background, event.banner_url)
+
    return (
-      <div className="max-w-4xl mx-auto space-y-12 pb-20 transition-colors">
-         <header className="flex items-center justify-between">
-            <Link href={isAdmin ? "/admin/logs" : "/cc/dashboard"} className="flex items-center gap-2 text-zinc-700 dark:text-zinc-400 hover:text-black dark:hover:text-white font-mono text-xs uppercase tracking-widest transition-colors">
-               <ArrowLeft size={14} />
-               {isAdmin ? 'Back to Intel' : 'Back to Pipeline'}
-            </Link>
-            <div className="flex items-center gap-3">
-               <div className="flex gap-2 mr-4">
-                  <Link
-                     href={`/cc/events/${id}/edit`}
-                     className="flex items-center gap-2 px-4 py-2 border border-black dark:border-white rounded-full text-xs font-bold hover:bg-zinc-50 transition-all active:scale-95"
-                  >
-                     <Edit3 size={14} />
-                     {event.approval_status === 'approved' ? 'Edit Details' : 'Edit Draft'}
-                  </Link>
-                  {event.approval_status === 'draft' && (
-                     <form action={async () => {
-                        'use server'
-                        await submitEventForReview(id)
-                        redirect('/cc/dashboard')
-                     }}>
-                        <button
-                           type="submit"
-                           className="flex items-center gap-2 px-4 py-2 bg-black text-white dark:bg-white dark:!text-black rounded-full text-xs font-bold hover:bg-zinc-800 transition-all active:scale-95 shadow-md"
-                        >
-                           <Send size={14} className="dark:!text-black" />
-                           Submit to Faculty
-                        </button>
-                     </form>
-                  )}
-               </div>
-               <span className={`font-mono text-[9px] uppercase tracking-widest font-bold px-3 py-1.5 rounded-full border ${event.approval_status === 'approved' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30' :
-                  event.approval_status === 'rejected' ? 'bg-rose-500/10 text-rose-600 border-rose-500/30' :
+      <div className={`w-full min-h-screen relative transition-all ${bg.textClass}`}>
+         {bg.hasCustomBg && (
+            <>
+               <div 
+                  style={bg.backdropStyle} 
+                  className={`fixed inset-0 w-full h-full -z-10 pointer-events-none transition-all ${bg.backdropClass}`} 
+               />
+               {bg.backdropOverlayClass && (
+                  <div 
+                     style={bg.backdropOverlayStyle} 
+                     className={`fixed inset-0 w-full h-full -z-10 pointer-events-none transition-all ${bg.backdropOverlayClass}`} 
+                  />
+               )}
+            </>
+         )}
+
+         <div className="relative z-10 max-w-4xl mx-auto space-y-12 pb-20 transition-all">
+            <header className="flex items-center justify-between">
+               <Link href={isAdmin ? "/admin/logs" : "/cc/dashboard"} className={`flex items-center gap-2 font-mono text-xs uppercase tracking-widest transition-colors ${bg.linkClass}`}>
+                  <ArrowLeft size={14} />
+                  {isAdmin ? 'Back to Intel' : 'Back to Pipeline'}
+               </Link>
+               <div className="flex items-center gap-3">
+                  <div className="flex gap-2 mr-4">
+                     <Link
+                        href={`/cc/events/${id}/edit`}
+                        className={`flex items-center gap-2 px-4 py-2 border rounded-full text-xs font-bold transition-all active:scale-95 ${
+                          bg.hasCustomBg 
+                            ? 'border-white text-white hover:bg-white/10' 
+                            : 'border-black dark:border-white text-black dark:text-white hover:bg-zinc-50 dark:hover:bg-zinc-900'
+                        }`}
+                     >
+                        <Edit3 size={14} />
+                        {event.approval_status === 'approved' ? 'Edit Details' : 'Edit Draft'}
+                     </Link>
+                     {event.approval_status === 'draft' && (
+                        <form action={async () => {
+                           'use server'
+                           await submitEventForReview(id)
+                           redirect('/cc/dashboard')
+                        }}>
+                           <button
+                              type="submit"
+                              className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-all active:scale-95 shadow-md ${
+                                bg.hasCustomBg 
+                                  ? 'bg-white text-black hover:bg-zinc-200' 
+                                  : 'bg-black text-white dark:bg-white dark:text-black hover:bg-zinc-800'
+                              }`}
+                           >
+                              <Send size={14} className={bg.hasCustomBg ? 'text-black' : 'dark:text-black'} />
+                              Submit to Faculty
+                           </button>
+                        </form>
+                     )}
+                  </div>
+                  <span className={`font-mono text-[9px] uppercase tracking-widest font-bold px-3 py-1.5 rounded-full border ${
+                     event.approval_status === 'approved' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30' :
+                     event.approval_status === 'rejected' ? 'bg-rose-500/10 text-rose-600 border-rose-500/30' :
                      'bg-zinc-500/10 text-zinc-500 border-zinc-500/20'
                   }`}>
-                  {event.approval_status.replace(/_/g, ' ').toUpperCase()}
-               </span>
-            </div>
-         </header>
+                     {event.approval_status.replace(/_/g, ' ').toUpperCase()}
+                  </span>
+               </div>
+            </header>
 
-         {/* ADMIN OVERRIDE SECTION */}
-         {isAdmin && (
-            <AdminManualOverride event={event} departments={uniqueDepts} />
-         )}
+            {/* ADMIN OVERRIDE SECTION */}
+            {isAdmin && (
+               <AdminManualOverride event={event} departments={uniqueDepts} />
+            )}
 
-         {(() => {
-            const bg = parseCustomBackground(event.custom_background, event.banner_url)
-            if (!bg.hasBg) return null
-            return (
-               <div 
-                  style={bg.containerStyle}
-                  className={`w-full aspect-[21/9] rounded-[2.5rem] overflow-hidden border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-2xl relative group transition-all flex items-end p-6 sm:p-10 ${bg.containerClass}`}
-               >
-                  <div 
-                     style={bg.overlayStyle} 
-                     className={`absolute inset-0 pointer-events-none ${bg.overlayClass}`} 
-                  />
-                  <div className={`w-full max-w-xl p-6 rounded-2xl relative z-10 transition-all ${bg.glassClass} ${bg.textClass}`}>
-                     <p className="text-xs font-mono uppercase tracking-widest opacity-85">Visual Identity</p>
-                     <h2 className="text-xl sm:text-3xl font-black tracking-tight mt-1 leading-tight uppercase">{event.title}</h2>
+            {/* Visual Branding / Poster */}
+            {event.banner_url && (
+               <div className="w-full aspect-[21/9] rounded-[2.5rem] overflow-hidden border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-2xl relative group transition-all">
+                  <img src={event.banner_url} alt={event.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+               </div>
+            )}
+
+            <div className="space-y-4">
+               <h1 className={`text-5xl font-black tracking-tight uppercase ${bg.textClass}`}>{event.title}</h1>
+               <div className={`flex flex-wrap items-center gap-x-6 gap-y-3 text-sm font-mono opacity-90 ${bg.textClass}`}>
+                  <div className="flex items-center gap-2 font-bold">
+                     <span className="w-2 h-2 rounded-full bg-current"></span>
+                     <span>{event.club_name}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                     <Clock size={14} />
+                     <span>{new Date(event.event_date).toLocaleDateString()} at {new Date(event.event_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                  </div>
+                  <div className="flex items-center gap-2 font-bold">
+                     <FileText size={14} />
+                     <span>{event.targeted_department || 'All Departments'}</span>
+                  </div>
+                  <div className="flex items-center gap-2 ml-auto">
+                     <span className="text-[10px] font-mono opacity-60 uppercase tracking-widest">Auth Code:</span>
+                     <span className="bg-black/10 dark:bg-white/10 px-3 py-1 rounded-lg font-black italic tracking-tighter">{event.id}</span>
                   </div>
                </div>
-            )
-         })()}
-
-         <div className="space-y-4">
-            {(() => {
-               const bg = parseCustomBackground(event.custom_background, event.banner_url)
-               if (bg.hasBg) return null
-               return <h1 className="text-5xl font-black tracking-tight text-[#0a0a0a] dark:text-white">{event.title}</h1>
-            })()}
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm font-mono text-zinc-600 dark:text-zinc-500">
-               <div className="flex items-center gap-2 text-[#0a0a0a] dark:text-white">
-                  <span className="w-2 h-2 rounded-full bg-black dark:bg-white"></span>
-                  <span>{event.club_name}</span>
-               </div>
-               <div className="flex items-center gap-2">
-                  <Clock size={14} />
-                  <span>{new Date(event.event_date).toLocaleDateString()} at {new Date(event.event_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-               </div>
-               <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold">
-                  <FileText size={14} />
-                  <span>{event.targeted_department || 'All Departments'}</span>
-               </div>
-               <div className="flex items-center gap-2 ml-auto">
-                  <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest">Auth Code:</span>
-                  <span className="bg-zinc-100 dark:bg-zinc-900 px-3 py-1 rounded-lg text-black dark:text-white font-black italic tracking-tighter">{event.id}</span>
-               </div>
             </div>
-         </div>
 
-         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="md:col-span-2 space-y-10">
-               <section className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-[2.5rem] p-10 space-y-6 shadow-sm transition-colors">
-                  <h2 className="font-bold text-2xl tracking-tight text-[#0a0a0a] dark:text-white flex items-center gap-3">
-                     <FileText className="text-zinc-400" />
-                     Detailed Pitch
-                  </h2>
-                  <p className="text-zinc-500 dark:text-zinc-400 leading-relaxed whitespace-pre-wrap text-lg font-medium">{event.description}</p>
-               </section>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+               <div className="md:col-span-2 space-y-10">
+                  <section className={`${bg.cardClass} !rounded-[2.5rem] !p-10 space-y-6`}>
+                     <h2 className="font-bold text-2xl tracking-tight flex items-center gap-3">
+                        <FileText className="opacity-60" />
+                        Detailed Pitch
+                     </h2>
+                     <p className="leading-relaxed whitespace-pre-wrap text-lg font-medium opacity-95">{event.description}</p>
+                  </section>
 
-               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 space-y-3 transition-colors shadow-sm">
-                     <p className="text-[10px] font-mono text-zinc-600 dark:text-zinc-400 uppercase tracking-widest">Eligibility & Constraints</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                     <div className={`${bg.cardClass} space-y-3`}>
+                        <p className="text-[10px] font-mono opacity-70 uppercase tracking-widest">Eligibility & Constraints</p>
+                        <div className="space-y-4">
+                           <div>
+                              <p className="text-xs opacity-60 mb-1">Semesters</p>
+                              <div className="flex flex-wrap gap-1">
+                                 {constraints?.allowed_semesters?.map((s: number) => <span key={s} className="bg-black/5 dark:bg-white/5 border border-current/10 px-2 py-0.5 rounded-md text-[10px] font-mono">{s}</span>) || <span className="text-xs italic opacity-70">All</span>}
+                              </div>
+                           </div>
+                           <div>
+                              <p className="text-xs opacity-60 mb-1">Years</p>
+                              <div className="flex flex-wrap gap-1">
+                                 {constraints?.allowed_years?.map((y: number) => <span key={y} className="bg-black/5 dark:bg-white/5 border border-current/10 px-2 py-0.5 rounded-md text-[10px] font-mono">{y}st</span>) || <span className="text-xs italic opacity-70">All</span>}
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                     <div className={`${bg.cardClass} space-y-3`}>
+                        <p className="text-[10px] font-mono opacity-70 uppercase tracking-widest">Capacity & Logistics</p>
+                        <div className="space-y-2">
+                           <p className="text-2xl font-bold">{event.max_capacity || '∞'}</p>
+                           <p className="text-xs opacity-75">Max Attendee Limit</p>
+                           <div className="pt-2 border-t border-current/10 mt-2">
+                              <p className="text-sm font-bold uppercase tracking-tighter">{event.location}</p>
+                              <p className="text-[10px] opacity-65 uppercase tracking-widest">Venue</p>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+
+                  {/* Feedback Configuration (Survey) */}
+                  <section className={`${bg.cardClass} !rounded-[2.5rem] !p-10 space-y-6`}>
+                     <div className="flex justify-between items-center">
+                        <h2 className="font-bold text-2xl tracking-tight">Survey Design</h2>
+                        <span className="font-mono text-[9px] uppercase tracking-widest font-bold px-3 py-1.5 rounded-full border border-current/10 bg-white/5">{event.feedback_config?.length || 0} QUESTIONS</span>
+                     </div>
                      <div className="space-y-4">
-                        <div>
-                           <p className="text-xs text-zinc-500 mb-1">Semesters</p>
-                           <div className="flex flex-wrap gap-1">
-                              {constraints?.allowed_semesters?.map((s: number) => <span key={s} className="bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-2 py-0.5 rounded-md text-[10px] font-mono text-zinc-800 dark:text-zinc-200">{s}</span>) || <span className="text-xs italic text-zinc-500">All</span>}
+                        {event.feedback_config?.map((q: any, i: number) => (
+                           <div key={i} className="flex gap-4 p-4 rounded-2xl bg-black/5 dark:bg-white/5 border border-current/10 transition-colors">
+                              <div className="w-8 h-8 rounded-full bg-white dark:bg-zinc-900 border border-current/10 flex items-center justify-center font-mono text-xs">{i + 1}</div>
+                              <div className="flex-1">
+                                 <div className="flex justify-between">
+                                    <p className="font-bold">{q.label}</p>
+                                    <span className="text-[9px] font-mono opacity-70 uppercase">{q.type.replace('_', ' ')}</span>
+                                 </div>
+                                 {q.options && q.options.length > 0 && (
+                                    <p className="text-[10px] opacity-60 mt-1 uppercase tracking-widest">Options: {q.options.join(', ')}</p>
+                                 )}
+                              </div>
                            </div>
-                        </div>
-                        <div>
-                           <p className="text-xs text-zinc-500 mb-1">Years</p>
-                           <div className="flex flex-wrap gap-1">
-                              {constraints?.allowed_years?.map((y: number) => <span key={y} className="bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-2 py-0.5 rounded-md text-[10px] font-mono text-zinc-800 dark:text-zinc-200">{y}st</span>) || <span className="text-xs italic text-zinc-500">All</span>}
+                        ))}
+                     </div>
+                  </section>
+
+                  {(() => {
+                     const rejectionData = Array.isArray(event.rejection_data)
+                        ? event.rejection_data
+                        : (typeof event.rejection_data === 'string'
+                           ? (JSON.parse(event.rejection_data) || [])
+                           : []);
+                     if (!rejectionData || rejectionData.length === 0) return null;
+                     return (
+                        <section className="bg-rose-50/15 dark:bg-rose-950/20 border border-rose-500/20 rounded-3xl p-8 space-y-4">
+                           <div className="flex items-center gap-2 text-rose-600 dark:text-rose-400">
+                              <XCircle size={20} />
+                              <h2 className="font-bold text-xl uppercase tracking-tight">Revision Required</h2>
                            </div>
-                        </div>
-                     </div>
-                  </div>
-                  <div className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 space-y-3 transition-colors shadow-sm">
-                     <p className="text-[10px] font-mono text-zinc-600 dark:text-zinc-400 uppercase tracking-widest">Capacity & Logistics</p>
-                     <div className="space-y-2">
-                        <p className="text-2xl font-bold text-[#0a0a0a] dark:text-white">{event.max_capacity || '∞'}</p>
-                        <p className="text-xs text-zinc-500">Max Attendee Limit</p>
-                        <div className="pt-2 border-t border-zinc-200 dark:border-zinc-800 mt-2">
-                           <p className="text-sm font-bold text-[#0a0a0a] dark:text-white uppercase tracking-tighter">{event.location}</p>
-                           <p className="text-[10px] text-zinc-600 dark:text-zinc-500 uppercase tracking-widest">Venue</p>
-                        </div>
-                     </div>
-                  </div>
+                           <div className="space-y-4">
+                              {rejectionData.map((item: any, i: number) => (
+                                 <div key={i} className="bg-white/10 dark:bg-black/40 p-4 rounded-xl border border-rose-500/20">
+                                    <p className="text-[10px] font-mono uppercase text-rose-500 mb-1">{item.field}</p>
+                                    <p className="text-sm font-medium">{item.reason}</p>
+                                 </div>
+                              ))}
+                           </div>
+                        </section>
+                     );
+                  })()}
+
+                  {/* Section 1 — Event Report Hub Card moved here */}
+                  <ReportHubCard eventId={event.id} />
                </div>
 
-               {/* Feedback Configuration (Survey) */}
-               <section className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-[2.5rem] p-10 space-y-6 shadow-sm transition-colors">
-                  <div className="flex justify-between items-center">
-                     <h2 className="font-bold text-2xl tracking-tight text-[#0a0a0a] dark:text-white">Survey Design</h2>
-                     <span className="font-mono text-[9px] uppercase tracking-widest font-bold px-3 py-1.5 rounded-full border bg-zinc-500/10 text-zinc-500 border-zinc-500/20">{event.feedback_config?.length || 0} QUESTIONS</span>
-                  </div>
-                  <div className="space-y-4">
-                     {event.feedback_config?.map((q: any, i: number) => (
-                        <div key={i} className="flex gap-4 p-4 rounded-2xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 transition-colors">
-                           <div className="w-8 h-8 rounded-full bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 flex items-center justify-center font-mono text-xs text-[#0a0a0a] dark:text-white">{i + 1}</div>
-                           <div className="flex-1">
-                              <div className="flex justify-between">
-                                 <p className="font-bold text-zinc-800 dark:text-zinc-200">{q.label}</p>
-                                 <span className="text-[9px] font-mono text-zinc-500 dark:text-zinc-400 uppercase">{q.type.replace('_', ' ')}</span>
+               <aside className="space-y-6">
+                  <EventStatusTracker status={event.approval_status} />
+
+                  {event.approval_status === 'approved' ? (
+                     <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
+                        <FeedbackToggle eventId={event.id} initialStatus={event.feedback_open} />
+                        <DiscussionToggle eventId={event.id} initialStatus={event.discussion_enabled || false} initialMode={event.thread_mode || 'open'} />
+                        {(() => {
+                           const isRegistrationsClosed = new Date() > new Date(event.registration_deadline);
+                           return (
+                              <div className={`p-6 rounded-3xl border ${isRegistrationsClosed ? 'bg-zinc-100 dark:bg-zinc-800/50 border-zinc-300 dark:border-zinc-700' : 'bg-black text-white dark:bg-zinc-900 border-white/10'}`}>
+                                 <div className={`flex items-center gap-2 mb-2 ${isRegistrationsClosed ? 'text-zinc-500' : 'text-emerald-400'}`}>
+                                    {isRegistrationsClosed ? <XCircle size={16} /> : <Heart size={16} fill="currentColor" />}
+                                    <span className="text-[10px] font-mono font-black uppercase tracking-widest">
+                                       {isRegistrationsClosed ? 'Registrations Closed' : 'Public Interest'}
+                                    </span>
+                                 </div>
+                                 <p className={`text-sm font-medium ${isRegistrationsClosed ? 'text-zinc-600 dark:text-zinc-400' : 'text-white'}`}>
+                                    {isRegistrationsClosed ? 'The registration window has concluded. You can now focus on event execution and feedback collection.' : 'Your event is currently attracting registrations.'}
+                                 </p>
                               </div>
-                              {q.options && q.options.length > 0 && (
-                                 <p className="text-[10px] text-zinc-500 mt-1 uppercase tracking-widest">Options: {q.options.join(', ')}</p>
-                              )}
-                           </div>
+                           );
+                        })()}
+                        <EventRegistrationStats eventId={event.id} />
+                     </div>
+                  ) : (
+                     <div className={`${bg.cardClass} space-y-4 shadow-xl`}>
+                        <h3 className="font-bold text-lg">Analytics Overview</h3>
+                        <div className="space-y-1">
+                           <p className="text-3xl font-black">--</p>
+                           <p className="text-[10px] font-mono uppercase opacity-60">Total Registrations</p>
                         </div>
-                     ))}
-                  </div>
-               </section>
-
-                {(() => {
-                   const rejectionData = Array.isArray(event.rejection_data)
-                      ? event.rejection_data
-                      : (typeof event.rejection_data === 'string'
-                         ? (JSON.parse(event.rejection_data) || [])
-                         : []);
-                   if (!rejectionData || rejectionData.length === 0) return null;
-                   return (
-                      <section className="bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/50 rounded-3xl p-8 space-y-4">
-                         <div className="flex items-center gap-2 text-rose-600 dark:text-rose-400">
-                            <XCircle size={20} />
-                            <h2 className="font-bold text-xl uppercase tracking-tight">Revision Required</h2>
-                         </div>
-                         <div className="space-y-4">
-                            {rejectionData.map((item: any, i: number) => (
-                               <div key={i} className="bg-white dark:bg-black/40 p-4 rounded-xl border border-rose-100 dark:border-rose-900/30">
-                                  <p className="text-[10px] font-mono uppercase text-rose-600 dark:text-rose-400 mb-1">{item.field}</p>
-                                  <p className="text-sm font-medium text-rose-900 dark:text-rose-200">{item.reason}</p>
-                               </div>
-                            ))}
-                         </div>
-                      </section>
-                   );
-                })()}
-
-               {/* Section 1 — Event Report Hub Card moved here */}
-               <ReportHubCard eventId={event.id} />
+                        <p className="text-[10px] opacity-60 italic">Analytics will be available once the event is approved and published.</p>
+                     </div>
+                  )}
+               </aside>
             </div>
 
-            <aside className="space-y-6">
-               <EventStatusTracker status={event.approval_status} />
-
-               {event.approval_status === 'approved' ? (
-                  <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
-                     <FeedbackToggle eventId={event.id} initialStatus={event.feedback_open} />
-                     <DiscussionToggle eventId={event.id} initialStatus={event.discussion_enabled || false} initialMode={event.thread_mode || 'open'} />
-                     {(() => {
-                        const isRegistrationsClosed = new Date() > new Date(event.registration_deadline);
-                        return (
-                           <div className={`p-6 rounded-3xl border ${isRegistrationsClosed ? 'bg-zinc-100 dark:bg-zinc-800/50 border-zinc-300 dark:border-zinc-700' : 'bg-[#0a0a0a] dark:bg-zinc-900 border-emerald-500/30'}`}>
-                              <div className={`flex items-center gap-2 mb-2 ${isRegistrationsClosed ? 'text-zinc-500' : 'text-emerald-400'}`}>
-                                 {isRegistrationsClosed ? <XCircle size={16} /> : <Heart size={16} fill="currentColor" />}
-                                 <span className="text-[10px] font-mono font-black uppercase tracking-widest">
-                                    {isRegistrationsClosed ? 'Registrations Closed' : 'Public Interest'}
-                                 </span>
-                              </div>
-                              <p className={`text-sm font-medium ${isRegistrationsClosed ? 'text-zinc-600 dark:text-zinc-400' : 'text-white'}`}>
-                                 {isRegistrationsClosed ? 'The registration window has concluded. You can now focus on event execution and feedback collection.' : 'Your event is currently attracting registrations.'}
-                              </p>
-                           </div>
-                        );
-                     })()}
-                     <EventRegistrationStats eventId={event.id} />
+            {/* Event Discussion Thread (CC participation) */}
+            {event.discussion_enabled && thread && (
+               <section className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  <div className={bg.cardClass + " !p-0 overflow-hidden"}>
+                     <EventThread
+                        conversationId={thread.id}
+                        eventName={event.title}
+                        userId={user?.id || ''}
+                        memberCount={thread.member_count}
+                        threadMode={thread.thread_mode}
+                        userRole={thread.user_role}
+                     />
                   </div>
-               ) : (
-                  <div className="bg-white dark:bg-black text-[#0a0a0a] dark:text-white border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 space-y-4 shadow-xl transition-colors">
-                     <h3 className="font-bold text-lg">Analytics Overview</h3>
-                     <div className="space-y-1">
-                        <p className="text-3xl font-black">--</p>
-                        <p className="text-[10px] font-mono uppercase text-zinc-600 dark:text-zinc-500">Total Registrations</p>
-                     </div>
-                     <p className="text-[10px] text-zinc-500 dark:text-zinc-500 italic">Analytics will be available once the event is approved and published.</p>
-                  </div>
-               )}
-            </aside>
+               </section>
+            )}
          </div>
-
-         {/* Event Discussion Thread (CC participation) */}
-         {event.discussion_enabled && thread && (
-            <section className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-               <EventThread
-                  conversationId={thread.id}
-                  eventName={event.title}
-                  userId={user?.id || ''}
-                  memberCount={thread.member_count}
-                  threadMode={thread.thread_mode}
-                  userRole={thread.user_role}
-               />
-            </section>
-         )}
-
       </div>
    )
 }

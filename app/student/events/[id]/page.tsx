@@ -91,179 +91,194 @@ export default async function EventDetailPage({
   // Fetch event thread info
   const thread = event.discussion_enabled ? await getEventThread(id) : null
 
-  return (
-    <div className="w-full">
-      <Link href="/student/events" className="inline-block font-mono text-sm text-[#555555] hover:text-[#0a0a0a] mb-6 transition-colors">
-        ← Events
-      </Link>
+  const bg = parseCustomBackground(event.custom_background, event.banner_url)
 
-      {(() => {
-        const bg = parseCustomBackground(event.custom_background, event.banner_url)
-        return (
+  return (
+    <div className={`w-full min-h-screen relative transition-all ${bg.textClass}`}>
+      {bg.hasCustomBg && (
+        <>
           <div 
-            style={bg.containerStyle}
-            className={`w-full aspect-[21/9] sm:aspect-[3/1] rounded-2xl mb-10 overflow-hidden relative flex items-end p-6 sm:p-10 ${bg.containerClass}`}
-          >
-            {/* Overlay for background images / gradient layers */}
+            style={bg.backdropStyle} 
+            className={`fixed inset-0 w-full h-full -z-10 pointer-events-none transition-all ${bg.backdropClass}`} 
+          />
+          {bg.backdropOverlayClass && (
             <div 
-              style={bg.overlayStyle}
-              className={`absolute inset-0 pointer-events-none ${bg.overlayClass}`}
+              style={bg.backdropOverlayStyle} 
+              className={`fixed inset-0 w-full h-full -z-10 pointer-events-none transition-all ${bg.backdropOverlayClass}`} 
             />
-            
-            {/* Banner Content Card */}
-            <div className={`w-full max-w-xl p-6 rounded-2xl relative z-10 transition-all ${bg.glassClass} ${bg.textClass}`}>
-              <div className="flex flex-wrap gap-2 items-center mb-3">
-                <span className="border-[1.5px] border-current font-mono rounded-full px-2.5 py-0.5 text-[10px] uppercase tracking-wider bg-black/10 dark:bg-white/10">{event.club_name}</span>
-                <EventStatusBadge status={event.status} className="px-2.5 py-0.5 text-[10px] rounded-full" />
+          )}
+        </>
+      )}
+      
+      <div className="relative z-10">
+        <Link href="/student/events" className={`inline-block font-mono text-sm mb-6 transition-colors ${bg.linkClass}`}>
+          ← Events
+        </Link>
+
+        {/* Hero banner / Poster */}
+        {event.banner_url && (
+          <div className="w-full aspect-[21/9] sm:aspect-[3/1] rounded-2xl mb-10 overflow-hidden relative border border-[#e0e0e0] dark:border-zinc-800 shadow-md">
+            <img src={event.banner_url} alt={event.title} className="w-full h-full object-cover" />
+          </div>
+        )}
+
+        <div className="flex flex-col lg:flex-row gap-12">
+          <div className="flex-1 space-y-8">
+            <div className={bg.cardClass}>
+              <div className="flex gap-3 mb-4">
+                <span className="border-[1.5px] border-current font-mono rounded-full px-3 py-1 text-xs bg-black/10 dark:bg-white/10">{event.club_name}</span>
+                <EventStatusBadge status={event.status} className="px-3 py-1 text-xs rounded-full" />
               </div>
-              <h1 className="text-xl sm:text-3xl font-black tracking-tight uppercase leading-tight">{event.title}</h1>
+              
+              <h1 className="text-3xl font-black mb-6 uppercase tracking-tight">{event.title}</h1>
+              
+              {/* Compulsory event banner */}
+              {(event as any).is_compulsory && (
+                <div className="mb-6 flex items-start gap-3 p-4 bg-rose-50/15 dark:bg-rose-950/20 rounded-2xl border border-rose-500/20">
+                  <ShieldAlert size={18} className="text-rose-500 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-xs font-mono font-bold uppercase tracking-wider text-rose-500">Compulsory Event</p>
+                    <p className="text-xs opacity-90 mt-0.5">You have been auto-registered for this event. Your QR code is available below.</p>
+                  </div>
+                </div>
+              )}
+              
+              <p className="text-base leading-relaxed whitespace-pre-wrap opacity-95">{event.description}</p>
+            </div>
+
+            <div className={bg.cardClass}>
+              <h3 className="font-bold text-lg mb-4 uppercase tracking-tight">Details</h3>
+              <div className="space-y-4 font-mono text-sm">
+                <div className="flex items-center gap-3">
+                  <CalendarDays size={18} />
+                  <span>{new Date(event.event_date).toLocaleDateString()}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Clock size={18} />
+                  <span>{new Date(event.event_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <MapPin size={18} />
+                  <span>{event.location || 'TBA'}</span>
+                </div>
+                {event.location_lat && event.location_lng && (
+                  <div className="mt-4 rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800">
+                    <LocationMapEmbed
+                      lat={event.location_lat}
+                      lng={event.location_lng}
+                      name={event.location || 'Visit Location'}
+                    />
+                  </div>
+                )}
+                <div className="flex items-center gap-3">
+                  <Users size={18} />
+                  <span>{activeCount} {event.max_capacity ? `/ ${event.max_capacity}` : ''} attending {waitlistCount > 0 ? `(${waitlistCount} on waitlist)` : ''}</span>
+                </div>
+              </div>
             </div>
           </div>
-        )
-      })()}
 
-      <div className="flex flex-col lg:flex-row gap-12">
-        <div className="flex-1">
-          
-          {/* Compulsory event banner */}
-          {(event as any).is_compulsory && (
-            <div className="mb-6 flex items-start gap-3 p-4 bg-rose-50 dark:bg-rose-900/20 rounded-2xl border border-rose-100 dark:border-rose-800">
-              <ShieldAlert size={18} className="text-rose-500 shrink-0 mt-0.5" />
-              <div>
-                <p className="text-xs font-mono font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">Compulsory Event</p>
-                <p className="text-xs text-rose-500 dark:text-rose-400 mt-0.5">You have been auto-registered for this event. Your QR code is available below.</p>
+          <div className="w-full lg:w-[320px] shrink-0">
+            <div className={`sticky top-24 ${bg.cardClass}`}>
+              {invitedBy && (
+                <p className="font-mono text-[10px] uppercase tracking-tighter mb-5 border-b border-current/20 pb-2">
+                  {invitedBy} invites you to join this event
+                </p>
+              )}
+              <p className="font-mono text-sm mb-3">{activeCount} / {event.max_capacity || '∞'} registered {waitlistCount > 0 ? `(${waitlistCount} on waitlist)` : ''}</p>
+              <div className="w-full h-1.5 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
+                <div className="h-full bg-current" style={{ width: `${progressPct}%` }} />
               </div>
-            </div>
-          )}
-          <p className="text-base text-[#555555] mb-8 leading-relaxed whitespace-pre-wrap">{event.description}</p>
-          
-          <div className="space-y-4 font-mono text-sm text-[#0a0a0a]">
-            <div className="flex items-center gap-3">
-              <CalendarDays className="text-[#555555]" size={18} />
-              <span>{new Date(event.event_date).toLocaleDateString()}</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <Clock className="text-[#555555]" size={18} />
-              <span>{new Date(event.event_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <MapPin className="text-[#555555]" size={18} />
-              <span>{event.location || 'TBA'}</span>
-            </div>
-            {event.location_lat && event.location_lng && (
-              <div className="mt-4">
-                <LocationMapEmbed
-                  lat={event.location_lat}
-                  lng={event.location_lng}
-                  name={event.location || 'Visit Location'}
+              {event.registration_deadline && (
+                <p className="font-mono text-xs opacity-70 mt-3">Closes {new Date(event.registration_deadline).toLocaleDateString()}</p>
+              )}
+
+              {isRegistered ? (
+                <div className="mt-6 space-y-4">
+                  {registration.is_waitlisted ? (
+                    <Button className="w-full opacity-90 bg-amber-500 hover:bg-amber-600 text-white cursor-not-allowed">
+                      Waitlisted (Position #{waitlistPosition})
+                    </Button>
+                  ) : (
+                    <>
+                      <Button className="w-full opacity-50 cursor-not-allowed">Registered ✓</Button>
+                      
+                      <StudentFeedbackTerminal 
+                        event={event} 
+                        studentId={user?.id || ''} 
+                        hasSubmitted={hasSubmittedFeedback} 
+                      />
+
+                      <QRButton 
+                        token={registration?.qr_token || ''} 
+                        studentName={profile?.full_name || ''} 
+                        usn={profile?.usn || ''} 
+                        eventName={event.title} 
+                      />
+                    </>
+                  )}
+                </div>
+              ) : isEligible ? (
+                 <div>
+                   {event.max_capacity && activeCount >= event.max_capacity && (
+                     <p className="text-xs font-mono text-amber-600 bg-amber-50 border border-amber-200 rounded-lg p-2.5 mb-3">
+                       ⚠️ Event capacity reached. Registering will put you on the waitlist (max capacity: {event.waitlist_max}).
+                     </p>
+                   )}
+                   <RegisterButton eventId={id} />
+                 </div>
+              ) : (
+                <div className="mt-6 border border-dashed border-current/25 rounded-xl p-4 bg-white/5">
+                  <p className="text-xs font-mono opacity-80">You are not eligible for this event based on the current constraints.</p>
+                </div>
+              )}
+              
+              <div className="mt-4 pt-4 border-t border-current/10">
+                <ShareEventButton 
+                  eventId={id} 
+                  eventName={event.title} 
+                  clubName={event.club_name} 
+                  eventDate={event.event_date} 
+                  userId={user?.id || ''} 
+                  userRole={profile?.role || ''}
                 />
               </div>
-            )}
-            <div className="flex items-center gap-3">
-              <Users className="text-[#555555]" size={18} />
-              <span>{activeCount} {event.max_capacity ? `/ ${event.max_capacity}` : ''} attending {waitlistCount > 0 ? `(${waitlistCount} on waitlist)` : ''}</span>
             </div>
           </div>
         </div>
 
-        <div className="w-full lg:w-[320px] shrink-0">
-          <div className="sticky top-24 rounded-2xl border border-[#e0e0e0] p-6 bg-white shadow-sm">
-            {invitedBy && (
-              <p className="font-mono text-[10px] uppercase tracking-tighter text-[#0a0a0a] mb-5 border-b pb-2">
-                {invitedBy} invites you to join this event
-              </p>
-            )}
-            <p className="font-mono text-sm text-[#555555] mb-3">{activeCount} / {event.max_capacity || '∞'} registered {waitlistCount > 0 ? `(${waitlistCount} on waitlist)` : ''}</p>
-            <div className="w-full h-1.5 bg-[#f5f5f5] rounded-full overflow-hidden">
-              <div className="h-full bg-[#0a0a0a]" style={{ width: `${progressPct}%` }} />
-            </div>
-            {event.registration_deadline && (
-              <p className="font-mono text-xs text-[#999999] mt-3">Closes {new Date(event.registration_deadline).toLocaleDateString()}</p>
-            )}
-
-            {isRegistered ? (
-              <div className="mt-6 space-y-4">
-                {registration.is_waitlisted ? (
-                  <Button className="w-full opacity-90 bg-amber-500 hover:bg-amber-600 text-white cursor-not-allowed">
-                    Waitlisted (Position #{waitlistPosition})
-                  </Button>
-                ) : (
-                  <>
-                    <Button className="w-full opacity-50 cursor-not-allowed">Registered ✓</Button>
-                    
-                    <StudentFeedbackTerminal 
-                      event={event} 
-                      studentId={user?.id || ''} 
-                      hasSubmitted={hasSubmittedFeedback} 
-                    />
-
-                    <QRButton 
-                      token={registration?.qr_token || ''} 
-                      studentName={profile?.full_name || ''} 
-                      usn={profile?.usn || ''} 
-                      eventName={event.title} 
-                    />
-                  </>
-                )}
+        {/* Event Discussion Thread */}
+        {event.discussion_enabled && (
+          <div className="mt-12">
+            <h2 className={`text-xl font-black mb-4 flex items-center gap-2 ${bg.textClass}`}>
+              <MessageSquare size={20} className="text-[#5865F2]" />
+              Discussion
+            </h2>
+            {isRegistered && thread ? (
+              <div className={bg.cardClass + " !p-0 overflow-hidden"}>
+                <EventThread
+                  conversationId={thread.id}
+                  eventName={event.title}
+                  userId={user?.id || ''}
+                  memberCount={thread.member_count}
+                  threadMode={thread.thread_mode}
+                  userRole={thread.user_role}
+                />
               </div>
-            ) : isEligible ? (
-               <div>
-                 {event.max_capacity && activeCount >= event.max_capacity && (
-                   <p className="text-xs font-mono text-amber-600 bg-amber-50 border border-amber-200 rounded-lg p-2.5 mb-3">
-                     ⚠️ Event capacity reached. Registering will put you on the waitlist (max capacity: {event.waitlist_max}).
-                   </p>
-                 )}
-                 <RegisterButton eventId={id} />
-               </div>
+            ) : isRegistered && !thread ? (
+              <div className="rounded-2xl border border-dashed border-[#e0e0e0] dark:border-zinc-800 p-8 text-center bg-zinc-50 dark:bg-zinc-900/30">
+                <MessageSquare size={32} className="mx-auto text-[#999] mb-3" />
+                <p className="font-mono text-sm text-[#555555] dark:text-zinc-400">Discussion thread is being set up. Check back soon!</p>
+              </div>
             ) : (
-              <div className="mt-6 border border-dashed border-[#e0e0e0] rounded-xl p-4 bg-[#f9f9f9]">
-                <p className="text-xs font-mono text-[#555555]">You are not eligible for this event based on the current constraints.</p>
+              <div className="rounded-2xl border border-dashed border-[#e0e0e0] dark:border-zinc-800 p-8 text-center bg-zinc-50 dark:bg-zinc-900/30">
+                <Lock size={32} className="mx-auto text-[#999] mb-3" />
+                <p className="font-mono text-sm text-[#555555] dark:text-zinc-400">Register for this event to join the discussion.</p>
               </div>
             )}
-            
-            <div className="mt-4 pt-4 border-t border-[#e0e0e0]">
-              <ShareEventButton 
-                eventId={id} 
-                eventName={event.title} 
-                clubName={event.club_name} 
-                eventDate={event.event_date} 
-                userId={user?.id || ''} 
-                userRole={profile?.role || ''}
-              />
-            </div>
           </div>
-        </div>
+        )}
       </div>
-
-      {/* Event Discussion Thread */}
-      {event.discussion_enabled && (
-        <div className="mt-12">
-          <h2 className="text-xl font-black text-[#0a0a0a] mb-4 flex items-center gap-2">
-            <MessageSquare size={20} className="text-[#5865F2]" />
-            Discussion
-          </h2>
-          {isRegistered && thread ? (
-            <EventThread
-              conversationId={thread.id}
-              eventName={event.title}
-              userId={user?.id || ''}
-              memberCount={thread.member_count}
-              threadMode={thread.thread_mode}
-              userRole={thread.user_role}
-            />
-          ) : isRegistered && !thread ? (
-            <div className="rounded-2xl border border-dashed border-[#e0e0e0] p-8 text-center bg-[#f9f9f9]">
-              <MessageSquare size={32} className="mx-auto text-[#999] mb-3" />
-              <p className="font-mono text-sm text-[#555555]">Discussion thread is being set up. Check back soon!</p>
-            </div>
-          ) : (
-            <div className="rounded-2xl border border-dashed border-[#e0e0e0] p-8 text-center bg-[#f9f9f9]">
-              <Lock size={32} className="mx-auto text-[#999] mb-3" />
-              <p className="font-mono text-sm text-[#555555]">Register for this event to join the discussion.</p>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   )
 }
