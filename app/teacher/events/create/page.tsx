@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/Input'
 import { createFacultyEvent } from '@/lib/actions/teacher-events'
 import Link from 'next/link'
 import { ArrowLeft, Send, BookOpen, Mic, GraduationCap, Star, MoreHorizontal, Truck, AlertCircle, Users } from 'lucide-react'
+import { EventBackgroundCustomizer } from '@/components/shared/EventBackgroundCustomizer'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { LocationPicker } from '@/components/teacher/LocationPicker'
@@ -259,6 +260,7 @@ export default function TeacherCreateEventPage() {
               <h2 className="font-mono text-[10px] uppercase tracking-widest text-zinc-400 border-b border-zinc-100 dark:border-zinc-800 pb-2">
                 Visual Branding
               </h2>
+              <EventBackgroundCustomizer />
               <div className="bg-zinc-50 dark:bg-zinc-950 p-6 rounded-3xl border border-zinc-200 dark:border-zinc-800 space-y-4">
                 <Input
                   label="Banner / Poster Image URL (optional)"

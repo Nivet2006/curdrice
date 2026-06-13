@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { createEvent } from '@/lib/actions/events'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { EventBackgroundCustomizer } from '@/components/shared/EventBackgroundCustomizer'
 
 export default function CreateEventPage() {
   const [loading, setLoading] = useState(false)
@@ -237,20 +238,23 @@ export default function CreateEventPage() {
               </div>
             </div>
 
-            {/* Banner URL — required */}
-            <div className="w-full flex flex-col gap-1">
-              <label className="text-xs font-mono text-[#555555] uppercase tracking-widest">
-                Poster / Banner Image URL *
-              </label>
-              <div className="border-2 border-dashed border-[#d0d0d0] rounded-2xl p-6 bg-[#f9f9f9]">
-                <input
-                  name="bannerUrl"
-                  type="url"
-                  required
-                  placeholder="https://example.com/banner.jpg"
-                  className="w-full rounded-xl border border-[#d0d0d0] bg-white px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0a0a0a]"
-                />
-                <p className="font-mono text-xs text-[#999999] mt-2 text-center">Paste a direct image URL</p>
+            {/* Custom Background and Banner URL — required */}
+            <div className="w-full flex flex-col gap-6">
+              <EventBackgroundCustomizer />
+              <div className="w-full flex flex-col gap-1">
+                <label className="text-xs font-mono text-[#555555] uppercase tracking-widest">
+                  Poster / Banner Image URL *
+                </label>
+                <div className="border-2 border-dashed border-[#d0d0d0] rounded-2xl p-6 bg-[#f9f9f9]">
+                  <input
+                    name="bannerUrl"
+                    type="url"
+                    required
+                    placeholder="https://example.com/banner.jpg"
+                    className="w-full rounded-xl border border-[#d0d0d0] bg-white px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0a0a0a]"
+                  />
+                  <p className="font-mono text-xs text-[#999999] mt-2 text-center">Paste a direct image URL</p>
+                </div>
               </div>
             </div>
           </div>

@@ -10,6 +10,7 @@ import { RegistrationExportMenu } from '@/components/manager/RegistrationExportM
 import { DeleteEventButton } from '@/components/manager/DeleteEventButton'
 import { withDynamicSingleEventStatus } from '@/lib/event-utils'
 import { EventStatusBadge } from '@/components/ui/EventStatusBadge'
+import { parseCustomBackground } from '@/lib/custom-background'
 
 export default async function ManagerEventDetails({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
@@ -17,7 +18,7 @@ export default async function ManagerEventDetails({ params }: { params: Promise<
 
   const { data: rawEvent } = await supabaseAdmin
     .from('events')
-    .select('id, title, description, club_name, location, event_date, registration_deadline, max_capacity, waitlist_max, status, banner_url, approval_status, discussion_enabled, thread_mode, created_by, created_at, feedback_open, is_public, targeted_department')
+    .select('id, title, description, club_name, location, event_date, registration_deadline, max_capacity, waitlist_max, status, banner_url, custom_background, approval_status, discussion_enabled, thread_mode, created_by, created_at, feedback_open, is_public, targeted_department')
     .eq('id', id)
     .single()
 
@@ -64,11 +65,31 @@ export default async function ManagerEventDetails({ params }: { params: Promise<
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div className="md:col-span-2 space-y-6">
-          {event.banner_url && (
-            <div className="w-full aspect-video rounded-2xl overflow-hidden relative border border-[#e0e0e0] bg-[#f5f5f5]">
-              <img src={event.banner_url} alt="Event Poster" className="object-cover w-full h-full" />
-            </div>
-          )}
+          {(() => {
+            const bg = parseCustomBackground(event.custom_background, event.banner_url)
+            if (!bg.hasBg) return null
+            return (
+              <div 
+                style={bg.containerStyle}
+                className={`w-full aspect-[21/9] rounded-2xl mb-10 overflow-hidden relative flex items-end p-6 sm:p-10 ${bg.containerClass}`}
+              >
+                {/* Overlay for background images / gradient layers */}
+                <div 
+                  style={bg.overlayStyle}
+                  className={`absolute inset-0 pointer-events-none ${bg.overlayClass}`}
+                />
+                
+                {/* Banner Content Card */}
+                <div className={`w-full max-w-xl p-6 rounded-2xl relative z-10 transition-all ${bg.glassClass} ${bg.textClass}`}>
+                  <div className="flex flex-wrap gap-2 items-center mb-3">
+                    <span className="border-[1.5px] border-current font-mono rounded-full px-2.5 py-0.5 text-[10px] uppercase tracking-wider bg-black/10 dark:bg-white/10">{event.club_name}</span>
+                    <EventStatusBadge status={event.status} className="px-2.5 py-0.5 text-[10px] rounded-full" />
+                  </div>
+                  <h1 className="text-xl sm:text-3xl font-black tracking-tight uppercase leading-tight">{event.title}</h1>
+                </div>
+              </div>
+            )
+          })()}
 
           <Card className="p-6">
             <h3 className="font-bold text-lg mb-4 text-[#0a0a0a]">Event Story</h3>
