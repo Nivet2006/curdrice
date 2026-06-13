@@ -13,7 +13,6 @@ import { saveHODSignature } from '@/lib/actions/faculty-actions'
 interface HODDashboardClientProps {
   initialPending: Event[]
   initialApproved: Event[]
-  initialReports: any[]
   initialProfileRequests: ProfileUpdateRequest[]
   initialPendingIIC: any[]
   initialApprovedIIC: any[]
@@ -24,7 +23,6 @@ interface HODDashboardClientProps {
 export function HODDashboardClient({
   initialPending,
   initialApproved,
-  initialReports,
   initialProfileRequests,
   initialPendingIIC,
   initialApprovedIIC,
@@ -33,7 +31,6 @@ export function HODDashboardClient({
 }: HODDashboardClientProps) {
   const [pendingApprovals, setPendingApprovals] = useState<Event[]>(initialPending)
   const [approvedEvents, setApprovedEvents] = useState<Event[]>(initialApproved)
-  const [deptReports, setDeptReports] = useState<any[]>(initialReports)
   const [pendingIIC, setPendingIIC] = useState<any[]>(initialPendingIIC)
   const [approvedIIC, setApprovedIIC] = useState<any[]>(initialApprovedIIC)
   const [sigUrl, setSigUrl] = useState(signatureUrl)
@@ -89,24 +86,6 @@ export function HODDashboardClient({
 
           if (pending) setPendingApprovals(pending as Event[])
           if (approved) setApprovedEvents(approved as Event[])
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'reports'
-        },
-        async () => {
-          const { data: reports } = await supabase
-            .from('reports')
-            .select('*, events(title, club_name, targeted_department)')
-            .eq('status', 'completed')
-            .order('updated_at', { ascending: false })
-          
-          const filtered = reports?.filter(r => (r.events as any).targeted_department === dept) || []
-          setDeptReports(filtered)
         }
       )
       .subscribe()
@@ -263,27 +242,6 @@ export function HODDashboardClient({
 
             <div className="space-y-6">
               <div>
-                <p className="text-xs font-mono font-bold uppercase tracking-widest text-zinc-400 mb-3">Publicity Reports Archives ({deptReports.length})</p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 opacity-80 hover:opacity-100 transition-opacity">
-                   {deptReports.map(report => (
-                     <div key={report.id} className="bg-[#f8f8f8] dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-6 rounded-2xl flex justify-between items-center group">
-                        <div>
-                          <p className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest mb-1">BUNDLED DATA ARCHIVE</p>
-                          <h4 className="font-bold text-black dark:text-white uppercase">{(report.events as any)?.title}</h4>
-                          <p className="text-[10px] text-zinc-500 italic mt-1 font-mono uppercase">Verified by PR on {new Date(report.updated_at).toLocaleDateString()}</p>
-                        </div>
-                        <Link href={`/cc/events/${report.event_id}`} className="w-10 h-10 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full flex items-center justify-center hover:bg-black hover:text-white dark:hover:text-white transition-all shadow-sm">
-                           <FileDown size={18} />
-                        </Link>
-                     </div>
-                   ))}
-                   {deptReports.length === 0 && (
-                     <div className="col-span-full py-6 text-center text-zinc-300 dark:text-zinc-600 font-mono text-xs uppercase tracking-widest border border-dashed border-zinc-200 dark:border-zinc-800 rounded-2xl italic">No archives available</div>
-                   )}
-                </div>
-              </div>
-
-              <div className="pt-4">
                 <p className="text-xs font-mono font-bold uppercase tracking-widest text-zinc-400 mb-3">Official IIC Reports Archives ({approvedIIC.length})</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 opacity-80 hover:opacity-100 transition-opacity">
                    {approvedIIC.map(report => (
