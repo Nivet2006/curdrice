@@ -55,6 +55,7 @@ export default async function CCEventDetailPage({ params }: { params: Promise<{ 
 
    return (
       <div className={`w-full min-h-screen relative transition-all ${bg.textClass}`}>
+         {bg.customStyleBlock && <style dangerouslySetInnerHTML={{ __html: bg.customStyleBlock }} />}
          {bg.hasCustomBg && (
             <>
                <div 
@@ -65,6 +66,12 @@ export default async function CCEventDetailPage({ params }: { params: Promise<{ 
                   <div 
                      style={bg.backdropOverlayStyle} 
                      className={`fixed inset-0 w-full h-full -z-10 pointer-events-none transition-all ${bg.backdropOverlayClass}`} 
+                  />
+               )}
+               {bg.meshPatternStyle && (
+                  <div 
+                     style={bg.meshPatternStyle} 
+                     className="fixed inset-0 w-full h-full -z-10 pointer-events-none opacity-80" 
                   />
                )}
             </>
@@ -155,7 +162,7 @@ export default async function CCEventDetailPage({ params }: { params: Promise<{ 
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                <div className="md:col-span-2 space-y-10">
-                  <section className={`${bg.cardClass} !rounded-[2.5rem] !p-10 space-y-6`}>
+                  <section className={`${bg.cardClass} !rounded-[2.5rem] !p-10 space-y-6`} style={bg.cardStyle}>
                      <h2 className="font-bold text-2xl tracking-tight flex items-center gap-3">
                         <FileText className="opacity-60" />
                         Detailed Pitch
@@ -164,7 +171,7 @@ export default async function CCEventDetailPage({ params }: { params: Promise<{ 
                   </section>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                     <div className={`${bg.cardClass} space-y-3`}>
+                     <div className={`${bg.cardClass} space-y-3`} style={bg.cardStyle}>
                         <p className="text-[10px] font-mono opacity-70 uppercase tracking-widest">Eligibility & Constraints</p>
                         <div className="space-y-4">
                            <div>
@@ -181,7 +188,7 @@ export default async function CCEventDetailPage({ params }: { params: Promise<{ 
                            </div>
                         </div>
                      </div>
-                     <div className={`${bg.cardClass} space-y-3`}>
+                     <div className={`${bg.cardClass} space-y-3`} style={bg.cardStyle}>
                         <p className="text-[10px] font-mono opacity-70 uppercase tracking-widest">Capacity & Logistics</p>
                         <div className="space-y-2">
                            <p className="text-2xl font-bold">{event.max_capacity || '∞'}</p>
@@ -195,7 +202,7 @@ export default async function CCEventDetailPage({ params }: { params: Promise<{ 
                   </div>
 
                   {/* Feedback Configuration (Survey) */}
-                  <section className={`${bg.cardClass} !rounded-[2.5rem] !p-10 space-y-6`}>
+                  <section className={`${bg.cardClass} !rounded-[2.5rem] !p-10 space-y-6`} style={bg.cardStyle}>
                      <div className="flex justify-between items-center">
                         <h2 className="font-bold text-2xl tracking-tight">Survey Design</h2>
                         <span className="font-mono text-[9px] uppercase tracking-widest font-bold px-3 py-1.5 rounded-full border border-current/10 bg-white/5">{event.feedback_config?.length || 0} QUESTIONS</span>
@@ -273,7 +280,7 @@ export default async function CCEventDetailPage({ params }: { params: Promise<{ 
                         <EventRegistrationStats eventId={event.id} />
                      </div>
                   ) : (
-                     <div className={`${bg.cardClass} space-y-4 shadow-xl`}>
+                     <div className={`${bg.cardClass} space-y-4 shadow-xl`} style={bg.cardStyle}>
                         <h3 className="font-bold text-lg">Analytics Overview</h3>
                         <div className="space-y-1">
                            <p className="text-3xl font-black">--</p>
@@ -288,7 +295,7 @@ export default async function CCEventDetailPage({ params }: { params: Promise<{ 
             {/* Event Discussion Thread (CC participation) */}
             {event.discussion_enabled && thread && (
                <section className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                  <div className={bg.cardClass + " !p-0 overflow-hidden"}>
+                  <div className={bg.cardClass + " !p-0 overflow-hidden"} style={bg.cardStyle}>
                      <EventThread
                         conversationId={thread.id}
                         eventName={event.title}
