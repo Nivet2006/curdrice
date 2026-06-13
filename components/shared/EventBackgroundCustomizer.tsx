@@ -1,23 +1,10 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Eye, Settings2, Palette, Sliders, Type } from 'lucide-react'
+import { Eye, Settings2, Palette, Sliders, Type, Grid, Activity, Layers } from 'lucide-react'
+import { parseCustomBackground, BackgroundConfig } from '@/lib/custom-background'
 
-// Define the structure of our background configuration
-export interface BackgroundConfig {
-  type: 'none' | 'preset' | 'solid' | 'gradient' | 'image'
-  presetKey?: string
-  solidColor?: string
-  gradientStart?: string
-  gradientEnd?: string
-  gradientAngle?: string
-  opacity?: number // For image or gradient overlays, 0-100
-  blur?: 'none' | 'sm' | 'md' | 'lg'
-  glassmorphism?: boolean
-  textColor?: 'light' | 'dark' | 'default'
-}
-
-// Preset definitions with modern premium gradients
+// Preset definitions with modern premium gradients (synchronized with lib/custom-background.ts)
 export const PRESETS: Record<string, { name: string; classes: string; textColor: 'light' | 'dark' }> = {
   sunset: {
     name: 'Sunset Glow',
@@ -63,21 +50,37 @@ export const PRESETS: Record<string, { name: string; classes: string; textColor:
     name: 'Candy Pink',
     classes: 'bg-gradient-to-br from-[#ec008c] to-[#fc6767]',
     textColor: 'light'
+  },
+  nebula: {
+    name: 'Cosmic Nebula',
+    classes: 'bg-gradient-to-br from-[#8a2be2] via-[#41006f] to-[#ff007f]',
+    textColor: 'light'
+  },
+  ocean: {
+    name: 'Deep Ocean',
+    classes: 'bg-gradient-to-br from-[#00c6ff] to-[#0072ff]',
+    textColor: 'light'
+  },
+  toxic: {
+    name: 'Toxic Lime',
+    classes: 'bg-gradient-to-br from-[#0d0d0d] via-[#1a3c00] to-[#7fff00]',
+    textColor: 'light'
   }
 }
 
 interface EventBackgroundCustomizerProps {
   initialValue?: string | null
+  bannerUrl?: string | null
 }
 
-export function EventBackgroundCustomizer({ initialValue }: EventBackgroundCustomizerProps) {
+export function EventBackgroundCustomizer({ initialValue, bannerUrl }: EventBackgroundCustomizerProps) {
   // Parse initial config or use defaults
   const getInitialConfig = (): BackgroundConfig => {
     if (initialValue) {
       try {
         return JSON.parse(initialValue)
       } catch (e) {
-        // Fallback if it's not JSON
+        // Fallback if not JSON
       }
     }
     return {
@@ -90,62 +93,33 @@ export function EventBackgroundCustomizer({ initialValue }: EventBackgroundCusto
       opacity: 80,
       blur: 'none',
       glassmorphism: false,
-      textColor: 'default'
+      textColor: 'default',
+      animate: false,
+      animationSpeed: 'medium',
+      meshPattern: 'none',
+      meshOpacity: 15,
+      cardOpacity: 80,
+      cardBlur: 'md',
+      borderIntensity: 'low'
     }
   }
 
   const [config, setConfig] = useState<BackgroundConfig>(getInitialConfig())
 
-  // Sync state changes with our form
+  // Sync state changes
   const updateConfig = (updates: Partial<BackgroundConfig>) => {
     setConfig(prev => ({ ...prev, ...updates }))
   }
 
-  // Helper to resolve background preview style/class
-  const getPreviewStyles = () => {
-    const styles: React.CSSProperties = {}
-    let classes = ''
-
-    if (config.type === 'preset' && config.presetKey) {
-      classes = PRESETS[config.presetKey]?.classes || ''
-    } else if (config.type === 'solid' && config.solidColor) {
-      styles.backgroundColor = config.solidColor
-    } else if (config.type === 'gradient' && config.gradientStart && config.gradientEnd) {
-      styles.backgroundImage = `linear-gradient(135deg, ${config.gradientStart}, ${config.gradientEnd})`
-    } else if (config.type === 'image') {
-      // Image type will fall back to using standard banner_url as background in main render.
-      // In the preview, we'll show a nice textured card pattern or placeholder gradient.
-      classes = 'bg-zinc-800'
-    } else {
-      classes = 'bg-[#f5f5f5] dark:bg-zinc-900 border border-[#e0e0e0] dark:border-zinc-800'
-    }
-
-    return { styles, classes }
-  }
-
-  const { styles: bgStyles, classes: bgClasses } = getPreviewStyles()
-
-  // Resolve preview text color
-  const getTextColorClass = () => {
-    if (config.textColor === 'light') return 'text-white'
-    if (config.textColor === 'dark') return 'text-zinc-950'
-    
-    // Auto resolution for presets
-    if (config.type === 'preset' && config.presetKey) {
-      return PRESETS[config.presetKey]?.textColor === 'light' ? 'text-white' : 'text-zinc-950'
-    }
-    
-    // Default is white text for custom gradients, and default dark text for none/default
-    if (config.type === 'none') return 'text-zinc-950 dark:text-white'
-    return 'text-white'
-  }
+  // Parse configuration using the exact same style parser engine
+  const bg = parseCustomBackground(JSON.stringify(config), bannerUrl)
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2 mb-2">
         <Palette size={16} className="text-zinc-400" />
         <h3 className="font-mono text-xs uppercase tracking-widest text-[#555555] dark:text-zinc-400 font-bold">
-          Custom Event Styling
+          Custom Event Styling Engine
         </h3>
       </div>
 
@@ -153,24 +127,49 @@ export function EventBackgroundCustomizer({ initialValue }: EventBackgroundCusto
       <input type="hidden" name="customBackground" value={JSON.stringify(config)} />
 
       {/* Grid: Preview & Controls */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
         {/* Live Preview Panel (5 cols) */}
-        <div className="md:col-span-5 space-y-3">
+        <div className="lg:col-span-5 space-y-3 lg:sticky lg:top-24">
           <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 flex items-center gap-1.5">
             <Eye size={12} /> Live Preview
           </span>
           
-          <div 
-            style={bgStyles}
-            className={`w-full aspect-[21/9] rounded-2xl overflow-hidden relative shadow-md transition-all duration-300 flex items-end p-5 ${bgClasses}`}
-          >
-            {/* Glassmorphic card overlay simulated in preview */}
-            <div className={`w-full p-4 rounded-xl transition-all duration-300 ${
-              config.glassmorphism 
-                ? 'backdrop-blur-md bg-white/10 dark:bg-black/20 border border-white/20' 
-                : 'bg-black/30 backdrop-blur-[1px]'
-            } ${getTextColorClass()}`}>
+          <div className="relative w-full aspect-[21/9] rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 shadow-md flex items-end p-5 transition-all">
+            {/* Inline CSS style block for preview animation */}
+            {bg.customStyleBlock && (
+              <style dangerouslySetInnerHTML={{ __html: bg.customStyleBlock.replace(/\.animate-gradient-shift/g, '.preview-gradient-shift') }} />
+            )}
+            
+            {/* Background Layer */}
+            <div 
+              style={bg.backdropStyle} 
+              className={`absolute inset-0 w-full h-full z-0 transition-all ${
+                bg.backdropClass ? bg.backdropClass.replace(/animate-gradient-shift/g, 'preview-gradient-shift') : ''
+              }`} 
+            />
+
+            {/* Pattern Mesh Layer */}
+            {bg.meshPatternStyle && (
+              <div 
+                style={bg.meshPatternStyle} 
+                className="absolute inset-0 w-full h-full z-10 pointer-events-none" 
+              />
+            )}
+
+            {/* Backdrop Overlay Layer */}
+            {bg.backdropOverlayClass && (
+              <div 
+                style={bg.backdropOverlayStyle} 
+                className={`absolute inset-0 w-full h-full z-10 pointer-events-none ${bg.backdropOverlayClass}`} 
+              />
+            )}
+            
+            {/* Simulated Event Details Card */}
+            <div 
+              style={bg.cardStyle}
+              className={`w-full p-4 rounded-xl relative z-20 transition-all border ${bg.cardClass}`}
+            >
               <span className="text-[9px] font-mono uppercase tracking-widest opacity-80">
                 Visual Branding Preview
               </span>
@@ -183,25 +182,25 @@ export function EventBackgroundCustomizer({ initialValue }: EventBackgroundCusto
             </div>
           </div>
           <p className="text-[9px] font-mono text-zinc-400 italic">
-            This styling will apply directly to the detail page header for attendees.
+            This styling will apply directly to the detail page for attendees.
           </p>
         </div>
 
         {/* Controls Panel (7 cols) */}
-        <div className="md:col-span-7 bg-white dark:bg-zinc-950 p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-5">
+        <div className="lg:col-span-7 bg-white dark:bg-zinc-950 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-6">
           
           {/* Background Type selection */}
           <div className="space-y-2">
             <label className="text-xs font-mono text-zinc-500 uppercase tracking-widest flex items-center gap-1.5">
               <Settings2 size={12} /> Background Style Type
             </label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-5 gap-1.5">
               {(['none', 'preset', 'solid', 'gradient', 'image'] as const).map(t => (
                 <button
                   key={t}
                   type="button"
                   onClick={() => updateConfig({ type: t })}
-                  className={`py-2 px-3 rounded-lg text-xs font-mono border transition-all ${
+                  className={`py-2 px-1 rounded-lg text-[10px] font-mono border transition-all text-center ${
                     config.type === t
                       ? 'bg-black text-white dark:bg-white dark:text-black border-black dark:border-white shadow-sm'
                       : 'border-zinc-200 dark:border-zinc-800 hover:border-black dark:hover:border-white text-zinc-600 dark:text-zinc-400'
@@ -323,54 +322,171 @@ export function EventBackgroundCustomizer({ initialValue }: EventBackgroundCusto
 
           {/* Shared Adjustments (Glassmorphism, Text Contrast, Opacity, Blur) */}
           {config.type !== 'none' && (
-            <div className="pt-4 border-t border-zinc-100 dark:border-zinc-900 space-y-4">
-              <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 flex items-center gap-1.5">
-                <Sliders size={12} /> Styling Enhancements
-              </span>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Text Color / Contrast */}
-                <div className="space-y-1">
-                  <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider flex items-center gap-1">
-                    <Type size={10} /> Text Contrast
+            <div className="pt-4 border-t border-zinc-100 dark:border-zinc-900 space-y-6">
+              
+              {/* 1. Shifting Animation Settings */}
+              {(config.type === 'gradient' || config.type === 'preset') && (
+                <div className="space-y-3">
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 flex items-center gap-1.5">
+                    <Activity size={12} /> Shifting Animations
                   </span>
-                  <select
-                    value={config.textColor || 'default'}
-                    onChange={e => updateConfig({ textColor: e.target.value as any })}
-                    className="w-full rounded-lg border border-[#d0d0d0] dark:border-zinc-800 px-3 py-1.5 text-xs outline-none focus:ring-1 focus:ring-black bg-white dark:bg-zinc-900"
-                  >
-                    <option value="default">Default / Auto-Detect</option>
-                    <option value="light">Light Text (High Contrast White)</option>
-                    <option value="dark">Dark Text (High Contrast Dark)</option>
-                  </select>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <label className="flex items-center gap-2 cursor-pointer h-9">
+                      <input
+                        type="checkbox"
+                        checked={config.animate || false}
+                        onChange={e => updateConfig({ animate: e.target.checked })}
+                        className="w-4 h-4 rounded border-zinc-300 text-black focus:ring-black cursor-pointer"
+                      />
+                      <span className="text-xs font-mono text-zinc-600 dark:text-zinc-300">
+                        Enable Shifting Motion
+                      </span>
+                    </label>
+                    
+                    {config.animate && (
+                      <div className="space-y-1">
+                        <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider">
+                          Animation Speed
+                        </span>
+                        <select
+                          value={config.animationSpeed || 'medium'}
+                          onChange={e => updateConfig({ animationSpeed: e.target.value as any })}
+                          className="w-full rounded-lg border border-[#d0d0d0] dark:border-zinc-800 px-3 py-1 text-xs outline-none focus:ring-1 focus:ring-black bg-white dark:bg-zinc-900"
+                        >
+                          <option value="fast">Fast (8s Loop)</option>
+                          <option value="medium">Medium (16s Loop)</option>
+                          <option value="slow">Slow (32s Loop)</option>
+                        </select>
+                      </div>
+                    )}
+                  </div>
                 </div>
+              )}
 
-                {/* Glassmorphic Cards toggle */}
-                <div className="space-y-1">
-                  <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">
-                    Layout Enhancement
-                  </span>
-                  <label className="flex items-center gap-2 cursor-pointer h-9">
-                    <input
-                      type="checkbox"
-                      checked={config.glassmorphism || false}
-                      onChange={e => updateConfig({ glassmorphism: e.target.checked })}
-                      className="w-4 h-4 rounded border-zinc-300 text-black focus:ring-black cursor-pointer"
-                    />
-                    <span className="text-xs font-mono text-zinc-600 dark:text-zinc-300">
-                      Glassmorphic Panels
+              {/* 2. Mesh Overlay Textures */}
+              <div className="space-y-3 pt-4 border-t border-zinc-100 dark:border-zinc-900">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 flex items-center gap-1.5">
+                  <Grid size={12} /> Pattern Textures
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider">
+                      Mesh Grid Style
                     </span>
-                  </label>
+                    <select
+                      value={config.meshPattern || 'none'}
+                      onChange={e => updateConfig({ meshPattern: e.target.value as any })}
+                      className="w-full rounded-lg border border-[#d0d0d0] dark:border-zinc-800 px-3 py-1.5 text-xs outline-none focus:ring-1 focus:ring-black bg-white dark:bg-zinc-900"
+                    >
+                      <option value="none">No Pattern (Smooth)</option>
+                      <option value="dots">Subtle Dot Matrix</option>
+                      <option value="grid">Technical Grid Mesh</option>
+                      <option value="stripes">Diagonal Stripes</option>
+                    </select>
+                  </div>
+
+                  {config.meshPattern && config.meshPattern !== 'none' && (
+                    <div className="space-y-1">
+                      <div className="flex justify-between items-center text-[9px] font-mono text-zinc-500 uppercase tracking-wider">
+                        <span>Pattern Opacity</span>
+                        <span>{config.meshOpacity !== undefined ? config.meshOpacity : 15}%</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="5"
+                        max="50"
+                        value={config.meshOpacity !== undefined ? config.meshOpacity : 15}
+                        onChange={e => updateConfig({ meshOpacity: parseInt(e.target.value) })}
+                        className="w-full h-1.5 bg-zinc-200 dark:bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-black dark:accent-white mt-3"
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
 
-              {/* Blur config & overlay opacity for image/gradient types */}
-              {config.type === 'image' && (
+              {/* 3. Card Container Customizer */}
+              <div className="space-y-3 pt-4 border-t border-zinc-100 dark:border-zinc-900">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 flex items-center gap-1.5">
+                  <Layers size={12} /> Glass & Card Controls
+                </span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  
+                  {/* Card Opacity */}
+                  <div className="space-y-1">
+                    <div className="flex justify-between items-center text-[9px] font-mono text-zinc-500 uppercase tracking-wider">
+                      <span>Card Transparency</span>
+                      <span>{config.cardOpacity !== undefined ? config.cardOpacity : 80}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="10"
+                      max="100"
+                      value={config.cardOpacity !== undefined ? config.cardOpacity : 80}
+                      onChange={e => updateConfig({ cardOpacity: parseInt(e.target.value) })}
+                      className="w-full h-1.5 bg-zinc-200 dark:bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-black dark:accent-white mt-3"
+                    />
+                  </div>
+
+                  {/* Card Blur */}
+                  <div className="space-y-1">
+                    <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider">
+                      Card Backdrop Blur
+                    </span>
+                    <select
+                      value={config.cardBlur || 'md'}
+                      onChange={e => updateConfig({ cardBlur: e.target.value as any })}
+                      className="w-full rounded-lg border border-[#d0d0d0] dark:border-zinc-800 px-3 py-1.5 text-xs outline-none focus:ring-1 focus:ring-black bg-white dark:bg-zinc-900"
+                    >
+                      <option value="none">No Blur (Opaque/Flat)</option>
+                      <option value="sm">Subtle Blur (sm)</option>
+                      <option value="md">Standard Glass (md)</option>
+                      <option value="lg">Heavy Frosted (lg)</option>
+                    </select>
+                  </div>
+
+                  {/* Border Intensity */}
+                  <div className="space-y-1">
+                    <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider">
+                      Border Visibility
+                    </span>
+                    <select
+                      value={config.borderIntensity || 'low'}
+                      onChange={e => updateConfig({ borderIntensity: e.target.value as any })}
+                      className="w-full rounded-lg border border-[#d0d0d0] dark:border-zinc-800 px-3 py-1.5 text-xs outline-none focus:ring-1 focus:ring-black bg-white dark:bg-zinc-900"
+                    >
+                      <option value="none">No Border</option>
+                      <option value="low">Low (Faint Edge)</option>
+                      <option value="medium">Medium (Crisp Edge)</option>
+                      <option value="high">High (High Contrast Edge)</option>
+                    </select>
+                  </div>
+
+                  {/* Text Color / Contrast */}
+                  <div className="space-y-1">
+                    <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider flex items-center gap-1">
+                      <Type size={10} /> Text Contrast
+                    </span>
+                    <select
+                      value={config.textColor || 'default'}
+                      onChange={e => updateConfig({ textColor: e.target.value as any })}
+                      className="w-full rounded-lg border border-[#d0d0d0] dark:border-zinc-800 px-3 py-1.5 text-xs outline-none focus:ring-1 focus:ring-black bg-white dark:bg-zinc-900"
+                    >
+                      <option value="default">Default / Auto-Detect</option>
+                      <option value="light">Light Text (High Contrast White)</option>
+                      <option value="dark">Dark Text (High Contrast Dark)</option>
+                    </select>
+                  </div>
+
+                </div>
+              </div>
+
+              {/* 4. Blur config & overlay opacity for image types */}
+              {config.type === 'image' && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-zinc-100 dark:border-zinc-900">
                   {/* Blur intensity */}
                   <div className="space-y-1">
-                    <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">
-                      Background Blur
+                    <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider">
+                      Background Image Blur
                     </span>
                     <select
                       value={config.blur || 'none'}
@@ -386,8 +502,8 @@ export function EventBackgroundCustomizer({ initialValue }: EventBackgroundCusto
 
                   {/* Opacity slider */}
                   <div className="space-y-1">
-                    <div className="flex justify-between items-center text-[10px] font-mono text-zinc-500 uppercase tracking-wider">
-                      <span>Overlay Opacity</span>
+                    <div className="flex justify-between items-center text-[9px] font-mono text-zinc-500 uppercase tracking-wider">
+                      <span>Image Overlay Opacity</span>
                       <span>{config.opacity || 80}%</span>
                     </div>
                     <input

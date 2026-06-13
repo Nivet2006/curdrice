@@ -69,18 +69,33 @@ export default async function ManagerEventDetails({ params }: { params: Promise<
             const bg = parseCustomBackground(event.custom_background, event.banner_url)
             if (!bg.hasBg) return null
             return (
-              <div 
-                style={bg.containerStyle}
-                className={`w-full aspect-[21/9] rounded-2xl mb-10 overflow-hidden relative flex items-end p-6 sm:p-10 ${bg.containerClass}`}
-              >
-                {/* Overlay for background images / gradient layers */}
+              <div className="w-full aspect-[21/9] rounded-2xl mb-10 overflow-hidden relative flex items-end p-6 sm:p-10 border border-zinc-200 dark:border-zinc-800 shadow-sm">
+                {bg.customStyleBlock && <style dangerouslySetInnerHTML={{ __html: bg.customStyleBlock }} />}
+                
+                {/* Backdrop Layer */}
                 <div 
-                  style={bg.overlayStyle}
-                  className={`absolute inset-0 pointer-events-none ${bg.overlayClass}`}
+                  style={bg.backdropStyle} 
+                  className={`absolute inset-0 w-full h-full pointer-events-none transition-all ${bg.backdropClass}`} 
                 />
                 
+                {/* Backdrop Overlay */}
+                {bg.backdropOverlayClass && (
+                  <div 
+                    style={bg.backdropOverlayStyle} 
+                    className={`absolute inset-0 w-full h-full pointer-events-none transition-all ${bg.backdropOverlayClass}`} 
+                  />
+                )}
+
+                {/* Mesh pattern overlay */}
+                {bg.meshPatternStyle && (
+                  <div 
+                    style={bg.meshPatternStyle} 
+                    className="absolute inset-0 w-full h-full pointer-events-none opacity-80" 
+                  />
+                )}
+                
                 {/* Banner Content Card */}
-                <div className={`w-full max-w-xl p-6 rounded-2xl relative z-10 transition-all ${bg.glassClass} ${bg.textClass}`}>
+                <div className={`w-full max-w-xl relative z-10 transition-all ${bg.cardClass}`} style={bg.cardStyle}>
                   <div className="flex flex-wrap gap-2 items-center mb-3">
                     <span className="border-[1.5px] border-current font-mono rounded-full px-2.5 py-0.5 text-[10px] uppercase tracking-wider bg-black/10 dark:bg-white/10">{event.club_name}</span>
                     <EventStatusBadge status={event.status} className="px-2.5 py-0.5 text-[10px] rounded-full" />

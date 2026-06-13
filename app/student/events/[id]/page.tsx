@@ -95,6 +95,7 @@ export default async function EventDetailPage({
 
   return (
     <div className={`w-full min-h-screen relative transition-all ${bg.textClass}`}>
+      {bg.customStyleBlock && <style dangerouslySetInnerHTML={{ __html: bg.customStyleBlock }} />}
       {bg.hasCustomBg && (
         <>
           <div 
@@ -105,6 +106,12 @@ export default async function EventDetailPage({
             <div 
               style={bg.backdropOverlayStyle} 
               className={`fixed inset-0 w-full h-full -z-10 pointer-events-none transition-all ${bg.backdropOverlayClass}`} 
+            />
+          )}
+          {bg.meshPatternStyle && (
+            <div 
+              style={bg.meshPatternStyle} 
+              className="fixed inset-0 w-full h-full -z-10 pointer-events-none opacity-80" 
             />
           )}
         </>
@@ -124,7 +131,7 @@ export default async function EventDetailPage({
 
         <div className="flex flex-col lg:flex-row gap-12">
           <div className="flex-1 space-y-8">
-            <div className={bg.cardClass}>
+            <div className={bg.cardClass} style={bg.cardStyle}>
               <div className="flex gap-3 mb-4">
                 <span className="border-[1.5px] border-current font-mono rounded-full px-3 py-1 text-xs bg-black/10 dark:bg-white/10">{event.club_name}</span>
                 <EventStatusBadge status={event.status} className="px-3 py-1 text-xs rounded-full" />
@@ -146,7 +153,7 @@ export default async function EventDetailPage({
               <p className="text-base leading-relaxed whitespace-pre-wrap opacity-95">{event.description}</p>
             </div>
 
-            <div className={bg.cardClass}>
+            <div className={bg.cardClass} style={bg.cardStyle}>
               <h3 className="font-bold text-lg mb-4 uppercase tracking-tight">Details</h3>
               <div className="space-y-4 font-mono text-sm">
                 <div className="flex items-center gap-3">
@@ -179,7 +186,7 @@ export default async function EventDetailPage({
           </div>
 
           <div className="w-full lg:w-[320px] shrink-0">
-            <div className={`sticky top-24 ${bg.cardClass}`}>
+            <div className={`sticky top-24 ${bg.cardClass}`} style={bg.cardStyle}>
               {invitedBy && (
                 <p className="font-mono text-[10px] uppercase tracking-tighter mb-5 border-b border-current/20 pb-2">
                   {invitedBy} invites you to join this event
@@ -255,7 +262,7 @@ export default async function EventDetailPage({
               Discussion
             </h2>
             {isRegistered && thread ? (
-              <div className={bg.cardClass + " !p-0 overflow-hidden"}>
+              <div className={bg.cardClass + " !p-0 overflow-hidden"} style={bg.cardStyle}>
                 <EventThread
                   conversationId={thread.id}
                   eventName={event.title}
