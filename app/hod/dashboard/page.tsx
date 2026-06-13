@@ -30,14 +30,6 @@ export default async function HODDashboard() {
     .eq('targeted_department', dept)
     .order('event_date', { ascending: false })
 
-  const { data: completedReports } = await supabase
-    .from('reports')
-    .select('*, events(title, club_name, targeted_department)')
-    .eq('status', 'completed')
-    .order('updated_at', { ascending: false })
-
-  const deptReports = completedReports?.filter(r => (r.events as any).targeted_department === dept) || []
-
   // Fetch pending HOD IIC reports
   const { data: pendingIICReports } = await supabase
     .from('iic_event_reports')
@@ -62,7 +54,6 @@ export default async function HODDashboard() {
     <HODDashboardClient 
       initialPending={(pendingApprovals || []) as Event[]}
       initialApproved={(approvedEvents || []) as Event[]}
-      initialReports={deptReports}
       initialProfileRequests={pendingProfileRequests}
       initialPendingIIC={pendingIICReports || []}
       initialApprovedIIC={approvedIICReports || []}
