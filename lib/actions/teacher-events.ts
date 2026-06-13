@@ -26,6 +26,7 @@ export async function createFacultyEvent(formData: FormData) {
   const event_date = formData.get('eventDate') as string
   const deadlineStr = formData.get('deadline') as string
   const banner_url = (formData.get('bannerUrl') as string)?.trim() || null
+  const custom_background = (formData.get('customBackground') as string) || null
   const capStr = formData.get('capacity') as string
   const max_capacity = capStr && parseInt(capStr) > 0 ? parseInt(capStr) : null
   const targeted_department = (formData.get('targetedDepartment') as string) || profile.department || null
@@ -110,6 +111,7 @@ export async function createFacultyEvent(formData: FormData) {
       registration_deadline: deadlineDt.toISOString(),
       max_capacity,
       banner_url,
+      custom_background,
       created_by: user.id,
       approval_status,
       targeted_department,

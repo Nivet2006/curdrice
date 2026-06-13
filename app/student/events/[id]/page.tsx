@@ -15,6 +15,7 @@ import { StudentFeedbackTerminal } from '@/components/student/StudentFeedbackTer
 import { EventThread } from '@/components/student/EventThread'
 import { getEventThread } from '@/lib/actions/event-threads'
 import { MessageSquare, Lock } from 'lucide-react'
+import { parseCustomBackground } from '@/lib/custom-background'
 
 export default async function EventDetailPage({ 
   params,
@@ -28,7 +29,7 @@ export default async function EventDetailPage({
   const { invitedBy } = await searchParams
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { data } = await supabase.from('events').select('id, title, description, club_name, location, location_lat, location_lng, event_date, registration_deadline, max_capacity, waitlist_max, status, banner_url, created_by, created_at, approval_status, discussion_enabled, feedback_open, feedback_config, is_public, targeted_department, rejection_data, is_compulsory').eq('id', id).single()
+  const { data } = await supabase.from('events').select('id, title, description, club_name, location, location_lat, location_lng, event_date, registration_deadline, max_capacity, waitlist_max, status, banner_url, custom_background, created_by, created_at, approval_status, discussion_enabled, feedback_open, feedback_config, is_public, targeted_department, rejection_data, is_compulsory').eq('id', id).single()
   const event = withDynamicSingleEventStatus(data as Event)
 
   if (!event) return <div>Event not found</div>
@@ -96,22 +97,33 @@ export default async function EventDetailPage({
         ← Events
       </Link>
 
-      <div className="w-full aspect-[3/1] rounded-2xl bg-[#f5f5f5] mb-10 overflow-hidden relative border border-[#e0e0e0]">
-        {event.banner_url ? (
-          <img src={event.banner_url} alt={event.title} className="w-full h-full object-cover grayscale" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center font-mono text-[#999] text-xs">NO BANNER</div>
-        )}
-      </div>
+      {(() => {
+        const bg = parseCustomBackground(event.custom_background, event.banner_url)
+        return (
+          <div 
+            style={bg.containerStyle}
+            className={`w-full aspect-[21/9] sm:aspect-[3/1] rounded-2xl mb-10 overflow-hidden relative flex items-end p-6 sm:p-10 ${bg.containerClass}`}
+          >
+            {/* Overlay for background images / gradient layers */}
+            <div 
+              style={bg.overlayStyle}
+              className={`absolute inset-0 pointer-events-none ${bg.overlayClass}`}
+            />
+            
+            {/* Banner Content Card */}
+            <div className={`w-full max-w-xl p-6 rounded-2xl relative z-10 transition-all ${bg.glassClass} ${bg.textClass}`}>
+              <div className="flex flex-wrap gap-2 items-center mb-3">
+                <span className="border-[1.5px] border-current font-mono rounded-full px-2.5 py-0.5 text-[10px] uppercase tracking-wider bg-black/10 dark:bg-white/10">{event.club_name}</span>
+                <EventStatusBadge status={event.status} className="px-2.5 py-0.5 text-[10px] rounded-full" />
+              </div>
+              <h1 className="text-xl sm:text-3xl font-black tracking-tight uppercase leading-tight">{event.title}</h1>
+            </div>
+          </div>
+        )
+      })()}
 
       <div className="flex flex-col lg:flex-row gap-12">
         <div className="flex-1">
-          <div className="flex gap-3 mb-4">
-            <span className="border-[1.5px] border-[#0a0a0a] text-[#0a0a0a] font-mono rounded-full px-3 py-1 text-xs">{event.club_name}</span>
-            <EventStatusBadge status={event.status} className="px-3 py-1 text-xs rounded-full" />
-          </div>
-          
-          <h1 className="text-3xl font-black text-[#0a0a0a] mb-6">{event.title}</h1>
           
           {/* Compulsory event banner */}
           {(event as any).is_compulsory && (

@@ -10,6 +10,7 @@ import { PRAssignmentPanel } from '@/components/faculty/PRAssignmentPanel'
 import { EventThread } from '@/components/student/EventThread'
 import { getEventThread } from '@/lib/actions/event-threads'
 import { ImageWithFallback } from '@/components/ui/ImageWithFallback'
+import { parseCustomBackground } from '@/lib/custom-background'
 
 export default async function TeacherVerifyPage({ params }: { params: Promise<{ id: string }> }) {
    const supabase = await createClient()
@@ -88,17 +89,25 @@ export default async function TeacherVerifyPage({ params }: { params: Promise<{ 
                   </div>
                </div>
 
-               <div className="bg-zinc-900 text-white rounded-[2.5rem] overflow-hidden aspect-[16/9] relative group border border-zinc-200 dark:border-zinc-800 shadow-2xl">
-                  <ImageWithFallback
-                     src={event.banner_url}
-                     alt="Event Poster"
-                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-10 flex flex-col justify-end pointer-events-none">
-                     <p className="font-mono text-[10px] uppercase tracking-[0.5em] text-zinc-400 mb-2">Visual Asset Preview</p>
-                     <h4 className="text-xl font-bold">Publicity Banner</h4>
-                  </div>
-               </div>
+               {(() => {
+                  const bg = parseCustomBackground(event.custom_background, event.banner_url)
+                  if (!bg.hasBg) return null
+                  return (
+                     <div 
+                        style={bg.containerStyle}
+                        className={`w-full aspect-[16/9] rounded-[2.5rem] overflow-hidden border border-zinc-200 dark:border-zinc-800 shadow-2xl relative group transition-all flex items-end p-6 sm:p-10 ${bg.containerClass}`}
+                     >
+                        <div 
+                           style={bg.overlayStyle} 
+                           className={`absolute inset-0 pointer-events-none ${bg.overlayClass}`} 
+                        />
+                        <div className={`w-full max-w-xl p-6 rounded-2xl relative z-10 transition-all ${bg.glassClass} ${bg.textClass}`}>
+                           <p className="font-mono text-[10px] uppercase tracking-[0.5em] opacity-80 mb-2">Visual Asset Preview</p>
+                           <h4 className="text-xl font-bold tracking-tight uppercase">{event.title}</h4>
+                        </div>
+                     </div>
+                  )
+               })()}
             </div>
 
             {/* Right: Status & Terminal (5/12) */}

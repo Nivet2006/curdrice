@@ -70,6 +70,7 @@ export interface Event {
   location_lng?: number | null
   created_by: string
   created_at: string
+  custom_background?: string | null
 }
 
 export interface Report {

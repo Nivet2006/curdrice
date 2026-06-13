@@ -1,6 +1,7 @@
 import { createClient, getCachedAuthUser, getCachedUserProfile } from '@/lib/supabase/server'
 import { ArrowLeft, Clock, XCircle, FileText, Send, Edit3, Heart } from 'lucide-react'
 import { EventRegistrationStats } from '@/components/admin/EventRegistrationStats'
+import { parseCustomBackground } from '@/lib/custom-background'
 import Link from 'next/link'
 import { EventStatusTracker } from '@/components/common/EventStatusTracker'
 import { redirect } from 'next/navigation'
@@ -19,7 +20,7 @@ export default async function CCEventDetailPage({ params }: { params: Promise<{ 
 
    // Fetch event and constraints in parallel to eliminate sequential database roundtrips
    const [eventRes, constraintsRes] = await Promise.all([
-      supabase.from('events').select('id, title, description, club_name, location, event_date, registration_deadline, max_capacity, status, approval_status, rejection_data, feedback_config, feedback_open, targeted_department, banner_url, is_public, discussion_enabled, thread_mode, created_by, created_at').eq('id', id).maybeSingle(),
+      supabase.from('events').select('id, title, description, club_name, location, event_date, registration_deadline, max_capacity, status, approval_status, rejection_data, feedback_config, feedback_open, targeted_department, banner_url, custom_background, is_public, discussion_enabled, thread_mode, created_by, created_at').eq('id', id).maybeSingle(),
       supabase.from('event_constraints').select('id, event_id, allowed_semesters, allowed_years, allowed_departments, created_at').eq('event_id', id).maybeSingle()
    ])
 
@@ -96,21 +97,32 @@ export default async function CCEventDetailPage({ params }: { params: Promise<{ 
             <AdminManualOverride event={event} departments={uniqueDepts} />
          )}
 
-         {/* Visual Branding / Poster */}
-         {event.banner_url && (
-            <div className="w-full aspect-[21/9] rounded-[2.5rem] overflow-hidden border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-2xl relative group transition-all">
-               <img src={event.banner_url} alt={event.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-10">
-                  <div className="space-y-2">
-                     <p className="text-xs font-mono text-white/70 uppercase tracking-widest">Visual Identity</p>
-                     <h2 className="text-white text-3xl font-black">{event.title}</h2>
+         {(() => {
+            const bg = parseCustomBackground(event.custom_background, event.banner_url)
+            if (!bg.hasBg) return null
+            return (
+               <div 
+                  style={bg.containerStyle}
+                  className={`w-full aspect-[21/9] rounded-[2.5rem] overflow-hidden border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-2xl relative group transition-all flex items-end p-6 sm:p-10 ${bg.containerClass}`}
+               >
+                  <div 
+                     style={bg.overlayStyle} 
+                     className={`absolute inset-0 pointer-events-none ${bg.overlayClass}`} 
+                  />
+                  <div className={`w-full max-w-xl p-6 rounded-2xl relative z-10 transition-all ${bg.glassClass} ${bg.textClass}`}>
+                     <p className="text-xs font-mono uppercase tracking-widest opacity-85">Visual Identity</p>
+                     <h2 className="text-xl sm:text-3xl font-black tracking-tight mt-1 leading-tight uppercase">{event.title}</h2>
                   </div>
                </div>
-            </div>
-         )}
+            )
+         })()}
 
          <div className="space-y-4">
-            {!event.banner_url && <h1 className="text-5xl font-black tracking-tight text-[#0a0a0a] dark:text-white">{event.title}</h1>}
+            {(() => {
+               const bg = parseCustomBackground(event.custom_background, event.banner_url)
+               if (bg.hasBg) return null
+               return <h1 className="text-5xl font-black tracking-tight text-[#0a0a0a] dark:text-white">{event.title}</h1>
+            })()}
             <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm font-mono text-zinc-600 dark:text-zinc-500">
                <div className="flex items-center gap-2 text-[#0a0a0a] dark:text-white">
                   <span className="w-2 h-2 rounded-full bg-black dark:bg-white"></span>

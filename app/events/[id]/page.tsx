@@ -10,6 +10,7 @@ import { withDynamicSingleEventStatus } from '@/lib/event-utils'
 import { EventStatusBadge } from '@/components/ui/EventStatusBadge'
 import { ThemeToggle } from '@/components/shared/ThemeToggle'
 import PatternPicker from '@/components/shared/PatternPicker'
+import { parseCustomBackground } from '@/lib/custom-background'
 
 export default async function PublicEventDetailPage({
   params
@@ -103,24 +104,35 @@ export default async function PublicEventDetailPage({
         </Link>
 
         {/* Banner */}
-        <div className="w-full aspect-[3/1] rounded-2xl bg-[#f5f5f5] mb-10 overflow-hidden relative border border-[#e0e0e0]">
-          {event.banner_url ? (
-            <img src={event.banner_url} alt={event.title} className="w-full h-full object-cover grayscale" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center font-mono text-[#999] text-xs">NO BANNER</div>
-          )}
-        </div>
+        {(() => {
+          const bg = parseCustomBackground(event?.custom_background, event?.banner_url)
+          return (
+            <div 
+              style={bg.containerStyle}
+              className={`w-full aspect-[21/9] sm:aspect-[3/1] rounded-2xl mb-10 overflow-hidden relative flex items-end p-6 sm:p-10 ${bg.containerClass}`}
+            >
+              {/* Overlay for background images / gradient layers */}
+              <div 
+                style={bg.overlayStyle}
+                className={`absolute inset-0 pointer-events-none ${bg.overlayClass}`}
+              />
+              
+              {/* Banner Content Card */}
+              <div className={`w-full max-w-xl p-6 rounded-2xl relative z-10 transition-all ${bg.glassClass} ${bg.textClass}`}>
+                <div className="flex flex-wrap gap-2 items-center mb-3">
+                  <span className="border-[1.5px] border-current font-mono rounded-full px-2.5 py-0.5 text-[10px] uppercase tracking-wider bg-black/10 dark:bg-white/10">{event?.club_name}</span>
+                  <EventStatusBadge status={event?.status || 'upcoming'} className="px-2.5 py-0.5 text-[10px] rounded-full" />
+                </div>
+                <h1 className="text-xl sm:text-3xl font-black tracking-tight uppercase leading-tight">{event?.title}</h1>
+              </div>
+            </div>
+          )
+        })()}
 
         {/* Content Structure */}
         <div className="flex flex-col lg:flex-row gap-12">
           {/* Main Info */}
           <div className="flex-1">
-            <div className="flex gap-3 mb-4">
-              <span className="border-[1.5px] border-[#0a0a0a] text-[#0a0a0a] font-mono rounded-full px-3 py-1 text-xs">{event.club_name}</span>
-              <EventStatusBadge status={event.status} className="px-3 py-1 text-xs rounded-full" />
-            </div>
-            
-            <h1 className="text-3xl font-black text-[#0a0a0a] mb-6">{event.title}</h1>
             <p className="text-base text-[#555555] mb-8 leading-relaxed whitespace-pre-wrap">{event.description}</p>
             
             <div className="space-y-4 font-mono text-sm text-[#0a0a0a]">

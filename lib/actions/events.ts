@@ -19,6 +19,7 @@ export async function createEvent(formData: FormData) {
   const event_date = formData.get('eventDate') as string
   const deadlineStr = formData.get('deadline') as string
   const banner_url = (formData.get('bannerUrl') as string)?.trim() || null
+  const custom_background = (formData.get('customBackground') as string) || null
   const capStr = formData.get('capacity') as string
   const max_capacity = capStr && parseInt(capStr) > 0 ? parseInt(capStr) : null
   const waitlistCapStr = formData.get('waitlistMax') as string
@@ -56,6 +57,7 @@ export async function createEvent(formData: FormData) {
     event_date: eventDt.toISOString(),
     registration_deadline: deadlineDt.toISOString(),
     max_capacity, banner_url, waitlist_max,
+    custom_background,
     created_by: user.id,
     event_category,
     is_compulsory,
@@ -104,6 +106,7 @@ export async function updateEvent(eventId: string, formData: FormData) {
   const event_date = formData.get('eventDate') as string
   const deadlineStr = formData.get('deadline') as string
   const banner_url = (formData.get('bannerUrl') as string)?.trim() || null
+  const custom_background = (formData.get('customBackground') as string) || null
   const capStr = formData.get('capacity') as string
   const max_capacity = capStr && parseInt(capStr) > 0 ? parseInt(capStr) : null
   const waitlistCapStr = formData.get('waitlistMax') as string
@@ -141,6 +144,7 @@ export async function updateEvent(eventId: string, formData: FormData) {
     event_date: eventDt.toISOString(),
     registration_deadline: deadlineDt.toISOString(),
     max_capacity, banner_url, waitlist_max,
+    custom_background,
     event_category,
     is_compulsory,
     allow_open_registration,

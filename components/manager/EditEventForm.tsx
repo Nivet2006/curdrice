@@ -7,6 +7,7 @@ import { updateEvent } from '@/lib/actions/events'
 import Link from 'next/link'
 import type { Event, EventConstraint } from '@/lib/types'
 import { createClient } from '@/lib/supabase/client'
+import { EventBackgroundCustomizer } from '@/components/shared/EventBackgroundCustomizer'
 
 export function EditEventForm({ event, constraints }: { event: Event, constraints: EventConstraint | null }) {
   const [loading, setLoading] = useState(false)
@@ -142,12 +143,15 @@ export function EditEventForm({ event, constraints }: { event: Event, constraint
               </div>
             </div>
 
-            <Input 
-              label="Poster / Banner Image URL (e.g. .png, .jpg, .jpeg)" 
-              name="bannerUrl" 
-              placeholder="https://example.com/poster.jpg"
-              defaultValue={event.banner_url || ''} 
-            />
+            <div className="w-full flex flex-col gap-6 pt-4 border-t border-[#e0e0e0]">
+               <EventBackgroundCustomizer initialValue={event.custom_background} />
+               <Input 
+                 label="Poster / Banner Image URL (e.g. .png, .jpg, .jpeg)" 
+                 name="bannerUrl" 
+                 placeholder="https://example.com/poster.jpg"
+                 defaultValue={event.banner_url || ''} 
+               />
+             </div>
           </div>
         </div>
 

@@ -7,6 +7,7 @@ import { createDraftEvent } from '@/lib/actions/cc-events'
 import Link from 'next/link'
 import { ArrowLeft, Save, Send } from 'lucide-react'
 import { FeedbackFormBuilder, Question } from '@/components/cc/FeedbackFormBuilder'
+import { EventBackgroundCustomizer } from '@/components/shared/EventBackgroundCustomizer'
 
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -117,6 +118,7 @@ export default function CCCreateEventPage() {
 
               <section className="space-y-6">
                  <h2 className="font-mono text-[10px] uppercase tracking-widest text-zinc-400 border-b border-zinc-100 pb-2">Visual Branding</h2>
+                 <EventBackgroundCustomizer />
                  <div className="bg-zinc-50 dark:bg-zinc-950 p-6 rounded-3xl border border-zinc-200 dark:border-zinc-800 space-y-4">
                     <Input 
                       label="Banner / Poster Image URL (e.g. .png, .jpg, .jpeg) *" 
