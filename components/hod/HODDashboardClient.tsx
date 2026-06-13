@@ -291,7 +291,7 @@ export function HODDashboardClient({
                         <div>
                           <p className="text-[10px] font-mono text-emerald-500 uppercase tracking-widest mb-1">IIC COMPLIANCE ARCHIVE</p>
                           <h4 className="font-bold text-black dark:text-white uppercase">{report.activity_name}</h4>
-                          <p className="text-[10px] text-zinc-500 italic mt-1 font-mono uppercase">Sealed by HOD on {new Date(report.updated_at).toLocaleDateString()}</p>
+                          <p className="text-[10px] text-zinc-500 italic mt-1 font-mono uppercase">Sealed by HOD on {new Date(report.generated_at).toLocaleDateString()}</p>
                         </div>
                         <Link href={`/api/reports/${report.id}/download`} target="_blank" className="w-10 h-10 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full flex items-center justify-center hover:bg-emerald-500 hover:text-white dark:hover:text-white transition-all shadow-sm">
                            <FileDown size={18} />
