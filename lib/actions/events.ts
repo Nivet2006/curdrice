@@ -52,7 +52,9 @@ export async function createEvent(formData: FormData) {
   const years = JSON.parse(yearStr || '[]')
   const depts = JSON.parse(deptStr || '[]')
 
-  const { data: event, error } = await supabase.from('events').insert({
+  const pregeneratedId = formData.get('id') as string | null
+
+  const insertPayload: any = {
     title, club_name, status, description, location,
     event_date: eventDt.toISOString(),
     registration_deadline: deadlineDt.toISOString(),
@@ -65,7 +67,13 @@ export async function createEvent(formData: FormData) {
     assigned_faculty_id,
     approval_status: profile?.role === 'teacher' ? 'pending_hod' : 'draft',
     targeted_department: profile?.role === 'teacher' ? (profile?.department || null) : null
-  }).select('id').single()
+  }
+
+  if (pregeneratedId) {
+    insertPayload.id = pregeneratedId
+  }
+
+  const { data: event, error } = await supabase.from('events').insert(insertPayload).select('id').single()
 
   if (error || !event) return { error: error?.message || 'Failed to create event' }
 

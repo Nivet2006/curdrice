@@ -69,10 +69,11 @@ export async function createDraftEvent(formData: FormData) {
   const sems = JSON.parse(semStr || '[]')
   const years = JSON.parse(yearStr || '[]')
 
+  const pregeneratedId = formData.get('id') as string | null
   const isSubmission = formData.get('submitForReview') === 'true'
   const approval_status = isSubmission ? 'pending_teacher' : 'draft'
 
-  const { data: event, error } = await supabase.from('events').insert({
+  const insertData: any = {
     title, club_name, description, location,
     event_date: eventDt.toISOString(),
     registration_deadline: deadlineDt.toISOString(),
@@ -84,7 +85,13 @@ export async function createDraftEvent(formData: FormData) {
     feedback_config,
     is_public,
     status: 'upcoming'
-  }).select('id').single()
+  }
+
+  if (pregeneratedId) {
+    insertData.id = pregeneratedId
+  }
+
+  const { data: event, error } = await supabase.from('events').insert(insertData).select('id').single()
 
   if (error || !event) return { error: error?.message || 'Failed to create event' }
 

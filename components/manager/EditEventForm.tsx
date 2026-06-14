@@ -8,6 +8,7 @@ import Link from 'next/link'
 import type { Event, EventConstraint } from '@/lib/types'
 import { createClient } from '@/lib/supabase/client'
 import { EventBackgroundCustomizer } from '@/components/shared/EventBackgroundCustomizer'
+import PosterDesigner from '@/components/shared/PosterDesigner'
 
 export function EditEventForm({ event, constraints }: { event: Event, constraints: EventConstraint | null }) {
   const [loading, setLoading] = useState(false)
@@ -17,6 +18,20 @@ export function EditEventForm({ event, constraints }: { event: Event, constraint
   const [years, setYears] = useState<number[]>(constraints?.allowed_years || [])
   const [depts, setDepts] = useState<string[]>(constraints?.allowed_departments || [])
   const [teachers, setTeachers] = useState<{ id: string; full_name: string }[]>([])
+
+  // Formatting date strings to datetime-local values (YYYY-MM-DDThh:mm)
+  const formatForInput = (isoStr: string | null) => {
+    if (!isoStr) return ''
+    return new Date(isoStr).toISOString().slice(0, 16)
+  }
+
+  // Poster Lab specific states
+  const [title, setTitle] = useState(event.title || '')
+  const [clubName, setClubName] = useState(event.club_name || '')
+  const [description, setDescription] = useState(event.description || '')
+  const [location, setLocation] = useState(event.location || '')
+  const [bannerUrl, setBannerUrl] = useState(event.banner_url || '')
+  const [eventDate, setEventDate] = useState(formatForInput(event.event_date))
 
   useEffect(() => {
     async function loadTeachers() {
@@ -46,11 +61,7 @@ export function EditEventForm({ event, constraints }: { event: Event, constraint
     }
   }
 
-  // Formatting date strings to datetime-local values (YYYY-MM-DDThh:mm)
-  const formatForInput = (isoStr: string | null) => {
-    if (!isoStr) return ''
-    return new Date(isoStr).toISOString().slice(0, 16)
-  }
+  // formatForInput helper moved above states
 
   return (
     <form action={handleSubmit} className="w-full flex-1 flex flex-col relative h-full">
@@ -59,10 +70,10 @@ export function EditEventForm({ event, constraints }: { event: Event, constraint
           <h2 className="font-mono text-xs uppercase tracking-widest text-[#555555] border-b border-[#e0e0e0] pb-2 mb-6">Edit Current Details</h2>
           
           <div className="space-y-6">
-            <Input label="Event Title" name="title" required defaultValue={event.title} />
+            <Input label="Event Title" name="title" required value={title} onChange={e => setTitle(e.target.value)} />
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Input label="Club / Host Identity" name="clubName" required defaultValue={event.club_name} />
+              <Input label="Club / Host Identity" name="clubName" required value={clubName} onChange={e => setClubName(e.target.value)} />
               <div className="w-full flex flex-col gap-1">
                 <label className="text-xs font-mono text-[#555555] uppercase tracking-widest">Visibility & Status</label>
                 <select name="status" defaultValue={event.status} className="rounded-xl border border-[#d0d0d0] bg-white px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0a0a0a]">
@@ -76,13 +87,13 @@ export function EditEventForm({ event, constraints }: { event: Event, constraint
 
             <div className="w-full flex flex-col gap-1">
               <label className="text-xs font-mono text-[#555555] uppercase tracking-widest">Description</label>
-              <textarea name="description" rows={4} defaultValue={event.description || ''} className="rounded-xl border border-[#d0d0d0] bg-white px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0a0a0a] resize-none"></textarea>
+              <textarea name="description" rows={4} value={description} onChange={e => setDescription(e.target.value)} className="rounded-xl border border-[#d0d0d0] bg-white px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0a0a0a] resize-none"></textarea>
             </div>
 
-            <Input label="Physical Location" name="location" defaultValue={event.location || ''} />
+            <Input label="Physical Location" name="location" value={location} onChange={e => setLocation(e.target.value)} />
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Input label="Event Date & Time" name="eventDate" type="datetime-local" required defaultValue={formatForInput(event.event_date)} />
+              <Input label="Event Date & Time" name="eventDate" type="datetime-local" required value={eventDate} onChange={e => setEventDate(e.target.value)} />
               <Input label="Registration Hard Deadline" name="deadline" type="datetime-local" defaultValue={formatForInput(event.registration_deadline)} />
             </div>
 
@@ -143,14 +154,30 @@ export function EditEventForm({ event, constraints }: { event: Event, constraint
               </div>
             </div>
 
-            <div className="w-full flex flex-col gap-6 pt-4 border-t border-[#e0e0e0]">
+             <div className="w-full flex flex-col gap-6 pt-4 border-t border-[#e0e0e0]">
                <EventBackgroundCustomizer initialValue={event.custom_background} />
-               <Input 
-                 label="Poster / Banner Image URL (e.g. .png, .jpg, .jpeg)" 
-                 name="bannerUrl" 
-                 placeholder="https://example.com/poster.jpg"
-                 defaultValue={event.banner_url || ''} 
-               />
+               <div className="flex justify-between items-end gap-4 w-full">
+                 <div className="flex-1">
+                   <Input 
+                     label="Poster / Banner Image URL (e.g. .png, .jpg, .jpeg)" 
+                     name="bannerUrl" 
+                     placeholder="https://example.com/poster.jpg"
+                     value={bannerUrl} 
+                     onChange={e => setBannerUrl(e.target.value)}
+                   />
+                 </div>
+                 <div>
+                   <PosterDesigner
+                     eventId={event.id}
+                     initialTitle={title}
+                     initialClubName={clubName}
+                     initialDescription={description}
+                     initialLocation={location}
+                     initialDate={eventDate}
+                     onApply={setBannerUrl}
+                   />
+                 </div>
+               </div>
              </div>
           </div>
         </div>
