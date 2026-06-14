@@ -1242,7 +1242,7 @@ export default function PosterDesigner({
                     }}
                     className={`flex flex-col items-center p-1.5 rounded-lg border bg-transparent whitespace-nowrap transition-all ${
                       selectedElement === 'club' 
-                        ? 'border-dashed border-purple-500 ring-2 ring-purple-500/30' 
+                        ? 'border-dashed border-white ring-2 ring-white/30' 
                         : 'border-transparent hover:border-zinc-300 dark:hover:border-zinc-700 hover:ring-2 hover:ring-purple-500/50'
                     }`}
                   >
@@ -1289,7 +1289,7 @@ export default function PosterDesigner({
                         }}
                         className={`group relative p-1 rounded-lg border transition-all ${
                           isSelected 
-                            ? 'border-dashed border-purple-500 ring-2 ring-purple-500/30' 
+                            ? 'border-dashed border-white ring-2 ring-white/30' 
                             : 'border-transparent hover:border-zinc-300 dark:hover:border-zinc-700 hover:ring-2 hover:ring-purple-500/50'
                         }`}
                       >
@@ -1326,7 +1326,7 @@ export default function PosterDesigner({
                     }}
                     className={`p-2 rounded-lg border bg-transparent flex flex-col justify-center items-center transition-all ${
                       selectedElement === 'title' 
-                        ? 'border-dashed border-purple-500 ring-2 ring-purple-500/30' 
+                        ? 'border-dashed border-white ring-2 ring-white/30' 
                         : 'border-transparent hover:border-zinc-300 dark:hover:border-zinc-700 hover:ring-2 hover:ring-purple-500/50'
                     }`}
                   >
@@ -1377,7 +1377,7 @@ export default function PosterDesigner({
                       }}
                       className={`p-2 rounded-lg border bg-transparent flex flex-col justify-center items-center transition-all ${
                         selectedElement === 'desc' 
-                          ? 'border-dashed border-purple-500 ring-2 ring-purple-500/30' 
+                          ? 'border-dashed border-white ring-2 ring-white/30' 
                           : 'border-transparent hover:border-zinc-300 dark:hover:border-zinc-700 hover:ring-2 hover:ring-purple-500/50'
                       }`}
                     >
@@ -1423,7 +1423,7 @@ export default function PosterDesigner({
                     }}
                     className={`rounded-xl p-3 border backdrop-blur-md space-y-1.5 text-left transition-all ${
                       selectedElement === 'details' 
-                        ? 'border-dashed border-purple-500 ring-2 ring-purple-500/30' 
+                        ? 'border-dashed border-white ring-2 ring-white/30' 
                         : `hover:border-zinc-200 dark:hover:border-zinc-800 hover:ring-2 hover:ring-purple-500/50 ${
                             activeTemplate === 'retro' ? 'border-2 border-black shadow-[3px_3px_0px_#000000] text-black font-semibold' : ''
                           }`
@@ -1479,7 +1479,7 @@ export default function PosterDesigner({
                       }}
                       className={`flex flex-col items-center p-2.5 rounded-2xl border bg-white/95 dark:bg-zinc-950/95 shadow-xl backdrop-blur-sm w-36 text-center transition-all ${
                         selectedElement === 'speaker'
-                          ? 'border-dashed border-purple-500 ring-2 ring-purple-500/30'
+                          ? 'border-dashed border-white ring-2 ring-white/30'
                           : `hover:border-zinc-300 dark:hover:border-zinc-700 hover:ring-2 hover:ring-purple-500/50 ${
                               activeTemplate === 'formal-gold' ? 'border-[#d4af37]/60' :
                               activeTemplate === 'midnight-hacker' ? 'border-[#22c55e]/60 bg-[#030712]/95 text-[#22c55e]' :
@@ -1546,7 +1546,7 @@ export default function PosterDesigner({
                       }}
                       className={`shrink-0 aspect-square rounded-xl p-1.5 border flex items-center justify-center bg-white transition-all ${
                         selectedElement === 'qr'
-                          ? 'border-dashed border-purple-500 ring-2 ring-purple-500/30'
+                          ? 'border-dashed border-white ring-2 ring-white/30'
                           : `hover:ring-2 hover:ring-purple-500/50 ${
                               activeTemplate === 'retro' ? 'border-2 border-black shadow-[3px_3px_0px_#000000]' : 
                               activeTemplate === 'formal-gold' ? 'border-2 border-[#d4af37]' :
