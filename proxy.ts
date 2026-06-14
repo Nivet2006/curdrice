@@ -47,6 +47,7 @@ export async function proxy(request: NextRequest) {
 
   // Skip static/internal routes
   const path = request.nextUrl.pathname
+  const isApiRoute = path.startsWith('/api/')
   if (
     path.startsWith('/_next') ||
     path.startsWith('/api/health') ||
@@ -100,6 +101,9 @@ export async function proxy(request: NextRequest) {
         error.message?.includes('Invalid Refresh Token')
       ) {
         await supabase.auth.signOut()
+        if (isApiRoute) {
+          return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        }
         const loginUrl = request.nextUrl.clone()
         loginUrl.pathname = '/login'
         return NextResponse.redirect(loginUrl)
@@ -124,6 +128,9 @@ export async function proxy(request: NextRequest) {
 
   // Redirect unauthenticated users to login, but bypass public event details and redirect pages
   if (!user && !isAuthPage && request.nextUrl.pathname !== '/' && !isPublicEventPage && !isRedirectPage) {
+    if (isApiRoute) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
@@ -133,6 +140,9 @@ export async function proxy(request: NextRequest) {
   if (user) {
       if (role === 'deleted') {
           await supabase.auth.signOut()
+          if (isApiRoute) {
+              return NextResponse.json({ error: 'Account suspended' }, { status: 403 })
+          }
           const url = request.nextUrl.clone()
           url.pathname = '/login'
           url.searchParams.set('error', 'account_suspended')
