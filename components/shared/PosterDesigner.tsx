@@ -1199,15 +1199,39 @@ export default function PosterDesigner({
       setSelectedElement(null)
       await new Promise(resolve => setTimeout(resolve, 100)) // Let UI re-render
 
-      const renderFn = format === 'png' ? toPng : toJpeg
-      const dataUrl = await renderFn(posterRef.current, {
-        cacheBust: true,
-        pixelRatio: 2, // High resolution capture
-        style: {
-          transform: 'scale(1)',
-          transformOrigin: 'top left'
+      // Temporarily remove cross-origin stylesheets (Google Fonts) to prevent
+      // SecurityError: "Failed to read the 'cssRules' property from 'CSSStyleSheet'"
+      // html-to-image iterates all stylesheets; cross-origin ones throw on cssRules access.
+      const removedSheets: { node: Element; parent: Node; nextSibling: Node | null }[] = []
+      Array.from(document.styleSheets).forEach(sheet => {
+        try {
+          void sheet.cssRules // throws for cross-origin sheets
+        } catch {
+          const node = sheet.ownerNode as Element | null
+          if (node && node.parentNode) {
+            removedSheets.push({ node, parent: node.parentNode, nextSibling: node.nextSibling })
+            node.parentNode.removeChild(node)
+          }
         }
       })
+
+      let dataUrl: string
+      try {
+        const renderFn = format === 'png' ? toPng : toJpeg
+        dataUrl = await renderFn(posterRef.current, {
+          cacheBust: true,
+          pixelRatio: 2, // High resolution capture
+          style: {
+            transform: 'scale(1)',
+            transformOrigin: 'top left'
+          }
+        })
+      } finally {
+        // Restore all removed stylesheets regardless of success or failure
+        removedSheets.forEach(({ node, parent, nextSibling }) => {
+          parent.insertBefore(node, nextSibling)
+        })
+      }
 
       const res = await fetch(dataUrl)
       return await res.blob()
