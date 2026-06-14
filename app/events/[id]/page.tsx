@@ -56,8 +56,8 @@ export default async function PublicEventDetailPage({
             This event does not exist, requires authorization to view, or has not been approved yet.
           </p>
           <div className="pt-4">
-            <Link 
-              href="/login" 
+            <Link
+              href="/login"
               className="inline-block px-6 py-3 rounded-xl bg-black text-white font-bold text-sm hover:bg-zinc-800 transition-all shadow-md"
             >
               Go to Dashboard
@@ -85,20 +85,20 @@ export default async function PublicEventDetailPage({
       {bg.customStyleBlock && <style dangerouslySetInnerHTML={{ __html: bg.customStyleBlock }} />}
       {bg.hasCustomBg && (
         <>
-          <div 
-            style={bg.backdropStyle} 
-            className={`fixed inset-0 w-full h-full -z-10 pointer-events-none transition-all ${bg.backdropClass}`} 
+          <div
+            style={bg.backdropStyle}
+            className={`fixed inset-0 w-full h-full -z-10 pointer-events-none transition-all ${bg.backdropClass}`}
           />
           {bg.backdropOverlayClass && (
-            <div 
-              style={bg.backdropOverlayStyle} 
-              className={`fixed inset-0 w-full h-full -z-10 pointer-events-none transition-all ${bg.backdropOverlayClass}`} 
+            <div
+              style={bg.backdropOverlayStyle}
+              className={`fixed inset-0 w-full h-full -z-10 pointer-events-none transition-all ${bg.backdropOverlayClass}`}
             />
           )}
           {bg.meshPatternStyle && (
-            <div 
-              style={bg.meshPatternStyle} 
-              className="fixed inset-0 w-full h-full -z-10 pointer-events-none opacity-80" 
+            <div
+              style={bg.meshPatternStyle}
+              className="fixed inset-0 w-full h-full -z-10 pointer-events-none opacity-80"
             />
           )}
         </>
@@ -111,7 +111,7 @@ export default async function PublicEventDetailPage({
           <div className="flex items-center gap-3">
             <ThemeToggle />
             <PatternPicker />
-            <Link 
+            <Link
               href={`/login?redirectTo=/student/events/${id}`}
               className="text-xs font-mono font-bold uppercase tracking-wider px-4 py-2 border border-black dark:border-white rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
             >
@@ -143,7 +143,7 @@ export default async function PublicEventDetailPage({
                   <span className="border-[1.5px] border-current font-mono rounded-full px-3 py-1 text-xs bg-black/10 dark:bg-white/10">{event?.club_name}</span>
                   <EventStatusBadge status={event?.status || 'upcoming'} className="px-3 py-1 text-xs rounded-full" />
                 </div>
-                
+
                 <h1 className="text-3xl font-black mb-6 uppercase tracking-tight">{event?.title}</h1>
                 <p className="text-base leading-relaxed whitespace-pre-wrap opacity-95">{event?.description}</p>
               </div>
@@ -189,7 +189,7 @@ export default async function PublicEventDetailPage({
                   <p className="text-xs font-mono font-medium opacity-80 leading-relaxed">
                     Register or RSVP for this event to secure your place.
                   </p>
-                  <Link 
+                  <Link
                     href={`/login?redirectTo=/student/events/${id}`}
                     className="block w-full py-3.5 bg-black hover:bg-zinc-800 text-white dark:bg-white dark:text-black dark:hover:bg-zinc-100 text-center font-bold rounded-xl text-sm transition-all shadow-md hover:shadow-lg active:scale-98"
                   >
@@ -200,7 +200,7 @@ export default async function PublicEventDetailPage({
                 {/* Open in App + Download */}
                 <div className="border-t border-current/10 pt-5 space-y-2">
                   <a
-                    href={`intent://clubeve.nivet2006.in/events/${id}#Intent;scheme=https;package=com.clubeve.cc;S.browser_fallback_url=${encodeURIComponent(`https://clubeve.nivet2006.in/events/${id}`)};end`}
+                    href={`intent://cooking.nivet2006.in/events/${id}#Intent;scheme=https;package=com.clubeve.cc;S.browser_fallback_url=${encodeURIComponent(`https://cooking.nivet2006.in/events/${id}`)};end`}
                     className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-bold transition-all active:scale-[0.98] bg-black text-white dark:bg-white dark:text-black dark:hover:bg-zinc-100"
                   >
                     <ExternalLink size={14} />

@@ -1,10 +1,10 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
-import { 
-  Sparkles, Code, Music, GraduationCap, Mic, Megaphone, Users, Calendar, 
-  MapPin, Terminal, Award, BookOpen, Coffee, Flame, Heart, Lightbulb, 
-  Smile, Star, Target, Trophy, HelpCircle, X, Download, Upload, AlignLeft, 
+import {
+  Sparkles, Code, Music, GraduationCap, Mic, Megaphone, Users, Calendar,
+  MapPin, Terminal, Award, BookOpen, Coffee, Flame, Heart, Lightbulb,
+  Smile, Star, Target, Trophy, HelpCircle, X, Download, Upload, AlignLeft,
   AlignCenter, AlignRight, Type, Palette, Layout, Settings, Play, RefreshCw,
   Plus, Trash2, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Eye, Clock
 } from 'lucide-react'
@@ -15,8 +15,8 @@ import { toast } from 'sonner'
 
 // List of available icons for stickers
 const STICKER_ICONS: Record<string, React.ComponentType<any>> = {
-  Sparkles, Code, Music, GraduationCap, Mic, Megaphone, Users, Calendar, 
-  MapPin, Terminal, Award, BookOpen, Coffee, Flame, Heart, Lightbulb, 
+  Sparkles, Code, Music, GraduationCap, Mic, Megaphone, Users, Calendar,
+  MapPin, Terminal, Award, BookOpen, Coffee, Flame, Heart, Lightbulb,
   Smile, Star, Target, Trophy
 }
 
@@ -63,17 +63,17 @@ export default function PosterDesigner({
 
   // Design state
   const [activeTemplate, setActiveTemplate] = useState<'cyberpunk' | 'vibrant' | 'corporate' | 'minimalist' | 'retro' | 'techconf' | 'creative' | 'formal-gold' | 'midnight-hacker' | 'glassmorphic-glow' | 'gala-athletic' | 'eco-minimal'>('vibrant')
-  
+
   // Customization controls
   const [titleColor, setTitleColor] = useState('#ffffff')
   const [titleSize, setTitleSize] = useState(36) // px
   const [titleFont, setTitleFont] = useState('font-sans') // font-sans, font-serif, font-mono
   const [titleAlign, setTitleAlign] = useState<'left' | 'center' | 'right'>('center')
-  
+
   const [clubColor, setClubColor] = useState('#a855f7')
   const [clubSize, setClubSize] = useState(14)
   const [clubFont, setClubFont] = useState('font-sans')
-  
+
   const [descColor, setDescColor] = useState('#d1d5db')
   const [descSize, setDescSize] = useState(14)
   const [descFont, setDescFont] = useState('font-sans')
@@ -158,11 +158,11 @@ export default function PosterDesigner({
     if (typeof window !== 'undefined') {
       const origin = window.location.origin
       if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
-        return 'https://clubeve.nivet2006.in'
+        return 'https://cooking.nivet2006.in'
       }
       return origin
     }
-    return 'https://clubeve.nivet2006.in'
+    return 'https://cooking.nivet2006.in'
   }
 
   const publicUrl = `${getAppUrl()}/events/${eventId}`
@@ -205,7 +205,7 @@ export default function PosterDesigner({
     setDetailsSize(10)
     setSpeakerScale(100)
     setSelectedElement(null)
-    switch(presetName) {
+    switch (presetName) {
       case 'cyberpunk':
         setBgColorType('solid')
         setBgSolidColor('#080710')
@@ -373,7 +373,7 @@ export default function PosterDesigner({
         setSpeakerTitleFont('font-mono')
         setQrColorDark('#ffffff')
         setQrColorLight('#09090b')
-        
+
         setClubX(50)
         setClubY(12)
         setTitleX(50)
@@ -414,7 +414,7 @@ export default function PosterDesigner({
         setSpeakerTitleFont('font-sans')
         setQrColorDark('#000000')
         setQrColorLight('#ffffff')
-        
+
         setClubX(50)
         setClubY(12)
         setTitleX(50)
@@ -453,7 +453,7 @@ export default function PosterDesigner({
         setSpeakerTitleFont('font-sans')
         setQrColorDark('#0b0f19')
         setQrColorLight('#ffffff')
-        
+
         setClubX(50)
         setClubY(16)
         setTitleX(50)
@@ -464,7 +464,7 @@ export default function PosterDesigner({
         setDetailsY(84)
         setQrX(82)
         setQrY(84)
-        
+
         setShowSpeaker(true)
         setSpeakerName('Dr. Sarah Jenkins')
         setSpeakerTitle('Keynote Speaker')
@@ -497,7 +497,7 @@ export default function PosterDesigner({
         setSpeakerTitleFont('font-mono')
         setQrColorDark('#22c55e')
         setQrColorLight('#030712')
-        
+
         setClubX(50)
         setClubY(18)
         setTitleX(50)
@@ -508,7 +508,7 @@ export default function PosterDesigner({
         setDetailsY(84)
         setQrX(82)
         setQrY(84)
-        
+
         setShowSpeaker(true)
         setSpeakerName('root@clubeve:~#')
         setSpeakerTitle('Whitehat Guest')
@@ -543,7 +543,7 @@ export default function PosterDesigner({
         setSpeakerTitleFont('font-sans')
         setQrColorDark('#1e1b4b')
         setQrColorLight('#ffffff')
-        
+
         setClubX(50)
         setClubY(14)
         setTitleX(50)
@@ -554,7 +554,7 @@ export default function PosterDesigner({
         setDetailsY(84)
         setQrX(82)
         setQrY(84)
-        
+
         setShowSpeaker(true)
         setSpeakerName('Alex Rivera')
         setSpeakerTitle('Industry Expert')
@@ -589,7 +589,7 @@ export default function PosterDesigner({
         setSpeakerTitleFont('font-sans')
         setQrColorDark('#000000')
         setQrColorLight('#ffffff')
-        
+
         setClubX(50)
         setClubY(14)
         setTitleX(50)
@@ -630,7 +630,7 @@ export default function PosterDesigner({
         setSpeakerTitleFont('font-sans')
         setQrColorDark('#065f46')
         setQrColorLight('#ffffff')
-        
+
         setClubX(50)
         setClubY(14)
         setTitleX(50)
@@ -927,7 +927,7 @@ export default function PosterDesigner({
       setSelectedStickerId(null)
       setSelectedElement(null)
       await new Promise(resolve => setTimeout(resolve, 100)) // Let UI re-render
-      
+
       const renderFn = format === 'png' ? toPng : toJpeg
       const dataUrl = await renderFn(posterRef.current, {
         cacheBust: true,
@@ -937,7 +937,7 @@ export default function PosterDesigner({
           transformOrigin: 'top left'
         }
       })
-      
+
       const res = await fetch(dataUrl)
       return await res.blob()
     } catch (err) {
@@ -968,11 +968,11 @@ export default function PosterDesigner({
       toast.info('Generating high-fidelity PDF container...')
       const arrayBuffer = await blob.arrayBuffer()
       const pdfDoc = await PDFDocument.create()
-      
+
       // Typical standard A4 poster aspect ratio is roughly 800x1130 or 600x850. Let's match our canvas 400x560.
       const page = pdfDoc.addPage([500, 700])
       const embeddedImage = await pdfDoc.embedPng(arrayBuffer)
-      
+
       page.drawImage(embeddedImage, {
         x: 0,
         y: 0,
@@ -1008,7 +1008,7 @@ export default function PosterDesigner({
     try {
       toast.info('Uploading poster to Club-Eve media engine...')
       const file = new File([blob], `poster-${eventId}.png`, { type: 'image/png' })
-      
+
       const formData = new FormData()
       formData.append('file', file)
 
@@ -1076,7 +1076,7 @@ export default function PosterDesigner({
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
           <div className="bg-white dark:bg-zinc-950 w-full max-w-[1200px] h-full max-h-[85vh] rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            
+
             {/* Header */}
             <div className="px-6 py-4 border-b border-zinc-100 dark:border-zinc-900 flex justify-between items-center bg-zinc-50 dark:bg-zinc-950">
               <div>
@@ -1097,7 +1097,7 @@ export default function PosterDesigner({
 
             {/* Split Screen Workspace */}
             <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
-              
+
               {/* Left Side: Live Canvas Preview Container */}
               <div className="flex-1 bg-zinc-100 dark:bg-zinc-900/60 p-6 flex flex-col items-center justify-center overflow-y-auto min-h-[350px]">
                 <div className="w-full flex justify-between items-center mb-3">
@@ -1110,28 +1110,27 @@ export default function PosterDesigner({
                 </div>
 
                 {/* Actual Poster Element */}
-                <div 
+                <div
                   ref={posterRef}
                   onClick={() => {
                     setSelectedElement(null)
                     setSelectedStickerId(null)
                   }}
                   style={getPosterBgStyle()}
-                  className={`w-[400px] h-[560px] rounded-2xl relative overflow-hidden shadow-2xl select-none ${
-                    activeTemplate === 'cyberpunk' ? 'border-2 border-[#00f2fe]' : 
-                    activeTemplate === 'corporate' ? 'border-4 border-double border-[#f59e0b]' : 
-                    activeTemplate === 'retro' ? 'border-4 border-black' : 
-                    activeTemplate === 'formal-gold' ? 'border-4 border-double border-[#d4af37]' :
-                    activeTemplate === 'midnight-hacker' ? 'border-2 border-[#22c55e]' : 
-                    activeTemplate === 'glassmorphic-glow' ? 'border border-white/20 shadow-2xl' : 
-                    activeTemplate === 'gala-athletic' ? 'border border-zinc-800' : 
-                    activeTemplate === 'eco-minimal' ? 'border border-emerald-200' : ''
-                  }`}
+                  className={`w-[400px] h-[560px] rounded-2xl relative overflow-hidden shadow-2xl select-none ${activeTemplate === 'cyberpunk' ? 'border-2 border-[#00f2fe]' :
+                      activeTemplate === 'corporate' ? 'border-4 border-double border-[#f59e0b]' :
+                        activeTemplate === 'retro' ? 'border-4 border-black' :
+                          activeTemplate === 'formal-gold' ? 'border-4 border-double border-[#d4af37]' :
+                            activeTemplate === 'midnight-hacker' ? 'border-2 border-[#22c55e]' :
+                              activeTemplate === 'glassmorphic-glow' ? 'border border-white/20 shadow-2xl' :
+                                activeTemplate === 'gala-athletic' ? 'border border-zinc-800' :
+                                  activeTemplate === 'eco-minimal' ? 'border border-emerald-200' : ''
+                    }`}
                 >
                   {/* Cyberpunk Grid Background Overlay */}
                   {activeTemplate === 'cyberpunk' && (
-                    <div 
-                      className="absolute inset-0 pointer-events-none opacity-20" 
+                    <div
+                      className="absolute inset-0 pointer-events-none opacity-20"
                       style={{
                         backgroundImage: 'linear-gradient(to right, #00f2fe 1px, transparent 1px), linear-gradient(to bottom, #00f2fe 1px, transparent 1px)',
                         backgroundSize: '20px 20px'
@@ -1158,8 +1157,8 @@ export default function PosterDesigner({
                   {activeTemplate === 'midnight-hacker' && (
                     <>
                       {/* Matrix Grid */}
-                      <div 
-                        className="absolute inset-0 pointer-events-none opacity-10" 
+                      <div
+                        className="absolute inset-0 pointer-events-none opacity-10"
                         style={{
                           backgroundImage: 'linear-gradient(to right, #22c55e 1px, transparent 1px), linear-gradient(to bottom, #22c55e 1px, transparent 1px)',
                           backgroundSize: '30px 30px'
@@ -1188,7 +1187,7 @@ export default function PosterDesigner({
 
                   {/* Gala Athletic sharp diagonal cuts */}
                   {activeTemplate === 'gala-athletic' && (
-                    <div 
+                    <div
                       className="absolute inset-0 pointer-events-none opacity-10"
                       style={{
                         backgroundImage: 'linear-gradient(115deg, transparent 70%, #ef4444 70%), linear-gradient(115deg, transparent 40%, #000000 40%)',
@@ -1199,7 +1198,7 @@ export default function PosterDesigner({
 
                   {/* Eco Minimal clean layout details */}
                   {activeTemplate === 'eco-minimal' && (
-                    <div 
+                    <div
                       className="absolute inset-0 pointer-events-none opacity-[0.03]"
                       style={{
                         backgroundImage: 'radial-gradient(#059669 1.5px, transparent 1.5px)',
@@ -1211,8 +1210,8 @@ export default function PosterDesigner({
                   {/* Tech Conference Background Overlay */}
                   {activeTemplate === 'techconf' && (
                     <>
-                      <div 
-                        className="absolute inset-0 pointer-events-none opacity-20" 
+                      <div
+                        className="absolute inset-0 pointer-events-none opacity-20"
                         style={{
                           backgroundImage: 'linear-gradient(to right, #3b82f6 0.5px, transparent 0.5px), linear-gradient(to bottom, #8b5cf6 0.5px, transparent 0.5px)',
                           backgroundSize: '40px 40px'
@@ -1224,7 +1223,7 @@ export default function PosterDesigner({
                   )}
 
                   {/* Header / Club Identity */}
-                  <div 
+                  <div
                     onMouseDown={(e) => handleElementDragStart(e, 'club')}
                     onTouchStart={(e) => handleElementDragStart(e, 'club')}
                     onClick={(e) => {
@@ -1240,13 +1239,12 @@ export default function PosterDesigner({
                       cursor: 'grab',
                       zIndex: 10
                     }}
-                    className={`flex flex-col items-center p-1.5 rounded-lg border bg-transparent whitespace-nowrap transition-all ${
-                      selectedElement === 'club' 
-                        ? 'border-dashed border-white ring-2 ring-white/30' 
+                    className={`flex flex-col items-center p-1.5 rounded-lg border bg-transparent whitespace-nowrap transition-all ${selectedElement === 'club'
+                        ? 'border-dashed border-white ring-2 ring-white/30'
                         : 'border-transparent hover:border-zinc-300 dark:hover:border-zinc-700 hover:ring-2 hover:ring-purple-500/50'
-                    }`}
+                      }`}
                   >
-                    <span 
+                    <span
                       style={{ color: clubColor, fontSize: `${clubSize}px` }}
                       className={`uppercase tracking-widest font-bold ${clubFont}`}
                     >
@@ -1287,11 +1285,10 @@ export default function PosterDesigner({
                           cursor: isSelected ? 'grabbing' : 'grab',
                           zIndex: 20
                         }}
-                        className={`group relative p-1 rounded-lg border transition-all ${
-                          isSelected 
-                            ? 'border-dashed border-white ring-2 ring-white/30' 
+                        className={`group relative p-1 rounded-lg border transition-all ${isSelected
+                            ? 'border-dashed border-white ring-2 ring-white/30'
                             : 'border-transparent hover:border-zinc-300 dark:hover:border-zinc-700 hover:ring-2 hover:ring-purple-500/50'
-                        }`}
+                          }`}
                       >
                         <StickerIcon size={sticker.size} style={{ color: sticker.color }} />
                         {isSelected && (
@@ -1307,7 +1304,7 @@ export default function PosterDesigner({
                   })}
 
                   {/* Main Event Title */}
-                  <div 
+                  <div
                     onMouseDown={(e) => handleElementDragStart(e, 'title')}
                     onTouchStart={(e) => handleElementDragStart(e, 'title')}
                     onClick={(e) => {
@@ -1324,25 +1321,21 @@ export default function PosterDesigner({
                       width: '85%',
                       zIndex: 10
                     }}
-                    className={`p-2 rounded-lg border bg-transparent flex flex-col justify-center items-center transition-all ${
-                      selectedElement === 'title' 
-                        ? 'border-dashed border-white ring-2 ring-white/30' 
+                    className={`p-2 rounded-lg border bg-transparent flex flex-col justify-center items-center transition-all ${selectedElement === 'title'
+                        ? 'border-dashed border-white ring-2 ring-white/30'
                         : 'border-transparent hover:border-zinc-300 dark:hover:border-zinc-700 hover:ring-2 hover:ring-purple-500/50'
-                    }`}
+                      }`}
                   >
-                    <h1 
-                      style={{ 
-                        color: titleColor, 
+                    <h1
+                      style={{
+                        color: titleColor,
                         fontSize: `${titleSize}px`,
                         textAlign: titleAlign
                       }}
-                      className={`font-black tracking-tight leading-none uppercase break-words w-full select-none ${titleFont} ${
-                        activeTemplate === 'cyberpunk' ? 'text-shadow-neon' : ''
-                      } ${
-                        activeTemplate === 'retro' ? 'drop-shadow-[3px_3px_0px_#000000]' : ''
-                      } ${
-                        activeTemplate === 'formal-gold' ? 'drop-shadow-[1px_1px_1px_rgba(0,0,0,0.5)]' : ''
-                      }`}
+                      className={`font-black tracking-tight leading-none uppercase break-words w-full select-none ${titleFont} ${activeTemplate === 'cyberpunk' ? 'text-shadow-neon' : ''
+                        } ${activeTemplate === 'retro' ? 'drop-shadow-[3px_3px_0px_#000000]' : ''
+                        } ${activeTemplate === 'formal-gold' ? 'drop-shadow-[1px_1px_1px_rgba(0,0,0,0.5)]' : ''
+                        }`}
                     >
                       {title || 'EXQUISITE EVENT'}
                     </h1>
@@ -1358,7 +1351,7 @@ export default function PosterDesigner({
 
                   {/* Event Description */}
                   {showDesc && (
-                    <div 
+                    <div
                       onMouseDown={(e) => handleElementDragStart(e, 'desc')}
                       onTouchStart={(e) => handleElementDragStart(e, 'desc')}
                       onClick={(e) => {
@@ -1375,17 +1368,15 @@ export default function PosterDesigner({
                         width: '85%',
                         zIndex: 10
                       }}
-                      className={`p-2 rounded-lg border bg-transparent flex flex-col justify-center items-center transition-all ${
-                        selectedElement === 'desc' 
-                          ? 'border-dashed border-white ring-2 ring-white/30' 
+                      className={`p-2 rounded-lg border bg-transparent flex flex-col justify-center items-center transition-all ${selectedElement === 'desc'
+                          ? 'border-dashed border-white ring-2 ring-white/30'
                           : 'border-transparent hover:border-zinc-300 dark:hover:border-zinc-700 hover:ring-2 hover:ring-purple-500/50'
-                      }`}
-                    >
-                      <p 
-                        style={{ color: descColor, fontSize: `${descSize}px` }}
-                        className={`leading-relaxed line-clamp-3 w-full text-center select-none ${descFont} ${
-                          activeTemplate === 'retro' ? 'font-medium' : 'font-light'
                         }`}
+                    >
+                      <p
+                        style={{ color: descColor, fontSize: `${descSize}px` }}
+                        className={`leading-relaxed line-clamp-3 w-full text-center select-none ${descFont} ${activeTemplate === 'retro' ? 'font-medium' : 'font-light'
+                          }`}
                       >
                         {description || 'Join us for this exciting departmental event packed with learning, collaboration, and certificate outcomes.'}
                       </p>
@@ -1401,7 +1392,7 @@ export default function PosterDesigner({
                   )}
 
                   {/* Event Logistics (Time / Venue) */}
-                  <div 
+                  <div
                     onMouseDown={(e) => handleElementDragStart(e, 'details')}
                     onTouchStart={(e) => handleElementDragStart(e, 'details')}
                     onClick={(e) => {
@@ -1409,8 +1400,8 @@ export default function PosterDesigner({
                       setSelectedElement('details')
                       setSelectedStickerId(null)
                     }}
-                    style={{ 
-                      backgroundColor: detailsBg, 
+                    style={{
+                      backgroundColor: detailsBg,
                       borderColor: detailsBorderColor,
                       color: detailsColor,
                       position: 'absolute',
@@ -1421,13 +1412,11 @@ export default function PosterDesigner({
                       width: '65%',
                       zIndex: 10
                     }}
-                    className={`rounded-xl p-3 border backdrop-blur-md space-y-1.5 text-left transition-all ${
-                      selectedElement === 'details' 
-                        ? 'border-dashed border-white ring-2 ring-white/30' 
-                        : `hover:border-zinc-200 dark:hover:border-zinc-800 hover:ring-2 hover:ring-purple-500/50 ${
-                            activeTemplate === 'retro' ? 'border-2 border-black shadow-[3px_3px_0px_#000000] text-black font-semibold' : ''
-                          }`
-                    }`}
+                    className={`rounded-xl p-3 border backdrop-blur-md space-y-1.5 text-left transition-all ${selectedElement === 'details'
+                        ? 'border-dashed border-white ring-2 ring-white/30'
+                        : `hover:border-zinc-200 dark:hover:border-zinc-800 hover:ring-2 hover:ring-purple-500/50 ${activeTemplate === 'retro' ? 'border-2 border-black shadow-[3px_3px_0px_#000000] text-black font-semibold' : ''
+                        }`
+                      }`}
                   >
                     <>
                       <div className="flex items-center gap-1.5 pointer-events-none">
@@ -1477,36 +1466,33 @@ export default function PosterDesigner({
                         cursor: 'grab',
                         zIndex: 15
                       }}
-                      className={`flex flex-col items-center p-2.5 rounded-2xl border bg-white/95 dark:bg-zinc-950/95 shadow-xl backdrop-blur-sm w-36 text-center transition-all ${
-                        selectedElement === 'speaker'
+                      className={`flex flex-col items-center p-2.5 rounded-2xl border bg-white/95 dark:bg-zinc-950/95 shadow-xl backdrop-blur-sm w-36 text-center transition-all ${selectedElement === 'speaker'
                           ? 'border-dashed border-white ring-2 ring-white/30'
-                          : `hover:border-zinc-300 dark:hover:border-zinc-700 hover:ring-2 hover:ring-purple-500/50 ${
-                              activeTemplate === 'formal-gold' ? 'border-[#d4af37]/60' :
-                              activeTemplate === 'midnight-hacker' ? 'border-[#22c55e]/60 bg-[#030712]/95 text-[#22c55e]' :
+                          : `hover:border-zinc-300 dark:hover:border-zinc-700 hover:ring-2 hover:ring-purple-500/50 ${activeTemplate === 'formal-gold' ? 'border-[#d4af37]/60' :
+                            activeTemplate === 'midnight-hacker' ? 'border-[#22c55e]/60 bg-[#030712]/95 text-[#22c55e]' :
                               'border-zinc-200 dark:border-zinc-850'
-                            }`
-                      }`}
+                          }`
+                        }`}
                     >
                       {/* Speaker Photo Mockup - Blue Circle Ring just like the reference image! */}
-                      <div className={`w-16 h-16 rounded-full border-[3px] overflow-hidden mb-1.5 flex items-center justify-center shadow-inner ${
-                        activeTemplate === 'formal-gold' ? 'border-[#d4af37]' :
-                        activeTemplate === 'midnight-hacker' ? 'border-[#22c55e]' :
-                        'border-purple-500 bg-purple-50'
-                      }`}>
+                      <div className={`w-16 h-16 rounded-full border-[3px] overflow-hidden mb-1.5 flex items-center justify-center shadow-inner ${activeTemplate === 'formal-gold' ? 'border-[#d4af37]' :
+                          activeTemplate === 'midnight-hacker' ? 'border-[#22c55e]' :
+                            'border-purple-500 bg-purple-50'
+                        }`}>
                         <Users size={28} className={
                           activeTemplate === 'formal-gold' ? 'text-[#d4af37]' :
-                          activeTemplate === 'midnight-hacker' ? 'text-[#22c55e]' :
-                          'text-purple-600'
+                            activeTemplate === 'midnight-hacker' ? 'text-[#22c55e]' :
+                              'text-purple-600'
                         } />
                       </div>
-                      <span 
-                        style={{ color: speakerTitleColor }} 
+                      <span
+                        style={{ color: speakerTitleColor }}
                         className={`text-[8px] font-bold uppercase tracking-wider leading-none mb-1 ${speakerTitleFont}`}
                       >
                         {speakerTitle || 'Resource Person'}
                       </span>
-                      <span 
-                        style={{ color: speakerNameColor }} 
+                      <span
+                        style={{ color: speakerNameColor }}
                         className={`text-xs font-black uppercase leading-tight tracking-tight text-center break-words w-full px-1 ${speakerNameFont}`}
                       >
                         {speakerName || 'Nived Shaji'}
@@ -1524,7 +1510,7 @@ export default function PosterDesigner({
 
                   {/* Draggable QR Code */}
                   {showQr && qrDataUrl && (
-                    <div 
+                    <div
                       onMouseDown={(e) => handleElementDragStart(e, 'qr')}
                       onTouchStart={(e) => handleElementDragStart(e, 'qr')}
                       onClick={(e) => {
@@ -1532,8 +1518,8 @@ export default function PosterDesigner({
                         setSelectedElement('qr')
                         setSelectedStickerId(null)
                       }}
-                      style={{ 
-                        width: `${qrSize}px`, 
+                      style={{
+                        width: `${qrSize}px`,
                         height: `${qrSize}px`,
                         backgroundColor: qrColorLight,
                         borderColor: activeTemplate === 'retro' ? '#000000' : detailsBorderColor,
@@ -1544,19 +1530,17 @@ export default function PosterDesigner({
                         cursor: 'grab',
                         zIndex: 30
                       }}
-                      className={`shrink-0 aspect-square rounded-xl p-1.5 border flex items-center justify-center bg-white transition-all ${
-                        selectedElement === 'qr'
+                      className={`shrink-0 aspect-square rounded-xl p-1.5 border flex items-center justify-center bg-white transition-all ${selectedElement === 'qr'
                           ? 'border-dashed border-white ring-2 ring-white/30'
-                          : `hover:ring-2 hover:ring-purple-500/50 ${
-                              activeTemplate === 'retro' ? 'border-2 border-black shadow-[3px_3px_0px_#000000]' : 
-                              activeTemplate === 'formal-gold' ? 'border-2 border-[#d4af37]' :
+                          : `hover:ring-2 hover:ring-purple-500/50 ${activeTemplate === 'retro' ? 'border-2 border-black shadow-[3px_3px_0px_#000000]' :
+                            activeTemplate === 'formal-gold' ? 'border-2 border-[#d4af37]' :
                               activeTemplate === 'midnight-hacker' ? 'border-2 border-[#22c55e]' : 'border-zinc-200 dark:border-zinc-850'
-                            }`
-                      }`}
+                          }`
+                        }`}
                     >
-                      <img 
-                        src={qrDataUrl} 
-                        alt="Event QR code" 
+                      <img
+                        src={qrDataUrl}
+                        alt="Event QR code"
                         className="w-full h-full object-contain pointer-events-none"
                       />
                       {selectedElement === 'qr' && (
@@ -1581,7 +1565,7 @@ export default function PosterDesigner({
                         title="Move Up"
                         onClick={() => {
                           const s = stickers.find(st => st.id === selectedStickerId)
-                          if(s) updateSticker(selectedStickerId, { y: Math.max(0, s.y - 2) })
+                          if (s) updateSticker(selectedStickerId, { y: Math.max(0, s.y - 2) })
                         }}
                         className="p-1 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded"
                       >
@@ -1592,7 +1576,7 @@ export default function PosterDesigner({
                         title="Move Down"
                         onClick={() => {
                           const s = stickers.find(st => st.id === selectedStickerId)
-                          if(s) updateSticker(selectedStickerId, { y: Math.min(100, s.y + 2) })
+                          if (s) updateSticker(selectedStickerId, { y: Math.min(100, s.y + 2) })
                         }}
                         className="p-1 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded"
                       >
@@ -1603,7 +1587,7 @@ export default function PosterDesigner({
                         title="Move Left"
                         onClick={() => {
                           const s = stickers.find(st => st.id === selectedStickerId)
-                          if(s) updateSticker(selectedStickerId, { x: Math.max(0, s.x - 2) })
+                          if (s) updateSticker(selectedStickerId, { x: Math.max(0, s.x - 2) })
                         }}
                         className="p-1 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded"
                       >
@@ -1614,7 +1598,7 @@ export default function PosterDesigner({
                         title="Move Right"
                         onClick={() => {
                           const s = stickers.find(st => st.id === selectedStickerId)
-                          if(s) updateSticker(selectedStickerId, { x: Math.min(100, s.x + 2) })
+                          if (s) updateSticker(selectedStickerId, { x: Math.min(100, s.x + 2) })
                         }}
                         className="p-1 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded"
                       >
@@ -1624,23 +1608,23 @@ export default function PosterDesigner({
 
                     <div className="flex items-center gap-2">
                       <span className="font-mono text-[10px]">Size:</span>
-                      <input 
-                        type="range" 
-                        min="20" 
+                      <input
+                        type="range"
+                        min="20"
                         max="100"
                         value={stickers.find(st => st.id === selectedStickerId)?.size || 48}
                         onChange={e => updateSticker(selectedStickerId, { size: parseInt(e.target.value) })}
-                        className="w-16 h-1 bg-zinc-200 dark:bg-zinc-700" 
+                        className="w-16 h-1 bg-zinc-200 dark:bg-zinc-700"
                       />
                     </div>
 
                     <div className="flex items-center gap-2">
                       <span className="font-mono text-[10px]">Color:</span>
-                      <input 
+                      <input
                         type="color"
                         value={stickers.find(st => st.id === selectedStickerId)?.color || '#ffffff'}
                         onChange={e => updateSticker(selectedStickerId, { color: e.target.value })}
-                        className="w-6 h-6 rounded cursor-pointer border border-zinc-200" 
+                        className="w-6 h-6 rounded cursor-pointer border border-zinc-200"
                       />
                     </div>
 
@@ -1658,7 +1642,7 @@ export default function PosterDesigner({
               {/* Right Side: Canva Sidebar Customizer Options */}
               <div className="w-full md:w-[450px] border-t md:border-t-0 md:border-l border-zinc-200 dark:border-zinc-800 flex flex-col bg-white dark:bg-zinc-950 overflow-y-auto">
                 <div className="p-5 space-y-6">
-                  
+
                   {/* Presets & Templates */}
                   <div className="space-y-3">
                     <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 flex items-center gap-1.5">
@@ -1670,11 +1654,10 @@ export default function PosterDesigner({
                           key={p}
                           type="button"
                           onClick={() => applyPreset(p)}
-                          className={`py-2 px-0.5 rounded-lg text-[9px] font-bold font-mono border transition-all text-center uppercase tracking-tighter ${
-                            activeTemplate === p
+                          className={`py-2 px-0.5 rounded-lg text-[9px] font-bold font-mono border transition-all text-center uppercase tracking-tighter ${activeTemplate === p
                               ? 'bg-black text-white dark:bg-white dark:text-black border-black dark:border-white shadow'
                               : 'border-zinc-200 dark:border-zinc-800 hover:border-black text-zinc-600 dark:text-zinc-400'
-                          }`}
+                            }`}
                         >
                           {p.replace('-official', '').replace('-gold', '').replace('-hacker', '').replace('-glow', '')}
                         </button>
@@ -1698,67 +1681,67 @@ export default function PosterDesigner({
                     <div className="space-y-3.5">
                       <div className="space-y-1">
                         <label className="text-[10px] font-mono uppercase text-zinc-400">Club Host</label>
-                        <input 
-                          type="text" 
+                        <input
+                          type="text"
                           value={clubName}
                           onChange={e => setClubName(e.target.value)}
-                          className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-1.5 text-xs outline-none focus:ring-1 focus:ring-purple-500" 
+                          className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-1.5 text-xs outline-none focus:ring-1 focus:ring-purple-500"
                         />
                       </div>
                       <div className="space-y-1">
                         <label className="text-[10px] font-mono uppercase text-zinc-400">Event Title</label>
-                        <input 
-                          type="text" 
+                        <input
+                          type="text"
                           value={title}
                           onChange={e => setTitle(e.target.value)}
-                          className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-1.5 text-xs outline-none focus:ring-1 focus:ring-purple-500 font-bold" 
+                          className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-1.5 text-xs outline-none focus:ring-1 focus:ring-purple-500 font-bold"
                         />
                       </div>
                       <div className="space-y-1">
                         <div className="flex justify-between items-center">
                           <label className="text-[10px] font-mono uppercase text-zinc-400">Description</label>
                           <label className="flex items-center gap-1.5 cursor-pointer text-[9px] font-mono text-zinc-500">
-                            <input 
-                              type="checkbox" 
+                            <input
+                              type="checkbox"
                               checked={showDesc}
                               onChange={e => setShowDesc(e.target.checked)}
                               className="w-3 h-3 rounded"
                             /> Show on Poster
                           </label>
                         </div>
-                        <textarea 
+                        <textarea
                           rows={2}
                           value={description}
                           onChange={e => setDescription(e.target.value)}
-                          className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-1.5 text-xs outline-none focus:ring-1 focus:ring-purple-500 resize-none font-light" 
+                          className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-1.5 text-xs outline-none focus:ring-1 focus:ring-purple-500 resize-none font-light"
                         />
                       </div>
                       <div className="grid grid-cols-3 gap-2">
                         <div className="space-y-1">
                           <label className="text-[10px] font-mono uppercase text-zinc-400">Date</label>
-                          <input 
-                            type="text" 
+                          <input
+                            type="text"
                             value={eventDate}
                             onChange={e => setEventDate(e.target.value)}
-                            className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 py-1.5 text-xs outline-none focus:ring-1 focus:ring-purple-500" 
+                            className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 py-1.5 text-xs outline-none focus:ring-1 focus:ring-purple-500"
                           />
                         </div>
                         <div className="space-y-1">
                           <label className="text-[10px] font-mono uppercase text-zinc-400">Time</label>
-                          <input 
-                            type="text" 
+                          <input
+                            type="text"
                             value={eventTime}
                             onChange={e => setEventTime(e.target.value)}
-                            className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 py-1.5 text-xs outline-none focus:ring-1 focus:ring-purple-500" 
+                            className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 py-1.5 text-xs outline-none focus:ring-1 focus:ring-purple-500"
                           />
                         </div>
                         <div className="space-y-1">
                           <label className="text-[10px] font-mono uppercase text-zinc-400">Venue</label>
-                          <input 
-                            type="text" 
+                          <input
+                            type="text"
                             value={location}
                             onChange={e => setLocation(e.target.value)}
-                            className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 py-1.5 text-xs outline-none focus:ring-1 focus:ring-purple-500" 
+                            className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 py-1.5 text-xs outline-none focus:ring-1 focus:ring-purple-500"
                           />
                         </div>
                       </div>
@@ -1783,9 +1766,8 @@ export default function PosterDesigner({
                               key={align}
                               type="button"
                               onClick={() => setTitleAlign(align)}
-                              className={`flex-1 flex items-center justify-center hover:bg-zinc-50 dark:hover:bg-zinc-800 ${
-                                titleAlign === align ? 'bg-zinc-100 dark:bg-zinc-800 text-black dark:text-white font-bold' : 'text-zinc-400'
-                              }`}
+                              className={`flex-1 flex items-center justify-center hover:bg-zinc-50 dark:hover:bg-zinc-800 ${titleAlign === align ? 'bg-zinc-100 dark:bg-zinc-800 text-black dark:text-white font-bold' : 'text-zinc-400'
+                                }`}
                             >
                               {align === 'left' ? <AlignLeft size={12} /> : align === 'center' ? <AlignCenter size={12} /> : <AlignRight size={12} />}
                             </button>
@@ -1973,9 +1955,9 @@ export default function PosterDesigner({
                         </div>
                         <div className="space-y-1">
                           <span className="text-[9px] font-mono text-zinc-500 uppercase">Angle</span>
-                          <select 
-                            value={bgGradAngle} 
-                            onChange={e => setBgGradAngle(e.target.value)} 
+                          <select
+                            value={bgGradAngle}
+                            onChange={e => setBgGradAngle(e.target.value)}
                             className="w-full rounded-lg border h-8 text-[10px] px-1 bg-white dark:bg-zinc-900"
                           >
                             <option value="to bottom right">Diagonal (↘)</option>
@@ -2017,8 +1999,8 @@ export default function PosterDesigner({
                         <Users size={12} /> Speaker / Guest Details
                       </span>
                       <label className="flex items-center gap-1.5 cursor-pointer text-[9px] font-mono text-zinc-500">
-                        <input 
-                          type="checkbox" 
+                        <input
+                          type="checkbox"
                           checked={showSpeaker}
                           onChange={e => setShowSpeaker(e.target.checked)}
                           className="w-3 h-3 rounded"
@@ -2031,20 +2013,20 @@ export default function PosterDesigner({
                         <div className="grid grid-cols-2 gap-3">
                           <div className="space-y-1">
                             <label className="text-[9px] font-mono uppercase text-zinc-400">Speaker Name</label>
-                            <input 
-                              type="text" 
+                            <input
+                              type="text"
                               value={speakerName}
                               onChange={e => setSpeakerName(e.target.value)}
-                              className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-1 text-xs outline-none focus:ring-1 focus:ring-purple-500 font-bold" 
+                              className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-1 text-xs outline-none focus:ring-1 focus:ring-purple-500 font-bold"
                             />
                           </div>
                           <div className="space-y-1">
                             <label className="text-[9px] font-mono uppercase text-zinc-400">Speaker Role / Title</label>
-                            <input 
-                              type="text" 
+                            <input
+                              type="text"
                               value={speakerTitle}
                               onChange={e => setSpeakerTitle(e.target.value)}
-                              className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-1 text-xs outline-none focus:ring-1 focus:ring-purple-500" 
+                              className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-1 text-xs outline-none focus:ring-1 focus:ring-purple-500"
                             />
                           </div>
                         </div>
@@ -2059,8 +2041,8 @@ export default function PosterDesigner({
                         <Terminal size={12} /> Event Link QR Settings
                       </span>
                       <label className="flex items-center gap-1.5 cursor-pointer text-[9px] font-mono text-zinc-500">
-                        <input 
-                          type="checkbox" 
+                        <input
+                          type="checkbox"
                           checked={showQr}
                           onChange={e => setShowQr(e.target.checked)}
                           className="w-3 h-3 rounded"
@@ -2117,7 +2099,7 @@ export default function PosterDesigner({
                                 </label>
                               </div>
                             </div>
-                            
+
                             {/* Title Sliders */}
                             <div className="space-y-1">
                               <span className="text-[10px] font-mono font-bold text-zinc-600 dark:text-zinc-400">Title Position</span>
@@ -2206,13 +2188,13 @@ export default function PosterDesigner({
                             <span>QR Width</span>
                             <span>{qrSize}px</span>
                           </span>
-                          <input 
-                            type="range" 
-                            min="60" 
-                            max="140" 
-                            value={qrSize} 
-                            onChange={e => setQrSize(parseInt(e.target.value))} 
-                            className="w-full mt-2" 
+                          <input
+                            type="range"
+                            min="60"
+                            max="140"
+                            value={qrSize}
+                            onChange={e => setQrSize(parseInt(e.target.value))}
+                            className="w-full mt-2"
                           />
                         </div>
                       </div>
