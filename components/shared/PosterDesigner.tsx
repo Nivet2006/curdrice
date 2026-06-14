@@ -95,6 +95,11 @@ export default function PosterDesigner({
   const [speakerTitleColor, setSpeakerTitleColor] = useState('#475569')
   const [speakerTitleFont, setSpeakerTitleFont] = useState('font-sans')
 
+  // Selection & drag-resizing states
+  const [selectedElement, setSelectedElement] = useState<'club' | 'title' | 'desc' | 'details' | 'qr' | 'speaker' | null>(null)
+  const [detailsSize, setDetailsSize] = useState(10) // default 10px
+  const [speakerScale, setSpeakerScale] = useState(100) // default 100% (scale 1.0)
+
   // Background Customization
   const [bgColorType, setBgColorType] = useState<'gradient' | 'solid'>('gradient')
   const [bgSolidColor, setBgSolidColor] = useState('#0f172a')
@@ -197,6 +202,9 @@ export default function PosterDesigner({
     setQrY(88)
     setQrPosition('custom')
     setShowSpeaker(false)
+    setDetailsSize(10)
+    setSpeakerScale(100)
+    setSelectedElement(null)
     switch(presetName) {
       case 'cyberpunk':
         setBgColorType('solid')
@@ -803,6 +811,93 @@ export default function PosterDesigner({
     document.addEventListener('touchend', handleDragEnd)
   }
 
+  // Resize handler for elements via bottom-right drag handles
+  const handleResizeStart = (
+    e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>,
+    elementKey: 'club' | 'title' | 'desc' | 'details' | 'qr' | 'speaker' | string // string is for sticker ids
+  ) => {
+    if ('button' in e && e.button !== 0) return // Only on left click
+    e.preventDefault()
+    e.stopPropagation()
+
+    // Determine initial values
+    let startSize = 0
+    if (elementKey === 'club') {
+      startSize = clubSize
+    } else if (elementKey === 'title') {
+      startSize = titleSize
+    } else if (elementKey === 'desc') {
+      startSize = descSize
+    } else if (elementKey === 'details') {
+      startSize = detailsSize
+    } else if (elementKey === 'qr') {
+      startSize = qrSize
+    } else if (elementKey === 'speaker') {
+      startSize = speakerScale
+    } else {
+      // It's a sticker ID
+      const sticker = stickers.find(s => s.id === elementKey)
+      if (sticker) {
+        startSize = sticker.size
+      }
+    }
+
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY
+
+    const startMouseX = clientX
+    const startMouseY = clientY
+
+    const handleResizeMove = (moveEvent: MouseEvent | TouchEvent) => {
+      const currentClientX = 'touches' in moveEvent ? moveEvent.touches[0].clientX : moveEvent.clientX
+      const currentClientY = 'touches' in moveEvent ? moveEvent.touches[0].clientY : moveEvent.clientY
+
+      const dx = currentClientX - startMouseX
+      const dy = currentClientY - startMouseY
+
+      // Pulling bottom-right increases size with positive delta
+      // Let's use average delta to size
+      const delta = (dx + dy) / 2
+
+      if (elementKey === 'club') {
+        // Font sizes are smaller, let's scale delta
+        const newSize = Math.max(8, Math.min(32, startSize + delta / 4))
+        setClubSize(newSize)
+      } else if (elementKey === 'title') {
+        const newSize = Math.max(16, Math.min(80, startSize + delta / 3))
+        setTitleSize(newSize)
+      } else if (elementKey === 'desc') {
+        const newSize = Math.max(8, Math.min(28, startSize + delta / 4))
+        setDescSize(newSize)
+      } else if (elementKey === 'details') {
+        const newSize = Math.max(6, Math.min(20, startSize + delta / 5))
+        setDetailsSize(newSize)
+      } else if (elementKey === 'qr') {
+        const newSize = Math.max(50, Math.min(200, startSize + delta))
+        setQrSize(newSize)
+      } else if (elementKey === 'speaker') {
+        const newScale = Math.max(50, Math.min(180, startSize + delta / 2))
+        setSpeakerScale(newScale)
+      } else {
+        // It is a sticker ID
+        const newSize = Math.max(16, Math.min(150, startSize + delta))
+        updateSticker(elementKey, { size: newSize })
+      }
+    }
+
+    const handleResizeEnd = () => {
+      document.removeEventListener('mousemove', handleResizeMove)
+      document.removeEventListener('mouseup', handleResizeEnd)
+      document.removeEventListener('touchmove', handleResizeMove)
+      document.removeEventListener('touchend', handleResizeEnd)
+    }
+
+    document.addEventListener('mousemove', handleResizeMove)
+    document.addEventListener('mouseup', handleResizeEnd)
+    document.addEventListener('touchmove', handleResizeMove, { passive: false })
+    document.addEventListener('touchend', handleResizeEnd)
+  }
+
   // Reset layout positions helper
   const resetLayoutPositions = () => {
     setClubX(50)
@@ -818,15 +913,19 @@ export default function PosterDesigner({
     setQrPosition('custom')
     setSpeakerX(25)
     setSpeakerY(80)
-    toast.success('All element positions reset to defaults!')
+    setDetailsSize(10)
+    setSpeakerScale(100)
+    setSelectedElement(null)
+    toast.success('All element positions and sizes reset to defaults!')
   }
 
   // Render poster element to an image url
   const getRenderedImageBlob = async (format: 'png' | 'jpeg' | 'jpg'): Promise<Blob | null> => {
     if (!posterRef.current) return null
     try {
-      // Unselect sticker before capturing
+      // Unselect elements and stickers before capturing to hide handles/borders
       setSelectedStickerId(null)
+      setSelectedElement(null)
       await new Promise(resolve => setTimeout(resolve, 100)) // Let UI re-render
       
       const renderFn = format === 'png' ? toPng : toJpeg
@@ -1013,6 +1112,10 @@ export default function PosterDesigner({
                 {/* Actual Poster Element */}
                 <div 
                   ref={posterRef}
+                  onClick={() => {
+                    setSelectedElement(null)
+                    setSelectedStickerId(null)
+                  }}
                   style={getPosterBgStyle()}
                   className={`w-[400px] h-[560px] rounded-2xl relative overflow-hidden shadow-2xl select-none ${
                     activeTemplate === 'cyberpunk' ? 'border-2 border-[#00f2fe]' : 
@@ -1124,6 +1227,11 @@ export default function PosterDesigner({
                   <div 
                     onMouseDown={(e) => handleElementDragStart(e, 'club')}
                     onTouchStart={(e) => handleElementDragStart(e, 'club')}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setSelectedElement('club')
+                      setSelectedStickerId(null)
+                    }}
                     style={{
                       position: 'absolute',
                       left: `${clubX}%`,
@@ -1132,7 +1240,11 @@ export default function PosterDesigner({
                       cursor: 'grab',
                       zIndex: 10
                     }}
-                    className="flex flex-col items-center hover:ring-2 hover:ring-purple-500/50 p-1.5 rounded-lg border border-transparent hover:border-zinc-300 dark:hover:border-zinc-700 bg-transparent whitespace-nowrap"
+                    className={`flex flex-col items-center p-1.5 rounded-lg border bg-transparent whitespace-nowrap transition-all ${
+                      selectedElement === 'club' 
+                        ? 'border-dashed border-purple-500 ring-2 ring-purple-500/30' 
+                        : 'border-transparent hover:border-zinc-300 dark:hover:border-zinc-700 hover:ring-2 hover:ring-purple-500/50'
+                    }`}
                   >
                     <span 
                       style={{ color: clubColor, fontSize: `${clubSize}px` }}
@@ -1142,6 +1254,14 @@ export default function PosterDesigner({
                     </span>
                     {activeTemplate === 'cyberpunk' && (
                       <span className="text-[8px] text-zinc-500 font-mono tracking-tighter mt-0.5 pointer-events-none">Club-Eve System v1.0</span>
+                    )}
+                    {selectedElement === 'club' && (
+                      <div
+                        onMouseDown={(e) => handleResizeStart(e, 'club')}
+                        onTouchStart={(e) => handleResizeStart(e, 'club')}
+                        className="absolute bottom-0 right-0 w-3 h-3 bg-purple-600 border border-white rounded-full cursor-se-resize z-30"
+                        style={{ transform: 'translate(50%, 50%)' }}
+                      />
                     )}
                   </div>
 
@@ -1157,6 +1277,7 @@ export default function PosterDesigner({
                         onClick={(e) => {
                           e.stopPropagation()
                           setSelectedStickerId(sticker.id)
+                          setSelectedElement(null)
                         }}
                         style={{
                           position: 'absolute',
@@ -1167,10 +1288,20 @@ export default function PosterDesigner({
                           zIndex: 20
                         }}
                         className={`group relative p-1 rounded-lg border transition-all ${
-                          isSelected ? 'border-dashed border-red-500 ring-2 ring-red-500/20 bg-black/5 dark:bg-white/5' : 'border-transparent hover:border-zinc-300 dark:hover:border-zinc-700'
+                          isSelected 
+                            ? 'border-dashed border-purple-500 ring-2 ring-purple-500/30' 
+                            : 'border-transparent hover:border-zinc-300 dark:hover:border-zinc-700 hover:ring-2 hover:ring-purple-500/50'
                         }`}
                       >
                         <StickerIcon size={sticker.size} style={{ color: sticker.color }} />
+                        {isSelected && (
+                          <div
+                            onMouseDown={(e) => handleResizeStart(e, sticker.id)}
+                            onTouchStart={(e) => handleResizeStart(e, sticker.id)}
+                            className="absolute bottom-0 right-0 w-3 h-3 bg-purple-600 border border-white rounded-full cursor-se-resize z-30"
+                            style={{ transform: 'translate(50%, 50%)' }}
+                          />
+                        )}
                       </div>
                     )
                   })}
@@ -1179,6 +1310,11 @@ export default function PosterDesigner({
                   <div 
                     onMouseDown={(e) => handleElementDragStart(e, 'title')}
                     onTouchStart={(e) => handleElementDragStart(e, 'title')}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setSelectedElement('title')
+                      setSelectedStickerId(null)
+                    }}
                     style={{
                       position: 'absolute',
                       left: `${titleX}%`,
@@ -1188,7 +1324,11 @@ export default function PosterDesigner({
                       width: '85%',
                       zIndex: 10
                     }}
-                    className="hover:ring-2 hover:ring-purple-500/50 p-2 rounded-lg border border-transparent hover:border-zinc-300 dark:hover:border-zinc-700 bg-transparent flex flex-col justify-center items-center"
+                    className={`p-2 rounded-lg border bg-transparent flex flex-col justify-center items-center transition-all ${
+                      selectedElement === 'title' 
+                        ? 'border-dashed border-purple-500 ring-2 ring-purple-500/30' 
+                        : 'border-transparent hover:border-zinc-300 dark:hover:border-zinc-700 hover:ring-2 hover:ring-purple-500/50'
+                    }`}
                   >
                     <h1 
                       style={{ 
@@ -1206,6 +1346,14 @@ export default function PosterDesigner({
                     >
                       {title || 'EXQUISITE EVENT'}
                     </h1>
+                    {selectedElement === 'title' && (
+                      <div
+                        onMouseDown={(e) => handleResizeStart(e, 'title')}
+                        onTouchStart={(e) => handleResizeStart(e, 'title')}
+                        className="absolute bottom-0 right-0 w-3 h-3 bg-purple-600 border border-white rounded-full cursor-se-resize z-30"
+                        style={{ transform: 'translate(50%, 50%)' }}
+                      />
+                    )}
                   </div>
 
                   {/* Event Description */}
@@ -1213,6 +1361,11 @@ export default function PosterDesigner({
                     <div 
                       onMouseDown={(e) => handleElementDragStart(e, 'desc')}
                       onTouchStart={(e) => handleElementDragStart(e, 'desc')}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setSelectedElement('desc')
+                        setSelectedStickerId(null)
+                      }}
                       style={{
                         position: 'absolute',
                         left: `${descX}%`,
@@ -1222,7 +1375,11 @@ export default function PosterDesigner({
                         width: '85%',
                         zIndex: 10
                       }}
-                      className="hover:ring-2 hover:ring-purple-500/50 p-2 rounded-lg border border-transparent hover:border-zinc-300 dark:hover:border-zinc-700 bg-transparent flex flex-col justify-center items-center"
+                      className={`p-2 rounded-lg border bg-transparent flex flex-col justify-center items-center transition-all ${
+                        selectedElement === 'desc' 
+                          ? 'border-dashed border-purple-500 ring-2 ring-purple-500/30' 
+                          : 'border-transparent hover:border-zinc-300 dark:hover:border-zinc-700 hover:ring-2 hover:ring-purple-500/50'
+                      }`}
                     >
                       <p 
                         style={{ color: descColor, fontSize: `${descSize}px` }}
@@ -1232,6 +1389,14 @@ export default function PosterDesigner({
                       >
                         {description || 'Join us for this exciting departmental event packed with learning, collaboration, and certificate outcomes.'}
                       </p>
+                      {selectedElement === 'desc' && (
+                        <div
+                          onMouseDown={(e) => handleResizeStart(e, 'desc')}
+                          onTouchStart={(e) => handleResizeStart(e, 'desc')}
+                          className="absolute bottom-0 right-0 w-3 h-3 bg-purple-600 border border-white rounded-full cursor-se-resize z-30"
+                          style={{ transform: 'translate(50%, 50%)' }}
+                        />
+                      )}
                     </div>
                   )}
 
@@ -1239,6 +1404,11 @@ export default function PosterDesigner({
                   <div 
                     onMouseDown={(e) => handleElementDragStart(e, 'details')}
                     onTouchStart={(e) => handleElementDragStart(e, 'details')}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setSelectedElement('details')
+                      setSelectedStickerId(null)
+                    }}
                     style={{ 
                       backgroundColor: detailsBg, 
                       borderColor: detailsBorderColor,
@@ -1251,30 +1421,42 @@ export default function PosterDesigner({
                       width: '65%',
                       zIndex: 10
                     }}
-                    className={`rounded-xl p-3 border backdrop-blur-md space-y-1.5 text-left hover:ring-2 hover:ring-purple-500/50 hover:border-zinc-200 dark:hover:border-zinc-800 ${
-                      activeTemplate === 'retro' ? 'border-2 border-black shadow-[3px_3px_0px_#000000] text-black font-semibold' : ''
+                    className={`rounded-xl p-3 border backdrop-blur-md space-y-1.5 text-left transition-all ${
+                      selectedElement === 'details' 
+                        ? 'border-dashed border-purple-500 ring-2 ring-purple-500/30' 
+                        : `hover:border-zinc-200 dark:hover:border-zinc-800 hover:ring-2 hover:ring-purple-500/50 ${
+                            activeTemplate === 'retro' ? 'border-2 border-black shadow-[3px_3px_0px_#000000] text-black font-semibold' : ''
+                          }`
                     }`}
                   >
                     <>
                       <div className="flex items-center gap-1.5 pointer-events-none">
                         <Calendar size={12} className="shrink-0 opacity-80" style={{ color: dateColor }} />
-                        <span style={{ color: dateColor }} className={`text-[10px] leading-none truncate ${dateFont}`}>
+                        <span style={{ color: dateColor, fontSize: `${detailsSize}px` }} className={`leading-none truncate ${dateFont}`}>
                           {getFormattedDate(eventDate)}
                         </span>
                       </div>
                       <div className="flex items-center gap-1.5 pointer-events-none">
                         <Clock size={12} className="shrink-0 opacity-80" style={{ color: timeColor }} />
-                        <span style={{ color: timeColor }} className={`text-[10px] leading-none truncate ${timeFont}`}>
+                        <span style={{ color: timeColor, fontSize: `${detailsSize}px` }} className={`leading-none truncate ${timeFont}`}>
                           {eventTime || '1:30 PM'}
                         </span>
                       </div>
                       <div className="flex items-center gap-1.5 pointer-events-none">
                         <MapPin size={12} className="shrink-0 opacity-80" style={{ color: venueColor }} />
-                        <span style={{ color: venueColor }} className={`text-[10px] leading-none truncate ${venueFont}`}>
+                        <span style={{ color: venueColor, fontSize: `${detailsSize}px` }} className={`leading-none truncate ${venueFont}`}>
                           {location || 'Venue: TBA'}
                         </span>
                       </div>
                     </>
+                    {selectedElement === 'details' && (
+                      <div
+                        onMouseDown={(e) => handleResizeStart(e, 'details')}
+                        onTouchStart={(e) => handleResizeStart(e, 'details')}
+                        className="absolute bottom-0 right-0 w-3 h-3 bg-purple-600 border border-white rounded-full cursor-se-resize z-30"
+                        style={{ transform: 'translate(50%, 50%)' }}
+                      />
+                    )}
                   </div>
 
                   {/* Speaker Badge */}
@@ -1282,18 +1464,27 @@ export default function PosterDesigner({
                     <div
                       onMouseDown={(e) => handleElementDragStart(e, 'speaker')}
                       onTouchStart={(e) => handleElementDragStart(e, 'speaker')}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setSelectedElement('speaker')
+                        setSelectedStickerId(null)
+                      }}
                       style={{
                         position: 'absolute',
                         left: `${speakerX}%`,
                         top: `${speakerY}%`,
-                        transform: 'translate(-50%, -50%)',
+                        transform: `translate(-50%, -50%) scale(${speakerScale / 100})`,
                         cursor: 'grab',
                         zIndex: 15
                       }}
-                      className={`flex flex-col items-center hover:ring-2 hover:ring-purple-500/50 p-2.5 rounded-2xl border hover:border-zinc-300 dark:hover:border-zinc-700 bg-white/95 dark:bg-zinc-950/95 shadow-xl backdrop-blur-sm w-36 text-center ${
-                        activeTemplate === 'formal-gold' ? 'border-[#d4af37]/60' :
-                        activeTemplate === 'midnight-hacker' ? 'border-[#22c55e]/60 bg-[#030712]/95 text-[#22c55e]' :
-                        'border-zinc-200 dark:border-zinc-850'
+                      className={`flex flex-col items-center p-2.5 rounded-2xl border bg-white/95 dark:bg-zinc-950/95 shadow-xl backdrop-blur-sm w-36 text-center transition-all ${
+                        selectedElement === 'speaker'
+                          ? 'border-dashed border-purple-500 ring-2 ring-purple-500/30'
+                          : `hover:border-zinc-300 dark:hover:border-zinc-700 hover:ring-2 hover:ring-purple-500/50 ${
+                              activeTemplate === 'formal-gold' ? 'border-[#d4af37]/60' :
+                              activeTemplate === 'midnight-hacker' ? 'border-[#22c55e]/60 bg-[#030712]/95 text-[#22c55e]' :
+                              'border-zinc-200 dark:border-zinc-850'
+                            }`
                       }`}
                     >
                       {/* Speaker Photo Mockup - Blue Circle Ring just like the reference image! */}
@@ -1320,6 +1511,14 @@ export default function PosterDesigner({
                       >
                         {speakerName || 'Nived Shaji'}
                       </span>
+                      {selectedElement === 'speaker' && (
+                        <div
+                          onMouseDown={(e) => handleResizeStart(e, 'speaker')}
+                          onTouchStart={(e) => handleResizeStart(e, 'speaker')}
+                          className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-purple-600 border border-white rounded-full cursor-se-resize z-30"
+                          style={{ transform: 'translate(50%, 50%) scale(1.1)' }}
+                        />
+                      )}
                     </div>
                   )}
 
@@ -1328,6 +1527,11 @@ export default function PosterDesigner({
                     <div 
                       onMouseDown={(e) => handleElementDragStart(e, 'qr')}
                       onTouchStart={(e) => handleElementDragStart(e, 'qr')}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setSelectedElement('qr')
+                        setSelectedStickerId(null)
+                      }}
                       style={{ 
                         width: `${qrSize}px`, 
                         height: `${qrSize}px`,
@@ -1340,10 +1544,14 @@ export default function PosterDesigner({
                         cursor: 'grab',
                         zIndex: 30
                       }}
-                      className={`shrink-0 aspect-square rounded-xl p-1.5 border flex items-center justify-center bg-white hover:ring-2 hover:ring-purple-500/50 ${
-                        activeTemplate === 'retro' ? 'border-2 border-black shadow-[3px_3px_0px_#000000]' : 
-                        activeTemplate === 'formal-gold' ? 'border-2 border-[#d4af37]' :
-                        activeTemplate === 'midnight-hacker' ? 'border-2 border-[#22c55e]' : ''
+                      className={`shrink-0 aspect-square rounded-xl p-1.5 border flex items-center justify-center bg-white transition-all ${
+                        selectedElement === 'qr'
+                          ? 'border-dashed border-purple-500 ring-2 ring-purple-500/30'
+                          : `hover:ring-2 hover:ring-purple-500/50 ${
+                              activeTemplate === 'retro' ? 'border-2 border-black shadow-[3px_3px_0px_#000000]' : 
+                              activeTemplate === 'formal-gold' ? 'border-2 border-[#d4af37]' :
+                              activeTemplate === 'midnight-hacker' ? 'border-2 border-[#22c55e]' : 'border-zinc-200 dark:border-zinc-850'
+                            }`
                       }`}
                     >
                       <img 
@@ -1351,9 +1559,16 @@ export default function PosterDesigner({
                         alt="Event QR code" 
                         className="w-full h-full object-contain pointer-events-none"
                       />
+                      {selectedElement === 'qr' && (
+                        <div
+                          onMouseDown={(e) => handleResizeStart(e, 'qr')}
+                          onTouchStart={(e) => handleResizeStart(e, 'qr')}
+                          className="absolute bottom-0 right-0 w-3 h-3 bg-purple-600 border border-white rounded-full cursor-se-resize z-30"
+                          style={{ transform: 'translate(50%, 50%)' }}
+                        />
+                      )}
                     </div>
                   )}
-
                 </div>
 
                 {/* Sticker Quick Controls */}
