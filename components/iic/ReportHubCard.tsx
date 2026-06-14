@@ -34,16 +34,24 @@ export function ReportHubCard({ eventId }: { eventId: string }) {
       try {
         const res = await fetch(`/api/reports/check-feedback-status?eventId=${eventId}`);
         if (res.ok) {
-          const data = await res.json();
-          setStatus(data);
+          try {
+            const data = await res.json();
+            setStatus(data);
+          } catch (err) {
+            console.error('Failed to parse feedback status JSON:', err);
+          }
         }
 
         // Also fetch if there is an existing report generated
         const reportRes = await fetch(`/api/reports/existing?eventId=${eventId}`);
         if (reportRes.ok) {
-          const reportData = await reportRes.json();
-          if (reportData.report) {
-            setReportData(reportData.report);
+          try {
+            const reportData = await reportRes.json();
+            if (reportData.report) {
+              setReportData(reportData.report);
+            }
+          } catch (err) {
+            console.error('Failed to parse existing report JSON:', err);
           }
         }
       } catch (e) {
