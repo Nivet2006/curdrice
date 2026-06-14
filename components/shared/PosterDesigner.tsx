@@ -12,6 +12,192 @@ import { toPng, toJpeg } from 'html-to-image'
 import { PDFDocument } from 'pdf-lib'
 import QRCode from 'qrcode'
 import { toast } from 'sonner'
+import { GOOGLE_FONTS } from '../../lib/fonts-list'
+
+const loadGoogleFont = (fontFamily: string) => {
+  if (typeof window === 'undefined') return
+  if (!fontFamily || fontFamily.startsWith('font-')) return
+  const fontId = `google-font-${fontFamily.replace(/\s+/g, '-').toLowerCase()}`
+  if (document.getElementById(fontId)) return
+  
+  const link = document.createElement('link')
+  link.id = fontId
+  link.rel = 'stylesheet'
+  link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontFamily)}:wght@400;500;700;900&display=swap`
+  document.head.appendChild(link)
+}
+
+const getFontFamily = (fontName: string) => {
+  if (fontName === 'font-sans') return 'system-ui, -apple-system, sans-serif'
+  if (fontName === 'font-serif') return 'Georgia, serif'
+  if (fontName === 'font-mono') return 'monospace'
+  return fontName
+}
+
+const PRESET_SWATCHES = [
+  '#ffffff', '#000000', '#f43f5e', '#ec4899', '#a855f7', '#6366f1', 
+  '#3b82f6', '#60a5fa', '#00f2fe', '#10b981', '#22c55e', '#facc15', 
+  '#f97316', '#ef4444', '#d4af37', '#94a3b8', '#1e293b', '#0f172a'
+]
+
+const ColorSwatches = ({
+  value,
+  onChange
+}: {
+  value: string
+  onChange: (val: string) => void
+}) => {
+  return (
+    <div className="flex flex-wrap gap-1 mt-1.5 max-w-[220px]">
+      {PRESET_SWATCHES.map(color => (
+        <button
+          key={color}
+          type="button"
+          onClick={() => onChange(color)}
+          style={{ backgroundColor: color }}
+          className={`w-4 h-4 rounded-full border transition-all ${
+            value.toLowerCase() === color.toLowerCase()
+              ? 'ring-2 ring-purple-500 border-white scale-110 z-10'
+              : 'border-zinc-200 dark:border-zinc-800 hover:scale-105'
+          }`}
+          title={color}
+        />
+      ))}
+    </div>
+  )
+}
+
+const FontSelector = ({
+  value,
+  onChange
+}: {
+  value: string
+  onChange: (val: string) => void
+}) => {
+  const [isOpen, setIsOpen] = useState(false)
+  const [search, setSearch] = useState('')
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  // Click outside to close
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isOpen])
+
+  const displayFontName = value.startsWith('font-') 
+    ? value.replace('font-', '').toUpperCase() 
+    : value
+
+  // Filter fonts
+  const filteredFonts = React.useMemo(() => {
+    const systemFonts = [
+      { name: 'font-sans', category: 'sans-serif' },
+      { name: 'font-serif', category: 'serif' },
+      { name: 'font-mono', category: 'monospace' }
+    ]
+    
+    const all = [...systemFonts, ...GOOGLE_FONTS]
+
+    return all.filter(font => {
+      return font.name.toLowerCase().includes(search.toLowerCase()) ||
+             (font.name.startsWith('font-') && font.name.replace('font-', '').toLowerCase().includes(search.toLowerCase()))
+    })
+  }, [search])
+
+  // Take top 60 matches for performance
+  const visibleFonts = filteredFonts.slice(0, 60)
+
+  // Load fonts when visible list changes
+  useEffect(() => {
+    visibleFonts.forEach(font => {
+      if (!font.name.startsWith('font-')) {
+        loadGoogleFont(font.name)
+      }
+    })
+  }, [visibleFonts])
+
+  return (
+    <div className="relative" ref={containerRef}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-2 py-1 text-[11px] w-28 text-left truncate flex items-center justify-between outline-none hover:border-purple-500/50 animate-none"
+      >
+        <span className="truncate">{displayFontName}</span>
+        <span className="text-[8px] text-zinc-400 ml-1">▼</span>
+      </button>
+
+      {isOpen && (
+        <div className="absolute right-0 mt-1 w-64 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-xl z-[99] overflow-hidden flex flex-col max-h-[240px]">
+          {/* Search bar */}
+          <div className="p-2 border-b border-zinc-100 dark:border-zinc-850 flex items-center gap-1.5 bg-zinc-50 dark:bg-zinc-950">
+            <input
+              type="text"
+              placeholder="Search fonts..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1 text-[11px] outline-none focus:ring-1 focus:ring-purple-500"
+              autoFocus
+            />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch('')}
+                className="text-[10px] text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 px-1"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+
+          {/* Fonts List */}
+          <div className="overflow-y-auto flex-1 divide-y divide-zinc-50 dark:divide-zinc-850 custom-scrollbar">
+            {visibleFonts.length === 0 ? (
+              <div className="p-3 text-[10px] text-zinc-400 text-center">No fonts found</div>
+            ) : (
+              visibleFonts.map(font => {
+                const fontName = font.name
+                const isSelected = value === fontName
+                const fontStyleName = fontName.startsWith('font-') ? getFontFamily(fontName) : fontName
+                return (
+                  <button
+                    key={fontName}
+                    type="button"
+                    onClick={() => {
+                      onChange(fontName)
+                      setIsOpen(false)
+                    }}
+                    style={{ fontFamily: fontStyleName }}
+                    className={`w-full text-left px-3 py-2 text-xs flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors ${
+                      isSelected ? 'bg-purple-50/50 dark:bg-purple-950/20 text-purple-600 dark:text-purple-400 font-bold' : 'text-zinc-800 dark:text-zinc-200'
+                    }`}
+                  >
+                    <span>{fontName.startsWith('font-') ? fontName.replace('font-', '').toUpperCase() : fontName}</span>
+                    {isSelected && <span className="text-[10px] text-purple-600 dark:text-purple-400">✓</span>}
+                  </button>
+                )
+              })
+            )}
+            {filteredFonts.length > 60 && (
+              <div className="p-1.5 text-[9px] text-zinc-400 text-center font-mono bg-zinc-50 dark:bg-zinc-950">
+                showing 60 of {filteredFonts.length} (type to filter)
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
 
 // List of available icons for stickers
 const STICKER_ICONS: Record<string, React.ComponentType<any>> = {
@@ -23,6 +209,7 @@ const STICKER_ICONS: Record<string, React.ComponentType<any>> = {
 interface Sticker {
   id: string
   iconName: string
+  imageUrl?: string // optional image URL for logos
   x: number // percentage 0-100
   y: number // percentage 0-100
   size: number
@@ -147,6 +334,34 @@ export default function PosterDesigner({
       if (initialDate) setEventDate(initialDate)
     }
   }, [isOpen, initialTitle, initialClubName, initialDescription, initialLocation, initialDate])
+
+  // Load Google Fonts dynamically when they are selected
+  useEffect(() => {
+    const activeFonts = [
+      clubFont,
+      titleFont,
+      descFont,
+      dateFont,
+      timeFont,
+      venueFont,
+      speakerNameFont,
+      speakerTitleFont
+    ]
+    activeFonts.forEach(font => {
+      if (font && !font.startsWith('font-')) {
+        loadGoogleFont(font)
+      }
+    })
+  }, [
+    clubFont,
+    titleFont,
+    descFont,
+    dateFont,
+    timeFont,
+    venueFont,
+    speakerNameFont,
+    speakerTitleFont
+  ])
 
   // QR code URL generator
   const getAppUrl = () => {
@@ -660,6 +875,21 @@ export default function PosterDesigner({
     setSelectedStickerId(newSticker.id)
   }
 
+  // Add a logo sticker
+  const addLogoSticker = (imageUrl: string) => {
+    const newSticker: Sticker = {
+      id: crypto.randomUUID(),
+      iconName: 'Sparkles',
+      imageUrl,
+      x: 50,
+      y: 35,
+      size: 56,
+      color: '#ffffff'
+    }
+    setStickers([...stickers, newSticker])
+    setSelectedStickerId(newSticker.id)
+  }
+
   // Remove selected sticker
   const deleteSticker = (id: string) => {
     setStickers(stickers.filter(s => s.id !== id))
@@ -1064,6 +1294,25 @@ export default function PosterDesigner({
 
   return (
     <>
+      <style dangerouslySetInnerHTML={{ __html: `
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 5px;
+          height: 5px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(156, 163, 175, 0.3);
+          border-radius: 9999px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(156, 163, 175, 0.5);
+        }
+        .scrollbar-none::-webkit-scrollbar {
+          display: none;
+        }
+      ` }} />
       <button
         type="button"
         onClick={() => setIsOpen(true)}
@@ -1074,7 +1323,7 @@ export default function PosterDesigner({
       </button>
 
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto custom-scrollbar">
           <div className="bg-white dark:bg-zinc-950 w-full max-w-[1200px] h-full max-h-[85vh] rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
 
             {/* Header */}
@@ -1099,7 +1348,7 @@ export default function PosterDesigner({
             <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
 
               {/* Left Side: Live Canvas Preview Container */}
-              <div className="flex-1 bg-zinc-100 dark:bg-zinc-900/60 p-6 flex flex-col items-center justify-center overflow-y-auto min-h-[350px]">
+              <div className="flex-1 bg-zinc-100 dark:bg-zinc-900/60 p-6 flex flex-col items-center justify-center overflow-y-auto min-h-[350px] custom-scrollbar">
                 <div className="w-full flex justify-between items-center mb-3">
                   <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest flex items-center gap-1.5">
                     <Eye size={12} /> Interactive Poster Canvas (400 × 560 px)
@@ -1245,7 +1494,7 @@ export default function PosterDesigner({
                       }`}
                   >
                     <span
-                      style={{ color: clubColor, fontSize: `${clubSize}px` }}
+                      style={{ color: clubColor, fontSize: `${clubSize}px`, fontFamily: getFontFamily(clubFont) }}
                       className={`uppercase tracking-widest font-bold ${clubFont}`}
                     >
                       {clubName || 'Host Club'}
@@ -1265,7 +1514,6 @@ export default function PosterDesigner({
 
                   {/* Dynamic Stickers / Decals */}
                   {stickers.map(sticker => {
-                    const StickerIcon = STICKER_ICONS[sticker.iconName] || HelpCircle
                     const isSelected = selectedStickerId === sticker.id
                     return (
                       <div
@@ -1290,7 +1538,24 @@ export default function PosterDesigner({
                             : 'border-transparent hover:border-zinc-300 dark:hover:border-zinc-700 hover:ring-2 hover:ring-purple-500/50'
                           }`}
                       >
-                        <StickerIcon size={sticker.size} style={{ color: sticker.color }} />
+                        {sticker.imageUrl ? (
+                          <img
+                            src={sticker.imageUrl}
+                            alt="Sticker Logo"
+                            style={{
+                              width: `${sticker.size}px`,
+                              height: 'auto',
+                              maxHeight: `${sticker.size}px`,
+                              objectFit: 'contain'
+                            }}
+                            className="pointer-events-none"
+                          />
+                        ) : (
+                          (() => {
+                            const StickerIcon = STICKER_ICONS[sticker.iconName] || HelpCircle
+                            return <StickerIcon size={sticker.size} style={{ color: sticker.color }} />
+                          })()
+                        )}
                         {isSelected && (
                           <div
                             onMouseDown={(e) => handleResizeStart(e, sticker.id)}
@@ -1330,7 +1595,8 @@ export default function PosterDesigner({
                       style={{
                         color: titleColor,
                         fontSize: `${titleSize}px`,
-                        textAlign: titleAlign
+                        textAlign: titleAlign,
+                        fontFamily: getFontFamily(titleFont)
                       }}
                       className={`font-black tracking-tight leading-none uppercase break-words w-full select-none ${titleFont} ${activeTemplate === 'cyberpunk' ? 'text-shadow-neon' : ''
                         } ${activeTemplate === 'retro' ? 'drop-shadow-[3px_3px_0px_#000000]' : ''
@@ -1374,7 +1640,7 @@ export default function PosterDesigner({
                         }`}
                     >
                       <p
-                        style={{ color: descColor, fontSize: `${descSize}px` }}
+                        style={{ color: descColor, fontSize: `${descSize}px`, fontFamily: getFontFamily(descFont) }}
                         className={`leading-relaxed line-clamp-3 w-full text-center select-none ${descFont} ${activeTemplate === 'retro' ? 'font-medium' : 'font-light'
                           }`}
                       >
@@ -1421,19 +1687,19 @@ export default function PosterDesigner({
                     <>
                       <div className="flex items-center gap-1.5 pointer-events-none">
                         <Calendar size={12} className="shrink-0 opacity-80" style={{ color: dateColor }} />
-                        <span style={{ color: dateColor, fontSize: `${detailsSize}px` }} className={`leading-none truncate ${dateFont}`}>
+                        <span style={{ color: dateColor, fontSize: `${detailsSize}px`, fontFamily: getFontFamily(dateFont) }} className={`leading-none truncate ${dateFont}`}>
                           {getFormattedDate(eventDate)}
                         </span>
                       </div>
                       <div className="flex items-center gap-1.5 pointer-events-none">
                         <Clock size={12} className="shrink-0 opacity-80" style={{ color: timeColor }} />
-                        <span style={{ color: timeColor, fontSize: `${detailsSize}px` }} className={`leading-none truncate ${timeFont}`}>
+                        <span style={{ color: timeColor, fontSize: `${detailsSize}px`, fontFamily: getFontFamily(timeFont) }} className={`leading-none truncate ${timeFont}`}>
                           {eventTime || '1:30 PM'}
                         </span>
                       </div>
                       <div className="flex items-center gap-1.5 pointer-events-none">
                         <MapPin size={12} className="shrink-0 opacity-80" style={{ color: venueColor }} />
-                        <span style={{ color: venueColor, fontSize: `${detailsSize}px` }} className={`leading-none truncate ${venueFont}`}>
+                        <span style={{ color: venueColor, fontSize: `${detailsSize}px`, fontFamily: getFontFamily(venueFont) }} className={`leading-none truncate ${venueFont}`}>
                           {location || 'Venue: TBA'}
                         </span>
                       </div>
@@ -1486,13 +1752,13 @@ export default function PosterDesigner({
                         } />
                       </div>
                       <span
-                        style={{ color: speakerTitleColor }}
+                        style={{ color: speakerTitleColor, fontFamily: getFontFamily(speakerTitleFont) }}
                         className={`text-[8px] font-bold uppercase tracking-wider leading-none mb-1 ${speakerTitleFont}`}
                       >
                         {speakerTitle || 'Resource Person'}
                       </span>
                       <span
-                        style={{ color: speakerNameColor }}
+                        style={{ color: speakerNameColor, fontFamily: getFontFamily(speakerNameFont) }}
                         className={`text-xs font-black uppercase leading-tight tracking-tight text-center break-words w-full px-1 ${speakerNameFont}`}
                       >
                         {speakerName || 'Nived Shaji'}
@@ -1618,15 +1884,17 @@ export default function PosterDesigner({
                       />
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-[10px]">Color:</span>
-                      <input
-                        type="color"
-                        value={stickers.find(st => st.id === selectedStickerId)?.color || '#ffffff'}
-                        onChange={e => updateSticker(selectedStickerId, { color: e.target.value })}
-                        className="w-6 h-6 rounded cursor-pointer border border-zinc-200"
-                      />
-                    </div>
+                    {!stickers.find(st => st.id === selectedStickerId)?.imageUrl && (
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-[10px]">Color:</span>
+                        <input
+                          type="color"
+                          value={stickers.find(st => st.id === selectedStickerId)?.color || '#ffffff'}
+                          onChange={e => updateSticker(selectedStickerId, { color: e.target.value })}
+                          className="w-6 h-6 rounded cursor-pointer border border-zinc-200"
+                        />
+                      </div>
+                    )}
 
                     <button
                       type="button"
@@ -1640,7 +1908,7 @@ export default function PosterDesigner({
               </div>
 
               {/* Right Side: Canva Sidebar Customizer Options */}
-              <div className="w-full md:w-[450px] border-t md:border-t-0 md:border-l border-zinc-200 dark:border-zinc-800 flex flex-col bg-white dark:bg-zinc-950 overflow-y-auto">
+              <div className="w-full md:w-[450px] border-t md:border-t-0 md:border-l border-zinc-200 dark:border-zinc-800 flex flex-col bg-white dark:bg-zinc-950 overflow-y-auto custom-scrollbar">
                 <div className="p-5 space-y-6">
 
                   {/* Presets & Templates */}
@@ -1779,149 +2047,126 @@ export default function PosterDesigner({
                     {/* Field-Specific Typography & Colors */}
                     <div className="space-y-2.5 pt-2">
                       <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider block">Field Font & Color Settings</span>
-                      <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
+                      <div className="space-y-2.5">
                         {/* Host Club Field */}
-                        <div className="flex items-center justify-between gap-4 p-2 border border-zinc-100 dark:border-zinc-900 rounded-xl bg-zinc-50/50 dark:bg-zinc-900/10">
-                          <span className="text-[10px] font-mono text-zinc-600 dark:text-zinc-400 font-bold shrink-0 w-20">Host Club</span>
-                          <div className="flex items-center gap-2 flex-1 justify-end">
-                            <select
-                              value={clubFont}
-                              onChange={e => setClubFont(e.target.value)}
-                              className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-1.5 py-1 text-[10px] w-24 outline-none"
-                            >
-                              <option value="font-sans">Sans</option>
-                              <option value="font-serif">Serif</option>
-                              <option value="font-mono">Mono</option>
-                            </select>
-                            <input type="color" value={clubColor} onChange={e => setClubColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer border border-zinc-200 shrink-0" />
+                        <div className="flex flex-col gap-1.5 p-2.5 border border-zinc-100 dark:border-zinc-900 rounded-xl bg-zinc-50/50 dark:bg-zinc-900/10">
+                          <div className="flex items-center justify-between gap-4">
+                            <span className="text-[10px] font-mono text-zinc-600 dark:text-zinc-400 font-bold shrink-0 w-20">Host Club</span>
+                            <div className="flex items-center gap-2 flex-1 justify-end">
+                              <FontSelector value={clubFont} onChange={setClubFont} />
+                              <input type="color" value={clubColor} onChange={e => setClubColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer border border-zinc-200 shrink-0" />
+                            </div>
+                          </div>
+                          <div className="flex justify-end pl-20">
+                            <ColorSwatches value={clubColor} onChange={setClubColor} />
                           </div>
                         </div>
 
                         {/* Event Title Field */}
-                        <div className="flex items-center justify-between gap-4 p-2 border border-zinc-100 dark:border-zinc-900 rounded-xl bg-zinc-50/50 dark:bg-zinc-900/10">
-                          <span className="text-[10px] font-mono text-zinc-600 dark:text-zinc-400 font-bold shrink-0 w-20">Title</span>
-                          <div className="flex items-center gap-2 flex-1 justify-end">
-                            <select
-                              value={titleFont}
-                              onChange={e => setTitleFont(e.target.value)}
-                              className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-1.5 py-1 text-[10px] w-24 outline-none"
-                            >
-                              <option value="font-sans">Sans</option>
-                              <option value="font-serif">Serif</option>
-                              <option value="font-mono">Mono</option>
-                            </select>
-                            <input type="color" value={titleColor} onChange={e => setTitleColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer border border-zinc-200 shrink-0" />
+                        <div className="flex flex-col gap-1.5 p-2.5 border border-zinc-100 dark:border-zinc-900 rounded-xl bg-zinc-50/50 dark:bg-zinc-900/10">
+                          <div className="flex items-center justify-between gap-4">
+                            <span className="text-[10px] font-mono text-zinc-600 dark:text-zinc-400 font-bold shrink-0 w-20">Title</span>
+                            <div className="flex items-center gap-2 flex-1 justify-end">
+                              <FontSelector value={titleFont} onChange={setTitleFont} />
+                              <input type="color" value={titleColor} onChange={e => setTitleColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer border border-zinc-200 shrink-0" />
+                            </div>
+                          </div>
+                          <div className="flex justify-end pl-20">
+                            <ColorSwatches value={titleColor} onChange={setTitleColor} />
                           </div>
                         </div>
 
                         {/* Description Field */}
                         {showDesc && (
-                          <div className="flex items-center justify-between gap-4 p-2 border border-zinc-100 dark:border-zinc-900 rounded-xl bg-zinc-50/50 dark:bg-zinc-900/10">
-                            <span className="text-[10px] font-mono text-zinc-600 dark:text-zinc-400 font-bold shrink-0 w-20">Description</span>
-                            <div className="flex items-center gap-2 flex-1 justify-end">
-                              <select
-                                value={descFont}
-                                onChange={e => setDescFont(e.target.value)}
-                                className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-1.5 py-1 text-[10px] w-24 outline-none"
-                              >
-                                <option value="font-sans">Sans</option>
-                                <option value="font-serif">Serif</option>
-                                <option value="font-mono">Mono</option>
-                              </select>
-                              <input type="color" value={descColor} onChange={e => setDescColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer border border-zinc-200 shrink-0" />
+                          <div className="flex flex-col gap-1.5 p-2.5 border border-zinc-100 dark:border-zinc-900 rounded-xl bg-zinc-50/50 dark:bg-zinc-900/10">
+                            <div className="flex items-center justify-between gap-4">
+                              <span className="text-[10px] font-mono text-zinc-600 dark:text-zinc-400 font-bold shrink-0 w-20">Description</span>
+                              <div className="flex items-center gap-2 flex-1 justify-end">
+                                <FontSelector value={descFont} onChange={setDescFont} />
+                                <input type="color" value={descColor} onChange={e => setDescColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer border border-zinc-200 shrink-0" />
+                              </div>
+                            </div>
+                            <div className="flex justify-end pl-20">
+                              <ColorSwatches value={descColor} onChange={setDescColor} />
                             </div>
                           </div>
                         )}
 
                         {/* Date Field */}
-                        <div className="flex items-center justify-between gap-4 p-2 border border-zinc-100 dark:border-zinc-900 rounded-xl bg-zinc-50/50 dark:bg-zinc-900/10">
-                          <span className="text-[10px] font-mono text-zinc-600 dark:text-zinc-400 font-bold shrink-0 w-20">Event Date</span>
-                          <div className="flex items-center gap-2 flex-1 justify-end">
-                            <select
-                              value={dateFont}
-                              onChange={e => setDateFont(e.target.value)}
-                              className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-1.5 py-1 text-[10px] w-24 outline-none"
-                            >
-                              <option value="font-sans">Sans</option>
-                              <option value="font-serif">Serif</option>
-                              <option value="font-mono">Mono</option>
-                            </select>
-                            <input type="color" value={dateColor} onChange={e => setDateColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer border border-zinc-200 shrink-0" />
+                        <div className="flex flex-col gap-1.5 p-2.5 border border-zinc-100 dark:border-zinc-900 rounded-xl bg-zinc-50/50 dark:bg-zinc-900/10">
+                          <div className="flex items-center justify-between gap-4">
+                            <span className="text-[10px] font-mono text-zinc-600 dark:text-zinc-400 font-bold shrink-0 w-20">Event Date</span>
+                            <div className="flex items-center gap-2 flex-1 justify-end">
+                              <FontSelector value={dateFont} onChange={setDateFont} />
+                              <input type="color" value={dateColor} onChange={e => setDateColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer border border-zinc-200 shrink-0" />
+                            </div>
+                          </div>
+                          <div className="flex justify-end pl-20">
+                            <ColorSwatches value={dateColor} onChange={setDateColor} />
                           </div>
                         </div>
 
                         {/* Time Field */}
-                        <div className="flex items-center justify-between gap-4 p-2 border border-zinc-100 dark:border-zinc-900 rounded-xl bg-zinc-50/50 dark:bg-zinc-900/10">
-                          <span className="text-[10px] font-mono text-zinc-600 dark:text-zinc-400 font-bold shrink-0 w-20">Event Time</span>
-                          <div className="flex items-center gap-2 flex-1 justify-end">
-                            <select
-                              value={timeFont}
-                              onChange={e => setTimeFont(e.target.value)}
-                              className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-1.5 py-1 text-[10px] w-24 outline-none"
-                            >
-                              <option value="font-sans">Sans</option>
-                              <option value="font-serif">Serif</option>
-                              <option value="font-mono">Mono</option>
-                            </select>
-                            <input type="color" value={timeColor} onChange={e => setTimeColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer border border-zinc-200 shrink-0" />
+                        <div className="flex flex-col gap-1.5 p-2.5 border border-zinc-100 dark:border-zinc-900 rounded-xl bg-zinc-50/50 dark:bg-zinc-900/10">
+                          <div className="flex items-center justify-between gap-4">
+                            <span className="text-[10px] font-mono text-zinc-600 dark:text-zinc-400 font-bold shrink-0 w-20">Event Time</span>
+                            <div className="flex items-center gap-2 flex-1 justify-end">
+                              <FontSelector value={timeFont} onChange={setTimeFont} />
+                              <input type="color" value={timeColor} onChange={e => setTimeColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer border border-zinc-200 shrink-0" />
+                            </div>
+                          </div>
+                          <div className="flex justify-end pl-20">
+                            <ColorSwatches value={timeColor} onChange={setTimeColor} />
                           </div>
                         </div>
 
                         {/* Venue Field */}
-                        <div className="flex items-center justify-between gap-4 p-2 border border-zinc-100 dark:border-zinc-900 rounded-xl bg-zinc-50/50 dark:bg-zinc-900/10">
-                          <span className="text-[10px] font-mono text-zinc-600 dark:text-zinc-400 font-bold shrink-0 w-20">Venue</span>
-                          <div className="flex items-center gap-2 flex-1 justify-end">
-                            <select
-                              value={venueFont}
-                              onChange={e => setVenueFont(e.target.value)}
-                              className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-1.5 py-1 text-[10px] w-24 outline-none"
-                            >
-                              <option value="font-sans">Sans</option>
-                              <option value="font-serif">Serif</option>
-                              <option value="font-mono">Mono</option>
-                            </select>
-                            <input type="color" value={venueColor} onChange={e => setVenueColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer border border-zinc-200 shrink-0" />
+                        <div className="flex flex-col gap-1.5 p-2.5 border border-zinc-100 dark:border-zinc-900 rounded-xl bg-zinc-50/50 dark:bg-zinc-900/10">
+                          <div className="flex items-center justify-between gap-4">
+                            <span className="text-[10px] font-mono text-zinc-600 dark:text-zinc-400 font-bold shrink-0 w-20">Venue</span>
+                            <div className="flex items-center gap-2 flex-1 justify-end">
+                              <FontSelector value={venueFont} onChange={setVenueFont} />
+                              <input type="color" value={venueColor} onChange={e => setVenueColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer border border-zinc-200 shrink-0" />
+                            </div>
+                          </div>
+                          <div className="flex justify-end pl-20">
+                            <ColorSwatches value={venueColor} onChange={setVenueColor} />
                           </div>
                         </div>
 
                         {/* Speaker Fields */}
                         {showSpeaker && (
                           <>
-                            <div className="flex items-center justify-between gap-4 p-2 border border-zinc-100 dark:border-zinc-900 rounded-xl bg-zinc-50/50 dark:bg-zinc-900/10">
-                              <span className="text-[10px] font-mono text-zinc-600 dark:text-zinc-400 font-bold shrink-0 w-20">Guest Name</span>
-                              <div className="flex items-center gap-2 flex-1 justify-end">
-                                <select
-                                  value={speakerNameFont}
-                                  onChange={e => setSpeakerNameFont(e.target.value)}
-                                  className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-1.5 py-1 text-[10px] w-24 outline-none"
-                                >
-                                  <option value="font-sans">Sans</option>
-                                  <option value="font-serif">Serif</option>
-                                  <option value="font-mono">Mono</option>
-                                </select>
-                                <input type="color" value={speakerNameColor} onChange={e => setSpeakerNameColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer border border-zinc-200 shrink-0" />
+                            <div className="flex flex-col gap-1.5 p-2.5 border border-zinc-100 dark:border-zinc-900 rounded-xl bg-zinc-50/50 dark:bg-zinc-900/10">
+                              <div className="flex items-center justify-between gap-4">
+                                <span className="text-[10px] font-mono text-zinc-600 dark:text-zinc-400 font-bold shrink-0 w-20">Guest Name</span>
+                                <div className="flex items-center gap-2 flex-1 justify-end">
+                                  <FontSelector value={speakerNameFont} onChange={setSpeakerNameFont} />
+                                  <input type="color" value={speakerNameColor} onChange={e => setSpeakerNameColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer border border-zinc-200 shrink-0" />
+                                </div>
+                              </div>
+                              <div className="flex justify-end pl-20">
+                                <ColorSwatches value={speakerNameColor} onChange={setSpeakerNameColor} />
                               </div>
                             </div>
 
-                            <div className="flex items-center justify-between gap-4 p-2 border border-zinc-100 dark:border-zinc-900 rounded-xl bg-zinc-50/50 dark:bg-zinc-900/10">
-                              <span className="text-[10px] font-mono text-zinc-600 dark:text-zinc-400 font-bold shrink-0 w-20">Guest Role</span>
-                              <div className="flex items-center gap-2 flex-1 justify-end">
-                                <select
-                                  value={speakerTitleFont}
-                                  onChange={e => setSpeakerTitleFont(e.target.value)}
-                                  className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-1.5 py-1 text-[10px] w-24 outline-none"
-                                >
-                                  <option value="font-sans">Sans</option>
-                                  <option value="font-serif">Serif</option>
-                                  <option value="font-mono">Mono</option>
-                                </select>
-                                <input type="color" value={speakerTitleColor} onChange={e => setSpeakerTitleColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer border border-zinc-200 shrink-0" />
+                            <div className="flex flex-col gap-1.5 p-2.5 border border-zinc-100 dark:border-zinc-900 rounded-xl bg-zinc-50/50 dark:bg-zinc-900/10">
+                              <div className="flex items-center justify-between gap-4">
+                                <span className="text-[10px] font-mono text-zinc-600 dark:text-zinc-400 font-bold shrink-0 w-20">Guest Role</span>
+                                <div className="flex items-center gap-2 flex-1 justify-end">
+                                  <FontSelector value={speakerTitleFont} onChange={setSpeakerTitleFont} />
+                                  <input type="color" value={speakerTitleColor} onChange={e => setSpeakerTitleColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer border border-zinc-200 shrink-0" />
+                                </div>
+                              </div>
+                              <div className="flex justify-end pl-20">
+                                <ColorSwatches value={speakerTitleColor} onChange={setSpeakerTitleColor} />
                               </div>
                             </div>
                           </>
                         )}
                       </div>
                     </div>
+
                   </div>
 
                   {/* Canvas Background Settings */}
@@ -1974,7 +2219,7 @@ export default function PosterDesigner({
                     <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 flex items-center gap-1.5">
                       <Plus size={12} /> Add Graphic Stickers
                     </span>
-                    <div className="grid grid-cols-10 gap-1.5 max-h-[85px] overflow-y-auto p-1 border border-zinc-100 dark:border-zinc-900 rounded-lg">
+                    <div className="grid grid-cols-10 gap-1.5 p-1.5 border border-zinc-100 dark:border-zinc-900 rounded-xl">
                       {Object.keys(STICKER_ICONS).map(iconName => {
                         const IconComponent = STICKER_ICONS[iconName]
                         return (
@@ -1989,6 +2234,38 @@ export default function PosterDesigner({
                           </button>
                         )
                       })}
+                    </div>
+                  </div>
+                  {/* Add Institutional Logos */}
+                  <div className="space-y-3 pt-4 border-t border-zinc-100 dark:border-zinc-900">
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 flex items-center gap-1.5">
+                      <Award size={12} /> Add Institutional Logos
+                    </span>
+                    <div className="grid grid-cols-3 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => addLogoSticker('/iic/gcem-crest.png')}
+                        className="p-2 border border-zinc-200 dark:border-zinc-850 hover:bg-zinc-50 dark:hover:bg-zinc-900 rounded-xl flex flex-col items-center justify-center gap-1 transition-all"
+                      >
+                        <img src="/iic/gcem-crest.png" alt="GCEM Crest" className="h-8 object-contain" />
+                        <span className="text-[8px] font-mono text-zinc-500 mt-1">GCEM Crest</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => addLogoSticker('/iic/iic-logo.png')}
+                        className="p-2 border border-zinc-200 dark:border-zinc-850 hover:bg-zinc-50 dark:hover:bg-zinc-900 rounded-xl flex flex-col items-center justify-center gap-1 transition-all"
+                      >
+                        <img src="/iic/iic-logo.png" alt="IIC Logo" className="h-8 object-contain" />
+                        <span className="text-[8px] font-mono text-zinc-500 mt-1">IIC Logo</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => addLogoSticker('/logo.png')}
+                        className="p-2 border border-zinc-200 dark:border-zinc-850 hover:bg-zinc-50 dark:hover:bg-zinc-900 rounded-xl flex flex-col items-center justify-center gap-1 transition-all"
+                      >
+                        <img src="/logo.png" alt="Club-Eve Logo" className="h-8 object-contain" />
+                        <span className="text-[8px] font-mono text-zinc-500 mt-1">Club-Eve Logo</span>
+                      </button>
                     </div>
                   </div>
 
