@@ -10,6 +10,8 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { LocationPicker } from '@/components/teacher/LocationPicker'
 import { LocationMapEmbed } from '@/components/shared/LocationMapEmbed'
+import PosterDesigner from '@/components/shared/PosterDesigner'
+import { v4 as uuidv4 } from 'uuid'
 
 const EVENT_CATEGORIES = [
   { value: 'faculty', label: 'Faculty Initiative', icon: GraduationCap, desc: 'Department-led academic activity' },
@@ -34,6 +36,13 @@ export default function TeacherCreateEventPage() {
   const [years, setYears] = useState<number[]>([])
   const [selectedCategory, setSelectedCategory] = useState('guest_lecture')
   const [visitLocation, setVisitLocation] = useState<{ name: string; displayName: string; lat: number; lng: number } | null>(null)
+
+  // Poster Lab specific states
+  const [eventId] = useState(() => uuidv4())
+  const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
+  const [location, setLocation] = useState('')
+  const [bannerUrl, setBannerUrl] = useState('')
 
   const toggleSem = (s: number) => setSemesters(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s])
   const toggleYear = (y: number) => setYears(prev => prev.includes(y) ? prev.filter(x => x !== y) : [...prev, y])
@@ -60,6 +69,7 @@ export default function TeacherCreateEventPage() {
     setLoading(true)
     const form = e.currentTarget
     const formData = new FormData(form)
+    formData.set('id', eventId)
     formData.set('isPublic', isPublic ? 'true' : 'false')
     formData.set('eventCategory', selectedCategory)
     formData.set('isCompulsory', isCompulsory ? 'true' : 'false')
@@ -152,6 +162,8 @@ export default function TeacherCreateEventPage() {
                 name="title"
                 required
                 placeholder="Ex: Guest Lecture on Distributed Systems"
+                value={title}
+                onChange={e => setTitle(e.target.value)}
               />
               {selectedCategory === 'guest_lecture' && (
                 <Input
@@ -200,6 +212,8 @@ export default function TeacherCreateEventPage() {
                   required
                   className="rounded-xl border border-[#d0d0d0] dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-sm focus:ring-2 focus:ring-black outline-none resize-none dark:text-white"
                   placeholder="What is this event about? What will students gain?"
+                  value={description}
+                  onChange={e => setDescription(e.target.value)}
                 />
               </div>
             </section>
@@ -216,6 +230,8 @@ export default function TeacherCreateEventPage() {
                   name="location"
                   required
                   placeholder="Seminar Hall A / Google Meet link"
+                  value={location}
+                  onChange={e => setLocation(e.target.value)}
                 />
               )}
               <div className="grid grid-cols-2 gap-4">
@@ -262,11 +278,38 @@ export default function TeacherCreateEventPage() {
               </h2>
               <EventBackgroundCustomizer />
               <div className="bg-zinc-50 dark:bg-zinc-950 p-6 rounded-3xl border border-zinc-200 dark:border-zinc-800 space-y-4">
-                <Input
-                  label="Banner / Poster Image URL (optional)"
-                  name="bannerUrl"
-                  placeholder="https://example.com/poster.jpg"
-                />
+                <div className="flex justify-between items-end gap-4">
+                  <div className="flex-1">
+                    <Input
+                      label="Banner / Poster Image URL (optional)"
+                      name="bannerUrl"
+                      placeholder="https://example.com/poster.jpg"
+                      value={bannerUrl}
+                      onChange={e => setBannerUrl(e.target.value)}
+                    />
+                  </div>
+                  <div className="pb-1">
+                    <PosterDesigner
+                      eventId={eventId}
+                      initialTitle={title}
+                      initialClubName={
+                        selectedCategory === 'guest_lecture'
+                          ? 'Guest Lecture'
+                          : selectedCategory === 'industrial_visit'
+                          ? 'Industrial Visit'
+                          : 'Faculty Initiative'
+                      }
+                      initialDescription={description}
+                      initialLocation={
+                        selectedCategory === 'industrial_visit'
+                          ? (visitLocation?.displayName || visitLocation?.name || '')
+                          : location
+                      }
+                      initialDate={eventDate}
+                      onApply={setBannerUrl}
+                    />
+                  </div>
+                </div>
                 <p className="text-[10px] font-mono text-zinc-400 italic">
                   This will appear on the student dashboard once approved by HOD.
                 </p>

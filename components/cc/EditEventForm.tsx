@@ -10,6 +10,7 @@ import { FeedbackFormBuilder, Question } from '@/components/cc/FeedbackFormBuild
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { EventBackgroundCustomizer } from '@/components/shared/EventBackgroundCustomizer'
+import PosterDesigner from '@/components/shared/PosterDesigner'
 
 interface EditEventFormProps {
   event: any
@@ -35,6 +36,13 @@ export default function EditEventForm({ event, constraints }: EditEventFormProps
   const [years, setYears] = useState<number[]>(constraints?.allowed_years || [])
   const [questions, setQuestions] = useState<Question[]>(event.feedback_config || [])
   const [isPublic, setIsPublic] = useState(!!event.is_public)
+
+  // Poster Lab specific states
+  const [title, setTitle] = useState(event.title || '')
+  const [clubName, setClubName] = useState(event.club_name || '')
+  const [description, setDescription] = useState(event.description || '')
+  const [location, setLocation] = useState(event.location || '')
+  const [bannerUrl, setBannerUrl] = useState(event.banner_url || '')
 
   const toggleSem = (s: number) => setSemesters(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s])
   const toggleYear = (y: number) => setYears(prev => prev.includes(y) ? prev.filter(x => x !== y) : [...prev, y])
@@ -108,25 +116,25 @@ export default function EditEventForm({ event, constraints }: EditEventFormProps
           <div className="lg:col-span-2 space-y-8">
              <section className="space-y-6">
                 <h2 className="font-mono text-[10px] uppercase tracking-widest text-zinc-400 border-b border-zinc-100 pb-2">Primary Content</h2>
-                <Input label="Title of the Event *" name="title" defaultValue={event.title} required />
-                <div className="grid grid-cols-2 gap-4">
-                  <Input label="Club Identity *" name="clubName" defaultValue={event.club_name} required />
-                  <div className="w-full flex flex-col gap-1">
-                    <label className="text-xs font-mono text-[#555555] uppercase tracking-widest">Target Department *</label>
-                    <select name="targetedDepartment" defaultValue={event.targeted_department} required className="rounded-xl border border-[#d0d0d0] bg-white px-4 py-2.5 text-sm focus:ring-2 focus:ring-black outline-none flex-1">
-                       {['CSE','ECE','ME','CV','ISE','EEE'].map(d => <option key={d} value={d}>{d}</option>)}
-                    </select>
-                  </div>
-                </div>
-                <div className="w-full flex flex-col gap-1">
-                  <label className="text-xs font-mono text-[#555555] uppercase tracking-widest">Detailed Pitch / Description *</label>
-                  <textarea name="description" rows={6} defaultValue={event.description} required className="rounded-xl border border-[#d0d0d0] bg-white px-4 py-3 text-sm focus:ring-2 focus:ring-black outline-none resize-none" />
-                </div>
+                 <Input label="Title of the Event *" name="title" value={title} onChange={e => setTitle(e.target.value)} required />
+                 <div className="grid grid-cols-2 gap-4">
+                   <Input label="Club Identity *" name="clubName" value={clubName} onChange={e => setClubName(e.target.value)} required />
+                   <div className="w-full flex flex-col gap-1">
+                     <label className="text-xs font-mono text-[#555555] uppercase tracking-widest">Target Department *</label>
+                     <select name="targetedDepartment" defaultValue={event.targeted_department} required className="rounded-xl border border-[#d0d0d0] bg-white px-4 py-2.5 text-sm focus:ring-2 focus:ring-black outline-none flex-1">
+                        {['CSE','ECE','ME','CV','ISE','EEE'].map(d => <option key={d} value={d}>{d}</option>)}
+                     </select>
+                   </div>
+                 </div>
+                 <div className="w-full flex flex-col gap-1">
+                   <label className="text-xs font-mono text-[#555555] uppercase tracking-widest">Detailed Pitch / Description *</label>
+                   <textarea name="description" rows={6} value={description} onChange={e => setDescription(e.target.value)} required className="rounded-xl border border-[#d0d0d0] bg-white px-4 py-3 text-sm focus:ring-2 focus:ring-black outline-none resize-none" />
+                 </div>
              </section>
 
              <section className="space-y-6">
                 <h2 className="font-mono text-[10px] uppercase tracking-widest text-zinc-400 border-b border-zinc-100 pb-2">Logistics & Venue</h2>
-                <Input label="Venue / Virtual Link *" name="location" defaultValue={event.location} required />
+                 <Input label="Venue / Virtual Link *" name="location" value={location} onChange={e => setLocation(e.target.value)} required />
                 <div className="grid grid-cols-2 gap-4">
                    <div className="flex flex-col gap-1">
                       <label className="text-xs font-mono text-[#555555] uppercase tracking-widest">Event Date *</label>
@@ -151,13 +159,29 @@ export default function EditEventForm({ event, constraints }: EditEventFormProps
                  <h2 className="font-mono text-[10px] uppercase tracking-widest text-zinc-400 border-b border-zinc-100 pb-2">Visual Branding</h2>
                  <EventBackgroundCustomizer initialValue={event.custom_background} />
                   <div className="bg-zinc-50 dark:bg-zinc-950 p-6 rounded-3xl border border-zinc-200 dark:border-zinc-800 space-y-4">
-                     <Input 
-                       label="Banner / Poster Image URL (e.g. .png, .jpg, .jpeg) *" 
-                       name="bannerUrl" 
-                       defaultValue={event.banner_url} 
-                       placeholder="https://example.com/poster.jpg"
-                       required 
-                     />
+                     <div className="flex justify-between items-end gap-4">
+                       <div className="flex-1">
+                         <Input 
+                           label="Banner / Poster Image URL (e.g. .png, .jpg, .jpeg) *" 
+                           name="bannerUrl" 
+                           placeholder="https://example.com/poster.jpg"
+                           required 
+                           value={bannerUrl}
+                           onChange={e => setBannerUrl(e.target.value)}
+                         />
+                       </div>
+                       <div className="pb-1">
+                         <PosterDesigner
+                           eventId={event.id}
+                           initialTitle={title}
+                           initialClubName={clubName}
+                           initialDescription={description}
+                           initialLocation={location}
+                           initialDate={eventDate}
+                           onApply={setBannerUrl}
+                         />
+                       </div>
+                     </div>
                   </div>
               </section>
           </div>

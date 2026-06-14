@@ -7,6 +7,8 @@ import { createEvent } from '@/lib/actions/events'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { EventBackgroundCustomizer } from '@/components/shared/EventBackgroundCustomizer'
+import PosterDesigner from '@/components/shared/PosterDesigner'
+import { v4 as uuidv4 } from 'uuid'
 
 export default function CreateEventPage() {
   const [loading, setLoading] = useState(false)
@@ -18,6 +20,14 @@ export default function CreateEventPage() {
   const [years, setYears] = useState<number[]>([])
   const [depts, setDepts] = useState<string[]>([])
   const [teachers, setTeachers] = useState<{ id: string; full_name: string }[]>([])
+
+  // Poster Lab specific states
+  const [eventId] = useState(() => uuidv4())
+  const [title, setTitle] = useState('')
+  const [clubName, setClubName] = useState('')
+  const [description, setDescription] = useState('')
+  const [location, setLocation] = useState('')
+  const [bannerUrl, setBannerUrl] = useState('')
 
   useEffect(() => {
     async function loadTeachers() {
@@ -57,6 +67,7 @@ export default function CreateEventPage() {
     setLoading(true)
 
     const formData = new FormData(e.currentTarget)
+    formData.append('id', eventId)
     formData.append('semesters', JSON.stringify(semesters))
     formData.append('years', JSON.stringify(years))
     formData.append('departments', JSON.stringify(depts))
@@ -76,11 +87,11 @@ export default function CreateEventPage() {
           
           <div className="space-y-6">
             {/* Event Title — required */}
-            <Input label="Event Title *" name="title" required placeholder="Annual Tech Symposium" />
+            <Input label="Event Title *" name="title" required placeholder="Annual Tech Symposium" value={title} onChange={e => setTitle(e.target.value)} />
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Club Name — required */}
-              <Input label="Club / Host Identity *" name="clubName" required placeholder="GDSC" />
+              <Input label="Club / Host Identity *" name="clubName" required placeholder="GDSC" value={clubName} onChange={e => setClubName(e.target.value)} />
 
               {/* Status — required, includes Cancelled */}
               <div className="w-full flex flex-col gap-1">
@@ -111,11 +122,13 @@ export default function CreateEventPage() {
                 required
                 placeholder="Describe the event, agenda, speakers..."
                 className="rounded-xl border border-[#d0d0d0] bg-white px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0a0a0a] resize-none"
+                value={description}
+                onChange={e => setDescription(e.target.value)}
               />
             </div>
 
             {/* Location — required */}
-            <Input label="Physical Location *" name="location" required placeholder="Main Auditorium, Block A" />
+            <Input label="Physical Location *" name="location" required placeholder="Main Auditorium, Block A" value={location} onChange={e => setLocation(e.target.value)} />
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Event Date — required, drives deadline max */}
@@ -245,15 +258,32 @@ export default function CreateEventPage() {
                 <label className="text-xs font-mono text-[#555555] uppercase tracking-widest">
                   Poster / Banner Image URL *
                 </label>
-                <div className="border-2 border-dashed border-[#d0d0d0] rounded-2xl p-6 bg-[#f9f9f9]">
-                  <input
-                    name="bannerUrl"
-                    type="url"
-                    required
-                    placeholder="https://example.com/banner.jpg"
-                    className="w-full rounded-xl border border-[#d0d0d0] bg-white px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0a0a0a]"
-                  />
-                  <p className="font-mono text-xs text-[#999999] mt-2 text-center">Paste a direct image URL</p>
+                <div className="border-2 border-dashed border-[#d0d0d0] rounded-2xl p-6 bg-[#f9f9f9] flex flex-col gap-4">
+                  <div className="flex justify-between items-end gap-4 w-full">
+                    <div className="flex-1">
+                      <input
+                        name="bannerUrl"
+                        type="url"
+                        required
+                        placeholder="https://example.com/banner.jpg"
+                        value={bannerUrl}
+                        onChange={e => setBannerUrl(e.target.value)}
+                        className="w-full rounded-xl border border-[#d0d0d0] bg-white px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0a0a0a]"
+                      />
+                    </div>
+                    <div>
+                      <PosterDesigner
+                        eventId={eventId}
+                        initialTitle={title}
+                        initialClubName={clubName}
+                        initialDescription={description}
+                        initialLocation={location}
+                        initialDate={eventDate}
+                        onApply={setBannerUrl}
+                      />
+                    </div>
+                  </div>
+                  <p className="font-mono text-xs text-[#999999] text-center">Paste a direct image URL or use our visual designer above</p>
                 </div>
               </div>
             </div>

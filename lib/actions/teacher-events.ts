@@ -97,32 +97,39 @@ export async function createFacultyEvent(formData: FormData) {
     }
   }
 
+  const pregeneratedId = formData.get('id') as string | null
   // Faculty events skip teacher review — go straight to pending_hod
   const approval_status = 'pending_hod'
 
+  const insertPayload: any = {
+    title,
+    club_name,
+    description,
+    location,
+    event_date: eventDt.toISOString(),
+    registration_deadline: deadlineDt.toISOString(),
+    max_capacity,
+    banner_url,
+    custom_background,
+    created_by: user.id,
+    approval_status,
+    targeted_department,
+    feedback_config: [],
+    is_public,
+    status: 'upcoming',
+    event_category,
+    assigned_faculty_id: user.id,
+    is_compulsory,
+    ...(location_lat !== null && location_lng !== null ? { location_lat, location_lng } : {}),
+  }
+
+  if (pregeneratedId) {
+    insertPayload.id = pregeneratedId
+  }
+
   const { data: event, error: insertError } = await supabase
     .from('events')
-    .insert({
-      title,
-      club_name,
-      description,
-      location,
-      event_date: eventDt.toISOString(),
-      registration_deadline: deadlineDt.toISOString(),
-      max_capacity,
-      banner_url,
-      custom_background,
-      created_by: user.id,
-      approval_status,
-      targeted_department,
-      feedback_config: [],
-      is_public,
-      status: 'upcoming',
-      event_category,
-      assigned_faculty_id: user.id,
-      is_compulsory,
-      ...(location_lat !== null && location_lng !== null ? { location_lat, location_lng } : {}),
-    })
+    .insert(insertPayload)
     .select('id')
     .single()
 
