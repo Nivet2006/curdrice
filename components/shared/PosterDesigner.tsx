@@ -90,9 +90,11 @@ export default function PosterDesigner({
   // QR Code settings
   const [showQr, setShowQr] = useState(true)
   const [qrSize, setQrSize] = useState(90)
-  const [qrPosition, setQrPosition] = useState<'bottom-right' | 'bottom-left' | 'top-right' | 'center-bottom'>('bottom-right')
+  const [qrPosition, setQrPosition] = useState<'bottom-right' | 'bottom-left' | 'top-right' | 'center-bottom' | 'custom'>('bottom-right')
   const [qrColorDark, setQrColorDark] = useState('#000000')
   const [qrColorLight, setQrColorLight] = useState('#ffffff')
+  const [qrX, setQrX] = useState(80) // percentage
+  const [qrY, setQrY] = useState(80) // percentage
 
   // Stickers / Decals
   const [stickers, setStickers] = useState<Sticker[]>([])
@@ -242,6 +244,107 @@ export default function PosterDesigner({
 
   const updateSticker = (id: string, updates: Partial<Sticker>) => {
     setStickers(stickers.map(s => s.id === id ? { ...s, ...updates } : s))
+  }
+
+  // Handle dragging for stickers
+  const handleStickerDragStart = (
+    e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>,
+    stickerId: string
+  ) => {
+    if ('button' in e && e.button !== 0) return // Only drag on left click
+    e.preventDefault()
+    e.stopPropagation()
+    setSelectedStickerId(stickerId)
+
+    const sticker = stickers.find(s => s.id === stickerId)
+    if (!sticker) return
+
+    const startX = sticker.x
+    const startY = sticker.y
+
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY
+
+    const startMouseX = clientX
+    const startMouseY = clientY
+
+    const handleDragMove = (moveEvent: MouseEvent | TouchEvent) => {
+      const currentClientX = 'touches' in moveEvent ? moveEvent.touches[0].clientX : moveEvent.clientX
+      const currentClientY = 'touches' in moveEvent ? moveEvent.touches[0].clientY : moveEvent.clientY
+
+      const dx = currentClientX - startMouseX
+      const dy = currentClientY - startMouseY
+
+      // Convert dx, dy to percentage of the canvas (400x560)
+      const dxPercent = (dx / 400) * 100
+      const dyPercent = (dy / 560) * 100
+
+      const newX = Math.max(0, Math.min(100, startX + dxPercent))
+      const newY = Math.max(0, Math.min(100, startY + dyPercent))
+
+      setStickers(prev => prev.map(s => s.id === stickerId ? { ...s, x: newX, y: newY } : s))
+    }
+
+    const handleDragEnd = () => {
+      document.removeEventListener('mousemove', handleDragMove)
+      document.removeEventListener('mouseup', handleDragEnd)
+      document.removeEventListener('touchmove', handleDragMove)
+      document.removeEventListener('touchend', handleDragEnd)
+    }
+
+    document.addEventListener('mousemove', handleDragMove)
+    document.addEventListener('mouseup', handleDragEnd)
+    document.addEventListener('touchmove', handleDragMove, { passive: false })
+    document.addEventListener('touchend', handleDragEnd)
+  }
+
+  // Handle dragging for QR code
+  const handleQrDragStart = (
+    e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>
+  ) => {
+    if (qrPosition !== 'custom') return
+    if ('button' in e && e.button !== 0) return // Only drag on left click
+    e.preventDefault()
+    e.stopPropagation()
+
+    const startX = qrX
+    const startY = qrY
+
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY
+
+    const startMouseX = clientX
+    const startMouseY = clientY
+
+    const handleDragMove = (moveEvent: MouseEvent | TouchEvent) => {
+      const currentClientX = 'touches' in moveEvent ? moveEvent.touches[0].clientX : moveEvent.clientX
+      const currentClientY = 'touches' in moveEvent ? moveEvent.touches[0].clientY : moveEvent.clientY
+
+      const dx = currentClientX - startMouseX
+      const dy = currentClientY - startMouseY
+
+      // Convert dx, dy to percentage of the canvas (400x560)
+      const dxPercent = (dx / 400) * 100
+      const dyPercent = (dy / 560) * 100
+
+      const newX = Math.max(0, Math.min(100, startX + dxPercent))
+      const newY = Math.max(0, Math.min(100, startY + dyPercent))
+
+      setQrX(newX)
+      setQrY(newY)
+    }
+
+    const handleDragEnd = () => {
+      document.removeEventListener('mousemove', handleDragMove)
+      document.removeEventListener('mouseup', handleDragEnd)
+      document.removeEventListener('touchmove', handleDragMove)
+      document.removeEventListener('touchend', handleDragEnd)
+    }
+
+    document.addEventListener('mousemove', handleDragMove)
+    document.addEventListener('mouseup', handleDragEnd)
+    document.addEventListener('touchmove', handleDragMove, { passive: false })
+    document.addEventListener('touchend', handleDragEnd)
   }
 
   // Render poster element to an image url
@@ -424,9 +527,14 @@ export default function PosterDesigner({
               
               {/* Left Side: Live Canvas Preview Container */}
               <div className="flex-1 bg-zinc-100 dark:bg-zinc-900/60 p-6 flex flex-col items-center justify-center overflow-y-auto min-h-[350px]">
-                <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest mb-3 flex items-center gap-1.5 self-start">
-                  <Eye size={12} /> Interactive Poster Canvas (400 × 560 px)
-                </span>
+                <div className="w-full flex justify-between items-center mb-3">
+                  <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest flex items-center gap-1.5">
+                    <Eye size={12} /> Interactive Poster Canvas (400 × 560 px)
+                  </span>
+                  <span className="text-[9px] font-mono text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/30 px-2 py-0.5 rounded-full border border-purple-200/50 dark:border-purple-800/30">
+                    🖐️ Drag stickers or QR directly to position
+                  </span>
+                </div>
 
                 {/* Actual Poster Element */}
                 <div 
@@ -479,6 +587,8 @@ export default function PosterDesigner({
                     return (
                       <div
                         key={sticker.id}
+                        onMouseDown={(e) => handleStickerDragStart(e, sticker.id)}
+                        onTouchStart={(e) => handleStickerDragStart(e, sticker.id)}
                         onClick={(e) => {
                           e.stopPropagation()
                           setSelectedStickerId(sticker.id)
@@ -488,11 +598,11 @@ export default function PosterDesigner({
                           left: `${sticker.x}%`,
                           top: `${sticker.y}%`,
                           transform: 'translate(-50%, -50%)',
-                          cursor: 'pointer',
+                          cursor: isSelected ? 'grabbing' : 'grab',
                           zIndex: 20
                         }}
                         className={`group relative p-1 rounded-lg border transition-all ${
-                          isSelected ? 'border-dashed border-red-500 ring-2 ring-red-500/20' : 'border-transparent'
+                          isSelected ? 'border-dashed border-red-500 ring-2 ring-red-500/20 bg-black/5 dark:bg-white/5' : 'border-transparent hover:border-zinc-300 dark:hover:border-zinc-700'
                         }`}
                       >
                         <StickerIcon size={sticker.size} style={{ color: sticker.color }} />
@@ -557,8 +667,8 @@ export default function PosterDesigner({
                       </div>
                     </div>
 
-                    {/* QR Code Container */}
-                    {showQr && qrDataUrl && (
+                    {/* QR Code Container (Standard Positions) */}
+                    {showQr && qrDataUrl && qrPosition !== 'custom' && qrPosition !== 'top-right' && (
                       <div 
                         style={{ 
                           width: `${qrSize}px`, 
@@ -569,19 +679,50 @@ export default function PosterDesigner({
                         className={`shrink-0 aspect-square rounded-xl p-1.5 border flex items-center justify-center bg-white ${
                           activeTemplate === 'retro' ? 'border-2 border-black shadow-[3px_3px_0px_#000000]' : ''
                         } ${
-                          qrPosition === 'top-right' ? 'absolute top-7 right-7' :
                           qrPosition === 'bottom-left' ? 'order-first' : ''
                         }`}
                       >
                         <img 
                           src={qrDataUrl} 
                           alt="Event QR code" 
-                          className="w-full h-full object-contain"
+                          className="w-full h-full object-contain pointer-events-none"
                         />
                       </div>
                     )}
 
                   </div>
+
+                  {/* Absolute / Draggable QR Code */}
+                  {showQr && qrDataUrl && (qrPosition === 'custom' || qrPosition === 'top-right') && (
+                    <div 
+                      onMouseDown={(e) => qrPosition === 'custom' && handleQrDragStart(e)}
+                      onTouchStart={(e) => qrPosition === 'custom' && handleQrDragStart(e)}
+                      style={{ 
+                        width: `${qrSize}px`, 
+                        height: `${qrSize}px`,
+                        backgroundColor: qrColorLight,
+                        borderColor: activeTemplate === 'retro' ? '#000000' : detailsBorderColor,
+                        position: 'absolute',
+                        left: qrPosition === 'custom' ? `${qrX}%` : undefined,
+                        right: qrPosition === 'top-right' ? '28px' : undefined,
+                        top: qrPosition === 'custom' ? `${qrY}%` : '28px',
+                        transform: qrPosition === 'custom' ? 'translate(-50%, -50%)' : undefined,
+                        cursor: qrPosition === 'custom' ? 'grab' : 'default',
+                        zIndex: 30
+                      }}
+                      className={`shrink-0 aspect-square rounded-xl p-1.5 border flex items-center justify-center bg-white ${
+                        activeTemplate === 'retro' ? 'border-2 border-black shadow-[3px_3px_0px_#000000]' : ''
+                      } ${
+                        qrPosition === 'custom' ? 'hover:ring-2 hover:ring-purple-500/50' : ''
+                      }`}
+                    >
+                      <img 
+                        src={qrDataUrl} 
+                        alt="Event QR code" 
+                        className="w-full h-full object-contain pointer-events-none"
+                      />
+                    </div>
+                  )}
 
                 </div>
 
@@ -906,7 +1047,7 @@ export default function PosterDesigner({
 
                     {showQr && (
                       <div className="grid grid-cols-2 gap-3.5 pt-1">
-                        <div className="space-y-1">
+                        <div className="space-y-1 col-span-2">
                           <span className="text-[9px] font-mono text-zinc-500 uppercase">QR Position</span>
                           <select
                             value={qrPosition}
@@ -916,9 +1057,44 @@ export default function PosterDesigner({
                             <option value="bottom-right">Bottom Right (Standard)</option>
                             <option value="bottom-left">Bottom Left</option>
                             <option value="top-right">Top Right Corner</option>
+                            <option value="custom">Custom Position (Draggable 🖐️)</option>
                           </select>
                         </div>
-                        <div className="space-y-1">
+
+                        {qrPosition === 'custom' && (
+                          <div className="space-y-2 col-span-2 grid grid-cols-2 gap-3.5 border border-zinc-100 dark:border-zinc-900 p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-900/20">
+                            <div className="space-y-1">
+                              <span className="text-[9px] font-mono text-zinc-500 uppercase flex justify-between">
+                                <span>QR X (Left)</span>
+                                <span>{Math.round(qrX)}%</span>
+                              </span>
+                              <input 
+                                type="range" 
+                                min="0" 
+                                max="100" 
+                                value={Math.round(qrX)} 
+                                onChange={e => setQrX(parseInt(e.target.value))} 
+                                className="w-full mt-1 accent-purple-600" 
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <span className="text-[9px] font-mono text-zinc-500 uppercase flex justify-between">
+                                <span>QR Y (Top)</span>
+                                <span>{Math.round(qrY)}%</span>
+                              </span>
+                              <input 
+                                type="range" 
+                                min="0" 
+                                max="100" 
+                                value={Math.round(qrY)} 
+                                onChange={e => setQrY(parseInt(e.target.value))} 
+                                className="w-full mt-1 accent-purple-600" 
+                              />
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="space-y-1 col-span-2">
                           <span className="text-[9px] font-mono text-zinc-500 uppercase flex justify-between">
                             <span>QR Width</span>
                             <span>{qrSize}px</span>
