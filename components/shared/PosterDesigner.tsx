@@ -131,8 +131,10 @@ export default function PosterDesigner({
 
   // QR code URL generator
   const getAppUrl = () => {
-    if (process.env.NEXT_PUBLIC_APP_URL) {
-      return process.env.NEXT_PUBLIC_APP_URL
+    // Check NEXT_PUBLIC_SITE_URL first (configured in your .env)
+    const envUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL
+    if (envUrl && !envUrl.includes('localhost') && !envUrl.includes('127.0.0.1')) {
+      return envUrl
     }
     if (typeof window !== 'undefined') {
       const origin = window.location.origin
