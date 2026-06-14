@@ -72,6 +72,7 @@ function QuestionItemContent({
     <div className="flex items-start gap-4">
       <div 
         {...dragHandleProps}
+        suppressHydrationWarning
         className="mt-1 text-zinc-300 cursor-grab active:cursor-grabbing hover:text-black transition-colors"
       >
         <GripVertical size={20} />
@@ -317,6 +318,20 @@ export function FeedbackFormBuilder({
         sensors={sensors}
         collisionDetection={closestCenter}
         onDragEnd={handleDragEnd}
+        accessibility={{
+          // Provide static announcement strings to prevent @dnd-kit from
+          // generating dynamic aria-describedby IDs (e.g. DndDescribedBy-0 vs DndDescribedBy-2)
+          // which cause React SSR hydration mismatches.
+          announcements: {
+            onDragStart: ({ active }) => `Picked up sortable item ${active.id}.`,
+            onDragOver: ({ active, over }) => over ? `Sortable item ${active.id} is over ${over.id}.` : `Sortable item ${active.id} is no longer over a droppable.`,
+            onDragEnd: ({ active, over }) => over ? `Sortable item ${active.id} was dropped over ${over.id}.` : `Sortable item ${active.id} was dropped.`,
+            onDragCancel: ({ active }) => `Dragging was cancelled. Sortable item ${active.id} was dropped.`,
+          },
+          screenReaderInstructions: {
+            draggable: 'To pick up a sortable item, press space or enter. Use the arrow keys to move the item. Press space or enter again to drop the item in its new position, or press escape to cancel.',
+          },
+        }}
       >
         <div className="space-y-4">
           {questions.length === 0 ? (
