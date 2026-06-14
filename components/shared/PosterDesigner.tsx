@@ -905,7 +905,9 @@ export default function PosterDesigner({
                   <span className="text-[9px] font-mono text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/30 px-2 py-0.5 rounded-full border border-purple-200/50 dark:border-purple-800/30">
                     🖐️ Click and drag ANY element to position it!
                   </span>
-                               {/* Actual Poster Element */}
+                </div>
+
+                {/* Actual Poster Element */}
                 <div 
                   ref={posterRef}
                   style={getPosterBgStyle()}
@@ -1356,7 +1358,7 @@ export default function PosterDesigner({
                     </div>
                   )}
 
-                </div>   </div>
+                </div>
 
                 {/* Sticker Quick Controls */}
                 {selectedStickerId && (
