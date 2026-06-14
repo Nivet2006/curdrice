@@ -90,11 +90,21 @@ export default function PosterDesigner({
   // QR Code settings
   const [showQr, setShowQr] = useState(true)
   const [qrSize, setQrSize] = useState(90)
-  const [qrPosition, setQrPosition] = useState<'bottom-right' | 'bottom-left' | 'top-right' | 'center-bottom' | 'custom'>('bottom-right')
+  const [qrPosition, setQrPosition] = useState<'bottom-right' | 'bottom-left' | 'top-right' | 'center-bottom' | 'custom'>('custom')
   const [qrColorDark, setQrColorDark] = useState('#000000')
   const [qrColorLight, setQrColorLight] = useState('#ffffff')
-  const [qrX, setQrX] = useState(80) // percentage
-  const [qrY, setQrY] = useState(80) // percentage
+  const [qrX, setQrX] = useState(85) // percentage
+  const [qrY, setQrY] = useState(88) // percentage
+
+  // Coordinates for draggable layout components
+  const [clubX, setClubX] = useState(50)
+  const [clubY, setClubY] = useState(12)
+  const [titleX, setTitleX] = useState(50)
+  const [titleY, setTitleY] = useState(42)
+  const [descX, setDescX] = useState(50)
+  const [descY, setDescY] = useState(66)
+  const [detailsX, setDetailsX] = useState(35)
+  const [detailsY, setDetailsY] = useState(88)
 
   // Stickers / Decals
   const [stickers, setStickers] = useState<Sticker[]>([])
@@ -139,6 +149,17 @@ export default function PosterDesigner({
   // Pre-configured Design Presets
   const applyPreset = (presetName: 'cyberpunk' | 'vibrant' | 'corporate' | 'minimalist' | 'retro') => {
     setActiveTemplate(presetName)
+    setClubX(50)
+    setClubY(12)
+    setTitleX(50)
+    setTitleY(42)
+    setDescX(50)
+    setDescY(66)
+    setDetailsX(35)
+    setDetailsY(88)
+    setQrX(85)
+    setQrY(88)
+    setQrPosition('custom')
     switch(presetName) {
       case 'cyberpunk':
         setBgColorType('solid')
@@ -298,17 +319,37 @@ export default function PosterDesigner({
     document.addEventListener('touchend', handleDragEnd)
   }
 
-  // Handle dragging for QR code
-  const handleQrDragStart = (
-    e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>
+  // Generic handler for dragging any absolute layout component
+  const handleElementDragStart = (
+    e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>,
+    elementKey: 'club' | 'title' | 'desc' | 'details' | 'qr'
   ) => {
-    if (qrPosition !== 'custom') return
     if ('button' in e && e.button !== 0) return // Only drag on left click
     e.preventDefault()
     e.stopPropagation()
 
-    const startX = qrX
-    const startY = qrY
+    let startX = 0
+    let startY = 0
+
+    if (elementKey === 'club') {
+      startX = clubX
+      startY = clubY
+    } else if (elementKey === 'title') {
+      startX = titleX
+      startY = titleY
+    } else if (elementKey === 'desc') {
+      startX = descX
+      startY = descY
+    } else if (elementKey === 'details') {
+      startX = detailsX
+      startY = detailsY
+    } else if (elementKey === 'qr') {
+      if (qrPosition !== 'custom') {
+        setQrPosition('custom')
+      }
+      startX = qrX
+      startY = qrY
+    }
 
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY
@@ -330,8 +371,22 @@ export default function PosterDesigner({
       const newX = Math.max(0, Math.min(100, startX + dxPercent))
       const newY = Math.max(0, Math.min(100, startY + dyPercent))
 
-      setQrX(newX)
-      setQrY(newY)
+      if (elementKey === 'club') {
+        setClubX(newX)
+        setClubY(newY)
+      } else if (elementKey === 'title') {
+        setTitleX(newX)
+        setTitleY(newY)
+      } else if (elementKey === 'desc') {
+        setDescX(newX)
+        setDescY(newY)
+      } else if (elementKey === 'details') {
+        setDetailsX(newX)
+        setDetailsY(newY)
+      } else if (elementKey === 'qr') {
+        setQrX(newX)
+        setQrY(newY)
+      }
     }
 
     const handleDragEnd = () => {
@@ -345,6 +400,22 @@ export default function PosterDesigner({
     document.addEventListener('mouseup', handleDragEnd)
     document.addEventListener('touchmove', handleDragMove, { passive: false })
     document.addEventListener('touchend', handleDragEnd)
+  }
+
+  // Reset layout positions helper
+  const resetLayoutPositions = () => {
+    setClubX(50)
+    setClubY(12)
+    setTitleX(50)
+    setTitleY(42)
+    setDescX(50)
+    setDescY(66)
+    setDetailsX(35)
+    setDetailsY(88)
+    setQrX(85)
+    setQrY(88)
+    setQrPosition('custom')
+    toast.success('All element positions reset to defaults!')
   }
 
   // Render poster element to an image url
@@ -532,7 +603,7 @@ export default function PosterDesigner({
                     <Eye size={12} /> Interactive Poster Canvas (400 × 560 px)
                   </span>
                   <span className="text-[9px] font-mono text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/30 px-2 py-0.5 rounded-full border border-purple-200/50 dark:border-purple-800/30">
-                    🖐️ Drag stickers or QR directly to position
+                    🖐️ Click and drag ANY element to position it!
                   </span>
                 </div>
 
@@ -540,7 +611,7 @@ export default function PosterDesigner({
                 <div 
                   ref={posterRef}
                   style={getPosterBgStyle()}
-                  className={`w-[400px] h-[560px] rounded-2xl relative overflow-hidden shadow-2xl flex flex-col justify-between p-7 select-none ${
+                  className={`w-[400px] h-[560px] rounded-2xl relative overflow-hidden shadow-2xl select-none ${
                     activeTemplate === 'cyberpunk' ? 'border-2 border-[#00f2fe]' : 
                     activeTemplate === 'corporate' ? 'border-4 border-double border-[#f59e0b]' : 
                     activeTemplate === 'retro' ? 'border-4 border-black' : ''
@@ -566,18 +637,28 @@ export default function PosterDesigner({
                   )}
 
                   {/* Header / Club Identity */}
-                  <div className="z-10 flex justify-between items-start">
-                    <div className="flex flex-col">
-                      <span 
-                        style={{ color: clubColor, fontSize: `${clubSize}px` }}
-                        className={`uppercase tracking-widest font-bold font-mono`}
-                      >
-                        {clubName || 'Host Club'}
-                      </span>
-                      {activeTemplate === 'cyberpunk' && (
-                        <span className="text-[8px] text-zinc-500 font-mono tracking-tighter mt-0.5">Club-Eve System v1.0</span>
-                      )}
-                    </div>
+                  <div 
+                    onMouseDown={(e) => handleElementDragStart(e, 'club')}
+                    onTouchStart={(e) => handleElementDragStart(e, 'club')}
+                    style={{
+                      position: 'absolute',
+                      left: `${clubX}%`,
+                      top: `${clubY}%`,
+                      transform: 'translate(-50%, -50%)',
+                      cursor: 'grab',
+                      zIndex: 10
+                    }}
+                    className="flex flex-col items-center hover:ring-2 hover:ring-purple-500/50 p-1.5 rounded-lg border border-transparent hover:border-zinc-300 dark:hover:border-zinc-700 bg-transparent whitespace-nowrap"
+                  >
+                    <span 
+                      style={{ color: clubColor, fontSize: `${clubSize}px` }}
+                      className={`uppercase tracking-widest font-bold font-mono`}
+                    >
+                      {clubName || 'Host Club'}
+                    </span>
+                    {activeTemplate === 'cyberpunk' && (
+                      <span className="text-[8px] text-zinc-500 font-mono tracking-tighter mt-0.5 pointer-events-none">Club-Eve System v1.0</span>
+                    )}
                   </div>
 
                   {/* Dynamic Stickers / Decals */}
@@ -610,15 +691,28 @@ export default function PosterDesigner({
                     )
                   })}
 
-                  {/* Main Event Title & Description */}
-                  <div className="z-10 my-auto flex flex-col justify-center py-4">
+                  {/* Main Event Title */}
+                  <div 
+                    onMouseDown={(e) => handleElementDragStart(e, 'title')}
+                    onTouchStart={(e) => handleElementDragStart(e, 'title')}
+                    style={{
+                      position: 'absolute',
+                      left: `${titleX}%`,
+                      top: `${titleY}%`,
+                      transform: 'translate(-50%, -50%)',
+                      cursor: 'grab',
+                      width: '85%',
+                      zIndex: 10
+                    }}
+                    className="hover:ring-2 hover:ring-purple-500/50 p-2 rounded-lg border border-transparent hover:border-zinc-300 dark:hover:border-zinc-700 bg-transparent flex flex-col justify-center items-center"
+                  >
                     <h1 
                       style={{ 
                         color: titleColor, 
                         fontSize: `${titleSize}px`,
                         textAlign: titleAlign
                       }}
-                      className={`font-black tracking-tight leading-none uppercase select-text break-words ${titleFont} ${
+                      className={`font-black tracking-tight leading-none uppercase break-words w-full select-none ${titleFont} ${
                         activeTemplate === 'cyberpunk' ? 'text-shadow-neon' : ''
                       } ${
                         activeTemplate === 'retro' ? 'drop-shadow-[3px_3px_0px_#000000]' : ''
@@ -626,94 +720,88 @@ export default function PosterDesigner({
                     >
                       {title || 'EXQUISITE EVENT'}
                     </h1>
-                    
-                    {showDesc && (
+                  </div>
+
+                  {/* Event Description */}
+                  {showDesc && (
+                    <div 
+                      onMouseDown={(e) => handleElementDragStart(e, 'desc')}
+                      onTouchStart={(e) => handleElementDragStart(e, 'desc')}
+                      style={{
+                        position: 'absolute',
+                        left: `${descX}%`,
+                        top: `${descY}%`,
+                        transform: 'translate(-50%, -50%)',
+                        cursor: 'grab',
+                        width: '85%',
+                        zIndex: 10
+                      }}
+                      className="hover:ring-2 hover:ring-purple-500/50 p-2 rounded-lg border border-transparent hover:border-zinc-300 dark:hover:border-zinc-700 bg-transparent flex flex-col justify-center items-center"
+                    >
                       <p 
                         style={{ color: descColor, fontSize: `${descSize}px` }}
-                        className={`mt-4 leading-relaxed font-sans line-clamp-3 select-text ${
+                        className={`leading-relaxed font-sans line-clamp-3 w-full text-center select-none ${
                           activeTemplate === 'retro' ? 'font-medium' : 'font-light'
                         }`}
                       >
                         {description || 'Join us for this exciting departmental event packed with learning, collaboration, and certificate outcomes.'}
                       </p>
-                    )}
-                  </div>
-
-                  {/* Footer (Details Grid & QR Code) */}
-                  <div className="z-10 flex items-end justify-between gap-4 mt-auto">
-                    
-                    {/* Event Logistics (Time / Venue) */}
-                    <div 
-                      style={{ 
-                        backgroundColor: detailsBg, 
-                        borderColor: detailsBorderColor,
-                        color: detailsColor
-                      }}
-                      className={`flex-1 rounded-xl p-3 border backdrop-blur-sm space-y-1.5 text-left ${
-                        activeTemplate === 'retro' ? 'border-2 border-black shadow-[3px_3px_0px_#000000] text-black font-semibold' : ''
-                      }`}
-                    >
-                      <div className="flex items-center gap-1.5">
-                        <Calendar size={12} className="shrink-0 opacity-80" />
-                        <span className="text-[10px] font-mono leading-none truncate">
-                          {getFormattedDate(eventDate)}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <MapPin size={12} className="shrink-0 opacity-80" />
-                        <span className="text-[10px] font-mono leading-none truncate">
-                          {location || 'Venue: TBA'}
-                        </span>
-                      </div>
                     </div>
+                  )}
 
-                    {/* QR Code Container (Standard Positions) */}
-                    {showQr && qrDataUrl && qrPosition !== 'custom' && qrPosition !== 'top-right' && (
-                      <div 
-                        style={{ 
-                          width: `${qrSize}px`, 
-                          height: `${qrSize}px`,
-                          backgroundColor: qrColorLight,
-                          borderColor: activeTemplate === 'retro' ? '#000000' : detailsBorderColor
-                        }}
-                        className={`shrink-0 aspect-square rounded-xl p-1.5 border flex items-center justify-center bg-white ${
-                          activeTemplate === 'retro' ? 'border-2 border-black shadow-[3px_3px_0px_#000000]' : ''
-                        } ${
-                          qrPosition === 'bottom-left' ? 'order-first' : ''
-                        }`}
-                      >
-                        <img 
-                          src={qrDataUrl} 
-                          alt="Event QR code" 
-                          className="w-full h-full object-contain pointer-events-none"
-                        />
-                      </div>
-                    )}
-
+                  {/* Event Logistics (Time / Venue) */}
+                  <div 
+                    onMouseDown={(e) => handleElementDragStart(e, 'details')}
+                    onTouchStart={(e) => handleElementDragStart(e, 'details')}
+                    style={{ 
+                      backgroundColor: detailsBg, 
+                      borderColor: detailsBorderColor,
+                      color: detailsColor,
+                      position: 'absolute',
+                      left: `${detailsX}%`,
+                      top: `${detailsY}%`,
+                      transform: 'translate(-50%, -50%)',
+                      cursor: 'grab',
+                      width: '65%',
+                      zIndex: 10
+                    }}
+                    className={`rounded-xl p-3 border backdrop-blur-sm space-y-1.5 text-left hover:ring-2 hover:ring-purple-500/50 hover:border-zinc-300 dark:hover:border-zinc-700 ${
+                      activeTemplate === 'retro' ? 'border-2 border-black shadow-[3px_3px_0px_#000000] text-black font-semibold' : ''
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5 pointer-events-none">
+                      <Calendar size={12} className="shrink-0 opacity-80" />
+                      <span className="text-[10px] font-mono leading-none truncate">
+                        {getFormattedDate(eventDate)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5 pointer-events-none">
+                      <MapPin size={12} className="shrink-0 opacity-80" />
+                      <span className="text-[10px] font-mono leading-none truncate">
+                        {location || 'Venue: TBA'}
+                      </span>
+                    </div>
                   </div>
 
-                  {/* Absolute / Draggable QR Code */}
-                  {showQr && qrDataUrl && (qrPosition === 'custom' || qrPosition === 'top-right') && (
+                  {/* Draggable QR Code */}
+                  {showQr && qrDataUrl && (
                     <div 
-                      onMouseDown={(e) => qrPosition === 'custom' && handleQrDragStart(e)}
-                      onTouchStart={(e) => qrPosition === 'custom' && handleQrDragStart(e)}
+                      onMouseDown={(e) => handleElementDragStart(e, 'qr')}
+                      onTouchStart={(e) => handleElementDragStart(e, 'qr')}
                       style={{ 
                         width: `${qrSize}px`, 
                         height: `${qrSize}px`,
                         backgroundColor: qrColorLight,
                         borderColor: activeTemplate === 'retro' ? '#000000' : detailsBorderColor,
                         position: 'absolute',
-                        left: qrPosition === 'custom' ? `${qrX}%` : undefined,
-                        right: qrPosition === 'top-right' ? '28px' : undefined,
-                        top: qrPosition === 'custom' ? `${qrY}%` : '28px',
-                        transform: qrPosition === 'custom' ? 'translate(-50%, -50%)' : undefined,
-                        cursor: qrPosition === 'custom' ? 'grab' : 'default',
+                        left: `${qrX}%`,
+                        top: `${qrY}%`,
+                        transform: 'translate(-50%, -50%)',
+                        cursor: 'grab',
                         zIndex: 30
                       }}
-                      className={`shrink-0 aspect-square rounded-xl p-1.5 border flex items-center justify-center bg-white ${
+                      className={`shrink-0 aspect-square rounded-xl p-1.5 border flex items-center justify-center bg-white hover:ring-2 hover:ring-purple-500/50 ${
                         activeTemplate === 'retro' ? 'border-2 border-black shadow-[3px_3px_0px_#000000]' : ''
-                      } ${
-                        qrPosition === 'custom' ? 'hover:ring-2 hover:ring-purple-500/50' : ''
                       }`}
                     >
                       <img 
@@ -835,6 +923,14 @@ export default function PosterDesigner({
                         </button>
                       ))}
                     </div>
+                    <button
+                      type="button"
+                      onClick={resetLayoutPositions}
+                      className="w-full flex items-center justify-center gap-1.5 py-2 px-3 border border-dashed border-zinc-300 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900 rounded-xl text-xs font-mono font-bold text-zinc-600 dark:text-zinc-400 transition-all mt-2.5"
+                    >
+                      <RefreshCw size={12} className="animate-hover-spin" />
+                      🔄 Reset Element Positions
+                    </button>
                   </div>
 
                   {/* Real-time Content Text Tuning */}
@@ -1048,51 +1144,118 @@ export default function PosterDesigner({
                     {showQr && (
                       <div className="grid grid-cols-2 gap-3.5 pt-1">
                         <div className="space-y-1 col-span-2">
-                          <span className="text-[9px] font-mono text-zinc-500 uppercase">QR Position</span>
+                          <span className="text-[9px] font-mono text-zinc-500 uppercase">QR Position Presets</span>
                           <select
                             value={qrPosition}
-                            onChange={e => setQrPosition(e.target.value as any)}
+                            onChange={e => {
+                              const val = e.target.value as any
+                              setQrPosition(val)
+                              if (val === 'bottom-right') {
+                                setQrX(85)
+                                setQrY(88)
+                              } else if (val === 'bottom-left') {
+                                setQrX(15)
+                                setQrY(88)
+                              } else if (val === 'top-right') {
+                                setQrX(85)
+                                setQrY(12)
+                              }
+                            }}
                             className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 py-1.5 text-[10px] outline-none"
                           >
-                            <option value="bottom-right">Bottom Right (Standard)</option>
-                            <option value="bottom-left">Bottom Left</option>
-                            <option value="top-right">Top Right Corner</option>
-                            <option value="custom">Custom Position (Draggable 🖐️)</option>
+                            <option value="bottom-right">Bottom Right Preset</option>
+                            <option value="bottom-left">Bottom Left Preset</option>
+                            <option value="top-right">Top Right Preset</option>
+                            <option value="custom">Custom (Draggable 🖐️)</option>
                           </select>
                         </div>
 
-                        {qrPosition === 'custom' && (
-                          <div className="space-y-2 col-span-2 grid grid-cols-2 gap-3.5 border border-zinc-100 dark:border-zinc-900 p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-900/20">
+                        {/* Element Fine-Tuning Sliders */}
+                        <div className="space-y-3 pt-4 border-t border-zinc-100 dark:border-zinc-900 col-span-2">
+                          <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 flex items-center gap-1.5">
+                            <Settings size={12} /> Fine-Tune Coordinates (X / Y)
+                          </span>
+                          <div className="space-y-3.5 border border-zinc-100 dark:border-zinc-900 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-900/20 text-xs">
+                            {/* Host Club Sliders */}
                             <div className="space-y-1">
-                              <span className="text-[9px] font-mono text-zinc-500 uppercase flex justify-between">
-                                <span>QR X (Left)</span>
-                                <span>{Math.round(qrX)}%</span>
-                              </span>
-                              <input 
-                                type="range" 
-                                min="0" 
-                                max="100" 
-                                value={Math.round(qrX)} 
-                                onChange={e => setQrX(parseInt(e.target.value))} 
-                                className="w-full mt-1 accent-purple-600" 
-                              />
+                              <span className="text-[10px] font-mono font-bold text-zinc-600 dark:text-zinc-400">Host Club Position</span>
+                              <div className="grid grid-cols-2 gap-3">
+                                <label className="flex flex-col text-[9px] font-mono text-zinc-500">
+                                  X: {Math.round(clubX)}%
+                                  <input type="range" min="0" max="100" value={Math.round(clubX)} onChange={e => setClubX(parseInt(e.target.value))} className="mt-1 accent-purple-600" />
+                                </label>
+                                <label className="flex flex-col text-[9px] font-mono text-zinc-500">
+                                  Y: {Math.round(clubY)}%
+                                  <input type="range" min="0" max="100" value={Math.round(clubY)} onChange={e => setClubY(parseInt(e.target.value))} className="mt-1 accent-purple-600" />
+                                </label>
+                              </div>
                             </div>
+                            
+                            {/* Title Sliders */}
                             <div className="space-y-1">
-                              <span className="text-[9px] font-mono text-zinc-500 uppercase flex justify-between">
-                                <span>QR Y (Top)</span>
-                                <span>{Math.round(qrY)}%</span>
-                              </span>
-                              <input 
-                                type="range" 
-                                min="0" 
-                                max="100" 
-                                value={Math.round(qrY)} 
-                                onChange={e => setQrY(parseInt(e.target.value))} 
-                                className="w-full mt-1 accent-purple-600" 
-                              />
+                              <span className="text-[10px] font-mono font-bold text-zinc-600 dark:text-zinc-400">Title Position</span>
+                              <div className="grid grid-cols-2 gap-3">
+                                <label className="flex flex-col text-[9px] font-mono text-zinc-500">
+                                  X: {Math.round(titleX)}%
+                                  <input type="range" min="0" max="100" value={Math.round(titleX)} onChange={e => setTitleX(parseInt(e.target.value))} className="mt-1 accent-purple-600" />
+                                </label>
+                                <label className="flex flex-col text-[9px] font-mono text-zinc-500">
+                                  Y: {Math.round(titleY)}%
+                                  <input type="range" min="0" max="100" value={Math.round(titleY)} onChange={e => setTitleY(parseInt(e.target.value))} className="mt-1 accent-purple-600" />
+                                </label>
+                              </div>
                             </div>
+
+                            {/* Description Sliders */}
+                            {showDesc && (
+                              <div className="space-y-1">
+                                <span className="text-[10px] font-mono font-bold text-zinc-600 dark:text-zinc-400">Description Position</span>
+                                <div className="grid grid-cols-2 gap-3">
+                                  <label className="flex flex-col text-[9px] font-mono text-zinc-500">
+                                    X: {Math.round(descX)}%
+                                    <input type="range" min="0" max="100" value={Math.round(descX)} onChange={e => setDescX(parseInt(e.target.value))} className="mt-1 accent-purple-600" />
+                                  </label>
+                                  <label className="flex flex-col text-[9px] font-mono text-zinc-500">
+                                    Y: {Math.round(descY)}%
+                                    <input type="range" min="0" max="100" value={Math.round(descY)} onChange={e => setDescY(parseInt(e.target.value))} className="mt-1 accent-purple-600" />
+                                  </label>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Logistics details Sliders */}
+                            <div className="space-y-1">
+                              <span className="text-[10px] font-mono font-bold text-zinc-600 dark:text-zinc-400">Logistics Details Position</span>
+                              <div className="grid grid-cols-2 gap-3">
+                                <label className="flex flex-col text-[9px] font-mono text-zinc-500">
+                                  X: {Math.round(detailsX)}%
+                                  <input type="range" min="0" max="100" value={Math.round(detailsX)} onChange={e => setDetailsX(parseInt(e.target.value))} className="mt-1 accent-purple-600" />
+                                </label>
+                                <label className="flex flex-col text-[9px] font-mono text-zinc-500">
+                                  Y: {Math.round(detailsY)}%
+                                  <input type="range" min="0" max="100" value={Math.round(detailsY)} onChange={e => setDetailsY(parseInt(e.target.value))} className="mt-1 accent-purple-600" />
+                                </label>
+                              </div>
+                            </div>
+
+                            {/* QR Code Sliders */}
+                            {showQr && (
+                              <div className="space-y-1">
+                                <span className="text-[10px] font-mono font-bold text-zinc-600 dark:text-zinc-400">QR Code Position</span>
+                                <div className="grid grid-cols-2 gap-3">
+                                  <label className="flex flex-col text-[9px] font-mono text-zinc-500">
+                                    X: {Math.round(qrX)}%
+                                    <input type="range" min="0" max="100" value={Math.round(qrX)} onChange={e => setQrX(parseInt(e.target.value))} className="mt-1 accent-purple-600" />
+                                  </label>
+                                  <label className="flex flex-col text-[9px] font-mono text-zinc-500">
+                                    Y: {Math.round(qrY)}%
+                                    <input type="range" min="0" max="100" value={Math.round(qrY)} onChange={e => setQrY(parseInt(e.target.value))} className="mt-1 accent-purple-600" />
+                                  </label>
+                                </div>
+                              </div>
+                            )}
                           </div>
-                        )}
+                        </div>
 
                         <div className="space-y-1 col-span-2">
                           <span className="text-[9px] font-mono text-zinc-500 uppercase flex justify-between">
