@@ -6,7 +6,7 @@ import {
   MapPin, Terminal, Award, BookOpen, Coffee, Flame, Heart, Lightbulb, 
   Smile, Star, Target, Trophy, HelpCircle, X, Download, Upload, AlignLeft, 
   AlignCenter, AlignRight, Type, Palette, Layout, Settings, Play, RefreshCw,
-  Plus, Trash2, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Eye
+  Plus, Trash2, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Eye, Clock
 } from 'lucide-react'
 import { toPng, toJpeg } from 'html-to-image'
 import { PDFDocument } from 'pdf-lib'
@@ -59,9 +59,10 @@ export default function PosterDesigner({
   const [description, setDescription] = useState(initialDescription)
   const [location, setLocation] = useState(initialLocation)
   const [eventDate, setEventDate] = useState(initialDate)
+  const [eventTime, setEventTime] = useState('1:30 PM')
 
   // Design state
-  const [activeTemplate, setActiveTemplate] = useState<'cyberpunk' | 'vibrant' | 'corporate' | 'minimalist' | 'retro'>('vibrant')
+  const [activeTemplate, setActiveTemplate] = useState<'cyberpunk' | 'vibrant' | 'corporate' | 'minimalist' | 'retro' | 'academic' | 'techconf' | 'creative' | 'academic-official' | 'formal-gold' | 'midnight-hacker' | 'glassmorphic-glow' | 'gala-athletic' | 'eco-minimal'>('vibrant')
   
   // Customization controls
   const [titleColor, setTitleColor] = useState('#ffffff')
@@ -106,6 +107,13 @@ export default function PosterDesigner({
   const [detailsX, setDetailsX] = useState(35)
   const [detailsY, setDetailsY] = useState(88)
 
+  // Speaker details & coordinates
+  const [showSpeaker, setShowSpeaker] = useState(false)
+  const [speakerName, setSpeakerName] = useState('Nived Shaji')
+  const [speakerTitle, setSpeakerTitle] = useState('Resource Person')
+  const [speakerX, setSpeakerX] = useState(25)
+  const [speakerY, setSpeakerY] = useState(80)
+
   // Stickers / Decals
   const [stickers, setStickers] = useState<Sticker[]>([])
   const [selectedStickerId, setSelectedStickerId] = useState<string | null>(null)
@@ -147,7 +155,7 @@ export default function PosterDesigner({
   }, [publicUrl, qrColorDark, qrColorLight])
 
   // Pre-configured Design Presets
-  const applyPreset = (presetName: 'cyberpunk' | 'vibrant' | 'corporate' | 'minimalist' | 'retro') => {
+  const applyPreset = (presetName: 'cyberpunk' | 'vibrant' | 'corporate' | 'minimalist' | 'retro' | 'academic' | 'techconf' | 'creative' | 'academic-official' | 'formal-gold' | 'midnight-hacker' | 'glassmorphic-glow' | 'gala-athletic' | 'eco-minimal') => {
     setActiveTemplate(presetName)
     setClubX(50)
     setClubY(12)
@@ -160,6 +168,7 @@ export default function PosterDesigner({
     setQrX(85)
     setQrY(88)
     setQrPosition('custom')
+    setShowSpeaker(false)
     switch(presetName) {
       case 'cyberpunk':
         setBgColorType('solid')
@@ -239,6 +248,289 @@ export default function PosterDesigner({
         setDetailsBorderColor('#000000')
         setQrColorDark('#000000')
         setQrColorLight('#ffffff')
+        break
+      case 'academic':
+        setBgColorType('gradient')
+        setBgGradStart('#f0f9ff')
+        setBgGradEnd('#ffffff')
+        setBgGradAngle('to bottom')
+        setTitleColor('#1e3a8a') // dark blue
+        setTitleSize(32)
+        setTitleFont('font-sans')
+        setTitleAlign('left')
+        setClubColor('#2563eb') // blue-600
+        setDescColor('#475569') // slate-600
+        setDetailsColor('#1e3a8a')
+        setDetailsBg('rgba(255, 255, 255, 0.85)')
+        setDetailsBorderColor('#cbd5e1')
+        setQrColorDark('#1e3a8a')
+        setQrColorLight('#ffffff')
+        
+        // Custom aligned coordinates matching the reference image layout
+        setClubX(12)
+        setClubY(16)
+        setTitleX(45)
+        setTitleY(30)
+        setDescX(45)
+        setDescY(44)
+        setDetailsX(26)
+        setDetailsY(58)
+        setQrX(58)
+        setQrY(86)
+        
+        setShowSpeaker(true)
+        setSpeakerName('Nived Shaji')
+        setSpeakerTitle('Resource Person')
+        setSpeakerX(26)
+        setSpeakerY(80)
+        break
+      case 'techconf':
+        setBgColorType('gradient')
+        setBgGradStart('#09090b')
+        setBgGradEnd('#020617')
+        setBgGradAngle('to bottom')
+        setTitleColor('#ffffff')
+        setTitleSize(34)
+        setTitleFont('font-mono')
+        setTitleAlign('center')
+        setClubColor('#60a5fa') // light blue
+        setDescColor('#a1a1aa')
+        setDetailsColor('#ffffff')
+        setDetailsBg('rgba(9, 9, 11, 0.5)')
+        setDetailsBorderColor('#3b82f6')
+        setQrColorDark('#ffffff')
+        setQrColorLight('#09090b')
+        
+        setClubX(50)
+        setClubY(12)
+        setTitleX(50)
+        setTitleY(38)
+        setDescX(50)
+        setDescY(58)
+        setDetailsX(35)
+        setDetailsY(86)
+        setQrX(85)
+        setQrY(86)
+        setShowSpeaker(false)
+        break
+      case 'creative':
+        setBgColorType('gradient')
+        setBgGradStart('#7c3aed') // violet-600
+        setBgGradEnd('#f97316') // orange-500
+        setBgGradAngle('to top right')
+        setTitleColor('#ffffff')
+        setTitleSize(36)
+        setTitleFont('font-sans')
+        setTitleAlign('center')
+        setClubColor('#fef08a') // yellow-200
+        setDescColor('#f3f4f6')
+        setDetailsColor('#ffffff')
+        setDetailsBg('rgba(0, 0, 0, 0.3)')
+        setDetailsBorderColor('rgba(255, 255, 255, 0.4)')
+        setQrColorDark('#000000')
+        setQrColorLight('#ffffff')
+        
+        setClubX(50)
+        setClubY(12)
+        setTitleX(50)
+        setTitleY(40)
+        setDescX(50)
+        setDescY(64)
+        setDetailsX(35)
+        setDetailsY(86)
+        setQrX(85)
+        setQrY(86)
+        setShowSpeaker(false)
+        break
+      case 'academic-official':
+        setBgColorType('gradient')
+        setBgGradStart('#eff6ff') // blue-50
+        setBgGradEnd('#ffffff')
+        setBgGradAngle('to bottom')
+        setTitleColor('#1e3a8a') // dark blue (Gopalan style)
+        setTitleSize(28)
+        setTitleFont('font-sans')
+        setTitleAlign('left')
+        setClubColor('#2563eb')
+        setDescColor('#475569')
+        setDetailsColor('#1e3a8a')
+        setDetailsBg('transparent')
+        setDetailsBorderColor('transparent')
+        setQrColorDark('#1e3a8a')
+        setQrColorLight('#ffffff')
+        
+        setClubX(28)
+        setClubY(20)
+        setTitleX(45)
+        setTitleY(32)
+        setDescX(45)
+        setDescY(47)
+        setDetailsX(26)
+        setDetailsY(62)
+        setQrX(80)
+        setQrY(86)
+        
+        setShowSpeaker(true)
+        setSpeakerName('Nived Shaji')
+        setSpeakerTitle('Resource Person')
+        setSpeakerX(28)
+        setSpeakerY(84)
+        break
+      case 'formal-gold':
+        setBgColorType('solid')
+        setBgSolidColor('#0b0f19')
+        setTitleColor('#d4af37') // Gold
+        setTitleSize(32)
+        setTitleFont('font-serif')
+        setTitleAlign('center')
+        setClubColor('#ffffff')
+        setDescColor('#94a3b8')
+        setDetailsColor('#d4af37')
+        setDetailsBg('rgba(11, 15, 25, 0.95)')
+        setDetailsBorderColor('#d4af37')
+        setQrColorDark('#0b0f19')
+        setQrColorLight('#ffffff')
+        
+        setClubX(50)
+        setClubY(16)
+        setTitleX(50)
+        setTitleY(38)
+        setDescX(50)
+        setDescY(58)
+        setDetailsX(35)
+        setDetailsY(84)
+        setQrX(82)
+        setQrY(84)
+        
+        setShowSpeaker(true)
+        setSpeakerName('Dr. Sarah Jenkins')
+        setSpeakerTitle('Keynote Speaker')
+        setSpeakerX(25)
+        setSpeakerY(80)
+        break
+      case 'midnight-hacker':
+        setBgColorType('solid')
+        setBgSolidColor('#030712')
+        setTitleColor('#22c55e') // Matrix Green
+        setTitleSize(34)
+        setTitleFont('font-mono')
+        setTitleAlign('left')
+        setClubColor('#3b82f6') // Hacker blue
+        setDescColor('#a1a1aa')
+        setDetailsColor('#22c55e')
+        setDetailsBg('rgba(3, 7, 18, 0.85)')
+        setDetailsBorderColor('#22c55e')
+        setQrColorDark('#22c55e')
+        setQrColorLight('#030712')
+        
+        setClubX(50)
+        setClubY(18)
+        setTitleX(50)
+        setTitleY(40)
+        setDescX(50)
+        setDescY(60)
+        setDetailsX(32)
+        setDetailsY(84)
+        setQrX(82)
+        setQrY(84)
+        
+        setShowSpeaker(true)
+        setSpeakerName('root@clubeve:~#')
+        setSpeakerTitle('Whitehat Guest')
+        setSpeakerX(24)
+        setSpeakerY(80)
+        break
+      case 'glassmorphic-glow':
+        setBgColorType('gradient')
+        setBgGradStart('#1e1b4b') // deep indigo
+        setBgGradEnd('#311042') // deep purple
+        setBgGradAngle('to bottom right')
+        setTitleColor('#ffffff')
+        setTitleSize(32)
+        setTitleFont('font-sans')
+        setTitleAlign('center')
+        setClubColor('#c084fc')
+        setDescColor('#e2e8f0')
+        setDetailsColor('#ffffff')
+        setDetailsBg('rgba(255, 255, 255, 0.08)')
+        setDetailsBorderColor('rgba(255, 255, 255, 0.18)')
+        setQrColorDark('#1e1b4b')
+        setQrColorLight('#ffffff')
+        
+        setClubX(50)
+        setClubY(14)
+        setTitleX(50)
+        setTitleY(38)
+        setDescX(50)
+        setDescY(58)
+        setDetailsX(35)
+        setDetailsY(84)
+        setQrX(82)
+        setQrY(84)
+        
+        setShowSpeaker(true)
+        setSpeakerName('Alex Rivera')
+        setSpeakerTitle('Industry Expert')
+        setSpeakerX(25)
+        setSpeakerY(80)
+        break
+      case 'gala-athletic':
+        setBgColorType('gradient')
+        setBgGradStart('#111827')
+        setBgGradEnd('#7f1d1d') // deep red
+        setBgGradAngle('to top right')
+        setTitleColor('#facc15') // dynamic yellow
+        setTitleSize(36)
+        setTitleFont('font-sans')
+        setTitleAlign('center')
+        setClubColor('#ffffff')
+        setDescColor('#f3f4f6')
+        setDetailsColor('#ffffff')
+        setDetailsBg('#1f2937')
+        setDetailsBorderColor('#ef4444')
+        setQrColorDark('#000000')
+        setQrColorLight('#ffffff')
+        
+        setClubX(50)
+        setClubY(14)
+        setTitleX(50)
+        setTitleY(40)
+        setDescX(50)
+        setDescY(64)
+        setDetailsX(35)
+        setDetailsY(86)
+        setQrX(82)
+        setQrY(86)
+        setShowSpeaker(false)
+        break
+      case 'eco-minimal':
+        setBgColorType('gradient')
+        setBgGradStart('#f0fdf4') // light emerald
+        setBgGradEnd('#ffffff')
+        setBgGradAngle('to bottom')
+        setTitleColor('#065f46') // emerald-800
+        setTitleSize(30)
+        setTitleFont('font-sans')
+        setTitleAlign('left')
+        setClubColor('#059669')
+        setDescColor('#374151')
+        setDetailsColor('#065f46')
+        setDetailsBg('rgba(255, 255, 255, 0.9)')
+        setDetailsBorderColor('#a7f3d0')
+        setQrColorDark('#065f46')
+        setQrColorLight('#ffffff')
+        
+        setClubX(50)
+        setClubY(14)
+        setTitleX(50)
+        setTitleY(38)
+        setDescX(50)
+        setDescY(58)
+        setDetailsX(35)
+        setDetailsY(84)
+        setQrX(82)
+        setQrY(84)
+        setShowSpeaker(false)
         break
     }
   }
@@ -322,7 +614,7 @@ export default function PosterDesigner({
   // Generic handler for dragging any absolute layout component
   const handleElementDragStart = (
     e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>,
-    elementKey: 'club' | 'title' | 'desc' | 'details' | 'qr'
+    elementKey: 'club' | 'title' | 'desc' | 'details' | 'qr' | 'speaker'
   ) => {
     if ('button' in e && e.button !== 0) return // Only drag on left click
     e.preventDefault()
@@ -349,6 +641,9 @@ export default function PosterDesigner({
       }
       startX = qrX
       startY = qrY
+    } else if (elementKey === 'speaker') {
+      startX = speakerX
+      startY = speakerY
     }
 
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
@@ -386,6 +681,9 @@ export default function PosterDesigner({
       } else if (elementKey === 'qr') {
         setQrX(newX)
         setQrY(newY)
+      } else if (elementKey === 'speaker') {
+        setSpeakerX(newX)
+        setSpeakerY(newY)
       }
     }
 
@@ -415,6 +713,8 @@ export default function PosterDesigner({
     setQrX(85)
     setQrY(88)
     setQrPosition('custom')
+    setSpeakerX(25)
+    setSpeakerY(80)
     toast.success('All element positions reset to defaults!')
   }
 
@@ -605,16 +905,20 @@ export default function PosterDesigner({
                   <span className="text-[9px] font-mono text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/30 px-2 py-0.5 rounded-full border border-purple-200/50 dark:border-purple-800/30">
                     🖐️ Click and drag ANY element to position it!
                   </span>
-                </div>
-
-                {/* Actual Poster Element */}
+                               {/* Actual Poster Element */}
                 <div 
                   ref={posterRef}
                   style={getPosterBgStyle()}
                   className={`w-[400px] h-[560px] rounded-2xl relative overflow-hidden shadow-2xl select-none ${
                     activeTemplate === 'cyberpunk' ? 'border-2 border-[#00f2fe]' : 
                     activeTemplate === 'corporate' ? 'border-4 border-double border-[#f59e0b]' : 
-                    activeTemplate === 'retro' ? 'border-4 border-black' : ''
+                    activeTemplate === 'retro' ? 'border-4 border-black' : 
+                    activeTemplate === 'academic' || activeTemplate === 'academic-official' ? 'border border-zinc-200 shadow-xl' : 
+                    activeTemplate === 'formal-gold' ? 'border-4 border-double border-[#d4af37]' :
+                    activeTemplate === 'midnight-hacker' ? 'border-2 border-[#22c55e]' : 
+                    activeTemplate === 'glassmorphic-glow' ? 'border border-white/20 shadow-2xl' : 
+                    activeTemplate === 'gala-athletic' ? 'border border-zinc-800' : 
+                    activeTemplate === 'eco-minimal' ? 'border border-emerald-200' : ''
                   }`}
                 >
                   {/* Cyberpunk Grid Background Overlay */}
@@ -633,6 +937,165 @@ export default function PosterDesigner({
                     <>
                       <div className="absolute top-10 left-10 w-32 h-32 rounded-full bg-pink-400/30 blur-2xl pointer-events-none animate-pulse" />
                       <div className="absolute bottom-16 right-10 w-40 h-40 rounded-full bg-blue-400/30 blur-2xl pointer-events-none" />
+                    </>
+                  )}
+
+                  {/* Academic Background Overlay */}
+                  {activeTemplate === 'academic' && (
+                    <>
+                      {/* Soft tech nodes/shapes in background */}
+                      <div className="absolute top-24 right-8 w-24 h-24 rounded-full bg-blue-400/10 blur-xl pointer-events-none" />
+                      <div className="absolute bottom-28 left-6 w-32 h-32 rounded-full bg-blue-300/10 blur-2xl pointer-events-none" />
+                      {/* Geometric circuit lines simulation */}
+                      <div 
+                        className="absolute inset-0 pointer-events-none opacity-[0.03]" 
+                        style={{
+                          backgroundImage: 'radial-gradient(#1e3a8a 1.5px, transparent 1.5px)',
+                          backgroundSize: '24px 24px'
+                        }}
+                      />
+                      {/* Top College Banner Header */}
+                      <div className="absolute top-0 left-0 w-full bg-white border-b border-zinc-100 p-2.5 flex items-center justify-between z-10 pointer-events-none">
+                        <div className="flex items-center gap-1.5">
+                          <GraduationCap size={20} className="text-blue-900" />
+                          <div className="flex flex-col">
+                            <span className="text-[9px] font-black text-blue-900 tracking-tight leading-none">GOPALAN COLLEGE OF ENGINEERING</span>
+                            <span className="text-[6px] font-mono text-zinc-500 uppercase tracking-widest leading-none mt-0.5">Approved by AICTE | Whitefield, BLR</span>
+                          </div>
+                        </div>
+                        <Award size={18} className="text-amber-500 shrink-0" />
+                      </div>
+                    </>
+                  )}
+
+                  {/* Academic Official Top Logo Banner Header & Background Mesh (Matches Reference Image) */}
+                  {activeTemplate === 'academic-official' && (
+                    <>
+                      {/* Soft tech nodes/shapes in background */}
+                      <div className="absolute top-24 right-8 w-28 h-28 rounded-full bg-blue-400/10 blur-2xl pointer-events-none" />
+                      <div className="absolute bottom-28 left-6 w-36 h-36 rounded-full bg-blue-300/10 blur-3xl pointer-events-none" />
+                      {/* Big blue mesh sphere shape on bottom right */}
+                      <div className="absolute right-[-40px] bottom-[40px] w-52 h-52 rounded-full border-[1.5px] border-blue-600/10 pointer-events-none flex items-center justify-center">
+                        <div className="w-44 h-44 rounded-full border border-dashed border-blue-500/10" />
+                        <div className="w-36 h-36 rounded-full border border-blue-400/5" />
+                      </div>
+                      
+                      {/* Floating tech nodes */}
+                      <div className="absolute top-[180px] right-[40px] w-2 h-2 rounded-full bg-blue-500/40 pointer-events-none animate-ping" />
+                      <div className="absolute top-[240px] right-[80px] w-3 h-3 rounded-full bg-indigo-500/25 pointer-events-none animate-pulse" />
+                      <div className="absolute top-[320px] right-[20px] w-1.5 h-1.5 rounded-full bg-blue-600/30 pointer-events-none" />
+                      
+                      {/* Logo Banner Header Row */}
+                      <div className="absolute top-0 left-0 w-full bg-white border-b border-zinc-200 px-2 py-1.5 flex items-center justify-between z-10 pointer-events-none">
+                        <div className="flex items-center gap-1">
+                          {/* CSE Badge */}
+                          <div className="w-6 h-6 rounded-full bg-[#1e3a8a] text-white flex flex-col items-center justify-center border border-zinc-200 shadow-sm shrink-0">
+                            <span className="text-[4px] font-black tracking-tighter leading-none">DEPT</span>
+                            <span className="text-[6px] font-black tracking-tight leading-none mt-0.5">CSE</span>
+                          </div>
+                          {/* AI&ML Badge */}
+                          <div className="w-6 h-6 rounded-full bg-zinc-950 text-white flex flex-col items-center justify-center border border-zinc-200 shadow-sm shrink-0">
+                            <span className="text-[4px] font-black tracking-tighter leading-none">DEPT</span>
+                            <span className="text-[5px] font-black tracking-tight leading-none mt-0.5">AI/ML</span>
+                          </div>
+                          {/* Crest Badge */}
+                          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-amber-500 to-red-600 text-white flex items-center justify-center border border-zinc-200 shadow-sm shrink-0">
+                            <span className="text-[5px] font-black uppercase text-white/90">GCEM</span>
+                          </div>
+                        </div>
+                        
+                        <div className="flex flex-col items-center text-center flex-1 mx-1 px-1 border-x border-zinc-200/50">
+                          <span className="text-[6.5px] font-black text-zinc-900 tracking-tight leading-none uppercase">GOPALAN COLLEGE OF ENGINEERING</span>
+                          <span className="text-[5px] font-bold text-zinc-500 uppercase tracking-widest leading-none mt-0.5">AND MANAGEMENT, BENGALURU</span>
+                        </div>
+
+                        <div className="flex items-center gap-1">
+                          {/* TECHEON Logo */}
+                          <div className="w-6 h-6 rounded bg-black text-[#f59e0b] border border-amber-500/30 flex items-center justify-center shrink-0">
+                            <span className="text-[5px] font-mono font-bold tracking-tighter">TECH</span>
+                          </div>
+                          {/* GRAFIK Logo */}
+                          <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-purple-600 to-pink-500 text-white flex items-center justify-center border border-zinc-100 shadow-sm shrink-0">
+                            <span className="text-[5px] font-black uppercase tracking-tighter">GFX</span>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Formal Gold Double Borders */}
+                  {activeTemplate === 'formal-gold' && (
+                    <div className="absolute inset-2 border border-[#d4af37]/60 pointer-events-none m-1">
+                      <div className="absolute inset-1 border-[3px] border-[#d4af37]/80" />
+                    </div>
+                  )}
+
+                  {/* Midnight Hacker Grid and Header Overlay */}
+                  {activeTemplate === 'midnight-hacker' && (
+                    <>
+                      {/* Matrix Grid */}
+                      <div 
+                        className="absolute inset-0 pointer-events-none opacity-10" 
+                        style={{
+                          backgroundImage: 'linear-gradient(to right, #22c55e 1px, transparent 1px), linear-gradient(to bottom, #22c55e 1px, transparent 1px)',
+                          backgroundSize: '30px 30px'
+                        }}
+                      />
+                      {/* Mock Terminal Header */}
+                      <div className="absolute top-0 left-0 w-full bg-[#030712] border-b border-[#22c55e]/20 px-3 py-1.5 flex items-center justify-between pointer-events-none z-10">
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
+                          <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
+                          <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
+                          <span className="text-[8px] font-mono text-zinc-500 ml-2">bash - event_poster.sh</span>
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Glassmorphic Glow Background Orbs */}
+                  {activeTemplate === 'glassmorphic-glow' && (
+                    <>
+                      {/* Vivid back neon bubbles */}
+                      <div className="absolute top-20 left-10 w-44 h-44 rounded-full bg-[#f43f5e]/20 blur-[50px] pointer-events-none" />
+                      <div className="absolute bottom-20 right-10 w-44 h-44 rounded-full bg-[#3b82f6]/20 blur-[50px] pointer-events-none animate-pulse" />
+                    </>
+                  )}
+
+                  {/* Gala Athletic sharp diagonal cuts */}
+                  {activeTemplate === 'gala-athletic' && (
+                    <div 
+                      className="absolute inset-0 pointer-events-none opacity-10"
+                      style={{
+                        backgroundImage: 'linear-gradient(115deg, transparent 70%, #ef4444 70%), linear-gradient(115deg, transparent 40%, #000000 40%)',
+                        backgroundSize: '100% 100%'
+                      }}
+                    />
+                  )}
+
+                  {/* Eco Minimal clean layout details */}
+                  {activeTemplate === 'eco-minimal' && (
+                    <div 
+                      className="absolute inset-0 pointer-events-none opacity-[0.03]"
+                      style={{
+                        backgroundImage: 'radial-gradient(#059669 1.5px, transparent 1.5px)',
+                        backgroundSize: '20px 20px'
+                      }}
+                    />
+                  )}
+
+                  {/* Tech Conference Background Overlay */}
+                  {activeTemplate === 'techconf' && (
+                    <>
+                      <div 
+                        className="absolute inset-0 pointer-events-none opacity-20" 
+                        style={{
+                          backgroundImage: 'linear-gradient(to right, #3b82f6 0.5px, transparent 0.5px), linear-gradient(to bottom, #8b5cf6 0.5px, transparent 0.5px)',
+                          backgroundSize: '40px 40px'
+                        }}
+                      />
+                      <div className="absolute -top-10 -left-10 w-48 h-48 rounded-full bg-blue-600/20 blur-3xl pointer-events-none" />
+                      <div className="absolute -bottom-10 -right-10 w-48 h-48 rounded-full bg-purple-600/20 blur-3xl pointer-events-none" />
                     </>
                   )}
 
@@ -716,6 +1179,10 @@ export default function PosterDesigner({
                         activeTemplate === 'cyberpunk' ? 'text-shadow-neon' : ''
                       } ${
                         activeTemplate === 'retro' ? 'drop-shadow-[3px_3px_0px_#000000]' : ''
+                      } ${
+                        activeTemplate === 'formal-gold' ? 'drop-shadow-[1px_1px_1px_rgba(0,0,0,0.5)]' : ''
+                      } ${
+                        activeTemplate === 'midnight-hacker' ? 'font-mono' : ''
                       }`}
                     >
                       {title || 'EXQUISITE EVENT'}
@@ -754,8 +1221,8 @@ export default function PosterDesigner({
                     onMouseDown={(e) => handleElementDragStart(e, 'details')}
                     onTouchStart={(e) => handleElementDragStart(e, 'details')}
                     style={{ 
-                      backgroundColor: detailsBg, 
-                      borderColor: detailsBorderColor,
+                      backgroundColor: (activeTemplate === 'academic' || activeTemplate === 'academic-official') ? 'transparent' : detailsBg, 
+                      borderColor: (activeTemplate === 'academic' || activeTemplate === 'academic-official') ? 'transparent' : detailsBorderColor,
                       color: detailsColor,
                       position: 'absolute',
                       left: `${detailsX}%`,
@@ -765,23 +1232,98 @@ export default function PosterDesigner({
                       width: '65%',
                       zIndex: 10
                     }}
-                    className={`rounded-xl p-3 border backdrop-blur-sm space-y-1.5 text-left hover:ring-2 hover:ring-purple-500/50 hover:border-zinc-300 dark:hover:border-zinc-700 ${
+                    className={`rounded-xl p-3 border backdrop-blur-md space-y-1.5 text-left hover:ring-2 hover:ring-purple-500/50 hover:border-zinc-200 dark:hover:border-zinc-800 ${
                       activeTemplate === 'retro' ? 'border-2 border-black shadow-[3px_3px_0px_#000000] text-black font-semibold' : ''
                     }`}
                   >
-                    <div className="flex items-center gap-1.5 pointer-events-none">
-                      <Calendar size={12} className="shrink-0 opacity-80" />
-                      <span className="text-[10px] font-mono leading-none truncate">
-                        {getFormattedDate(eventDate)}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1.5 pointer-events-none">
-                      <MapPin size={12} className="shrink-0 opacity-80" />
-                      <span className="text-[10px] font-mono leading-none truncate">
-                        {location || 'Venue: TBA'}
-                      </span>
-                    </div>
+                    {activeTemplate === 'academic' || activeTemplate === 'academic-official' ? (
+                      <div className="space-y-1.5 select-none pointer-events-none">
+                        <div className="flex items-center gap-2 px-2.5 py-0.5 bg-white border border-blue-600/30 text-blue-900 font-bold rounded-full text-[8px] w-fit shadow-[0_1px_3px_rgba(0,0,0,0.05)] whitespace-nowrap">
+                          <Calendar size={10} className="text-blue-600 shrink-0" />
+                          <span>{getFormattedDate(eventDate)}</span>
+                        </div>
+                        <div className="flex items-center gap-2 px-2.5 py-0.5 bg-white border border-blue-600/30 text-blue-900 font-bold rounded-full text-[8px] w-fit shadow-[0_1px_3px_rgba(0,0,0,0.05)] whitespace-nowrap">
+                          <Clock size={10} className="text-blue-600 shrink-0" />
+                          <span>{eventTime || '1:30 PM'}</span>
+                        </div>
+                        <div className="flex items-center gap-2 px-2.5 py-0.5 bg-white border border-blue-600/30 text-blue-900 font-bold rounded-full text-[8px] w-fit shadow-[0_1px_3px_rgba(0,0,0,0.05)] whitespace-nowrap">
+                          <MapPin size={10} className="text-blue-600 shrink-0" />
+                          <span>{location || 'Venue: TBA'}</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex items-center gap-1.5 pointer-events-none">
+                          <Calendar size={12} className="shrink-0 opacity-80" />
+                          <span className="text-[10px] font-mono leading-none truncate">
+                            {getFormattedDate(eventDate)}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1.5 pointer-events-none">
+                          <Clock size={12} className="shrink-0 opacity-80" />
+                          <span className="text-[10px] font-mono leading-none truncate">
+                            {eventTime || '1:30 PM'}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1.5 pointer-events-none">
+                          <MapPin size={12} className="shrink-0 opacity-80" />
+                          <span className="text-[10px] font-mono leading-none truncate">
+                            {location || 'Venue: TBA'}
+                          </span>
+                        </div>
+                      </>
+                    )}
                   </div>
+
+                  {/* Speaker Badge */}
+                  {showSpeaker && (
+                    <div
+                      onMouseDown={(e) => handleElementDragStart(e, 'speaker')}
+                      onTouchStart={(e) => handleElementDragStart(e, 'speaker')}
+                      style={{
+                        position: 'absolute',
+                        left: `${speakerX}%`,
+                        top: `${speakerY}%`,
+                        transform: 'translate(-50%, -50%)',
+                        cursor: 'grab',
+                        zIndex: 15
+                      }}
+                      className={`flex flex-col items-center hover:ring-2 hover:ring-purple-500/50 p-2.5 rounded-2xl border hover:border-zinc-300 dark:hover:border-zinc-700 bg-white/95 dark:bg-zinc-950/95 shadow-xl backdrop-blur-sm w-36 text-center ${
+                        activeTemplate === 'formal-gold' ? 'border-[#d4af37]/60' :
+                        activeTemplate === 'midnight-hacker' ? 'border-[#22c55e]/60 bg-[#030712]/95 text-[#22c55e]' :
+                        'border-zinc-200 dark:border-zinc-850'
+                      }`}
+                    >
+                      {/* Speaker Photo Mockup - Blue Circle Ring just like the reference image! */}
+                      <div className={`w-16 h-16 rounded-full border-[3px] overflow-hidden mb-1.5 flex items-center justify-center shadow-inner ${
+                        activeTemplate === 'academic' || activeTemplate === 'academic-official' ? 'border-blue-600/80 bg-blue-50 dark:bg-zinc-900' :
+                        activeTemplate === 'formal-gold' ? 'border-[#d4af37] bg-amber-500/5' :
+                        activeTemplate === 'midnight-hacker' ? 'border-[#22c55e] bg-zinc-900' :
+                        'border-purple-500 bg-purple-50'
+                      }`}>
+                        <Users size={28} className={
+                          activeTemplate === 'academic' || activeTemplate === 'academic-official' ? 'text-blue-600' :
+                          activeTemplate === 'formal-gold' ? 'text-[#d4af37]' :
+                          activeTemplate === 'midnight-hacker' ? 'text-[#22c55e]' :
+                          'text-purple-600'
+                        } />
+                      </div>
+                      <span className={`text-[8px] font-bold font-mono uppercase tracking-wider leading-none mb-1 ${
+                        activeTemplate === 'formal-gold' ? 'text-[#d4af37]' :
+                        activeTemplate === 'midnight-hacker' ? 'text-zinc-500' :
+                        'text-zinc-500'
+                      }`}>
+                        {speakerTitle || 'Resource Person'}
+                      </span>
+                      <span className={`text-xs font-black uppercase leading-tight tracking-tight text-center break-words w-full px-1 ${
+                        activeTemplate === 'midnight-hacker' ? 'text-[#22c55e]' :
+                        activeTemplate === 'formal-gold' ? 'text-[#d4af37]' :
+                        'text-zinc-900 dark:text-white'
+                      }`}>
+                        {speakerName || 'Nived Shaji'}
+                      </span>
+                    </div>
+                  )}
 
                   {/* Draggable QR Code */}
                   {showQr && qrDataUrl && (
@@ -801,7 +1343,9 @@ export default function PosterDesigner({
                         zIndex: 30
                       }}
                       className={`shrink-0 aspect-square rounded-xl p-1.5 border flex items-center justify-center bg-white hover:ring-2 hover:ring-purple-500/50 ${
-                        activeTemplate === 'retro' ? 'border-2 border-black shadow-[3px_3px_0px_#000000]' : ''
+                        activeTemplate === 'retro' ? 'border-2 border-black shadow-[3px_3px_0px_#000000]' : 
+                        activeTemplate === 'formal-gold' ? 'border-2 border-[#d4af37]' :
+                        activeTemplate === 'midnight-hacker' ? 'border-2 border-[#22c55e]' : ''
                       }`}
                     >
                       <img 
@@ -812,7 +1356,7 @@ export default function PosterDesigner({
                     </div>
                   )}
 
-                </div>
+                </div>   </div>
 
                 {/* Sticker Quick Controls */}
                 {selectedStickerId && (
@@ -907,8 +1451,8 @@ export default function PosterDesigner({
                     <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 flex items-center gap-1.5">
                       <Layout size={12} /> Choose Template Design
                     </span>
-                    <div className="grid grid-cols-5 gap-1.5">
-                      {(['vibrant', 'cyberpunk', 'corporate', 'minimalist', 'retro'] as const).map(p => (
+                    <div className="grid grid-cols-4 gap-2">
+                      {(['vibrant', 'cyberpunk', 'corporate', 'minimalist', 'retro', 'academic', 'techconf', 'creative', 'academic-official', 'formal-gold', 'midnight-hacker', 'glassmorphic-glow', 'gala-athletic', 'eco-minimal'] as const).map(p => (
                         <button
                           key={p}
                           type="button"
@@ -919,7 +1463,7 @@ export default function PosterDesigner({
                               : 'border-zinc-200 dark:border-zinc-800 hover:border-black text-zinc-600 dark:text-zinc-400'
                           }`}
                         >
-                          {p}
+                          {p.replace('-official', '').replace('-gold', '').replace('-hacker', '').replace('-glow', '')}
                         </button>
                       ))}
                     </div>
@@ -976,23 +1520,32 @@ export default function PosterDesigner({
                           className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-1.5 text-xs outline-none focus:ring-1 focus:ring-purple-500 resize-none font-light" 
                         />
                       </div>
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-3 gap-2">
                         <div className="space-y-1">
-                          <label className="text-[10px] font-mono uppercase text-zinc-400">Location</label>
-                          <input 
-                            type="text" 
-                            value={location}
-                            onChange={e => setLocation(e.target.value)}
-                            className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-1.5 text-xs outline-none focus:ring-1 focus:ring-purple-500" 
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-mono uppercase text-zinc-400">Date/Time</label>
+                          <label className="text-[10px] font-mono uppercase text-zinc-400">Date</label>
                           <input 
                             type="text" 
                             value={eventDate}
                             onChange={e => setEventDate(e.target.value)}
-                            className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-1.5 text-xs outline-none focus:ring-1 focus:ring-purple-500" 
+                            className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 py-1.5 text-xs outline-none focus:ring-1 focus:ring-purple-500" 
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-mono uppercase text-zinc-400">Time</label>
+                          <input 
+                            type="text" 
+                            value={eventTime}
+                            onChange={e => setEventTime(e.target.value)}
+                            className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 py-1.5 text-xs outline-none focus:ring-1 focus:ring-purple-500" 
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-mono uppercase text-zinc-400">Venue</label>
+                          <input 
+                            type="text" 
+                            value={location}
+                            onChange={e => setLocation(e.target.value)}
+                            className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 py-1.5 text-xs outline-none focus:ring-1 focus:ring-purple-500" 
                           />
                         </div>
                       </div>
@@ -1125,6 +1678,48 @@ export default function PosterDesigner({
                     </div>
                   </div>
 
+                  {/* Speaker Details Control */}
+                  <div className="space-y-3 pt-4 border-t border-zinc-100 dark:border-zinc-900">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 flex items-center gap-1.5">
+                        <Users size={12} /> Speaker / Guest Details
+                      </span>
+                      <label className="flex items-center gap-1.5 cursor-pointer text-[9px] font-mono text-zinc-500">
+                        <input 
+                          type="checkbox" 
+                          checked={showSpeaker}
+                          onChange={e => setShowSpeaker(e.target.checked)}
+                          className="w-3 h-3 rounded"
+                        /> Enable Speaker
+                      </label>
+                    </div>
+
+                    {showSpeaker && (
+                      <div className="space-y-3 pt-1">
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="space-y-1">
+                            <label className="text-[9px] font-mono uppercase text-zinc-400">Speaker Name</label>
+                            <input 
+                              type="text" 
+                              value={speakerName}
+                              onChange={e => setSpeakerName(e.target.value)}
+                              className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-1 text-xs outline-none focus:ring-1 focus:ring-purple-500 font-bold" 
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[9px] font-mono uppercase text-zinc-400">Speaker Role / Title</label>
+                            <input 
+                              type="text" 
+                              value={speakerTitle}
+                              onChange={e => setSpeakerTitle(e.target.value)}
+                              className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-1 text-xs outline-none focus:ring-1 focus:ring-purple-500" 
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
                   {/* QR Code Adjustments */}
                   <div className="space-y-3 pt-4 border-t border-zinc-100 dark:border-zinc-900">
                     <div className="flex justify-between items-center">
@@ -1250,6 +1845,23 @@ export default function PosterDesigner({
                                   <label className="flex flex-col text-[9px] font-mono text-zinc-500">
                                     Y: {Math.round(qrY)}%
                                     <input type="range" min="0" max="100" value={Math.round(qrY)} onChange={e => setQrY(parseInt(e.target.value))} className="mt-1 accent-purple-600" />
+                                  </label>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Speaker Sliders */}
+                            {showSpeaker && (
+                              <div className="space-y-1">
+                                <span className="text-[10px] font-mono font-bold text-zinc-600 dark:text-zinc-400">Speaker Badge Position</span>
+                                <div className="grid grid-cols-2 gap-3">
+                                  <label className="flex flex-col text-[9px] font-mono text-zinc-500">
+                                    X: {Math.round(speakerX)}%
+                                    <input type="range" min="0" max="100" value={Math.round(speakerX)} onChange={e => setSpeakerX(parseInt(e.target.value))} className="mt-1 accent-purple-600" />
+                                  </label>
+                                  <label className="flex flex-col text-[9px] font-mono text-zinc-500">
+                                    Y: {Math.round(speakerY)}%
+                                    <input type="range" min="0" max="100" value={Math.round(speakerY)} onChange={e => setSpeakerY(parseInt(e.target.value))} className="mt-1 accent-purple-600" />
                                   </label>
                                 </div>
                               </div>
