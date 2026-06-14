@@ -62,7 +62,7 @@ export default function PosterDesigner({
   const [eventTime, setEventTime] = useState('1:30 PM')
 
   // Design state
-  const [activeTemplate, setActiveTemplate] = useState<'cyberpunk' | 'vibrant' | 'corporate' | 'minimalist' | 'retro' | 'academic' | 'techconf' | 'creative' | 'academic-official' | 'formal-gold' | 'midnight-hacker' | 'glassmorphic-glow' | 'gala-athletic' | 'eco-minimal'>('vibrant')
+  const [activeTemplate, setActiveTemplate] = useState<'cyberpunk' | 'vibrant' | 'corporate' | 'minimalist' | 'retro' | 'techconf' | 'creative' | 'academic-official' | 'formal-gold' | 'midnight-hacker' | 'glassmorphic-glow' | 'gala-athletic' | 'eco-minimal'>('vibrant')
   
   // Customization controls
   const [titleColor, setTitleColor] = useState('#ffffff')
@@ -155,7 +155,7 @@ export default function PosterDesigner({
   }, [publicUrl, qrColorDark, qrColorLight])
 
   // Pre-configured Design Presets
-  const applyPreset = (presetName: 'cyberpunk' | 'vibrant' | 'corporate' | 'minimalist' | 'retro' | 'academic' | 'techconf' | 'creative' | 'academic-official' | 'formal-gold' | 'midnight-hacker' | 'glassmorphic-glow' | 'gala-athletic' | 'eco-minimal') => {
+  const applyPreset = (presetName: 'cyberpunk' | 'vibrant' | 'corporate' | 'minimalist' | 'retro' | 'techconf' | 'creative' | 'academic-official' | 'formal-gold' | 'midnight-hacker' | 'glassmorphic-glow' | 'gala-athletic' | 'eco-minimal') => {
     setActiveTemplate(presetName)
     setClubX(50)
     setClubY(12)
@@ -248,41 +248,6 @@ export default function PosterDesigner({
         setDetailsBorderColor('#000000')
         setQrColorDark('#000000')
         setQrColorLight('#ffffff')
-        break
-      case 'academic':
-        setBgColorType('gradient')
-        setBgGradStart('#f0f9ff')
-        setBgGradEnd('#ffffff')
-        setBgGradAngle('to bottom')
-        setTitleColor('#1e3a8a') // dark blue
-        setTitleSize(32)
-        setTitleFont('font-sans')
-        setTitleAlign('left')
-        setClubColor('#2563eb') // blue-600
-        setDescColor('#475569') // slate-600
-        setDetailsColor('#1e3a8a')
-        setDetailsBg('rgba(255, 255, 255, 0.85)')
-        setDetailsBorderColor('#cbd5e1')
-        setQrColorDark('#1e3a8a')
-        setQrColorLight('#ffffff')
-        
-        // Custom aligned coordinates matching the reference image layout
-        setClubX(12)
-        setClubY(16)
-        setTitleX(45)
-        setTitleY(30)
-        setDescX(45)
-        setDescY(44)
-        setDetailsX(26)
-        setDetailsY(58)
-        setQrX(58)
-        setQrY(86)
-        
-        setShowSpeaker(true)
-        setSpeakerName('Nived Shaji')
-        setSpeakerTitle('Resource Person')
-        setSpeakerX(26)
-        setSpeakerY(80)
         break
       case 'techconf':
         setBgColorType('gradient')
@@ -915,7 +880,7 @@ export default function PosterDesigner({
                     activeTemplate === 'cyberpunk' ? 'border-2 border-[#00f2fe]' : 
                     activeTemplate === 'corporate' ? 'border-4 border-double border-[#f59e0b]' : 
                     activeTemplate === 'retro' ? 'border-4 border-black' : 
-                    activeTemplate === 'academic' || activeTemplate === 'academic-official' ? 'border border-zinc-200 shadow-xl' : 
+                    activeTemplate === 'academic-official' ? 'border border-zinc-200 shadow-xl' : 
                     activeTemplate === 'formal-gold' ? 'border-4 border-double border-[#d4af37]' :
                     activeTemplate === 'midnight-hacker' ? 'border-2 border-[#22c55e]' : 
                     activeTemplate === 'glassmorphic-glow' ? 'border border-white/20 shadow-2xl' : 
@@ -939,34 +904,6 @@ export default function PosterDesigner({
                     <>
                       <div className="absolute top-10 left-10 w-32 h-32 rounded-full bg-pink-400/30 blur-2xl pointer-events-none animate-pulse" />
                       <div className="absolute bottom-16 right-10 w-40 h-40 rounded-full bg-blue-400/30 blur-2xl pointer-events-none" />
-                    </>
-                  )}
-
-                  {/* Academic Background Overlay */}
-                  {activeTemplate === 'academic' && (
-                    <>
-                      {/* Soft tech nodes/shapes in background */}
-                      <div className="absolute top-24 right-8 w-24 h-24 rounded-full bg-blue-400/10 blur-xl pointer-events-none" />
-                      <div className="absolute bottom-28 left-6 w-32 h-32 rounded-full bg-blue-300/10 blur-2xl pointer-events-none" />
-                      {/* Geometric circuit lines simulation */}
-                      <div 
-                        className="absolute inset-0 pointer-events-none opacity-[0.03]" 
-                        style={{
-                          backgroundImage: 'radial-gradient(#1e3a8a 1.5px, transparent 1.5px)',
-                          backgroundSize: '24px 24px'
-                        }}
-                      />
-                      {/* Top College Banner Header */}
-                      <div className="absolute top-0 left-0 w-full bg-white border-b border-zinc-100 p-2.5 flex items-center justify-between z-10 pointer-events-none">
-                        <div className="flex items-center gap-1.5">
-                          <GraduationCap size={20} className="text-blue-900" />
-                          <div className="flex flex-col">
-                            <span className="text-[9px] font-black text-blue-900 tracking-tight leading-none">GOPALAN COLLEGE OF ENGINEERING</span>
-                            <span className="text-[6px] font-mono text-zinc-500 uppercase tracking-widest leading-none mt-0.5">Approved by AICTE | Whitefield, BLR</span>
-                          </div>
-                        </div>
-                        <Award size={18} className="text-amber-500 shrink-0" />
-                      </div>
                     </>
                   )}
 
@@ -1223,8 +1160,8 @@ export default function PosterDesigner({
                     onMouseDown={(e) => handleElementDragStart(e, 'details')}
                     onTouchStart={(e) => handleElementDragStart(e, 'details')}
                     style={{ 
-                      backgroundColor: (activeTemplate === 'academic' || activeTemplate === 'academic-official') ? 'transparent' : detailsBg, 
-                      borderColor: (activeTemplate === 'academic' || activeTemplate === 'academic-official') ? 'transparent' : detailsBorderColor,
+                      backgroundColor: activeTemplate === 'academic-official' ? 'transparent' : detailsBg, 
+                      borderColor: activeTemplate === 'academic-official' ? 'transparent' : detailsBorderColor,
                       color: detailsColor,
                       position: 'absolute',
                       left: `${detailsX}%`,
@@ -1238,7 +1175,7 @@ export default function PosterDesigner({
                       activeTemplate === 'retro' ? 'border-2 border-black shadow-[3px_3px_0px_#000000] text-black font-semibold' : ''
                     }`}
                   >
-                    {activeTemplate === 'academic' || activeTemplate === 'academic-official' ? (
+                    {activeTemplate === 'academic-official' ? (
                       <div className="space-y-1.5 select-none pointer-events-none">
                         <div className="flex items-center gap-2 px-2.5 py-0.5 bg-white border border-blue-600/30 text-blue-900 font-bold rounded-full text-[8px] w-fit shadow-[0_1px_3px_rgba(0,0,0,0.05)] whitespace-nowrap">
                           <Calendar size={10} className="text-blue-600 shrink-0" />
@@ -1298,13 +1235,13 @@ export default function PosterDesigner({
                     >
                       {/* Speaker Photo Mockup - Blue Circle Ring just like the reference image! */}
                       <div className={`w-16 h-16 rounded-full border-[3px] overflow-hidden mb-1.5 flex items-center justify-center shadow-inner ${
-                        activeTemplate === 'academic' || activeTemplate === 'academic-official' ? 'border-blue-600/80 bg-blue-50 dark:bg-zinc-900' :
-                        activeTemplate === 'formal-gold' ? 'border-[#d4af37] bg-amber-500/5' :
-                        activeTemplate === 'midnight-hacker' ? 'border-[#22c55e] bg-zinc-900' :
+                        activeTemplate === 'academic-official' ? 'border-blue-600/80 bg-blue-50 dark:bg-zinc-900' :
+                        activeTemplate === 'formal-gold' ? 'border-[#d4af37]' :
+                        activeTemplate === 'midnight-hacker' ? 'border-[#22c55e]' :
                         'border-purple-500 bg-purple-50'
                       }`}>
                         <Users size={28} className={
-                          activeTemplate === 'academic' || activeTemplate === 'academic-official' ? 'text-blue-600' :
+                          activeTemplate === 'academic-official' ? 'text-blue-600' :
                           activeTemplate === 'formal-gold' ? 'text-[#d4af37]' :
                           activeTemplate === 'midnight-hacker' ? 'text-[#22c55e]' :
                           'text-purple-600'
@@ -1454,7 +1391,7 @@ export default function PosterDesigner({
                       <Layout size={12} /> Choose Template Design
                     </span>
                     <div className="grid grid-cols-4 gap-2">
-                      {(['vibrant', 'cyberpunk', 'corporate', 'minimalist', 'retro', 'academic', 'techconf', 'creative', 'academic-official', 'formal-gold', 'midnight-hacker', 'glassmorphic-glow', 'gala-athletic', 'eco-minimal'] as const).map(p => (
+                      {(['vibrant', 'cyberpunk', 'corporate', 'minimalist', 'retro', 'techconf', 'creative', 'academic-official', 'formal-gold', 'midnight-hacker', 'glassmorphic-glow', 'gala-athletic', 'eco-minimal'] as const).map(p => (
                         <button
                           key={p}
                           type="button"
