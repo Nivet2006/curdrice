@@ -130,9 +130,21 @@ export default function PosterDesigner({
   }, [isOpen, initialTitle, initialClubName, initialDescription, initialLocation, initialDate])
 
   // QR code URL generator
-  const publicUrl = typeof window !== 'undefined'
-    ? `${window.location.origin}/events/${eventId}`
-    : `https://clubeve.nivet2006.in/events/${eventId}`
+  const getAppUrl = () => {
+    if (process.env.NEXT_PUBLIC_APP_URL) {
+      return process.env.NEXT_PUBLIC_APP_URL
+    }
+    if (typeof window !== 'undefined') {
+      const origin = window.location.origin
+      if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+        return 'https://clubeve.nivet2006.in'
+      }
+      return origin
+    }
+    return 'https://clubeve.nivet2006.in'
+  }
+
+  const publicUrl = `${getAppUrl()}/events/${eventId}`
 
   // Re-generate QR Data URL when colors or URL changes
   useEffect(() => {
