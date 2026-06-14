@@ -72,14 +72,28 @@ export default function PosterDesigner({
   
   const [clubColor, setClubColor] = useState('#a855f7')
   const [clubSize, setClubSize] = useState(14)
+  const [clubFont, setClubFont] = useState('font-sans')
   
   const [descColor, setDescColor] = useState('#d1d5db')
   const [descSize, setDescSize] = useState(14)
+  const [descFont, setDescFont] = useState('font-sans')
   const [showDesc, setShowDesc] = useState(true)
 
   const [detailsColor, setDetailsColor] = useState('#ffffff')
   const [detailsBg, setDetailsBg] = useState('rgba(255, 255, 255, 0.1)')
   const [detailsBorderColor, setDetailsBorderColor] = useState('rgba(255, 255, 255, 0.15)')
+
+  const [dateColor, setDateColor] = useState('#ffffff')
+  const [dateFont, setDateFont] = useState('font-sans')
+  const [timeColor, setTimeColor] = useState('#ffffff')
+  const [timeFont, setTimeFont] = useState('font-sans')
+  const [venueColor, setVenueColor] = useState('#ffffff')
+  const [venueFont, setVenueFont] = useState('font-sans')
+
+  const [speakerNameColor, setSpeakerNameColor] = useState('#0f172a')
+  const [speakerNameFont, setSpeakerNameFont] = useState('font-sans')
+  const [speakerTitleColor, setSpeakerTitleColor] = useState('#475569')
+  const [speakerTitleFont, setSpeakerTitleFont] = useState('font-sans')
 
   // Background Customization
   const [bgColorType, setBgColorType] = useState<'gradient' | 'solid'>('gradient')
@@ -192,10 +206,22 @@ export default function PosterDesigner({
         setTitleFont('font-mono')
         setTitleAlign('center')
         setClubColor('#ec4899')
+        setClubFont('font-mono')
         setDescColor('#00f2fe')
+        setDescFont('font-mono')
         setDetailsColor('#00f2fe')
         setDetailsBg('rgba(0, 0, 0, 0.6)')
         setDetailsBorderColor('#00f2fe')
+        setDateColor('#00f2fe')
+        setDateFont('font-mono')
+        setTimeColor('#00f2fe')
+        setTimeFont('font-mono')
+        setVenueColor('#00f2fe')
+        setVenueFont('font-mono')
+        setSpeakerNameColor('#00f2fe')
+        setSpeakerNameFont('font-mono')
+        setSpeakerTitleColor('#ec4899')
+        setSpeakerTitleFont('font-mono')
         setQrColorDark('#00f2fe')
         setQrColorLight('#080710')
         break
@@ -209,10 +235,22 @@ export default function PosterDesigner({
         setTitleFont('font-sans')
         setTitleAlign('center')
         setClubColor('#ffffff')
+        setClubFont('font-sans')
         setDescColor('#f3f4f6')
+        setDescFont('font-sans')
         setDetailsColor('#ffffff')
         setDetailsBg('rgba(255, 255, 255, 0.15)')
         setDetailsBorderColor('rgba(255, 255, 255, 0.25)')
+        setDateColor('#ffffff')
+        setDateFont('font-sans')
+        setTimeColor('#ffffff')
+        setTimeFont('font-sans')
+        setVenueColor('#ffffff')
+        setVenueFont('font-sans')
+        setSpeakerNameColor('#ffffff')
+        setSpeakerNameFont('font-sans')
+        setSpeakerTitleColor('#f3f4f6')
+        setSpeakerTitleFont('font-sans')
         setQrColorDark('#000000')
         setQrColorLight('#ffffff')
         break
@@ -224,10 +262,22 @@ export default function PosterDesigner({
         setTitleFont('font-serif')
         setTitleAlign('left')
         setClubColor('#ffffff')
+        setClubFont('font-sans')
         setDescColor('#94a3b8')
+        setDescFont('font-sans')
         setDetailsColor('#ffffff')
         setDetailsBg('rgba(15, 23, 42, 0.8)')
         setDetailsBorderColor('#f59e0b')
+        setDateColor('#ffffff')
+        setDateFont('font-sans')
+        setTimeColor('#ffffff')
+        setTimeFont('font-sans')
+        setVenueColor('#ffffff')
+        setVenueFont('font-sans')
+        setSpeakerNameColor('#f59e0b')
+        setSpeakerNameFont('font-serif')
+        setSpeakerTitleColor('#94a3b8')
+        setSpeakerTitleFont('font-sans')
         setQrColorDark('#0b1a30')
         setQrColorLight('#ffffff')
         break
@@ -239,10 +289,22 @@ export default function PosterDesigner({
         setTitleFont('font-mono')
         setTitleAlign('left')
         setClubColor('#4b5563')
+        setClubFont('font-mono')
         setDescColor('#374151')
+        setDescFont('font-sans')
         setDetailsColor('#000000')
         setDetailsBg('transparent')
         setDetailsBorderColor('#000000')
+        setDateColor('#000000')
+        setDateFont('font-mono')
+        setTimeColor('#000000')
+        setTimeFont('font-mono')
+        setVenueColor('#000000')
+        setVenueFont('font-mono')
+        setSpeakerNameColor('#000000')
+        setSpeakerNameFont('font-mono')
+        setSpeakerTitleColor('#4b5563')
+        setSpeakerTitleFont('font-mono')
         setQrColorDark('#000000')
         setQrColorLight('#f4f1ea')
         break
@@ -256,10 +318,22 @@ export default function PosterDesigner({
         setTitleFont('font-sans')
         setTitleAlign('center')
         setClubColor('#000000')
+        setClubFont('font-sans')
         setDescColor('#1e293b')
+        setDescFont('font-sans')
         setDetailsColor('#000000')
         setDetailsBg('#ffffff')
         setDetailsBorderColor('#000000')
+        setDateColor('#000000')
+        setDateFont('font-sans')
+        setTimeColor('#000000')
+        setTimeFont('font-sans')
+        setVenueColor('#000000')
+        setVenueFont('font-sans')
+        setSpeakerNameColor('#000000')
+        setSpeakerNameFont('font-sans')
+        setSpeakerTitleColor('#1e293b')
+        setSpeakerTitleFont('font-sans')
         setQrColorDark('#000000')
         setQrColorLight('#ffffff')
         break
@@ -273,10 +347,22 @@ export default function PosterDesigner({
         setTitleFont('font-mono')
         setTitleAlign('center')
         setClubColor('#60a5fa') // light blue
+        setClubFont('font-mono')
         setDescColor('#a1a1aa')
+        setDescFont('font-mono')
         setDetailsColor('#ffffff')
         setDetailsBg('rgba(9, 9, 11, 0.5)')
         setDetailsBorderColor('#3b82f6')
+        setDateColor('#ffffff')
+        setDateFont('font-mono')
+        setTimeColor('#ffffff')
+        setTimeFont('font-mono')
+        setVenueColor('#ffffff')
+        setVenueFont('font-mono')
+        setSpeakerNameColor('#60a5fa')
+        setSpeakerNameFont('font-mono')
+        setSpeakerTitleColor('#a1a1aa')
+        setSpeakerTitleFont('font-mono')
         setQrColorDark('#ffffff')
         setQrColorLight('#09090b')
         
@@ -302,10 +388,22 @@ export default function PosterDesigner({
         setTitleFont('font-sans')
         setTitleAlign('center')
         setClubColor('#fef08a') // yellow-200
+        setClubFont('font-sans')
         setDescColor('#f3f4f6')
+        setDescFont('font-sans')
         setDetailsColor('#ffffff')
         setDetailsBg('rgba(0, 0, 0, 0.3)')
         setDetailsBorderColor('rgba(255, 255, 255, 0.4)')
+        setDateColor('#ffffff')
+        setDateFont('font-sans')
+        setTimeColor('#ffffff')
+        setTimeFont('font-sans')
+        setVenueColor('#ffffff')
+        setVenueFont('font-sans')
+        setSpeakerNameColor('#fef08a')
+        setSpeakerNameFont('font-sans')
+        setSpeakerTitleColor('#f3f4f6')
+        setSpeakerTitleFont('font-sans')
         setQrColorDark('#000000')
         setQrColorLight('#ffffff')
         
@@ -329,10 +427,22 @@ export default function PosterDesigner({
         setTitleFont('font-serif')
         setTitleAlign('center')
         setClubColor('#ffffff')
+        setClubFont('font-sans')
         setDescColor('#94a3b8')
+        setDescFont('font-sans')
         setDetailsColor('#d4af37')
         setDetailsBg('rgba(11, 15, 25, 0.95)')
         setDetailsBorderColor('#d4af37')
+        setDateColor('#d4af37')
+        setDateFont('font-serif')
+        setTimeColor('#d4af37')
+        setTimeFont('font-serif')
+        setVenueColor('#d4af37')
+        setVenueFont('font-serif')
+        setSpeakerNameColor('#d4af37')
+        setSpeakerNameFont('font-serif')
+        setSpeakerTitleColor('#94a3b8')
+        setSpeakerTitleFont('font-sans')
         setQrColorDark('#0b0f19')
         setQrColorLight('#ffffff')
         
@@ -361,10 +471,22 @@ export default function PosterDesigner({
         setTitleFont('font-mono')
         setTitleAlign('left')
         setClubColor('#3b82f6') // Hacker blue
+        setClubFont('font-mono')
         setDescColor('#a1a1aa')
+        setDescFont('font-mono')
         setDetailsColor('#22c55e')
         setDetailsBg('rgba(3, 7, 18, 0.85)')
         setDetailsBorderColor('#22c55e')
+        setDateColor('#22c55e')
+        setDateFont('font-mono')
+        setTimeColor('#22c55e')
+        setTimeFont('font-mono')
+        setVenueColor('#22c55e')
+        setVenueFont('font-mono')
+        setSpeakerNameColor('#22c55e')
+        setSpeakerNameFont('font-mono')
+        setSpeakerTitleColor('#3b82f6')
+        setSpeakerTitleFont('font-mono')
         setQrColorDark('#22c55e')
         setQrColorLight('#030712')
         
@@ -395,10 +517,22 @@ export default function PosterDesigner({
         setTitleFont('font-sans')
         setTitleAlign('center')
         setClubColor('#c084fc')
+        setClubFont('font-sans')
         setDescColor('#e2e8f0')
+        setDescFont('font-sans')
         setDetailsColor('#ffffff')
         setDetailsBg('rgba(255, 255, 255, 0.08)')
         setDetailsBorderColor('rgba(255, 255, 255, 0.18)')
+        setDateColor('#ffffff')
+        setDateFont('font-sans')
+        setTimeColor('#ffffff')
+        setTimeFont('font-sans')
+        setVenueColor('#ffffff')
+        setVenueFont('font-sans')
+        setSpeakerNameColor('#ffffff')
+        setSpeakerNameFont('font-sans')
+        setSpeakerTitleColor('#c084fc')
+        setSpeakerTitleFont('font-sans')
         setQrColorDark('#1e1b4b')
         setQrColorLight('#ffffff')
         
@@ -429,10 +563,22 @@ export default function PosterDesigner({
         setTitleFont('font-sans')
         setTitleAlign('center')
         setClubColor('#ffffff')
+        setClubFont('font-sans')
         setDescColor('#f3f4f6')
+        setDescFont('font-sans')
         setDetailsColor('#ffffff')
         setDetailsBg('#1f2937')
         setDetailsBorderColor('#ef4444')
+        setDateColor('#ffffff')
+        setDateFont('font-sans')
+        setTimeColor('#ffffff')
+        setTimeFont('font-sans')
+        setVenueColor('#ffffff')
+        setVenueFont('font-sans')
+        setSpeakerNameColor('#facc15')
+        setSpeakerNameFont('font-sans')
+        setSpeakerTitleColor('#ffffff')
+        setSpeakerTitleFont('font-sans')
         setQrColorDark('#000000')
         setQrColorLight('#ffffff')
         
@@ -458,10 +604,22 @@ export default function PosterDesigner({
         setTitleFont('font-sans')
         setTitleAlign('left')
         setClubColor('#059669')
+        setClubFont('font-sans')
         setDescColor('#374151')
+        setDescFont('font-sans')
         setDetailsColor('#065f46')
         setDetailsBg('rgba(255, 255, 255, 0.9)')
         setDetailsBorderColor('#a7f3d0')
+        setDateColor('#065f46')
+        setDateFont('font-sans')
+        setTimeColor('#065f46')
+        setTimeFont('font-sans')
+        setVenueColor('#065f46')
+        setVenueFont('font-sans')
+        setSpeakerNameColor('#065f46')
+        setSpeakerNameFont('font-sans')
+        setSpeakerTitleColor('#374151')
+        setSpeakerTitleFont('font-sans')
         setQrColorDark('#065f46')
         setQrColorLight('#ffffff')
         
@@ -978,7 +1136,7 @@ export default function PosterDesigner({
                   >
                     <span 
                       style={{ color: clubColor, fontSize: `${clubSize}px` }}
-                      className={`uppercase tracking-widest font-bold font-mono`}
+                      className={`uppercase tracking-widest font-bold ${clubFont}`}
                     >
                       {clubName || 'Host Club'}
                     </span>
@@ -1044,8 +1202,6 @@ export default function PosterDesigner({
                         activeTemplate === 'retro' ? 'drop-shadow-[3px_3px_0px_#000000]' : ''
                       } ${
                         activeTemplate === 'formal-gold' ? 'drop-shadow-[1px_1px_1px_rgba(0,0,0,0.5)]' : ''
-                      } ${
-                        activeTemplate === 'midnight-hacker' ? 'font-mono' : ''
                       }`}
                     >
                       {title || 'EXQUISITE EVENT'}
@@ -1070,7 +1226,7 @@ export default function PosterDesigner({
                     >
                       <p 
                         style={{ color: descColor, fontSize: `${descSize}px` }}
-                        className={`leading-relaxed font-sans line-clamp-3 w-full text-center select-none ${
+                        className={`leading-relaxed line-clamp-3 w-full text-center select-none ${descFont} ${
                           activeTemplate === 'retro' ? 'font-medium' : 'font-light'
                         }`}
                       >
@@ -1101,20 +1257,20 @@ export default function PosterDesigner({
                   >
                     <>
                       <div className="flex items-center gap-1.5 pointer-events-none">
-                        <Calendar size={12} className="shrink-0 opacity-80" />
-                        <span className="text-[10px] font-mono leading-none truncate">
+                        <Calendar size={12} className="shrink-0 opacity-80" style={{ color: dateColor }} />
+                        <span style={{ color: dateColor }} className={`text-[10px] leading-none truncate ${dateFont}`}>
                           {getFormattedDate(eventDate)}
                         </span>
                       </div>
                       <div className="flex items-center gap-1.5 pointer-events-none">
-                        <Clock size={12} className="shrink-0 opacity-80" />
-                        <span className="text-[10px] font-mono leading-none truncate">
+                        <Clock size={12} className="shrink-0 opacity-80" style={{ color: timeColor }} />
+                        <span style={{ color: timeColor }} className={`text-[10px] leading-none truncate ${timeFont}`}>
                           {eventTime || '1:30 PM'}
                         </span>
                       </div>
                       <div className="flex items-center gap-1.5 pointer-events-none">
-                        <MapPin size={12} className="shrink-0 opacity-80" />
-                        <span className="text-[10px] font-mono leading-none truncate">
+                        <MapPin size={12} className="shrink-0 opacity-80" style={{ color: venueColor }} />
+                        <span style={{ color: venueColor }} className={`text-[10px] leading-none truncate ${venueFont}`}>
                           {location || 'Venue: TBA'}
                         </span>
                       </div>
@@ -1152,18 +1308,16 @@ export default function PosterDesigner({
                           'text-purple-600'
                         } />
                       </div>
-                      <span className={`text-[8px] font-bold font-mono uppercase tracking-wider leading-none mb-1 ${
-                        activeTemplate === 'formal-gold' ? 'text-[#d4af37]' :
-                        activeTemplate === 'midnight-hacker' ? 'text-zinc-500' :
-                        'text-zinc-500'
-                      }`}>
+                      <span 
+                        style={{ color: speakerTitleColor }} 
+                        className={`text-[8px] font-bold uppercase tracking-wider leading-none mb-1 ${speakerTitleFont}`}
+                      >
                         {speakerTitle || 'Resource Person'}
                       </span>
-                      <span className={`text-xs font-black uppercase leading-tight tracking-tight text-center break-words w-full px-1 ${
-                        activeTemplate === 'midnight-hacker' ? 'text-[#22c55e]' :
-                        activeTemplate === 'formal-gold' ? 'text-[#d4af37]' :
-                        'text-zinc-900 dark:text-white'
-                      }`}>
+                      <span 
+                        style={{ color: speakerNameColor }} 
+                        className={`text-xs font-black uppercase leading-tight tracking-tight text-center break-words w-full px-1 ${speakerNameFont}`}
+                      >
                         {speakerName || 'Nived Shaji'}
                       </span>
                     </div>
@@ -1397,26 +1551,18 @@ export default function PosterDesigner({
                   </div>
 
                   {/* Layout & Typography Tuning */}
-                  <div className="space-y-3 pt-4 border-t border-zinc-100 dark:border-zinc-900">
+                  <div className="space-y-4 pt-4 border-t border-zinc-100 dark:border-zinc-900">
                     <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 flex items-center gap-1.5">
-                      <Settings size={12} /> Typography & Colors
+                      <Settings size={12} /> Typography & Layout
                     </span>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1">
-                        <span className="text-[9px] font-mono text-zinc-500 uppercase">Title Font</span>
-                        <select
-                          value={titleFont}
-                          onChange={e => setTitleFont(e.target.value)}
-                          className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 py-1 text-xs"
-                        >
-                          <option value="font-sans">Modern Sans</option>
-                          <option value="font-serif">Classic Serif</option>
-                          <option value="font-mono">Mono Code</option>
-                        </select>
+                        <span className="text-[9px] font-mono text-zinc-500 uppercase">Title Size</span>
+                        <input type="range" min="20" max="60" value={titleSize} onChange={e => setTitleSize(parseInt(e.target.value))} className="w-full mt-1.5 accent-purple-600" />
                       </div>
                       <div className="space-y-1">
                         <span className="text-[9px] font-mono text-zinc-500 uppercase">Title Align</span>
-                        <div className="flex border border-zinc-200 dark:border-zinc-800 rounded-lg overflow-hidden h-7">
+                        <div className="flex border border-zinc-200 dark:border-zinc-800 rounded-lg overflow-hidden h-7 mt-0.5">
                           {(['left', 'center', 'right'] as const).map(align => (
                             <button
                               key={align}
@@ -1432,24 +1578,151 @@ export default function PosterDesigner({
                         </div>
                       </div>
                     </div>
-                    <div className="grid grid-cols-3 gap-2 pt-2">
-                      <div className="space-y-1 flex flex-col">
-                        <span className="text-[9px] font-mono text-zinc-500 uppercase">Title Color</span>
-                        <div className="flex items-center gap-1.5">
-                          <input type="color" value={titleColor} onChange={e => setTitleColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer border border-zinc-200" />
-                          <span className="text-[9px] font-mono truncate">{titleColor}</span>
+
+                    {/* Field-Specific Typography & Colors */}
+                    <div className="space-y-2.5 pt-2">
+                      <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider block">Field Font & Color Settings</span>
+                      <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
+                        {/* Host Club Field */}
+                        <div className="flex items-center justify-between gap-4 p-2 border border-zinc-100 dark:border-zinc-900 rounded-xl bg-zinc-50/50 dark:bg-zinc-900/10">
+                          <span className="text-[10px] font-mono text-zinc-600 dark:text-zinc-400 font-bold shrink-0 w-20">Host Club</span>
+                          <div className="flex items-center gap-2 flex-1 justify-end">
+                            <select
+                              value={clubFont}
+                              onChange={e => setClubFont(e.target.value)}
+                              className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-1.5 py-1 text-[10px] w-24 outline-none"
+                            >
+                              <option value="font-sans">Sans</option>
+                              <option value="font-serif">Serif</option>
+                              <option value="font-mono">Mono</option>
+                            </select>
+                            <input type="color" value={clubColor} onChange={e => setClubColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer border border-zinc-200 shrink-0" />
+                          </div>
                         </div>
-                      </div>
-                      <div className="space-y-1 flex flex-col">
-                        <span className="text-[9px] font-mono text-zinc-500 uppercase">Club Color</span>
-                        <div className="flex items-center gap-1.5">
-                          <input type="color" value={clubColor} onChange={e => setClubColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer border border-zinc-200" />
-                          <span className="text-[9px] font-mono truncate">{clubColor}</span>
+
+                        {/* Event Title Field */}
+                        <div className="flex items-center justify-between gap-4 p-2 border border-zinc-100 dark:border-zinc-900 rounded-xl bg-zinc-50/50 dark:bg-zinc-900/10">
+                          <span className="text-[10px] font-mono text-zinc-600 dark:text-zinc-400 font-bold shrink-0 w-20">Title</span>
+                          <div className="flex items-center gap-2 flex-1 justify-end">
+                            <select
+                              value={titleFont}
+                              onChange={e => setTitleFont(e.target.value)}
+                              className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-1.5 py-1 text-[10px] w-24 outline-none"
+                            >
+                              <option value="font-sans">Sans</option>
+                              <option value="font-serif">Serif</option>
+                              <option value="font-mono">Mono</option>
+                            </select>
+                            <input type="color" value={titleColor} onChange={e => setTitleColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer border border-zinc-200 shrink-0" />
+                          </div>
                         </div>
-                      </div>
-                      <div className="space-y-1 flex flex-col">
-                        <span className="text-[9px] font-mono text-zinc-500 uppercase">Text Size</span>
-                        <input type="range" min="20" max="60" value={titleSize} onChange={e => setTitleSize(parseInt(e.target.value))} className="w-full mt-2" />
+
+                        {/* Description Field */}
+                        {showDesc && (
+                          <div className="flex items-center justify-between gap-4 p-2 border border-zinc-100 dark:border-zinc-900 rounded-xl bg-zinc-50/50 dark:bg-zinc-900/10">
+                            <span className="text-[10px] font-mono text-zinc-600 dark:text-zinc-400 font-bold shrink-0 w-20">Description</span>
+                            <div className="flex items-center gap-2 flex-1 justify-end">
+                              <select
+                                value={descFont}
+                                onChange={e => setDescFont(e.target.value)}
+                                className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-1.5 py-1 text-[10px] w-24 outline-none"
+                              >
+                                <option value="font-sans">Sans</option>
+                                <option value="font-serif">Serif</option>
+                                <option value="font-mono">Mono</option>
+                              </select>
+                              <input type="color" value={descColor} onChange={e => setDescColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer border border-zinc-200 shrink-0" />
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Date Field */}
+                        <div className="flex items-center justify-between gap-4 p-2 border border-zinc-100 dark:border-zinc-900 rounded-xl bg-zinc-50/50 dark:bg-zinc-900/10">
+                          <span className="text-[10px] font-mono text-zinc-600 dark:text-zinc-400 font-bold shrink-0 w-20">Event Date</span>
+                          <div className="flex items-center gap-2 flex-1 justify-end">
+                            <select
+                              value={dateFont}
+                              onChange={e => setDateFont(e.target.value)}
+                              className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-1.5 py-1 text-[10px] w-24 outline-none"
+                            >
+                              <option value="font-sans">Sans</option>
+                              <option value="font-serif">Serif</option>
+                              <option value="font-mono">Mono</option>
+                            </select>
+                            <input type="color" value={dateColor} onChange={e => setDateColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer border border-zinc-200 shrink-0" />
+                          </div>
+                        </div>
+
+                        {/* Time Field */}
+                        <div className="flex items-center justify-between gap-4 p-2 border border-zinc-100 dark:border-zinc-900 rounded-xl bg-zinc-50/50 dark:bg-zinc-900/10">
+                          <span className="text-[10px] font-mono text-zinc-600 dark:text-zinc-400 font-bold shrink-0 w-20">Event Time</span>
+                          <div className="flex items-center gap-2 flex-1 justify-end">
+                            <select
+                              value={timeFont}
+                              onChange={e => setTimeFont(e.target.value)}
+                              className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-1.5 py-1 text-[10px] w-24 outline-none"
+                            >
+                              <option value="font-sans">Sans</option>
+                              <option value="font-serif">Serif</option>
+                              <option value="font-mono">Mono</option>
+                            </select>
+                            <input type="color" value={timeColor} onChange={e => setTimeColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer border border-zinc-200 shrink-0" />
+                          </div>
+                        </div>
+
+                        {/* Venue Field */}
+                        <div className="flex items-center justify-between gap-4 p-2 border border-zinc-100 dark:border-zinc-900 rounded-xl bg-zinc-50/50 dark:bg-zinc-900/10">
+                          <span className="text-[10px] font-mono text-zinc-600 dark:text-zinc-400 font-bold shrink-0 w-20">Venue</span>
+                          <div className="flex items-center gap-2 flex-1 justify-end">
+                            <select
+                              value={venueFont}
+                              onChange={e => setVenueFont(e.target.value)}
+                              className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-1.5 py-1 text-[10px] w-24 outline-none"
+                            >
+                              <option value="font-sans">Sans</option>
+                              <option value="font-serif">Serif</option>
+                              <option value="font-mono">Mono</option>
+                            </select>
+                            <input type="color" value={venueColor} onChange={e => setVenueColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer border border-zinc-200 shrink-0" />
+                          </div>
+                        </div>
+
+                        {/* Speaker Fields */}
+                        {showSpeaker && (
+                          <>
+                            <div className="flex items-center justify-between gap-4 p-2 border border-zinc-100 dark:border-zinc-900 rounded-xl bg-zinc-50/50 dark:bg-zinc-900/10">
+                              <span className="text-[10px] font-mono text-zinc-600 dark:text-zinc-400 font-bold shrink-0 w-20">Guest Name</span>
+                              <div className="flex items-center gap-2 flex-1 justify-end">
+                                <select
+                                  value={speakerNameFont}
+                                  onChange={e => setSpeakerNameFont(e.target.value)}
+                                  className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-1.5 py-1 text-[10px] w-24 outline-none"
+                                >
+                                  <option value="font-sans">Sans</option>
+                                  <option value="font-serif">Serif</option>
+                                  <option value="font-mono">Mono</option>
+                                </select>
+                                <input type="color" value={speakerNameColor} onChange={e => setSpeakerNameColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer border border-zinc-200 shrink-0" />
+                              </div>
+                            </div>
+
+                            <div className="flex items-center justify-between gap-4 p-2 border border-zinc-100 dark:border-zinc-900 rounded-xl bg-zinc-50/50 dark:bg-zinc-900/10">
+                              <span className="text-[10px] font-mono text-zinc-600 dark:text-zinc-400 font-bold shrink-0 w-20">Guest Role</span>
+                              <div className="flex items-center gap-2 flex-1 justify-end">
+                                <select
+                                  value={speakerTitleFont}
+                                  onChange={e => setSpeakerTitleFont(e.target.value)}
+                                  className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-1.5 py-1 text-[10px] w-24 outline-none"
+                                >
+                                  <option value="font-sans">Sans</option>
+                                  <option value="font-serif">Serif</option>
+                                  <option value="font-mono">Mono</option>
+                                </select>
+                                <input type="color" value={speakerTitleColor} onChange={e => setSpeakerTitleColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer border border-zinc-200 shrink-0" />
+                              </div>
+                            </div>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
