@@ -62,7 +62,7 @@ export default function PosterDesigner({
   const [eventTime, setEventTime] = useState('1:30 PM')
 
   // Design state
-  const [activeTemplate, setActiveTemplate] = useState<'cyberpunk' | 'vibrant' | 'corporate' | 'minimalist' | 'retro' | 'techconf' | 'creative' | 'academic-official' | 'formal-gold' | 'midnight-hacker' | 'glassmorphic-glow' | 'gala-athletic' | 'eco-minimal'>('vibrant')
+  const [activeTemplate, setActiveTemplate] = useState<'cyberpunk' | 'vibrant' | 'corporate' | 'minimalist' | 'retro' | 'techconf' | 'creative' | 'formal-gold' | 'midnight-hacker' | 'glassmorphic-glow' | 'gala-athletic' | 'eco-minimal'>('vibrant')
   
   // Customization controls
   const [titleColor, setTitleColor] = useState('#ffffff')
@@ -169,7 +169,7 @@ export default function PosterDesigner({
   }, [publicUrl, qrColorDark, qrColorLight])
 
   // Pre-configured Design Presets
-  const applyPreset = (presetName: 'cyberpunk' | 'vibrant' | 'corporate' | 'minimalist' | 'retro' | 'techconf' | 'creative' | 'academic-official' | 'formal-gold' | 'midnight-hacker' | 'glassmorphic-glow' | 'gala-athletic' | 'eco-minimal') => {
+  const applyPreset = (presetName: 'cyberpunk' | 'vibrant' | 'corporate' | 'minimalist' | 'retro' | 'techconf' | 'creative' | 'formal-gold' | 'midnight-hacker' | 'glassmorphic-glow' | 'gala-athletic' | 'eco-minimal') => {
     setActiveTemplate(presetName)
     setClubX(50)
     setClubY(12)
@@ -320,40 +320,6 @@ export default function PosterDesigner({
         setQrX(85)
         setQrY(86)
         setShowSpeaker(false)
-        break
-      case 'academic-official':
-        setBgColorType('gradient')
-        setBgGradStart('#eff6ff') // blue-50
-        setBgGradEnd('#ffffff')
-        setBgGradAngle('to bottom')
-        setTitleColor('#1e3a8a') // dark blue (Gopalan style)
-        setTitleSize(28)
-        setTitleFont('font-sans')
-        setTitleAlign('left')
-        setClubColor('#2563eb')
-        setDescColor('#475569')
-        setDetailsColor('#1e3a8a')
-        setDetailsBg('transparent')
-        setDetailsBorderColor('transparent')
-        setQrColorDark('#1e3a8a')
-        setQrColorLight('#ffffff')
-        
-        setClubX(28)
-        setClubY(20)
-        setTitleX(45)
-        setTitleY(32)
-        setDescX(45)
-        setDescY(47)
-        setDetailsX(26)
-        setDetailsY(62)
-        setQrX(80)
-        setQrY(86)
-        
-        setShowSpeaker(true)
-        setSpeakerName('Nived Shaji')
-        setSpeakerTitle('Resource Person')
-        setSpeakerX(28)
-        setSpeakerY(84)
         break
       case 'formal-gold':
         setBgColorType('solid')
@@ -894,7 +860,6 @@ export default function PosterDesigner({
                     activeTemplate === 'cyberpunk' ? 'border-2 border-[#00f2fe]' : 
                     activeTemplate === 'corporate' ? 'border-4 border-double border-[#f59e0b]' : 
                     activeTemplate === 'retro' ? 'border-4 border-black' : 
-                    activeTemplate === 'academic-official' ? 'border border-zinc-200 shadow-xl' : 
                     activeTemplate === 'formal-gold' ? 'border-4 border-double border-[#d4af37]' :
                     activeTemplate === 'midnight-hacker' ? 'border-2 border-[#22c55e]' : 
                     activeTemplate === 'glassmorphic-glow' ? 'border border-white/20 shadow-2xl' : 
@@ -918,61 +883,6 @@ export default function PosterDesigner({
                     <>
                       <div className="absolute top-10 left-10 w-32 h-32 rounded-full bg-pink-400/30 blur-2xl pointer-events-none animate-pulse" />
                       <div className="absolute bottom-16 right-10 w-40 h-40 rounded-full bg-blue-400/30 blur-2xl pointer-events-none" />
-                    </>
-                  )}
-
-                  {/* Academic Official Top Logo Banner Header & Background Mesh (Matches Reference Image) */}
-                  {activeTemplate === 'academic-official' && (
-                    <>
-                      {/* Soft tech nodes/shapes in background */}
-                      <div className="absolute top-24 right-8 w-28 h-28 rounded-full bg-blue-400/10 blur-2xl pointer-events-none" />
-                      <div className="absolute bottom-28 left-6 w-36 h-36 rounded-full bg-blue-300/10 blur-3xl pointer-events-none" />
-                      {/* Big blue mesh sphere shape on bottom right */}
-                      <div className="absolute right-[-40px] bottom-[40px] w-52 h-52 rounded-full border-[1.5px] border-blue-600/10 pointer-events-none flex items-center justify-center">
-                        <div className="w-44 h-44 rounded-full border border-dashed border-blue-500/10" />
-                        <div className="w-36 h-36 rounded-full border border-blue-400/5" />
-                      </div>
-                      
-                      {/* Floating tech nodes */}
-                      <div className="absolute top-[180px] right-[40px] w-2 h-2 rounded-full bg-blue-500/40 pointer-events-none animate-ping" />
-                      <div className="absolute top-[240px] right-[80px] w-3 h-3 rounded-full bg-indigo-500/25 pointer-events-none animate-pulse" />
-                      <div className="absolute top-[320px] right-[20px] w-1.5 h-1.5 rounded-full bg-blue-600/30 pointer-events-none" />
-                      
-                      {/* Logo Banner Header Row */}
-                      <div className="absolute top-0 left-0 w-full bg-white border-b border-zinc-200 px-2 py-1.5 flex items-center justify-between z-10 pointer-events-none">
-                        <div className="flex items-center gap-1">
-                          {/* CSE Badge */}
-                          <div className="w-6 h-6 rounded-full bg-[#1e3a8a] text-white flex flex-col items-center justify-center border border-zinc-200 shadow-sm shrink-0">
-                            <span className="text-[4px] font-black tracking-tighter leading-none">DEPT</span>
-                            <span className="text-[6px] font-black tracking-tight leading-none mt-0.5">CSE</span>
-                          </div>
-                          {/* AI&ML Badge */}
-                          <div className="w-6 h-6 rounded-full bg-zinc-950 text-white flex flex-col items-center justify-center border border-zinc-200 shadow-sm shrink-0">
-                            <span className="text-[4px] font-black tracking-tighter leading-none">DEPT</span>
-                            <span className="text-[5px] font-black tracking-tight leading-none mt-0.5">AI/ML</span>
-                          </div>
-                          {/* Crest Badge */}
-                          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-amber-500 to-red-600 text-white flex items-center justify-center border border-zinc-200 shadow-sm shrink-0">
-                            <span className="text-[5px] font-black uppercase text-white/90">GCEM</span>
-                          </div>
-                        </div>
-                        
-                        <div className="flex flex-col items-center text-center flex-1 mx-1 px-1 border-x border-zinc-200/50">
-                          <span className="text-[6.5px] font-black text-zinc-900 tracking-tight leading-none uppercase">GOPALAN COLLEGE OF ENGINEERING</span>
-                          <span className="text-[5px] font-bold text-zinc-500 uppercase tracking-widest leading-none mt-0.5">AND MANAGEMENT, BENGALURU</span>
-                        </div>
-
-                        <div className="flex items-center gap-1">
-                          {/* TECHEON Logo */}
-                          <div className="w-6 h-6 rounded bg-black text-[#f59e0b] border border-amber-500/30 flex items-center justify-center shrink-0">
-                            <span className="text-[5px] font-mono font-bold tracking-tighter">TECH</span>
-                          </div>
-                          {/* GRAFIK Logo */}
-                          <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-purple-600 to-pink-500 text-white flex items-center justify-center border border-zinc-100 shadow-sm shrink-0">
-                            <span className="text-[5px] font-black uppercase tracking-tighter">GFX</span>
-                          </div>
-                        </div>
-                      </div>
                     </>
                   )}
 
@@ -1174,8 +1084,8 @@ export default function PosterDesigner({
                     onMouseDown={(e) => handleElementDragStart(e, 'details')}
                     onTouchStart={(e) => handleElementDragStart(e, 'details')}
                     style={{ 
-                      backgroundColor: activeTemplate === 'academic-official' ? 'transparent' : detailsBg, 
-                      borderColor: activeTemplate === 'academic-official' ? 'transparent' : detailsBorderColor,
+                      backgroundColor: detailsBg, 
+                      borderColor: detailsBorderColor,
                       color: detailsColor,
                       position: 'absolute',
                       left: `${detailsX}%`,
@@ -1189,43 +1099,26 @@ export default function PosterDesigner({
                       activeTemplate === 'retro' ? 'border-2 border-black shadow-[3px_3px_0px_#000000] text-black font-semibold' : ''
                     }`}
                   >
-                    {activeTemplate === 'academic-official' ? (
-                      <div className="space-y-1.5 select-none pointer-events-none">
-                        <div className="flex items-center gap-2 px-2.5 py-0.5 bg-white border border-blue-600/30 text-blue-900 font-bold rounded-full text-[8px] w-fit shadow-[0_1px_3px_rgba(0,0,0,0.05)] whitespace-nowrap">
-                          <Calendar size={10} className="text-blue-600 shrink-0" />
-                          <span>{getFormattedDate(eventDate)}</span>
-                        </div>
-                        <div className="flex items-center gap-2 px-2.5 py-0.5 bg-white border border-blue-600/30 text-blue-900 font-bold rounded-full text-[8px] w-fit shadow-[0_1px_3px_rgba(0,0,0,0.05)] whitespace-nowrap">
-                          <Clock size={10} className="text-blue-600 shrink-0" />
-                          <span>{eventTime || '1:30 PM'}</span>
-                        </div>
-                        <div className="flex items-center gap-2 px-2.5 py-0.5 bg-white border border-blue-600/30 text-blue-900 font-bold rounded-full text-[8px] w-fit shadow-[0_1px_3px_rgba(0,0,0,0.05)] whitespace-nowrap">
-                          <MapPin size={10} className="text-blue-600 shrink-0" />
-                          <span>{location || 'Venue: TBA'}</span>
-                        </div>
+                    <>
+                      <div className="flex items-center gap-1.5 pointer-events-none">
+                        <Calendar size={12} className="shrink-0 opacity-80" />
+                        <span className="text-[10px] font-mono leading-none truncate">
+                          {getFormattedDate(eventDate)}
+                        </span>
                       </div>
-                    ) : (
-                      <>
-                        <div className="flex items-center gap-1.5 pointer-events-none">
-                          <Calendar size={12} className="shrink-0 opacity-80" />
-                          <span className="text-[10px] font-mono leading-none truncate">
-                            {getFormattedDate(eventDate)}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1.5 pointer-events-none">
-                          <Clock size={12} className="shrink-0 opacity-80" />
-                          <span className="text-[10px] font-mono leading-none truncate">
-                            {eventTime || '1:30 PM'}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1.5 pointer-events-none">
-                          <MapPin size={12} className="shrink-0 opacity-80" />
-                          <span className="text-[10px] font-mono leading-none truncate">
-                            {location || 'Venue: TBA'}
-                          </span>
-                        </div>
-                      </>
-                    )}
+                      <div className="flex items-center gap-1.5 pointer-events-none">
+                        <Clock size={12} className="shrink-0 opacity-80" />
+                        <span className="text-[10px] font-mono leading-none truncate">
+                          {eventTime || '1:30 PM'}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5 pointer-events-none">
+                        <MapPin size={12} className="shrink-0 opacity-80" />
+                        <span className="text-[10px] font-mono leading-none truncate">
+                          {location || 'Venue: TBA'}
+                        </span>
+                      </div>
+                    </>
                   </div>
 
                   {/* Speaker Badge */}
@@ -1249,13 +1142,11 @@ export default function PosterDesigner({
                     >
                       {/* Speaker Photo Mockup - Blue Circle Ring just like the reference image! */}
                       <div className={`w-16 h-16 rounded-full border-[3px] overflow-hidden mb-1.5 flex items-center justify-center shadow-inner ${
-                        activeTemplate === 'academic-official' ? 'border-blue-600/80 bg-blue-50 dark:bg-zinc-900' :
                         activeTemplate === 'formal-gold' ? 'border-[#d4af37]' :
                         activeTemplate === 'midnight-hacker' ? 'border-[#22c55e]' :
                         'border-purple-500 bg-purple-50'
                       }`}>
                         <Users size={28} className={
-                          activeTemplate === 'academic-official' ? 'text-blue-600' :
                           activeTemplate === 'formal-gold' ? 'text-[#d4af37]' :
                           activeTemplate === 'midnight-hacker' ? 'text-[#22c55e]' :
                           'text-purple-600'
@@ -1405,7 +1296,7 @@ export default function PosterDesigner({
                       <Layout size={12} /> Choose Template Design
                     </span>
                     <div className="grid grid-cols-4 gap-2">
-                      {(['vibrant', 'cyberpunk', 'corporate', 'minimalist', 'retro', 'techconf', 'creative', 'academic-official', 'formal-gold', 'midnight-hacker', 'glassmorphic-glow', 'gala-athletic', 'eco-minimal'] as const).map(p => (
+                      {(['vibrant', 'cyberpunk', 'corporate', 'minimalist', 'retro', 'techconf', 'creative', 'formal-gold', 'midnight-hacker', 'glassmorphic-glow', 'gala-athletic', 'eco-minimal'] as const).map(p => (
                         <button
                           key={p}
                           type="button"
