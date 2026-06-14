@@ -420,39 +420,16 @@ export default function PosterDesigner({
           const size = canvas.width
           const center = size / 2
 
-          // Logo size is 22% of QR code size
-          const logoSize = size * 0.22
+          // Logo size is 30% of QR code size for maximum branding prominence
+          const logoSize = size * 0.30
           const x = center - logoSize / 2
           const y = center - logoSize / 2
 
-          // Rounded backing card padding and position
-          const padding = 6
-          const bgSize = logoSize + padding * 2
-          const bgX = center - bgSize / 2
-          const bgY = center - bgSize / 2
+          // Clear the modules in the center matching the QR light background color (no backing card/border)
+          ctx.fillStyle = qrColorLight
+          ctx.fillRect(x, y, logoSize, logoSize)
 
-          // Fill logo backing card (always white for brand logo contrast)
-          ctx.fillStyle = '#ffffff'
-          const r = 8 // border radius
-          ctx.beginPath()
-          ctx.moveTo(bgX + r, bgY)
-          ctx.lineTo(bgX + bgSize - r, bgY)
-          ctx.quadraticCurveTo(bgX + bgSize, bgY, bgX + bgSize, bgY + r)
-          ctx.lineTo(bgX + bgSize, bgY + bgSize - r)
-          ctx.quadraticCurveTo(bgX + bgSize, bgY + bgSize, bgX + bgSize - r, bgY + bgSize)
-          ctx.lineTo(bgX + r, bgY + bgSize)
-          ctx.quadraticCurveTo(bgX, bgY + bgSize, bgX, bgY + bgSize - r)
-          ctx.lineTo(bgX, bgY + r)
-          ctx.quadraticCurveTo(bgX, bgY, bgX + r, bgY)
-          ctx.closePath()
-          ctx.fill()
-
-          // Subtle border around logo backing matching the QR pattern color
-          ctx.strokeStyle = qrColorDark
-          ctx.lineWidth = 2
-          ctx.stroke()
-
-          // Draw Club-Eve logo in the center
+          // Draw Club-Eve logo directly in the center
           ctx.drawImage(img, x, y, logoSize, logoSize)
 
           setQrDataUrl(canvas.toDataURL('image/png'))
