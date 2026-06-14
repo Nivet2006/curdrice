@@ -420,8 +420,8 @@ export default function PosterDesigner({
           const size = canvas.width
           const center = size / 2
 
-          // Logo size is 30% of QR code size for maximum branding prominence
-          const logoSize = size * 0.30
+          // Logo size is 38% of QR code size for maximum visual branding prominence
+          const logoSize = size * 0.38
           const x = center - logoSize / 2
           const y = center - logoSize / 2
 
