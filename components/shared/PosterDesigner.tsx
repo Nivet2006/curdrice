@@ -384,19 +384,83 @@ export default function PosterDesigner({
 
   // Re-generate QR Data URL when colors or URL changes
   useEffect(() => {
-    QRCode.toDataURL(
+    if (typeof window === 'undefined') return
+
+    const canvas = document.createElement('canvas')
+    canvas.width = 400
+    canvas.height = 400
+
+    // Use error correction level H (High) to allow 30% area recovery,
+    // ensuring the QR remains readable even with a brand logo in the center.
+    QRCode.toCanvas(
+      canvas,
       publicUrl,
       {
-        width: 200,
+        width: 400,
         margin: 1,
         color: {
           dark: qrColorDark,
           light: qrColorLight
-        }
+        },
+        errorCorrectionLevel: 'H'
       },
-      (err, dataUrl) => {
-        if (!err) {
-          setQrDataUrl(dataUrl)
+      (err) => {
+        if (err) {
+          console.error('QR generation error:', err)
+          return
+        }
+
+        const img = new Image()
+        img.crossOrigin = 'anonymous'
+        img.src = `${window.location.origin}/logo.png`
+        img.onload = () => {
+          const ctx = canvas.getContext('2d')
+          if (!ctx) return
+
+          const size = canvas.width
+          const center = size / 2
+
+          // Logo size is 22% of QR code size
+          const logoSize = size * 0.22
+          const x = center - logoSize / 2
+          const y = center - logoSize / 2
+
+          // Rounded backing card padding and position
+          const padding = 6
+          const bgSize = logoSize + padding * 2
+          const bgX = center - bgSize / 2
+          const bgY = center - bgSize / 2
+
+          // Fill logo backing card (always white for brand logo contrast)
+          ctx.fillStyle = '#ffffff'
+          const r = 8 // border radius
+          ctx.beginPath()
+          ctx.moveTo(bgX + r, bgY)
+          ctx.lineTo(bgX + bgSize - r, bgY)
+          ctx.quadraticCurveTo(bgX + bgSize, bgY, bgX + bgSize, bgY + r)
+          ctx.lineTo(bgX + bgSize, bgY + bgSize - r)
+          ctx.quadraticCurveTo(bgX + bgSize, bgY + bgSize, bgX + bgSize - r, bgY + bgSize)
+          ctx.lineTo(bgX + r, bgY + bgSize)
+          ctx.quadraticCurveTo(bgX, bgY + bgSize, bgX, bgY + bgSize - r)
+          ctx.lineTo(bgX, bgY + r)
+          ctx.quadraticCurveTo(bgX, bgY, bgX + r, bgY)
+          ctx.closePath()
+          ctx.fill()
+
+          // Subtle border around logo backing matching the QR pattern color
+          ctx.strokeStyle = qrColorDark
+          ctx.lineWidth = 2
+          ctx.stroke()
+
+          // Draw Club-Eve logo in the center
+          ctx.drawImage(img, x, y, logoSize, logoSize)
+
+          setQrDataUrl(canvas.toDataURL('image/png'))
+        }
+
+        img.onerror = () => {
+          console.warn('Failed to load brand logo for QR code, falling back to clean QR.')
+          setQrDataUrl(canvas.toDataURL('image/png'))
         }
       }
     )
@@ -2354,6 +2418,38 @@ export default function PosterDesigner({
                             <option value="top-right">Top Right Preset</option>
                             <option value="custom">Custom (Draggable 🖐️)</option>
                           </select>
+                        </div>
+
+                        {/* QR Code Colors Customizer */}
+                        <div className="space-y-1">
+                          <span className="text-[9px] font-mono text-zinc-500 uppercase">QR Pattern Color</span>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="color"
+                              value={qrColorDark}
+                              onChange={e => setQrColorDark(e.target.value)}
+                              className="w-7 h-7 rounded cursor-pointer border border-zinc-200 shrink-0"
+                            />
+                            <span className="text-[10px] font-mono">{qrColorDark.toUpperCase()}</span>
+                          </div>
+                        </div>
+
+                        <div className="space-y-1">
+                          <span className="text-[9px] font-mono text-zinc-500 uppercase">QR Background</span>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="color"
+                              value={qrColorLight}
+                              onChange={e => setQrColorLight(e.target.value)}
+                              className="w-7 h-7 rounded cursor-pointer border border-zinc-200 shrink-0"
+                            />
+                            <span className="text-[10px] font-mono">{qrColorLight.toUpperCase()}</span>
+                          </div>
+                        </div>
+
+                        <div className="space-y-1 col-span-2">
+                          <span className="text-[9px] font-mono text-zinc-500 uppercase">Quick QR Color Swatches</span>
+                          <ColorSwatches value={qrColorDark} onChange={setQrColorDark} />
                         </div>
 
                         {/* Element Fine-Tuning Sliders */}
