@@ -39,7 +39,7 @@ export function ShareEventButton({
     }
   }
 
-  const eventShareUrl = `https://clubeve.nivet2006.in/events/${eventId}`
+  const eventShareUrl = `https://cooking.nivet2006.in/events/${eventId}`
 
   const handleCopyLink = async () => {
     try {
@@ -126,29 +126,29 @@ export function ShareEventButton({
       {open && activeTheme && (
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-md" onClick={() => setOpen(false)} />
-          <div 
+          <div
             className="relative w-full max-w-sm border-t sm:border rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-5 sm:zoom-in-95 duration-200"
             style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}
           >
             <div className="px-6 py-5 border-b flex items-center justify-between backdrop-blur-sm" style={{ borderColor: 'var(--border)' }}>
               <div>
                 <h3 className="font-bold text-lg leading-tight" style={{ color: 'var(--fg)' }}>Share to friends</h3>
-                <p 
-                  className="text-[10px] font-mono uppercase tracking-widest mt-0.5" 
+                <p
+                  className="text-[10px] font-mono uppercase tracking-widest mt-0.5"
                   style={{ color: 'var(--fg-muted)' }}
                 >
                   Student Direct Messages
                 </p>
               </div>
-              <button 
-                onClick={() => setOpen(false)} 
+              <button
+                onClick={() => setOpen(false)}
                 className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors"
                 style={{ color: 'var(--fg-muted)' }}
               >
                 <X size={18} />
               </button>
             </div>
-            
+
             {/* External share actions */}
             <div
               className="px-4 py-3 border-b flex flex-col gap-2"
@@ -172,9 +172,8 @@ export function ShareEventButton({
                 </button>
                 <button
                   onClick={handleCopyLink}
-                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold border transition-all active:scale-95 ${
-                    linkCopied ? 'border-green-300 bg-green-50 text-green-700 dark:bg-green-500/10 dark:border-green-500/30' : ''
-                  }`}
+                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold border transition-all active:scale-95 ${linkCopied ? 'border-green-300 bg-green-50 text-green-700 dark:bg-green-500/10 dark:border-green-500/30' : ''
+                    }`}
                   style={!linkCopied ? {
                     borderColor: 'var(--border)',
                     color: 'var(--fg)',
@@ -193,8 +192,8 @@ export function ShareEventButton({
               </div>
             </div>
 
-            <div 
-              className="p-4 max-h-[60vh] overflow-y-auto flex flex-col gap-2 transition-colors duration-500" 
+            <div
+              className="p-4 max-h-[60vh] overflow-y-auto flex flex-col gap-2 transition-colors duration-500"
               style={{ background: 'var(--bg-subtle)' }}
             >
               {loading ? (
@@ -241,8 +240,8 @@ export function ShareEventButton({
                           onClick={() => handleShare(conv.id)}
                           disabled={isShared}
                           className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95 ${isShared
-                              ? 'bg-green-50 text-green-600 border border-green-200 dark:bg-green-500/10 dark:border-green-500/20'
-                              : 'hover:opacity-90'
+                            ? 'bg-green-50 text-green-600 border border-green-200 dark:bg-green-500/10 dark:border-green-500/20'
+                            : 'hover:opacity-90'
                             }`}
                           style={!isShared ? {
                             backgroundColor: document.documentElement.classList.contains('dark') ? '#ffffff' : '#0a0a0a',
@@ -257,16 +256,16 @@ export function ShareEventButton({
                 </div>
               )}
             </div>
-            
+
             <div className="p-4 border-t" style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}>
-              <div 
+              <div
                 className={`p-3 rounded-xl border transition-all duration-700`}
-                style={{ 
+                style={{
                   backgroundColor: document.documentElement.classList.contains('dark') ? activeTheme.darkBg : activeTheme.bg,
                   borderColor: document.documentElement.classList.contains('dark') ? activeTheme.darkBorder : activeTheme.border,
                 }}
               >
-                <p 
+                <p
                   className="text-[10px] font-medium leading-tight"
                   style={{ color: document.documentElement.classList.contains('dark') ? activeTheme.darkText : activeTheme.text }}
                 >

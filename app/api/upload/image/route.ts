@@ -80,7 +80,7 @@ export async function POST(request: Request) {
 
       // 4. True last resort — only ever correct locally
       if (process.env.NODE_ENV === 'production') {
-        return `https://clubeve.nivet2006.in/api/assets/${filePath}`;
+        return `https://cooking.nivet2006.in/api/assets/${filePath}`;
       }
       return `http://localhost:3000/api/assets/${filePath}`;
     }
