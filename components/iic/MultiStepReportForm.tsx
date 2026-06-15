@@ -146,6 +146,23 @@ export function MultiStepReportForm({ eventId, eventTitle, eventDate, department
   });
 
   // Fetch students on mount for the autocomplete feature
+  const [galleryPhotos, setGalleryPhotos] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchGallery = async () => {
+      try {
+        const res = await fetch(`/api/events/${eventId}/photos`);
+        if (res.ok) {
+          const data = await res.json();
+          setGalleryPhotos(data.photos || []);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchGallery();
+  }, [eventId]);
+
   useEffect(() => {
     const fetchStudents = async () => {
       try {
@@ -500,6 +517,65 @@ export function MultiStepReportForm({ eventId, eventTitle, eventDate, department
                 <option>External</option>
               </select>
             </div>
+            
+            {galleryPhotos.length > 0 && (
+              <div className="space-y-3 p-4 bg-zinc-50 dark:bg-zinc-950/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl">
+                <h4 className="text-xs font-mono uppercase text-zinc-400 dark:text-zinc-500">Select from Event Gallery</h4>
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                  {galleryPhotos.map((photo) => {
+                    const isCollage1 = formData.photo_1_url === photo.url;
+                    const isCollage2 = formData.photo_2_url === photo.url;
+                    return (
+                      <div 
+                        key={photo.id} 
+                        className={`relative aspect-[4/3] rounded-xl overflow-hidden border cursor-pointer transition-all group ${
+                          isCollage1 ? 'ring-2 ring-blue-500 border-blue-500' :
+                          isCollage2 ? 'ring-2 ring-emerald-500 border-emerald-500' :
+                          'border-zinc-200 dark:border-zinc-800 hover:border-zinc-400'
+                        }`}
+                      >
+                        <img src={photo.url} alt="Gallery item" className="w-full h-full object-cover" />
+                        
+                        {/* Overlay selection badges */}
+                        {isCollage1 && (
+                          <div className="absolute top-1 left-1 bg-blue-500 text-white text-[8px] font-mono font-bold px-1.5 py-0.5 rounded shadow">
+                            Collage 1
+                          </div>
+                        )}
+                        {isCollage2 && (
+                          <div className="absolute top-1 left-1 bg-emerald-500 text-white text-[8px] font-mono font-bold px-1.5 py-0.5 rounded shadow">
+                            Collage 2
+                          </div>
+                        )}
+
+                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5 p-1">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              updateForm('photo_1_url', isCollage1 ? '' : photo.url);
+                            }}
+                            className="w-full py-1 bg-blue-600 hover:bg-blue-700 text-white text-[9px] font-mono font-bold rounded text-center transition-colors"
+                          >
+                            {isCollage1 ? 'Remove C1' : 'Set Collage 1'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              updateForm('photo_2_url', isCollage2 ? '' : photo.url);
+                            }}
+                            className="w-full py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[9px] font-mono font-bold rounded text-center transition-colors"
+                          >
+                            {isCollage2 ? 'Remove C2' : 'Set Collage 2'}
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
             
             <div className="space-y-4 mt-6">
                <h3 className="font-bold text-sm text-black dark:text-white">Photo Collages</h3>
