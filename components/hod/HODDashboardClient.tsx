@@ -7,7 +7,6 @@ import { ExportButton } from '@/components/hod/ExportButton'
 import { ProfileUpdateApprovalQueue } from '@/components/hod/ProfileUpdateApprovalQueue'
 import { createClient } from '@/lib/supabase/client'
 import { Event, ProfileUpdateRequest } from '@/lib/types'
-import { convertPdfToDocx } from '@/lib/pdfToDocx'
 
 interface HODDashboardClientProps {
   initialPending: Event[]
@@ -32,22 +31,7 @@ export function HODDashboardClient({
   const [approvedEvents, setApprovedEvents] = useState<Event[]>(initialApproved)
   const [pendingIIC, setPendingIIC] = useState<any[]>(initialPendingIIC)
   const [approvedIIC, setApprovedIIC] = useState<any[]>(initialApprovedIIC)
-  const [convertingId, setConvertingId] = useState<string | null>(null)
   const supabase = createClient()
-
-  const handleDownloadDocx = async (reportId: string, activityName: string) => {
-    setConvertingId(reportId)
-    try {
-      const pdfUrl = `/api/reports/${reportId}/pdf`
-      const fileName = `${activityName.replace(/\s+/g, '_')}_Report.docx`
-      await convertPdfToDocx(pdfUrl, fileName)
-    } catch (err) {
-      console.error(err)
-      alert('Failed to convert PDF to Word document.')
-    } finally {
-      setConvertingId(null)
-    }
-  }
 
   useEffect(() => {
     const channel = supabase
@@ -248,18 +232,15 @@ export function HODDashboardClient({
                            <Link href={`/api/reports/${report.id}/download`} target="_blank" title="Download PDF" className="w-10 h-10 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full flex items-center justify-center hover:bg-emerald-500 hover:text-white dark:hover:text-white transition-all shadow-sm">
                               <FileDown size={18} />
                            </Link>
-                           <button 
-                             onClick={() => handleDownloadDocx(report.id, report.activity_name)} 
-                             disabled={convertingId !== null}
+                           <a 
+                             href={`/api/reports/${report.id}/download-docx`} 
+                             target="_blank"
+                             rel="noopener noreferrer"
                              title="Download Word (DOCX)" 
-                             className="w-10 h-10 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full flex items-center justify-center hover:bg-blue-500 hover:text-white dark:hover:text-white transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                             className="w-10 h-10 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full flex items-center justify-center hover:bg-blue-500 hover:text-white dark:hover:text-white transition-all shadow-sm"
                            >
-                             {convertingId === report.id ? (
-                               <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                             ) : (
-                               <FileText size={18} />
-                             )}
-                           </button>
+                             <FileText size={18} />
+                           </a>
                          </div>
                      </div>
                    ))}
