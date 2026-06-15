@@ -34,7 +34,6 @@
     "otplib": "^13.4.0",
     "papaparse": "^5.5.3",
     "pdf-lib": "^1.17.1",
-    "pdf-to-img": "^6.2.0",
     "pdfjs-dist": "^5.7.284",
     "qrcode": "^1.5.4",
     "react": "^18",
