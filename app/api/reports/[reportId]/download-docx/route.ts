@@ -72,8 +72,12 @@ export async function GET(
       return new NextResponse(`ConvertAPI API error: ${conversionResponse.status} ${conversionResponse.statusText} - ${errorText}`, { status: 502 });
     }
 
-    const docxArrayBuffer = await conversionResponse.arrayBuffer();
-    const docxBuffer = Buffer.from(docxArrayBuffer);
+    const resultJson = await conversionResponse.json();
+    if (!resultJson.Files || resultJson.Files.length === 0) {
+      return new NextResponse(`ConvertAPI error: No files returned in response - ${JSON.stringify(resultJson)}`, { status: 502 });
+    }
+    const base64Data = resultJson.Files[0].FileData;
+    const docxBuffer = Buffer.from(base64Data, 'base64');
 
     const activityName = report.activity_name || 'Report';
     const fileName = `${activityName.replace(/\s+/g, '_')}_Report.docx`;
