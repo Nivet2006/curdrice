@@ -1347,6 +1347,13 @@ export default function PosterDesigner({
 
       const formData = new FormData()
       formData.append('file', file)
+      
+      // Pass the existing bannerUrl as oldUrl to clean up the previous file on B2
+      const bannerInput = document.querySelector('input[name="bannerUrl"]') as HTMLInputElement | null
+      const currentBannerUrl = bannerInput?.value
+      if (currentBannerUrl) {
+        formData.append('oldUrl', currentBannerUrl)
+      }
 
       const response = await fetch('/api/upload/image', {
         method: 'POST',

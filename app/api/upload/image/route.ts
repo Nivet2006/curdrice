@@ -37,6 +37,27 @@ export async function POST(request: Request) {
 
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
+    const oldUrl = formData.get('oldUrl') as string | null;
+
+    if (oldUrl) {
+      try {
+        // Parse the key from the old proxy URL e.g., .../api/assets/images/...
+        const match = oldUrl.match(/\/api\/assets\/(images\/.+)$/);
+        if (match && match[1]) {
+          const oldKey = match[1];
+          console.log(`[Upload] Deleting old poster from B2: key=${oldKey}`);
+          const { DeleteObjectCommand } = await import('@aws-sdk/client-s3');
+          await b2ImagesClient.send(
+            new DeleteObjectCommand({
+              Bucket: B2_IMAGES_BUCKET_NAME,
+              Key: oldKey,
+            })
+          );
+        }
+      } catch (err: any) {
+        console.error('[Upload] Failed to delete old poster:', err.message);
+      }
+    }
 
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
