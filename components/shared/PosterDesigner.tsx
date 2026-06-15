@@ -1228,8 +1228,20 @@ export default function PosterDesigner({
         })
       } finally {
         // Restore all removed stylesheets regardless of success or failure
+        // Guard against stale nextSibling: html-to-image may move DOM nodes during
+        // rendering, so nextSibling might no longer be a child of parent by the time
+        // we restore. Fall back to appendChild in that case.
         removedSheets.forEach(({ node, parent, nextSibling }) => {
-          parent.insertBefore(node, nextSibling)
+          try {
+            if (nextSibling && nextSibling.parentNode === parent) {
+              parent.insertBefore(node, nextSibling)
+            } else {
+              parent.appendChild(node)
+            }
+          } catch {
+            // Last-resort fallback: try to append to document.head
+            try { document.head.appendChild(node) } catch { /* ignore */ }
+          }
         })
       }
 
@@ -2306,7 +2318,7 @@ export default function PosterDesigner({
                     <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 flex items-center gap-1.5">
                       <Award size={12} /> Add Institutional Logos
                     </span>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-4 gap-2">
                       <button
                         type="button"
                         onClick={() => addLogoSticker('/iic/gcem-crest.png')}
@@ -2329,7 +2341,47 @@ export default function PosterDesigner({
                         className="p-2 border border-zinc-200 dark:border-zinc-850 hover:bg-zinc-50 dark:hover:bg-zinc-900 rounded-xl flex flex-col items-center justify-center gap-1 transition-all"
                       >
                         <img src="/logo.png" alt="Club-Eve Logo" className="h-8 object-contain" />
-                        <span className="text-[8px] font-mono text-zinc-500 mt-1">Club-Eve Logo</span>
+                        <span className="text-[8px] font-mono text-zinc-500 mt-1">Club-Eve</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => addLogoSticker('/logos/cse.png')}
+                        className="p-2 border border-zinc-200 dark:border-zinc-850 hover:bg-zinc-50 dark:hover:bg-zinc-900 rounded-xl flex flex-col items-center justify-center gap-1 transition-all"
+                      >
+                        <img src="/logos/cse.png" alt="CSE Logo" className="h-8 object-contain" />
+                        <span className="text-[8px] font-mono text-zinc-500 mt-1">CSE</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => addLogoSticker('/logos/aiml.png')}
+                        className="p-2 border border-zinc-200 dark:border-zinc-850 hover:bg-zinc-50 dark:hover:bg-zinc-900 rounded-xl flex flex-col items-center justify-center gap-1 transition-all"
+                      >
+                        <img src="/logos/aiml.png" alt="AIML Logo" className="h-8 object-contain" />
+                        <span className="text-[8px] font-mono text-zinc-500 mt-1">AIML</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => addLogoSticker('/logos/techeon.png')}
+                        className="p-2 border border-zinc-200 dark:border-zinc-850 hover:bg-zinc-50 dark:hover:bg-zinc-900 rounded-xl flex flex-col items-center justify-center gap-1 transition-all"
+                      >
+                        <img src="/logos/techeon.png" alt="Techeon Logo" className="h-8 object-contain" />
+                        <span className="text-[8px] font-mono text-zinc-500 mt-1">Techeon</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => addLogoSticker('/logos/winfinity.png')}
+                        className="p-2 border border-zinc-200 dark:border-zinc-850 hover:bg-zinc-50 dark:hover:bg-zinc-900 rounded-xl flex flex-col items-center justify-center gap-1 transition-all"
+                      >
+                        <img src="/logos/winfinity.png" alt="Winfinity Logo" className="h-8 object-contain" />
+                        <span className="text-[8px] font-mono text-zinc-500 mt-1">Winfinity</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => addLogoSticker('/logos/grafix.png')}
+                        className="p-2 border border-zinc-200 dark:border-zinc-850 hover:bg-zinc-50 dark:hover:bg-zinc-900 rounded-xl flex flex-col items-center justify-center gap-1 transition-all"
+                      >
+                        <img src="/logos/grafix.png" alt="Grafix Logo" className="h-8 object-contain" />
+                        <span className="text-[8px] font-mono text-zinc-500 mt-1">Grafix</span>
                       </button>
                     </div>
                   </div>
