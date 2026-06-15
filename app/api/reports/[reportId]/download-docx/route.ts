@@ -119,8 +119,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ repo
     });
 
     const docBuffer = await Packer.toBuffer(doc);
+    const uint8Array = new Uint8Array(docBuffer);
 
-    return new Response(docBuffer, {
+    return new Response(uint8Array, {
       headers: {
         'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         'Content-Disposition': `attachment; filename="IIC_Report_${reportId}.docx"`
