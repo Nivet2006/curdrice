@@ -133,8 +133,8 @@ export default async function CCEventDetailPage({ params }: { params: Promise<{ 
 
             {/* Visual Branding / Poster */}
             {event.banner_url && (
-               <div className="w-full aspect-[21/9] rounded-[2.5rem] overflow-hidden border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-2xl relative group transition-all">
-                  <img src={event.banner_url} alt={event.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+               <div className="w-full max-h-[600px] flex justify-center items-center rounded-[2.5rem] overflow-hidden border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-2xl relative group transition-all bg-black/[0.02] dark:bg-white/[0.02]">
+                  <img src={event.banner_url} alt={event.title} className="max-h-[600px] w-auto max-w-full object-contain transition-transform duration-700 group-hover:scale-[1.02]" />
                </div>
             )}
 

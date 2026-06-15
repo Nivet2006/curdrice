@@ -129,8 +129,8 @@ export default async function PublicEventDetailPage({
 
           {/* Banner */}
           {event?.banner_url && (
-            <div className="w-full aspect-[21/9] sm:aspect-[3/1] rounded-2xl mb-10 overflow-hidden relative border border-[#e0e0e0] dark:border-zinc-800 shadow-md">
-              <img src={event.banner_url} alt={event.title} className="w-full h-full object-cover" />
+            <div className="w-full max-h-[600px] flex justify-center items-center rounded-2xl mb-10 overflow-hidden relative border border-[#e0e0e0] dark:border-zinc-800 shadow-md bg-black/[0.02] dark:bg-white/[0.02]">
+              <img src={event.banner_url} alt={event.title} className="max-h-[600px] w-auto max-w-full object-contain" />
             </div>
           )}
 

@@ -16,7 +16,7 @@ export default async function PREventDetailPage({ params }: { params: Promise<{ 
 
   const { data: event } = await supabase
     .from('events')
-    .select('id, title, club_name, event_date, location, status, max_capacity, discussion_enabled, thread_mode')
+    .select('id, title, club_name, event_date, location, status, max_capacity, banner_url, discussion_enabled, thread_mode')
     .eq('id', id)
     .single()
 
@@ -54,6 +54,13 @@ export default async function PREventDetailPage({ params }: { params: Promise<{ 
           Scan for this Event
         </Link>
       </div>
+
+      {/* Visual Branding / Poster */}
+      {event.banner_url && (
+        <div className="w-full max-h-[600px] flex justify-center items-center rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-2xl relative group transition-all bg-black/[0.02] dark:bg-white/[0.02]">
+          <img src={event.banner_url} alt={event.title} className="max-h-[600px] w-auto max-w-full object-contain transition-transform duration-700 group-hover:scale-[1.02]" />
+        </div>
+      )}
 
       {/* Event Header */}
       <header className="border-b-4 border-black dark:border-white pb-8 space-y-3">
