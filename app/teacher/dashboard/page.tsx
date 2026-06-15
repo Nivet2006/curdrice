@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { ShieldAlert, CheckCircle, ArrowRight, User, Award, FileText, PlusCircle, FileDown } from 'lucide-react'
 import { ManageStudentsPanel } from '@/components/faculty/ManageStudentsPanel'
 import type { Profile } from '@/lib/types'
+import { DOCXDownloadButton } from '@/components/reports/DOCXDownloadButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -268,15 +269,21 @@ export default async function TeacherDashboard() {
                     {/* Download options */}
                     <div className="pt-6 border-t border-zinc-100 dark:border-zinc-800/50 flex gap-3 mt-4">
                       {report.isIIC ? (
-                        <a
-                          href={`/api/reports/${report.id}/download`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex-1 flex items-center justify-center gap-1.5 py-3 px-3 border border-zinc-300 dark:border-zinc-700 hover:border-black dark:hover:border-white rounded-xl text-[10px] font-mono font-bold uppercase tracking-wider text-[#0a0a0a] dark:text-white transition-colors"
-                        >
-                          <FileDown size={12} />
-                          Report PDF
-                        </a>
+                        <>
+                          <a
+                            href={`/api/reports/${report.id}/download`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 flex items-center justify-center gap-1.5 py-3 px-3 border border-zinc-300 dark:border-zinc-700 hover:border-black dark:hover:border-white rounded-xl text-[10px] font-mono font-bold uppercase tracking-wider text-[#0a0a0a] dark:text-white transition-colors"
+                          >
+                            <FileDown size={12} />
+                            Report PDF
+                          </a>
+                          <DOCXDownloadButton 
+                            reportId={report.id} 
+                            activityName={(report.events as any)?.title || 'Report'} 
+                          />
+                        </>
                       ) : (
                         <Link
                           href={`/teacher/reports/${report.id}`}

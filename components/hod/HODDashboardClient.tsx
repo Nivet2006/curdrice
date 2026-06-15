@@ -2,13 +2,14 @@
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { FileDown, CheckCircle2, Building, ExternalLink, ShieldCheck, ClipboardCheck } from 'lucide-react'
+import { FileDown, CheckCircle2, Building, ExternalLink, ShieldCheck, ClipboardCheck, FileText } from 'lucide-react'
 import { ExportButton } from '@/components/hod/ExportButton'
 import { ProfileUpdateApprovalQueue } from '@/components/hod/ProfileUpdateApprovalQueue'
 import { createClient } from '@/lib/supabase/client'
 import { Event, ProfileUpdateRequest } from '@/lib/types'
 import { ImageUploadInput } from '@/components/ui/ImageUploadInput'
 import { saveHODSignature } from '@/lib/actions/faculty-actions'
+import { convertPdfToDocx } from '@/lib/pdfToDocx'
 
 interface HODDashboardClientProps {
   initialPending: Event[]
@@ -36,7 +37,22 @@ export function HODDashboardClient({
   const [sigUrl, setSigUrl] = useState(signatureUrl)
   const [updatingSig, setUpdatingSig] = useState(false)
   const [sigMessage, setSigMessage] = useState('')
+  const [convertingId, setConvertingId] = useState<string | null>(null)
   const supabase = createClient()
+
+  const handleDownloadDocx = async (reportId: string, activityName: string) => {
+    setConvertingId(reportId)
+    try {
+      const pdfUrl = `/api/reports/${reportId}/pdf`
+      const fileName = `${activityName.replace(/\s+/g, '_')}_Report.docx`
+      await convertPdfToDocx(pdfUrl, fileName)
+    } catch (err) {
+      console.error(err)
+      alert('Failed to convert PDF to Word document.')
+    } finally {
+      setConvertingId(null)
+    }
+  }
 
   const handleSaveSignature = async (url: string) => {
     setUpdatingSig(true)
@@ -251,9 +267,23 @@ export function HODDashboardClient({
                           <h4 className="font-bold text-black dark:text-white uppercase">{report.activity_name}</h4>
                           <p className="text-[10px] text-zinc-500 italic mt-1 font-mono uppercase">Sealed by HOD on {new Date(report.generated_at).toLocaleDateString()}</p>
                         </div>
-                        <Link href={`/api/reports/${report.id}/download`} target="_blank" className="w-10 h-10 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full flex items-center justify-center hover:bg-emerald-500 hover:text-white dark:hover:text-white transition-all shadow-sm">
-                           <FileDown size={18} />
-                        </Link>
+                        <div className="flex gap-2">
+                           <Link href={`/api/reports/${report.id}/download`} target="_blank" title="Download PDF" className="w-10 h-10 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full flex items-center justify-center hover:bg-emerald-500 hover:text-white dark:hover:text-white transition-all shadow-sm">
+                              <FileDown size={18} />
+                           </Link>
+                           <button 
+                             onClick={() => handleDownloadDocx(report.id, report.activity_name)} 
+                             disabled={convertingId !== null}
+                             title="Download Word (DOCX)" 
+                             className="w-10 h-10 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full flex items-center justify-center hover:bg-blue-500 hover:text-white dark:hover:text-white transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                           >
+                             {convertingId === report.id ? (
+                               <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                             ) : (
+                               <FileText size={18} />
+                             )}
+                           </button>
+                         </div>
                      </div>
                    ))}
                    {approvedIIC.length === 0 && (
