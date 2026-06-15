@@ -10,6 +10,7 @@ import { AdminManualOverride } from '@/components/admin/AdminManualOverride'
 import { FeedbackToggle } from '@/components/cc/FeedbackToggle'
 import { DiscussionToggle } from '@/components/cc/DiscussionToggle'
 import { ReportHubCard } from '@/components/iic/ReportHubCard'
+import { EventPhotosGallery } from '@/components/cc/EventPhotosGallery'
 import { EventThread } from '@/components/student/EventThread'
 import { getEventThread } from '@/lib/actions/event-threads'
 export default async function CCEventDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -252,6 +253,10 @@ export default async function CCEventDetailPage({ params }: { params: Promise<{ 
 
                   {/* Section 1 — Event Report Hub Card moved here */}
                   <ReportHubCard eventId={event.id} />
+
+                  <section className={`${bg.cardClass} !rounded-[2.5rem] !p-10`} style={bg.cardStyle}>
+                     <EventPhotosGallery eventId={event.id} />
+                  </section>
                </div>
 
                <aside className="space-y-6">
