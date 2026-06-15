@@ -23,6 +23,7 @@
     "canvas": "^3.2.3",
     "chart.js": "^4.5.1",
     "chartjs-node-canvas": "^5.0.0",
+    "cloudmersive-convert-api-client": "^2.8.0",
     "docx": "^9.7.1",
     "exceljs": "^4.4.0",
     "html-to-image": "^1.11.13",
