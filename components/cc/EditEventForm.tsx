@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { EventBackgroundCustomizer } from '@/components/shared/EventBackgroundCustomizer'
 import PosterDesigner from '@/components/shared/PosterDesigner'
+import { ImagePreview } from '@/components/shared/ImagePreview'
 
 interface EditEventFormProps {
   event: any
@@ -169,6 +170,7 @@ export default function EditEventForm({ event, constraints }: EditEventFormProps
                            value={bannerUrl}
                            onChange={e => setBannerUrl(e.target.value)}
                          />
+                         <ImagePreview url={bannerUrl} />
                        </div>
                        <div className="pb-1">
                          <PosterDesigner
