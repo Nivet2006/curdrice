@@ -43,7 +43,7 @@ export function Navbar({ role, name }: { role?: Role; name?: string }) {
     await supabase.auth.signOut()
     // ✅ Wait for all 4 loader steps to complete before redirecting
     await new Promise(r => setTimeout(r, 4 * 800))
-    router.push('/login')
+    window.location.href = '/login'
   }
 
   const navLinks = role ? [
