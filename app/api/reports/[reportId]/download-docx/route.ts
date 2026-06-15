@@ -47,11 +47,11 @@ export async function GET(
     const bytes = await response.Body.transformToByteArray();
     const pdfBuffer = Buffer.from(bytes);
 
-    // Get Cloudmersive API key
-    const apiKey = process.env.CLOUDMERSIVE_API_KEY;
+    // Get ConvertAPI secret
+    const apiKey = process.env.CONVERTAPI_SECRET;
     if (!apiKey) {
       return new NextResponse(
-        'Cloudmersive API Key is not configured. Please sign up for a free key at cloudmersive.com and add CLOUDMERSIVE_API_KEY to your .env.local file.',
+        'ConvertAPI Secret is not configured. Please sign up for a free key at convertapi.com and add CONVERTAPI_SECRET to your .env.local file.',
         { status: 500 }
       );
     }
@@ -59,20 +59,17 @@ export async function GET(
     // Prepare Multipart FormData
     const formData = new FormData();
     const pdfBlob = new Blob([pdfBuffer], { type: 'application/pdf' });
-    formData.append('inputFile', pdfBlob, 'report.pdf');
+    formData.append('File', pdfBlob, 'report.pdf');
 
-    // Call Cloudmersive REST API
-    const conversionResponse = await fetch('https://api.cloudmersive.com/convert/pdf/to/docx', {
+    // Call ConvertAPI REST API
+    const conversionResponse = await fetch(`https://v2.convertapi.com/convert/pdf/to/docx?Secret=${apiKey}`, {
       method: 'POST',
-      headers: {
-        'Apikey': apiKey,
-      },
       body: formData,
     });
 
     if (!conversionResponse.ok) {
       const errorText = await conversionResponse.text();
-      return new NextResponse(`Cloudmersive API error: ${conversionResponse.status} ${conversionResponse.statusText} - ${errorText}`, { status: 502 });
+      return new NextResponse(`ConvertAPI API error: ${conversionResponse.status} ${conversionResponse.statusText} - ${errorText}`, { status: 502 });
     }
 
     const docxArrayBuffer = await conversionResponse.arrayBuffer();
@@ -88,7 +85,7 @@ export async function GET(
 
     return new NextResponse(docxBuffer, { status: 200, headers });
   } catch (error: any) {
-    console.error('Cloudmersive conversion error:', error);
+    console.error('ConvertAPI conversion error:', error);
     return new NextResponse(`Conversion failed: ${error.message || error}`, { status: 500 });
   }
 }
