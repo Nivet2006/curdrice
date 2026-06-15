@@ -396,8 +396,14 @@ export async function compileIICReportPDF(reportId: string): Promise<{ success: 
     page.drawText("IIC President", { x: 455, y: currentY - 30, font: font, size: 9 });
 
     // Draw Faculty Coordinator Signature if available
-    if (facultySignatureUrl) {
-      const bytes = await fetchImageBytes(facultySignatureUrl);
+    if (report.approved_by_faculty) {
+      let bytes = null;
+      if (facultySignatureUrl) {
+        bytes = await fetchImageBytes(facultySignatureUrl);
+      }
+      if (!bytes) {
+        bytes = loadLogoBytes('signature-faculty-coordinator.png');
+      }
       if (bytes) {
         try {
           let sigImg;
@@ -418,8 +424,14 @@ export async function compileIICReportPDF(reportId: string): Promise<{ success: 
     }
 
     // Draw HOD Signature if available
-    if (hodSignatureUrl) {
-      const bytes = await fetchImageBytes(hodSignatureUrl);
+    if (report.approved_by_hod) {
+      let bytes = null;
+      if (hodSignatureUrl) {
+        bytes = await fetchImageBytes(hodSignatureUrl);
+      }
+      if (!bytes) {
+        bytes = loadLogoBytes('signature-hod.png');
+      }
       if (bytes) {
         try {
           let sigImg;
@@ -435,6 +447,28 @@ export async function compileIICReportPDF(reportId: string): Promise<{ success: 
           }
         } catch (err) {
           console.error("Failed to embed HOD signature", err);
+        }
+      }
+    }
+
+    // Draw IIC President Signature if approved by HOD
+    if (report.approved_by_hod) {
+      const bytes = loadLogoBytes('signature-iic-president.png');
+      if (bytes) {
+        try {
+          let sigImg;
+          try {
+            sigImg = await pdfDoc.embedPng(bytes);
+          } catch {
+            sigImg = await pdfDoc.embedJpg(bytes);
+          }
+          if (sigImg) {
+            const dims = sigImg.scaleToFit(110, 45);
+            const x = 475 - (dims.width / 2);
+            page.drawImage(sigImg, { x, y: currentY + 2, width: dims.width, height: dims.height });
+          }
+        } catch (err) {
+          console.error("Failed to embed IIC President signature", err);
         }
       }
     }
