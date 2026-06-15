@@ -9,6 +9,7 @@ import type { Event, EventConstraint } from '@/lib/types'
 import { createClient } from '@/lib/supabase/client'
 import { EventBackgroundCustomizer } from '@/components/shared/EventBackgroundCustomizer'
 import PosterDesigner from '@/components/shared/PosterDesigner'
+import { ImagePreview } from '@/components/shared/ImagePreview'
 
 export function EditEventForm({ event, constraints }: { event: Event, constraints: EventConstraint | null }) {
   const [loading, setLoading] = useState(false)
@@ -165,6 +166,7 @@ export function EditEventForm({ event, constraints }: { event: Event, constraint
                      value={bannerUrl} 
                      onChange={e => setBannerUrl(e.target.value)}
                    />
+                   <ImagePreview url={bannerUrl} />
                  </div>
                  <div>
                    <PosterDesigner

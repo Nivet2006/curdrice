@@ -11,6 +11,7 @@ import { toast } from 'sonner'
 import { LocationPicker } from '@/components/teacher/LocationPicker'
 import { LocationMapEmbed } from '@/components/shared/LocationMapEmbed'
 import PosterDesigner from '@/components/shared/PosterDesigner'
+import { ImagePreview } from '@/components/shared/ImagePreview'
 import { v4 as uuidv4 } from 'uuid'
 
 const EVENT_CATEGORIES = [
@@ -287,6 +288,7 @@ export default function TeacherCreateEventPage() {
                       value={bannerUrl}
                       onChange={e => setBannerUrl(e.target.value)}
                     />
+                    <ImagePreview url={bannerUrl} />
                   </div>
                   <div className="pb-1">
                     <PosterDesigner

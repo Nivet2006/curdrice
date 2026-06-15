@@ -9,6 +9,7 @@ import { ArrowLeft, Save, Send } from 'lucide-react'
 import { FeedbackFormBuilder, Question } from '@/components/cc/FeedbackFormBuilder'
 import { EventBackgroundCustomizer } from '@/components/shared/EventBackgroundCustomizer'
 import PosterDesigner from '@/components/shared/PosterDesigner'
+import { ImagePreview } from '@/components/shared/ImagePreview'
 import { v4 as uuidv4 } from 'uuid'
 
 import { useRouter } from 'next/navigation'
@@ -141,6 +142,7 @@ export default function CCCreateEventPage() {
                       value={bannerUrl}
                       onChange={e => setBannerUrl(e.target.value)}
                     />
+                    <ImagePreview url={bannerUrl} />
                   </div>
                   <div className="pb-1">
                     <PosterDesigner
