@@ -1426,14 +1426,56 @@ export default function PosterDesigner({
           display: none;
         }
       ` }} />
-      <button
-        type="button"
-        onClick={() => setIsOpen(true)}
-        className="flex items-center gap-2 px-5 py-2.5 bg-[#f4f4f5] dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl hover:bg-zinc-200 dark:hover:bg-zinc-700 text-xs font-bold font-mono tracking-wider transition-all"
-      >
-        <Sparkles size={14} className="text-purple-600 dark:text-purple-400" />
-        🎨 Design Poster (Canva-style)
-      </button>
+      <div className="flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          onClick={() => setIsOpen(true)}
+          className="flex items-center gap-2 px-5 py-2.5 bg-[#f4f4f5] dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl hover:bg-zinc-200 dark:hover:bg-zinc-700 text-xs font-bold font-mono tracking-wider transition-all"
+        >
+          <Sparkles size={14} className="text-purple-600 dark:text-purple-400" />
+          🎨 Design Poster (Canva-style)
+        </button>
+        <span className="text-[10px] font-mono text-zinc-400 uppercase">or</span>
+        <label className="flex items-center gap-2 px-5 py-2.5 bg-[#f4f4f5] dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl hover:bg-zinc-200 dark:hover:bg-zinc-700 text-xs font-bold font-mono tracking-wider transition-all cursor-pointer">
+          <Upload size={14} className="text-zinc-600 dark:text-zinc-400" />
+          Upload Image File
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={async (e) => {
+              const file = e.target.files?.[0]
+              if (!file) return
+              
+              toast.info('Uploading local image poster...')
+              const formData = new FormData()
+              formData.append('file', file)
+              
+              const bannerInput = document.querySelector('input[name="bannerUrl"]') as HTMLInputElement | null
+              const currentBannerUrl = bannerInput?.value
+              if (currentBannerUrl) {
+                formData.append('oldUrl', currentBannerUrl)
+              }
+
+              try {
+                const response = await fetch('/api/upload/image', {
+                  method: 'POST',
+                  body: formData
+                })
+                const result = await response.json()
+                if (!response.ok || result.error) {
+                  throw new Error(result.error || 'Upload failed')
+                }
+                toast.success('Poster uploaded successfully!')
+                onApply(result.url)
+              } catch (err: any) {
+                console.error(err)
+                toast.error(`Upload failed: ${err.message || 'Unknown network error'}`)
+              }
+            }}
+          />
+        </label>
+      </div>
 
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto custom-scrollbar">
