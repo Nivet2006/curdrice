@@ -65,6 +65,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ repo
                 width: 595,  // exact A4 width boundary
                 height: 842, // exact A4 height boundary
               },
+              type: 'png',
             }),
           ],
         })
