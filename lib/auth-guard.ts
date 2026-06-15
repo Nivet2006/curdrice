@@ -28,11 +28,13 @@ export async function safeRefreshSession(): Promise<boolean> {
   }
 }
 
-export async function clearSessionAndRedirect() {
-  try {
-    await supabase.auth.signOut()
-  } catch (_) {
-    // signOut itself may fail if token is gone — that's fine
+export async function clearSessionAndRedirect(skipSignOut = false) {
+  if (!skipSignOut) {
+    try {
+      await supabase.auth.signOut()
+    } catch (_) {
+      // signOut itself may fail if token is gone — that's fine
+    }
   }
 
   // Clear any persisted auth state

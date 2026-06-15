@@ -24,12 +24,17 @@ export function AuthListener() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (event === 'SIGNED_OUT') {
-          await clearSessionAndRedirect()
+          // If the page is currently showing a logout loader, let it finish its animation and handle redirect
+          const hasShieldLoader = typeof document !== 'undefined' && !!document.body.innerText.includes('Signing you out');
+          if (hasShieldLoader) {
+            return
+          }
+          await clearSessionAndRedirect(true)
         }
 
         if (event === 'TOKEN_REFRESHED' && !session) {
           // Refreshed but got no session back — treat as signed out
-          await clearSessionAndRedirect()
+          await clearSessionAndRedirect(true)
         }
       }
     )
