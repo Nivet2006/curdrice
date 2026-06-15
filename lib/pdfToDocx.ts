@@ -1,13 +1,12 @@
-import * as pdfjs from 'pdfjs-dist';
 import { Document, Packer, Paragraph, ImageRun } from 'docx';
-
-// Ensure the pdf.js worker is correctly configured
-if (typeof window !== 'undefined') {
-  pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
-}
 
 export async function convertPdfToDocx(pdfUrl: string, outputFileName: string) {
   try {
+    const pdfjs = await import('pdfjs-dist');
+    if (typeof window !== 'undefined') {
+      pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
+    }
+
     const response = await fetch(pdfUrl);
     if (!response.ok) throw new Error(`Failed to fetch PDF from ${pdfUrl}`);
     const pdfData = await response.arrayBuffer();
