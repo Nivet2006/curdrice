@@ -59,30 +59,38 @@ export async function POST(request: Request) {
 
     // Bulletproof URL construction (self-healing, never uses localhost in production)
     function buildProxyUrl(req: Request, filePath: string): string {
-      // 1. Prefer explicit env var (most reliable)
-      const envUrl = process.env.NEXT_PUBLIC_SITE_URL;
-      if (envUrl && (!envUrl.includes('localhost') || process.env.NODE_ENV !== 'production')) {
-        return `${envUrl.replace(/\/$/, '')}/api/assets/${filePath}`;
-      }
+      const getRawUrl = () => {
+        // 1. Prefer explicit env var (most reliable)
+        const envUrl = process.env.NEXT_PUBLIC_SITE_URL;
+        if (envUrl && (!envUrl.includes('localhost') || process.env.NODE_ENV !== 'production')) {
+          return `${envUrl.replace(/\/$/, '')}/api/assets/${filePath}`;
+        }
 
-      // 2. Derive from the incoming request's Host header (works on any host)
-      const host = req.headers.get('host') || '';
-      const proto = req.headers.get('x-forwarded-proto') || 'https';
-      if (host && (!host.includes('localhost') || process.env.NODE_ENV !== 'production')) {
-        return `${proto}://${host}/api/assets/${filePath}`;
-      }
+        // 2. Derive from the incoming request's Host header (works on any host)
+        const host = req.headers.get('host') || '';
+        const proto = req.headers.get('x-forwarded-proto') || 'https';
+        if (host && (!host.includes('localhost') || process.env.NODE_ENV !== 'production')) {
+          return `${proto}://${host}/api/assets/${filePath}`;
+        }
 
-      // 3. Vercel auto-injects this — no scheme, so we add https
-      const vercelUrl = process.env.VERCEL_URL;
-      if (vercelUrl && (!vercelUrl.includes('localhost') || process.env.NODE_ENV !== 'production')) {
-        return `https://${vercelUrl}/api/assets/${filePath}`;
-      }
+        // 3. Vercel auto-injects this — no scheme, so we add https
+        const vercelUrl = process.env.VERCEL_URL;
+        if (vercelUrl && (!vercelUrl.includes('localhost') || process.env.NODE_ENV !== 'production')) {
+          return `https://${vercelUrl}/api/assets/${filePath}`;
+        }
 
-      // 4. True last resort — only ever correct locally
-      if (process.env.NODE_ENV === 'production') {
-        return `https://cooking.nivet2006.in/api/assets/${filePath}`;
+        // 4. True last resort — only ever correct locally
+        if (process.env.NODE_ENV === 'production') {
+          return `https://cooking.nivet2006.in/api/assets/${filePath}`;
+        }
+        return `http://localhost:3000/api/assets/${filePath}`;
+      };
+
+      const rawUrl = getRawUrl();
+      if (!/^https?:\/\//i.test(rawUrl)) {
+        return `https://${rawUrl}`;
       }
-      return `http://localhost:3000/api/assets/${filePath}`;
+      return rawUrl;
     }
 
     const imageUrl = buildProxyUrl(request, filePath);
