@@ -256,29 +256,84 @@ export async function compileIICReportPDF(reportId: string): Promise<{ success: 
     currentY -= 30;
 
     if (report.resource_persons && report.resource_persons.length > 0) {
-       report.resource_persons.forEach((rp: any, idx: number) => {
-          if (currentY < 150) {
-             page = addLetterheadPage();
-             currentY = 700;
+      const isInternal = report.level === 'Institute' || report.level === 'Department';
+
+      if (isInternal) {
+        // Draw Table Header for Internal Resource Persons
+        page.drawText("S.No", { x: 40, y: currentY, font: fontBold, size: 9 });
+        page.drawText("Name", { x: 70, y: currentY, font: fontBold, size: 9 });
+        page.drawText("USN", { x: 170, y: currentY, font: fontBold, size: 9 });
+        page.drawText("Dept", { x: 260, y: currentY, font: fontBold, size: 9 });
+        page.drawText("Mobile", { x: 310, y: currentY, font: fontBold, size: 9 });
+        page.drawText("Email", { x: 410, y: currentY, font: fontBold, size: 9 });
+        currentY -= 15;
+        page.drawLine({ start: { x: 40, y: currentY + 8 }, end: { x: 550, y: currentY + 8 }, thickness: 0.5 });
+
+        report.resource_persons.forEach((rp: any, idx: number) => {
+          if (currentY < 100) {
+            page = addLetterheadPage();
+            currentY = 700;
+            // Draw headers on new page
+            page.drawText("S.No", { x: 40, y: currentY, font: fontBold, size: 9 });
+            page.drawText("Name", { x: 70, y: currentY, font: fontBold, size: 9 });
+            page.drawText("USN", { x: 170, y: currentY, font: fontBold, size: 9 });
+            page.drawText("Dept", { x: 260, y: currentY, font: fontBold, size: 9 });
+            page.drawText("Mobile", { x: 310, y: currentY, font: fontBold, size: 9 });
+            page.drawText("Email", { x: 410, y: currentY, font: fontBold, size: 9 });
+            currentY -= 15;
+            page.drawLine({ start: { x: 40, y: currentY + 8 }, end: { x: 550, y: currentY + 8 }, thickness: 0.5 });
           }
-          const isInternal = report.level === 'Institute' || report.level === 'Department';
-          page.drawText(`[Person ${idx + 1}]`, { x: 50, y: currentY, font: fontBold, size: 10 });
-          currentY -= 20;
+
+          page.drawText(sanitizeText(String(idx + 1)), { x: 40, y: currentY, font: font, size: 8 });
+          page.drawText(sanitizeText(rp.name || 'N/A'), { x: 70, y: currentY, font: font, size: 8 });
+          page.drawText(sanitizeText(rp.usn || 'N/A'), { x: 170, y: currentY, font: font, size: 8 });
+          page.drawText(sanitizeText(rp.department || 'N/A'), { x: 260, y: currentY, font: font, size: 8 });
+          page.drawText(sanitizeText(rp.mobile || 'N/A'), { x: 310, y: currentY, font: font, size: 8 });
+          page.drawText(sanitizeText(rp.email || 'N/A'), { x: 410, y: currentY, font: font, size: 8 });
           
-          if (isInternal) {
-             page.drawText(sanitizeText(`Name: ${rp.name || 'N/A'}, USN: ${rp.usn || 'N/A'}, Dept: ${rp.department || 'N/A'}`), { x: 60, y: currentY, font: font, size: 10 });
-             currentY -= 20;
-             page.drawText(sanitizeText(`Mobile: ${rp.mobile || 'N/A'}, Email: ${rp.email || 'N/A'}`), { x: 60, y: currentY, font: font, size: 10 });
-             currentY -= 30;
-          } else {
-             page.drawText(sanitizeText(`Name: ${rp.name || 'N/A'}, Org: ${rp.organization || 'N/A'}, Desig: ${rp.designation || 'N/A'}`), { x: 60, y: currentY, font: font, size: 10 });
-             currentY -= 20;
-             page.drawText(sanitizeText(`Mobile: ${rp.mobile || 'N/A'}, Email: ${rp.email || 'N/A'}`), { x: 60, y: currentY, font: font, size: 10 });
-             currentY -= 20;
-             page.drawText(sanitizeText(`Address: ${rp.address || 'N/A'}`), { x: 60, y: currentY, font: font, size: 10 });
-             currentY -= 30;
+          currentY -= 15;
+          page.drawLine({ start: { x: 40, y: currentY + 8 }, end: { x: 550, y: currentY + 8 }, thickness: 0.3, color: rgb(0.8, 0.8, 0.8) });
+        });
+      } else {
+        // Draw Table Header for External Speakers
+        page.drawText("S.No", { x: 40, y: currentY, font: fontBold, size: 9 });
+        page.drawText("Name", { x: 70, y: currentY, font: fontBold, size: 9 });
+        page.drawText("Designation & Org", { x: 160, y: currentY, font: fontBold, size: 9 });
+        page.drawText("Mobile / Email", { x: 320, y: currentY, font: fontBold, size: 9 });
+        page.drawText("Address", { x: 440, y: currentY, font: fontBold, size: 9 });
+        currentY -= 15;
+        page.drawLine({ start: { x: 40, y: currentY + 8 }, end: { x: 550, y: currentY + 8 }, thickness: 0.5 });
+
+        report.resource_persons.forEach((rp: any, idx: number) => {
+          if (currentY < 120) {
+            page = addLetterheadPage();
+            currentY = 700;
+            // Draw headers on new page
+            page.drawText("S.No", { x: 40, y: currentY, font: fontBold, size: 9 });
+            page.drawText("Name", { x: 70, y: currentY, font: fontBold, size: 9 });
+            page.drawText("Designation & Org", { x: 160, y: currentY, font: fontBold, size: 9 });
+            page.drawText("Mobile / Email", { x: 320, y: currentY, font: fontBold, size: 9 });
+            page.drawText("Address", { x: 440, y: currentY, font: fontBold, size: 9 });
+            currentY -= 15;
+            page.drawLine({ start: { x: 40, y: currentY + 8 }, end: { x: 550, y: currentY + 8 }, thickness: 0.5 });
           }
-       });
+
+          page.drawText(sanitizeText(String(idx + 1)), { x: 40, y: currentY, font: font, size: 8 });
+          page.drawText(sanitizeText(rp.name || 'N/A'), { x: 70, y: currentY, font: font, size: 8 });
+          
+          const desigText = `${rp.designation || 'N/A'} - ${rp.organization || 'N/A'}`;
+          page.drawText(sanitizeText(desigText), { x: 160, y: currentY, font: font, size: 8 });
+          
+          const contactText = `${rp.mobile || 'N/A'} / ${rp.email || 'N/A'}`;
+          page.drawText(sanitizeText(contactText), { x: 320, y: currentY, font: font, size: 8 });
+          
+          page.drawText(sanitizeText(rp.address || 'N/A'), { x: 440, y: currentY, font: font, size: 8 });
+
+          currentY -= 20;
+          page.drawLine({ start: { x: 40, y: currentY + 12 }, end: { x: 550, y: currentY + 12 }, thickness: 0.3, color: rgb(0.8, 0.8, 0.8) });
+        });
+      }
+      currentY -= 20;
     }
 
     // Social Links & Coordinators
