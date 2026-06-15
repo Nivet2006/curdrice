@@ -191,6 +191,51 @@ export const IICReportDocument = ({ data }: { data: any }) => (
       </View>
     </Page>
 
+    {/* Page 1.5: Resource Persons */}
+    {data.resourcePersons && data.resourcePersons.length > 0 && (
+      <Page size="A4" style={styles.page}>
+        <Text style={styles.sectionHeader}>Resource Persons</Text>
+        <View style={styles.table}>
+          {(data.event.level === 'Institute' || data.event.level === 'Department') ? (
+            <>
+              <View style={[styles.tableRow, { backgroundColor: '#1B2A6B' }]}>
+                {['S.No', 'Name', 'USN', 'Department', 'Mobile', 'Email'].map((h, i) => (
+                  <Text key={i} style={[styles.tableCellLabel, { backgroundColor: 'transparent', color: 'white', width: i === 0 ? '8%' : i === 1 ? '22%' : i === 5 ? '26%' : '16%' }]}>{h}</Text>
+                ))}
+              </View>
+              {data.resourcePersons.map((rp: any, i: number) => (
+                <View key={i} style={[styles.tableRow, { backgroundColor: i % 2 === 0 ? '#FFFFFF' : '#EEF2FF' }]}>
+                  <Text style={[styles.tableCellValue, { width: '8%' }]}>{i + 1}</Text>
+                  <Text style={[styles.tableCellValue, { width: '22%' }]}>{rp.name || 'N/A'}</Text>
+                  <Text style={[styles.tableCellValue, { width: '16%' }]}>{rp.usn || 'N/A'}</Text>
+                  <Text style={[styles.tableCellValue, { width: '16%' }]}>{rp.department || 'N/A'}</Text>
+                  <Text style={[styles.tableCellValue, { width: '16%' }]}>{rp.mobile || 'N/A'}</Text>
+                  <Text style={[styles.tableCellValue, { width: '26%' }]}>{rp.email || 'N/A'}</Text>
+                </View>
+              ))}
+            </>
+          ) : (
+            <>
+              <View style={[styles.tableRow, { backgroundColor: '#1B2A6B' }]}>
+                {['S.No', 'Name', 'Designation & Org', 'Mobile / Email', 'Address'].map((h, i) => (
+                  <Text key={i} style={[styles.tableCellLabel, { backgroundColor: 'transparent', color: 'white', width: i === 0 ? '8%' : i === 1 ? '20%' : i === 2 ? '28%' : i === 3 ? '24%' : '20%' }]}>{h}</Text>
+                ))}
+              </View>
+              {data.resourcePersons.map((rp: any, i: number) => (
+                <View key={i} style={[styles.tableRow, { backgroundColor: i % 2 === 0 ? '#FFFFFF' : '#EEF2FF' }]}>
+                  <Text style={[styles.tableCellValue, { width: '8%' }]}>{i + 1}</Text>
+                  <Text style={[styles.tableCellValue, { width: '20%' }]}>{rp.name || 'N/A'}</Text>
+                  <Text style={[styles.tableCellValue, { width: '28%' }]}>{`${rp.designation || 'N/A'} - ${rp.organization || 'N/A'}`}</Text>
+                  <Text style={[styles.tableCellValue, { width: '24%' }]}>{`${rp.mobile || 'N/A'} / ${rp.email || 'N/A'}`}</Text>
+                  <Text style={[styles.tableCellValue, { width: '20%' }]}>{rp.address || 'N/A'}</Text>
+                </View>
+              ))}
+            </>
+          )}
+        </View>
+      </Page>
+    )}
+
     {/* Page 2: Registration (External only) */}
     {data.event.type === 'External' && (
       <Page size="A4" style={styles.page}>
