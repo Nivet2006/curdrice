@@ -324,6 +324,29 @@ export default function PosterDesigner({
   const [stickers, setStickers] = useState<Sticker[]>([])
   const [selectedStickerId, setSelectedStickerId] = useState<string | null>(null)
 
+  // Show/Hide States for layout components
+  const [showClub, setShowClub] = useState(true)
+  const [showTitle, setShowTitle] = useState(true)
+  const [showDetails, setShowDetails] = useState(true)
+
+  // Context Menu state
+  const [contextMenu, setContextMenu] = useState<{
+    x: number
+    y: number
+    visible: boolean
+    targetType: 'club' | 'title' | 'desc' | 'details' | 'qr' | 'speaker' | 'sticker'
+    targetId?: string
+  } | null>(null)
+
+  // Global click to dismiss context menu
+  useEffect(() => {
+    const handleGlobalClick = () => {
+      if (contextMenu) setContextMenu(null)
+    }
+    window.addEventListener('click', handleGlobalClick)
+    return () => window.removeEventListener('click', handleGlobalClick)
+  }, [contextMenu])
+
   // Sync with form updates when modal opens
   useEffect(() => {
     if (isOpen) {
@@ -1187,6 +1210,12 @@ export default function PosterDesigner({
     setDetailsSize(10)
     setSpeakerScale(100)
     setSelectedElement(null)
+    setShowClub(true)
+    setShowTitle(true)
+    setShowDesc(true)
+    setShowDetails(true)
+    setShowQr(true)
+    setShowSpeaker(false)
     toast.success('All element positions and sizes reset to defaults!')
   }
 
@@ -1549,45 +1578,57 @@ export default function PosterDesigner({
                   )}
 
                   {/* Header / Club Identity */}
-                  <div
-                    onMouseDown={(e) => handleElementDragStart(e, 'club')}
-                    onTouchStart={(e) => handleElementDragStart(e, 'club')}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setSelectedElement('club')
-                      setSelectedStickerId(null)
-                    }}
-                    style={{
-                      position: 'absolute',
-                      left: `${clubX}%`,
-                      top: `${clubY}%`,
-                      transform: 'translate(-50%, -50%)',
-                      cursor: 'grab',
-                      zIndex: 10
-                    }}
-                    className={`flex flex-col items-center p-1.5 rounded-lg border bg-transparent whitespace-nowrap transition-all ${selectedElement === 'club'
-                        ? 'border-dashed border-white ring-2 ring-white/30'
-                        : 'border-transparent hover:border-zinc-300 dark:hover:border-zinc-700 hover:ring-2 hover:ring-purple-500/50'
-                      }`}
-                  >
-                    <span
-                      style={{ color: clubColor, fontSize: `${clubSize}px`, fontFamily: getFontFamily(clubFont) }}
-                      className={`uppercase tracking-widest font-bold ${clubFont}`}
+                  {showClub && (
+                    <div
+                      onMouseDown={(e) => handleElementDragStart(e, 'club')}
+                      onTouchStart={(e) => handleElementDragStart(e, 'club')}
+                      onContextMenu={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        setContextMenu({
+                          x: e.clientX,
+                          y: e.clientY,
+                          visible: true,
+                          targetType: 'club'
+                        })
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setSelectedElement('club')
+                        setSelectedStickerId(null)
+                      }}
+                      style={{
+                        position: 'absolute',
+                        left: `${clubX}%`,
+                        top: `${clubY}%`,
+                        transform: 'translate(-50%, -50%)',
+                        cursor: 'grab',
+                        zIndex: 10
+                      }}
+                      className={`flex flex-col items-center p-1.5 rounded-lg border bg-transparent whitespace-nowrap transition-all ${selectedElement === 'club'
+                          ? 'border-dashed border-white ring-2 ring-white/30'
+                          : 'border-transparent hover:border-zinc-300 dark:hover:border-zinc-700 hover:ring-2 hover:ring-purple-500/50'
+                        }`}
                     >
-                      {clubName || 'Host Club'}
-                    </span>
-                    {activeTemplate === 'cyberpunk' && (
-                      <span className="text-[8px] text-zinc-500 font-mono tracking-tighter mt-0.5 pointer-events-none">Club-Eve System v1.0</span>
-                    )}
-                    {selectedElement === 'club' && (
-                      <div
-                        onMouseDown={(e) => handleResizeStart(e, 'club')}
-                        onTouchStart={(e) => handleResizeStart(e, 'club')}
-                        className="absolute bottom-0 right-0 w-3 h-3 bg-purple-600 border border-white rounded-full cursor-se-resize z-30"
-                        style={{ transform: 'translate(50%, 50%)' }}
-                      />
-                    )}
-                  </div>
+                      <span
+                        style={{ color: clubColor, fontSize: `${clubSize}px`, fontFamily: getFontFamily(clubFont) }}
+                        className={`uppercase tracking-widest font-bold ${clubFont}`}
+                      >
+                        {clubName || 'Host Club'}
+                      </span>
+                      {activeTemplate === 'cyberpunk' && (
+                        <span className="text-[8px] text-zinc-500 font-mono tracking-tighter mt-0.5 pointer-events-none">Club-Eve System v1.0</span>
+                      )}
+                      {selectedElement === 'club' && (
+                        <div
+                          onMouseDown={(e) => handleResizeStart(e, 'club')}
+                          onTouchStart={(e) => handleResizeStart(e, 'club')}
+                          className="absolute bottom-0 right-0 w-3 h-3 bg-purple-600 border border-white rounded-full cursor-se-resize z-30"
+                          style={{ transform: 'translate(50%, 50%)' }}
+                        />
+                      )}
+                    </div>
+                  )}
 
                   {/* Dynamic Stickers / Decals */}
                   {stickers.map(sticker => {
@@ -1597,6 +1638,17 @@ export default function PosterDesigner({
                         key={sticker.id}
                         onMouseDown={(e) => handleStickerDragStart(e, sticker.id)}
                         onTouchStart={(e) => handleStickerDragStart(e, sticker.id)}
+                        onContextMenu={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          setContextMenu({
+                            x: e.clientX,
+                            y: e.clientY,
+                            visible: true,
+                            targetType: 'sticker',
+                            targetId: sticker.id
+                          })
+                        }}
                         onClick={(e) => {
                           e.stopPropagation()
                           setSelectedStickerId(sticker.id)
@@ -1646,57 +1698,79 @@ export default function PosterDesigner({
                   })}
 
                   {/* Main Event Title */}
-                  <div
-                    onMouseDown={(e) => handleElementDragStart(e, 'title')}
-                    onTouchStart={(e) => handleElementDragStart(e, 'title')}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setSelectedElement('title')
-                      setSelectedStickerId(null)
-                    }}
-                    style={{
-                      position: 'absolute',
-                      left: `${titleX}%`,
-                      top: `${titleY}%`,
-                      transform: 'translate(-50%, -50%)',
-                      cursor: 'grab',
-                      width: '85%',
-                      zIndex: 10
-                    }}
-                    className={`p-2 rounded-lg border bg-transparent flex flex-col justify-center items-center transition-all ${selectedElement === 'title'
-                        ? 'border-dashed border-white ring-2 ring-white/30'
-                        : 'border-transparent hover:border-zinc-300 dark:hover:border-zinc-700 hover:ring-2 hover:ring-purple-500/50'
-                      }`}
-                  >
-                    <h1
-                      style={{
-                        color: titleColor,
-                        fontSize: `${titleSize}px`,
-                        textAlign: titleAlign,
-                        fontFamily: getFontFamily(titleFont)
+                  {showTitle && (
+                    <div
+                      onMouseDown={(e) => handleElementDragStart(e, 'title')}
+                      onTouchStart={(e) => handleElementDragStart(e, 'title')}
+                      onContextMenu={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        setContextMenu({
+                          x: e.clientX,
+                          y: e.clientY,
+                          visible: true,
+                          targetType: 'title'
+                        })
                       }}
-                      className={`font-black tracking-tight leading-none uppercase break-words w-full select-none ${titleFont} ${activeTemplate === 'cyberpunk' ? 'text-shadow-neon' : ''
-                        } ${activeTemplate === 'retro' ? 'drop-shadow-[3px_3px_0px_#000000]' : ''
-                        } ${activeTemplate === 'formal-gold' ? 'drop-shadow-[1px_1px_1px_rgba(0,0,0,0.5)]' : ''
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setSelectedElement('title')
+                        setSelectedStickerId(null)
+                      }}
+                      style={{
+                        position: 'absolute',
+                        left: `${titleX}%`,
+                        top: `${titleY}%`,
+                        transform: 'translate(-50%, -50%)',
+                        cursor: 'grab',
+                        width: '85%',
+                        zIndex: 10
+                      }}
+                      className={`p-2 rounded-lg border bg-transparent flex flex-col justify-center items-center transition-all ${selectedElement === 'title'
+                          ? 'border-dashed border-white ring-2 ring-white/30'
+                          : 'border-transparent hover:border-zinc-300 dark:hover:border-zinc-700 hover:ring-2 hover:ring-purple-500/50'
                         }`}
                     >
-                      {title || 'EXQUISITE EVENT'}
-                    </h1>
-                    {selectedElement === 'title' && (
-                      <div
-                        onMouseDown={(e) => handleResizeStart(e, 'title')}
-                        onTouchStart={(e) => handleResizeStart(e, 'title')}
-                        className="absolute bottom-0 right-0 w-3 h-3 bg-purple-600 border border-white rounded-full cursor-se-resize z-30"
-                        style={{ transform: 'translate(50%, 50%)' }}
-                      />
-                    )}
-                  </div>
+                      <h1
+                        style={{
+                          color: titleColor,
+                          fontSize: `${titleSize}px`,
+                          textAlign: titleAlign,
+                          fontFamily: getFontFamily(titleFont)
+                        }}
+                        className={`font-black tracking-tight leading-none uppercase break-words w-full select-none ${titleFont} ${activeTemplate === 'cyberpunk' ? 'text-shadow-neon' : ''
+                          } ${activeTemplate === 'retro' ? 'drop-shadow-[3px_3px_0px_#000000]' : ''
+                          } ${activeTemplate === 'formal-gold' ? 'drop-shadow-[1px_1px_1px_rgba(0,0,0,0.5)]' : ''
+                          }`}
+                      >
+                        {title || 'EXQUISITE EVENT'}
+                      </h1>
+                      {selectedElement === 'title' && (
+                        <div
+                          onMouseDown={(e) => handleResizeStart(e, 'title')}
+                          onTouchStart={(e) => handleResizeStart(e, 'title')}
+                          className="absolute bottom-0 right-0 w-3 h-3 bg-purple-600 border border-white rounded-full cursor-se-resize z-30"
+                          style={{ transform: 'translate(50%, 50%)' }}
+                        />
+                      )}
+                    </div>
+                  )}
 
                   {/* Event Description */}
                   {showDesc && (
                     <div
                       onMouseDown={(e) => handleElementDragStart(e, 'desc')}
                       onTouchStart={(e) => handleElementDragStart(e, 'desc')}
+                      onContextMenu={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        setContextMenu({
+                          x: e.clientX,
+                          y: e.clientY,
+                          visible: true,
+                          targetType: 'desc'
+                        })
+                      }}
                       onClick={(e) => {
                         e.stopPropagation()
                         setSelectedElement('desc')
@@ -1735,67 +1809,89 @@ export default function PosterDesigner({
                   )}
 
                   {/* Event Logistics (Time / Venue) */}
-                  <div
-                    onMouseDown={(e) => handleElementDragStart(e, 'details')}
-                    onTouchStart={(e) => handleElementDragStart(e, 'details')}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setSelectedElement('details')
-                      setSelectedStickerId(null)
-                    }}
-                    style={{
-                      backgroundColor: detailsBg,
-                      borderColor: detailsBorderColor,
-                      color: detailsColor,
-                      position: 'absolute',
-                      left: `${detailsX}%`,
-                      top: `${detailsY}%`,
-                      transform: 'translate(-50%, -50%)',
-                      cursor: 'grab',
-                      width: '65%',
-                      zIndex: 10
-                    }}
-                    className={`rounded-xl p-3 border backdrop-blur-md space-y-1.5 text-left transition-all ${selectedElement === 'details'
-                        ? 'border-dashed border-white ring-2 ring-white/30'
-                        : `hover:border-zinc-200 dark:hover:border-zinc-800 hover:ring-2 hover:ring-purple-500/50 ${activeTemplate === 'retro' ? 'border-2 border-black shadow-[3px_3px_0px_#000000] text-black font-semibold' : ''
-                        }`
-                      }`}
-                  >
-                    <>
-                      <div className="flex items-center gap-1.5 pointer-events-none">
-                        <Calendar size={12} className="shrink-0 opacity-80" style={{ color: dateColor }} />
-                        <span style={{ color: dateColor, fontSize: `${detailsSize}px`, fontFamily: getFontFamily(dateFont) }} className={`leading-none truncate ${dateFont}`}>
-                          {getFormattedDate(eventDate)}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1.5 pointer-events-none">
-                        <Clock size={12} className="shrink-0 opacity-80" style={{ color: timeColor }} />
-                        <span style={{ color: timeColor, fontSize: `${detailsSize}px`, fontFamily: getFontFamily(timeFont) }} className={`leading-none truncate ${timeFont}`}>
-                          {eventTime || '1:30 PM'}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1.5 pointer-events-none">
-                        <MapPin size={12} className="shrink-0 opacity-80" style={{ color: venueColor }} />
-                        <span style={{ color: venueColor, fontSize: `${detailsSize}px`, fontFamily: getFontFamily(venueFont) }} className={`leading-none truncate ${venueFont}`}>
-                          {location || 'Venue: TBA'}
-                        </span>
-                      </div>
-                    </>
-                    {selectedElement === 'details' && (
-                      <div
-                        onMouseDown={(e) => handleResizeStart(e, 'details')}
-                        onTouchStart={(e) => handleResizeStart(e, 'details')}
-                        className="absolute bottom-0 right-0 w-3 h-3 bg-purple-600 border border-white rounded-full cursor-se-resize z-30"
-                        style={{ transform: 'translate(50%, 50%)' }}
-                      />
-                    )}
-                  </div>
+                  {showDetails && (
+                    <div
+                      onMouseDown={(e) => handleElementDragStart(e, 'details')}
+                      onTouchStart={(e) => handleElementDragStart(e, 'details')}
+                      onContextMenu={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        setContextMenu({
+                          x: e.clientX,
+                          y: e.clientY,
+                          visible: true,
+                          targetType: 'details'
+                        })
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setSelectedElement('details')
+                        setSelectedStickerId(null)
+                      }}
+                      style={{
+                        backgroundColor: detailsBg,
+                        borderColor: detailsBorderColor,
+                        color: detailsColor,
+                        position: 'absolute',
+                        left: `${detailsX}%`,
+                        top: `${detailsY}%`,
+                        transform: 'translate(-50%, -50%)',
+                        cursor: 'grab',
+                        width: '65%',
+                        zIndex: 10
+                      }}
+                      className={`rounded-xl p-3 border backdrop-blur-md space-y-1.5 text-left transition-all ${selectedElement === 'details'
+                          ? 'border-dashed border-white ring-2 ring-white/30'
+                          : `hover:border-zinc-200 dark:hover:border-zinc-800 hover:ring-2 hover:ring-purple-500/50 ${activeTemplate === 'retro' ? 'border-2 border-black shadow-[3px_3px_0px_#000000] text-black font-semibold' : ''
+                          }`
+                        }`}
+                    >
+                      <>
+                        <div className="flex items-center gap-1.5 pointer-events-none">
+                          <Calendar size={12} className="shrink-0 opacity-80" style={{ color: dateColor }} />
+                          <span style={{ color: dateColor, fontSize: `${detailsSize}px`, fontFamily: getFontFamily(dateFont) }} className={`leading-none truncate ${dateFont}`}>
+                            {getFormattedDate(eventDate)}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1.5 pointer-events-none">
+                          <Clock size={12} className="shrink-0 opacity-80" style={{ color: timeColor }} />
+                          <span style={{ color: timeColor, fontSize: `${detailsSize}px`, fontFamily: getFontFamily(timeFont) }} className={`leading-none truncate ${timeFont}`}>
+                            {eventTime || '1:30 PM'}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1.5 pointer-events-none">
+                          <MapPin size={12} className="shrink-0 opacity-80" style={{ color: venueColor }} />
+                          <span style={{ color: venueColor, fontSize: `${detailsSize}px`, fontFamily: getFontFamily(venueFont) }} className={`leading-none truncate ${venueFont}`}>
+                            {location || 'Venue: TBA'}
+                          </span>
+                        </div>
+                      </>
+                      {selectedElement === 'details' && (
+                        <div
+                          onMouseDown={(e) => handleResizeStart(e, 'details')}
+                          onTouchStart={(e) => handleResizeStart(e, 'details')}
+                          className="absolute bottom-0 right-0 w-3 h-3 bg-purple-600 border border-white rounded-full cursor-se-resize z-30"
+                          style={{ transform: 'translate(50%, 50%)' }}
+                        />
+                      )}
+                    </div>
+                  )}
 
                   {/* Speaker Badge */}
                   {showSpeaker && (
                     <div
                       onMouseDown={(e) => handleElementDragStart(e, 'speaker')}
                       onTouchStart={(e) => handleElementDragStart(e, 'speaker')}
+                      onContextMenu={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        setContextMenu({
+                          x: e.clientX,
+                          y: e.clientY,
+                          visible: true,
+                          targetType: 'speaker'
+                        })
+                      }}
                       onClick={(e) => {
                         e.stopPropagation()
                         setSelectedElement('speaker')
@@ -1856,6 +1952,16 @@ export default function PosterDesigner({
                     <div
                       onMouseDown={(e) => handleElementDragStart(e, 'qr')}
                       onTouchStart={(e) => handleElementDragStart(e, 'qr')}
+                      onContextMenu={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        setContextMenu({
+                          x: e.clientX,
+                          y: e.clientY,
+                          visible: true,
+                          targetType: 'qr'
+                        })
+                      }}
                       onClick={(e) => {
                         e.stopPropagation()
                         setSelectedElement('qr')
@@ -2025,7 +2131,17 @@ export default function PosterDesigner({
                     </span>
                     <div className="space-y-3.5">
                       <div className="space-y-1">
-                        <label className="text-[10px] font-mono uppercase text-zinc-400">Club Host</label>
+                        <div className="flex justify-between items-center">
+                          <label className="text-[10px] font-mono uppercase text-zinc-400">Club Host</label>
+                          <label className="flex items-center gap-1.5 cursor-pointer text-[9px] font-mono text-zinc-500">
+                            <input
+                              type="checkbox"
+                              checked={showClub}
+                              onChange={e => setShowClub(e.target.checked)}
+                              className="w-3 h-3 rounded"
+                            /> Show on Poster
+                          </label>
+                        </div>
                         <input
                           type="text"
                           value={clubName}
@@ -2034,7 +2150,17 @@ export default function PosterDesigner({
                         />
                       </div>
                       <div className="space-y-1">
-                        <label className="text-[10px] font-mono uppercase text-zinc-400">Event Title</label>
+                        <div className="flex justify-between items-center">
+                          <label className="text-[10px] font-mono uppercase text-zinc-400">Event Title</label>
+                          <label className="flex items-center gap-1.5 cursor-pointer text-[9px] font-mono text-zinc-500">
+                            <input
+                              type="checkbox"
+                              checked={showTitle}
+                              onChange={e => setShowTitle(e.target.checked)}
+                              className="w-3 h-3 rounded"
+                            /> Show on Poster
+                          </label>
+                        </div>
                         <input
                           type="text"
                           value={title}
@@ -2061,33 +2187,46 @@ export default function PosterDesigner({
                           className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-1.5 text-xs outline-none focus:ring-1 focus:ring-purple-500 resize-none font-light"
                         />
                       </div>
-                      <div className="grid grid-cols-3 gap-2">
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-mono uppercase text-zinc-400">Date</label>
-                          <input
-                            type="text"
-                            value={eventDate}
-                            onChange={e => setEventDate(e.target.value)}
-                            className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 py-1.5 text-xs outline-none focus:ring-1 focus:ring-purple-500"
-                          />
+                      <div className="space-y-1.5">
+                        <div className="flex justify-between items-center">
+                          <label className="text-[10px] font-mono uppercase text-zinc-400">Logistics (Date/Time/Venue)</label>
+                          <label className="flex items-center gap-1.5 cursor-pointer text-[9px] font-mono text-zinc-500">
+                            <input
+                              type="checkbox"
+                              checked={showDetails}
+                              onChange={e => setShowDetails(e.target.checked)}
+                              className="w-3 h-3 rounded"
+                            /> Show on Poster
+                          </label>
                         </div>
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-mono uppercase text-zinc-400">Time</label>
-                          <input
-                            type="text"
-                            value={eventTime}
-                            onChange={e => setEventTime(e.target.value)}
-                            className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 py-1.5 text-xs outline-none focus:ring-1 focus:ring-purple-500"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-mono uppercase text-zinc-400">Venue</label>
-                          <input
-                            type="text"
-                            value={location}
-                            onChange={e => setLocation(e.target.value)}
-                            className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 py-1.5 text-xs outline-none focus:ring-1 focus:ring-purple-500"
-                          />
+                        <div className="grid grid-cols-3 gap-2">
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-mono uppercase text-zinc-400">Date</label>
+                            <input
+                              type="text"
+                              value={eventDate}
+                              onChange={e => setEventDate(e.target.value)}
+                              className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 py-1.5 text-xs outline-none focus:ring-1 focus:ring-purple-500"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-mono uppercase text-zinc-400">Time</label>
+                            <input
+                              type="text"
+                              value={eventTime}
+                              onChange={e => setEventTime(e.target.value)}
+                              className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 py-1.5 text-xs outline-none focus:ring-1 focus:ring-purple-500"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-mono uppercase text-zinc-400">Venue</label>
+                            <input
+                              type="text"
+                              value={location}
+                              onChange={e => setLocation(e.target.value)}
+                              className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 py-1.5 text-xs outline-none focus:ring-1 focus:ring-purple-500"
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -2691,6 +2830,38 @@ export default function PosterDesigner({
             </div>
 
           </div>
+        </div>
+      )}
+      {/* Context Menu */}
+      {contextMenu && contextMenu.visible && (
+        <div
+          style={{
+            position: 'fixed',
+            left: `${contextMenu.x}px`,
+            top: `${contextMenu.y}px`,
+            zIndex: 100
+          }}
+          className="bg-white/90 dark:bg-zinc-950/90 backdrop-blur-md border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-xl py-1 min-w-[160px] animate-in fade-in zoom-in-95 duration-100"
+        >
+          <button
+            type="button"
+            onClick={() => {
+              const { targetType, targetId } = contextMenu
+              if (targetType === 'club') setShowClub(false)
+              else if (targetType === 'title') setShowTitle(false)
+              else if (targetType === 'desc') setShowDesc(false)
+              else if (targetType === 'details') setShowDetails(false)
+              else if (targetType === 'qr') setShowQr(false)
+              else if (targetType === 'speaker') setShowSpeaker(false)
+              else if (targetType === 'sticker' && targetId) deleteSticker(targetId)
+              setContextMenu(null)
+              toast.success(`Removed ${targetType} element from poster.`)
+            }}
+            className="w-full text-left px-3.5 py-2 text-xs text-red-600 dark:text-red-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 flex items-center gap-2 font-medium transition-colors"
+          >
+            <Trash2 size={14} />
+            Delete Element
+          </button>
         </div>
       )}
     </>
