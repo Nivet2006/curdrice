@@ -6,6 +6,8 @@ import { withDynamicEventStatus } from '@/lib/event-utils'
 import { Radio } from 'lucide-react'
 import Link from 'next/link'
 import { EasterEggBADGE } from '@/components/student/EasterEggBADGE'
+import { GamificationSection } from '@/components/student/GamificationSection'
+import { getUserGamificationData, getLeaderboard } from '@/lib/actions/gamification-actions'
 
 export default async function StudentDashboard() {
   const supabase = await createClient()
@@ -14,7 +16,7 @@ export default async function StudentDashboard() {
   const eventColumns = 'id, title, description, club_name, location, event_date, registration_deadline, max_capacity, status, banner_url, approval_status, discussion_enabled, thread_mode, created_by, created_at, feedback_open, is_public'
 
   // Run all queries in parallel
-  const [profileRes, registrationsRes, allEventsRes] = await Promise.all([
+  const [profileRes, registrationsRes, allEventsRes, gamificationData, leaderboardData] = await Promise.all([
     supabase.from('profiles').select('id, full_name, usn, department, semester, year, username, role').eq('id', user?.id).single(),
     supabase
       .from('registrations')
@@ -25,6 +27,8 @@ export default async function StudentDashboard() {
       .select(eventColumns)
       .eq('approval_status', 'approved')
       .order('event_date', { ascending: true }),
+    getUserGamificationData(user?.id || ''),
+    getLeaderboard()
   ])
 
   const profile = profileRes.data
@@ -86,6 +90,17 @@ export default async function StudentDashboard() {
             })}
           </div>
         )}
+      </div>
+
+      <div className="mb-12">
+        <GamificationSection
+          currentUserId={user?.id || ''}
+          points={gamificationData.points}
+          rank={gamificationData.rank}
+          history={gamificationData.history as any}
+          badges={gamificationData.badges as any}
+          leaderboard={(leaderboardData.leaderboard || []) as any}
+        />
       </div>
 
       <div>
