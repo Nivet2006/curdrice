@@ -40,7 +40,7 @@ export function ShieldLoader({
 
     const interval = setInterval(() => {
       setStep((prev) => (prev < steps.length - 1 ? prev + 1 : prev))
-    }, 900)
+    }, 150)
 
     return () => {
       observer.disconnect()
