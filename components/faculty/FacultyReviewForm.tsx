@@ -6,11 +6,13 @@ import { CheckCircle2, XCircle, Send, ShieldCheck } from 'lucide-react'
 export function FacultyReviewForm({ 
   onAction, 
   loading, 
-  roleLabel 
+  roleLabel,
+  onBypass
 }: { 
   onAction: (decision: 'approve' | 'reject', feedback: string) => Promise<void>; 
   loading: boolean;
   roleLabel: string;
+  onBypass?: (code: string) => Promise<void>;
 }) {
   const [decision, setDecision] = useState<'approve' | 'reject' | null>(null)
   const [feedback, setFeedback] = useState('')
@@ -54,14 +56,32 @@ export function FacultyReviewForm({
         />
       </div>
 
-      <button
-        onClick={() => { if(decision) onAction(decision, feedback); }}
-        disabled={loading || !decision}
-        className="w-full bg-black dark:bg-white text-white dark:text-black py-5 rounded-3xl font-black uppercase tracking-[0.2em] text-xs flex items-center justify-center gap-3 hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-all disabled:opacity-20 active:scale-95 shadow-lg"
-      >
-        {loading ? 'Processing Document...' : 'Submit Verification'}
-        <Send size={16} />
-      </button>
+      <div className="space-y-3">
+        <button
+          onClick={() => { if(decision) onAction(decision, feedback); }}
+          disabled={loading || !decision}
+          className="w-full bg-black dark:bg-white text-white dark:text-black py-5 rounded-3xl font-black uppercase tracking-[0.2em] text-xs flex items-center justify-center gap-3 hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-all disabled:opacity-20 active:scale-95 shadow-lg"
+        >
+          {loading ? 'Processing Document...' : 'Submit Verification'}
+          <Send size={16} />
+        </button>
+
+        {onBypass && (
+          <button
+            type="button"
+            onClick={async () => {
+              const code = prompt("Enter Admin TOTP code to bypass all approvals:")
+              if (code) {
+                await onBypass(code);
+              }
+            }}
+            disabled={loading}
+            className="w-full bg-amber-500 hover:bg-amber-600 text-white py-5 rounded-3xl font-black uppercase tracking-[0.2em] text-xs flex items-center justify-center gap-3 transition-all disabled:opacity-20 active:scale-95 shadow-lg"
+          >
+            Bypass (Admin TOTP)
+          </button>
+        )}
+      </div>
 
       <div className="p-4 bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800 italic text-[10px] text-zinc-500 dark:text-zinc-400 leading-relaxed transition-colors">
         <strong className="dark:text-zinc-200">Digital Signature:</strong> By clicking submit, you are providing a formal departmental authorization for the proposed activity.

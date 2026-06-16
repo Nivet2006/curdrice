@@ -16,11 +16,25 @@ export function HODActionWrapper({ eventId }: { eventId: string }) {
     }
   }
 
+  async function handleBypass(code: string) {
+    setLoading(true)
+    const { bypassEventApprovalAction } = await import('@/lib/actions/bypass')
+    const res = await bypassEventApprovalAction(eventId, code)
+    if (res?.error) {
+      alert(res.error)
+      setLoading(false)
+    } else {
+      alert("Event bypassed and approved successfully!")
+      window.location.href = '/hod/dashboard'
+    }
+  }
+
   return (
     <FacultyReviewForm 
       onAction={handleAction} 
       loading={loading} 
       roleLabel="HOD" 
+      onBypass={handleBypass}
     />
   )
 }

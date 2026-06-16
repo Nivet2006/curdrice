@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { createDraftEvent } from '@/lib/actions/cc-events'
 import Link from 'next/link'
-import { ArrowLeft, Save, Send } from 'lucide-react'
+import { ArrowLeft, Save, Send, Sparkles } from 'lucide-react'
 import { FeedbackFormBuilder, Question } from '@/components/cc/FeedbackFormBuilder'
 import { EventBackgroundCustomizer } from '@/components/shared/EventBackgroundCustomizer'
 import PosterDesigner from '@/components/shared/PosterDesigner'
@@ -45,6 +45,135 @@ export default function CCCreateEventPage() {
 
   const toggleSem = (s: number) => setSemesters(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s])
   const toggleYear = (y: number) => setYears(prev => prev.includes(y) ? prev.filter(x => x !== y) : [...prev, y])
+
+  const handleRandomPopulate = async () => {
+    const now = new Date()
+    
+    const startDate = new Date(now)
+    startDate.setDate(now.getDate() + 7)
+    startDate.setHours(10, 0, 0, 0)
+    
+    const endDate = new Date(startDate)
+    endDate.setHours(16, 0, 0, 0)
+    
+    const deadlineDate = new Date(now)
+    deadlineDate.setDate(now.getDate() + 5)
+    deadlineDate.setHours(23, 59, 0, 0)
+    
+    const formatDate = (d: Date) => {
+      const pad = (n: number) => n.toString().padStart(2, '0')
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+    }
+    
+    const startStr = formatDate(startDate)
+    const endStr = formatDate(endDate)
+    const deadlineStr = formatDate(deadlineDate)
+    
+    setEventDate(startStr)
+    setEndTime(endStr)
+    setDeadline(deadlineStr)
+    
+    const templates = [
+      {
+        title: 'Quantum Hackathon 2026',
+        club: 'Coding Club',
+        desc: 'Join us for a 24-hour sprint developing algorithms and applications utilizing quantum computing frameworks. Mentorship will be provided by top experts in the field.',
+        type: 'hackathon',
+        banner: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=800'
+      },
+      {
+        title: 'RoboWars Arena Clash',
+        club: 'Robotics Club',
+        desc: 'Experience high-octane mechanical combat! Teams from across departments design and battle custom combat robots in our custom-built arena.',
+        type: 'general',
+        banner: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=800'
+      },
+      {
+        title: 'PixelPerfect UI/UX Design Jam',
+        club: 'Design Studio',
+        desc: 'A fast-paced interactive design challenge focusing on accessibility, micro-interactions, and premium aesthetics. Create a stunning case study in 6 hours.',
+        type: 'general',
+        banner: 'https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?w=800'
+      },
+      {
+        title: 'Full-Stack Next.js 15 Masterclass',
+        club: 'Coding Club',
+        desc: 'An intensive hands-on workshop covering Server Actions, partial pre-rendering, advanced caching mechanisms, and building production-grade web applications.',
+        type: 'general',
+        banner: 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=800'
+      }
+    ]
+    
+    const randomTemplate = templates[Math.floor(Math.random() * templates.length)]
+    
+    setTitle(randomTemplate.title)
+    setClubName(randomTemplate.club)
+    setDescription(randomTemplate.desc)
+    setEventType(randomTemplate.type)
+    setBannerUrl(randomTemplate.banner)
+    
+    if (randomTemplate.type === 'hackathon') {
+      setTeamFormationEnabled(true)
+      setMinTeamMembers(2)
+      setMaxTeamMembers(Math.floor(Math.random() * 3) + 4)
+    } else {
+      setTeamFormationEnabled(false)
+    }
+    
+    const possibleSems = [1, 2, 3, 4, 5, 6, 7, 8]
+    const possibleYears = [1, 2, 3, 4]
+    
+    if (Math.random() > 0.4) {
+      const selectedSems = possibleSems.sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 4) + 1)
+      setSemesters(selectedSems.sort((a,b) => a-b))
+    } else {
+      setSemesters([])
+    }
+    
+    if (Math.random() > 0.4) {
+      const selectedYears = possibleYears.sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 2) + 1)
+      setYears(selectedYears.sort((a,b) => a-b))
+    } else {
+      setYears([])
+    }
+    
+    setIsPublic(Math.random() > 0.5)
+    
+    const capacityInput = document.querySelector('input[name="capacity"]') as HTMLInputElement
+    const waitlistInput = document.querySelector('input[name="waitlistMax"]') as HTMLInputElement
+    if (capacityInput) {
+      capacityInput.value = (Math.floor(Math.random() * 3) * 50 + 50).toString()
+    }
+    if (waitlistInput) {
+      waitlistInput.value = (Math.floor(Math.random() * 3) * 10 + 10).toString()
+    }
+    
+    const feedbackTemplates: Question[] = [
+      { id: uuidv4(), type: 'rating', label: 'Overall rating of the event', required: true },
+      { id: uuidv4(), type: 'long_text', label: 'What did you like the most about the event?', required: false },
+      { id: uuidv4(), type: 'multiple_choice', label: 'Was the content relevant to your studies?', options: ['Highly Relevant', 'Somewhat Relevant', 'Not Relevant'], required: true },
+      { id: uuidv4(), type: 'boolean', label: 'Would you attend future events by this club?', required: true }
+    ]
+    setQuestions(feedbackTemplates)
+    
+    try {
+      const { getVenuesWithStatus } = await import('@/lib/actions/venue-actions')
+      const res = await getVenuesWithStatus(startStr, endStr)
+      if (res.venues && res.venues.length > 0) {
+        const availableVenues = res.venues.filter(v => v.status === 'available')
+        if (availableVenues.length > 0) {
+          const chosen = availableVenues[0]
+          setSelectedVenueId(chosen.id)
+          setLocation(chosen.name)
+          toast.success(`Populated details & selected venue: ${chosen.name}`)
+          return
+        }
+      }
+    } catch (e) {
+      console.error(e)
+    }
+    toast.success('Populated all details randomly!')
+  }
 
   async function handleAction(form: HTMLFormElement, isFinalSubmit: boolean) {
     setError(null)
@@ -95,9 +224,19 @@ export default function CCCreateEventPage() {
       </div>
 
       <form onSubmit={(e) => e.currentTarget.setAttribute('data-submit-type', 'draft')} className="space-y-12">
-        <header>
-          <h1 className="text-4xl font-bold tracking-tight text-[#0a0a0a]">Proposal Draft</h1>
-          <p className="text-[#555] mt-2">Initialize your club event. This draft will be reviewed by Faculty (Teacher & HOD) before being published to students.</p>
+        <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-4xl font-bold tracking-tight text-[#0a0a0a]">Proposal Draft</h1>
+            <p className="text-[#555] mt-2">Initialize your club event. This draft will be reviewed by Faculty (Teacher & HOD) before being published to students.</p>
+          </div>
+          <button
+            type="button"
+            onClick={handleRandomPopulate}
+            className="shrink-0 flex items-center gap-2 px-5 py-3 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 rounded-2xl font-bold text-xs uppercase tracking-wider transition-all duration-200 active:scale-95 shadow-sm"
+          >
+            <Sparkles size={14} className="text-amber-600 animate-pulse" />
+            Randomly Populate
+          </button>
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">

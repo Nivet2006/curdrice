@@ -73,6 +73,7 @@ export function Navbar({ role, name }: { role?: Role; name?: string }) {
     ] : []),
     ...(role === 'teacher' ? [
       { href: '/teacher/events/create', label: 'Create Event', icon: Plus },
+      { href: '/teacher/hackathon', label: 'Judge Panel', icon: Trophy },
     ] : []),
     ...(role === 'hod' ? [
       { href: '/hod/approvals', label: 'Approvals', icon: ClipboardList },

@@ -263,7 +263,18 @@ export default async function EventDetailPage({
 
         {/* Hackathon Team Formation Portal */}
         {event.event_type === 'hackathon' && event.team_formation_enabled && isRegistered && (
-          <div className="mt-12">
+          <div className="mt-12 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className={`text-xl font-black uppercase tracking-tight ${bg.textClass}`}>
+                Hackathon Hub
+              </h2>
+              <a
+                href={`/student/events/${id}/showcase`}
+                className="flex items-center gap-1.5 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-xs font-mono font-bold uppercase rounded-xl transition-all"
+              >
+                🏆 View Showcase & Scores
+              </a>
+            </div>
             <TeamFormationPortal eventId={id} currentUserId={user?.id || ''} />
           </div>
         )}
