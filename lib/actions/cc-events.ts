@@ -34,6 +34,13 @@ export async function createDraftEvent(formData: FormData) {
   const feedback_config = JSON.parse(formData.get('feedbackConfig') as string || '[]')
   const is_public = formData.get('isPublic') === 'true'
 
+  const event_type = (formData.get('eventType') as string) || 'general'
+  const team_formation_enabled = formData.get('teamFormationEnabled') === 'true'
+  const minCapStr = formData.get('minTeamMembers') as string
+  const min_team_members = minCapStr ? parseInt(minCapStr) : 2
+  const maxCapStr = formData.get('maxTeamMembers') as string
+  const max_team_members = maxCapStr ? parseInt(maxCapStr) : 4
+
   if (venueId) {
     const { data: venue } = await supabase.from('venues').select('name').eq('id', venueId).single()
     if (venue) location = venue.name
@@ -114,7 +121,11 @@ export async function createDraftEvent(formData: FormData) {
     targeted_department,
     feedback_config,
     is_public,
-    status: 'upcoming'
+    status: 'upcoming',
+    event_type,
+    team_formation_enabled,
+    min_team_members,
+    max_team_members
   }
 
   if (pregeneratedId) {
@@ -210,6 +221,13 @@ export async function updateEventDraft(id: string, formData: FormData) {
   const feedback_config = JSON.parse(formData.get('feedbackConfig') as string || '[]')
   const is_public = formData.get('isPublic') === 'true'
 
+  const event_type = (formData.get('eventType') as string) || 'general'
+  const team_formation_enabled = formData.get('teamFormationEnabled') === 'true'
+  const minCapStr = formData.get('minTeamMembers') as string
+  const min_team_members = minCapStr ? parseInt(minCapStr) : 2
+  const maxCapStr = formData.get('maxTeamMembers') as string
+  const max_team_members = maxCapStr ? parseInt(maxCapStr) : 4
+
   if (venueId) {
     const { data: venue } = await supabase.from('venues').select('name').eq('id', venueId).single()
     if (venue) location = venue.name
@@ -301,7 +319,11 @@ export async function updateEventDraft(id: string, formData: FormData) {
     targeted_department,
     feedback_config,
     is_public,
-    rejection_data: []
+    rejection_data: [],
+    event_type,
+    team_formation_enabled,
+    min_team_members,
+    max_team_members
   }).eq('id', id).eq('created_by', user.id)
 
   if (eventError) return { error: eventError.message }
