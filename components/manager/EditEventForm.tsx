@@ -34,6 +34,11 @@ export function EditEventForm({ event, constraints }: { event: Event, constraint
   const [bannerUrl, setBannerUrl] = useState(event.banner_url || '')
   const [eventDate, setEventDate] = useState(formatForInput(event.event_date))
 
+  const [eventType, setEventType] = useState(event.event_type || 'general')
+  const [teamFormationEnabled, setTeamFormationEnabled] = useState(event.team_formation_enabled || false)
+  const [minTeamMembers, setMinTeamMembers] = useState(event.min_team_members || 2)
+  const [maxTeamMembers, setMaxTeamMembers] = useState(event.max_team_members || 4)
+
   useEffect(() => {
     async function loadTeachers() {
       const supabase = createClient()
@@ -124,6 +129,61 @@ export function EditEventForm({ event, constraints }: { event: Event, constraint
                 </select>
               </div>
             </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="w-full flex flex-col gap-1">
+                <label className="text-xs font-mono text-[#555555] uppercase tracking-widest">Event Type</label>
+                <select
+                  name="eventType"
+                  value={eventType}
+                  onChange={e => setEventType(e.target.value as 'general' | 'hackathon')}
+                  className="rounded-xl border border-[#d0d0d0] bg-white px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0a0a0a]"
+                >
+                  <option value="general">General (Standard Event)</option>
+                  <option value="hackathon">Hackathon (Requires Team Portal)</option>
+                </select>
+              </div>
+            </div>
+
+            {eventType === 'hackathon' && (
+              <div className="border border-[#e0e0e0] rounded-2xl p-6 bg-zinc-50/50 dark:bg-zinc-900/30 space-y-4">
+                <p className="font-mono text-[10px] uppercase text-zinc-400 tracking-wider font-bold">Hackathon Team Formation Portal Configuration</p>
+                <div className="flex items-center gap-3">
+                  <input
+                    id="teamFormationEnabled"
+                    name="teamFormationEnabled"
+                    type="checkbox"
+                    checked={teamFormationEnabled}
+                    onChange={e => setTeamFormationEnabled(e.target.checked)}
+                    className="w-4 h-4 rounded border-zinc-300 text-black focus:ring-black cursor-pointer"
+                  />
+                  <label htmlFor="teamFormationEnabled" className="text-sm font-semibold text-black dark:text-zinc-200 select-none cursor-pointer">
+                    Enable Student Team Formation Portal for this Hackathon
+                  </label>
+                </div>
+
+                {teamFormationEnabled && (
+                  <div className="grid grid-cols-2 gap-4 pt-2">
+                    <Input
+                      label="Minimum Team Size *"
+                      name="minTeamMembers"
+                      type="number"
+                      min="1"
+                      value={minTeamMembers}
+                      onChange={e => setMinTeamMembers(parseInt(e.target.value) || 2)}
+                    />
+                    <Input
+                      label="Maximum Team Size *"
+                      name="maxTeamMembers"
+                      type="number"
+                      min="1"
+                      value={maxTeamMembers}
+                      onChange={e => setMaxTeamMembers(parseInt(e.target.value) || 4)}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className="border border-[#e0e0e0] rounded-2xl p-6 bg-zinc-50/50 dark:bg-zinc-900/30 space-y-4">
               <div className="flex items-center gap-3">

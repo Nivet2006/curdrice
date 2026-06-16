@@ -38,6 +38,13 @@ export async function createFacultyEvent(formData: FormData) {
   const guest_name = (formData.get('guestName') as string)?.trim() || null
   const is_public = formData.get('isPublic') === 'true'
   const is_compulsory = formData.get('isCompulsory') === 'true'
+
+  const event_type = (formData.get('eventType') as string) || 'general'
+  const team_formation_enabled = formData.get('teamFormationEnabled') === 'true'
+  const minCapStr = formData.get('minTeamMembers') as string
+  const min_team_members = minCapStr ? parseInt(minCapStr) : 2
+  const maxCapStr = formData.get('maxTeamMembers') as string
+  const max_team_members = maxCapStr ? parseInt(maxCapStr) : 4
   const locationLatStr = formData.get('locationLat') as string | null
   const locationLngStr = formData.get('locationLng') as string | null
   const location_lat = locationLatStr ? parseFloat(locationLatStr) : null
@@ -152,6 +159,10 @@ export async function createFacultyEvent(formData: FormData) {
     assigned_faculty_id: user.id,
     is_compulsory,
     ...(location_lat !== null && location_lng !== null ? { location_lat, location_lng } : {}),
+    event_type,
+    team_formation_enabled,
+    min_team_members,
+    max_team_members
   }
 
   if (pregeneratedId) {

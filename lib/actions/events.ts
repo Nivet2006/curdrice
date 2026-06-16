@@ -32,6 +32,13 @@ export async function createEvent(formData: FormData) {
   const allow_open_registration = formData.get('allowOpenRegistration') === 'true'
   const assigned_faculty_id = (formData.get('assignedFacultyId') as string) || null
 
+  const event_type = (formData.get('eventType') as string) || 'general'
+  const team_formation_enabled = formData.get('teamFormationEnabled') === 'true'
+  const minCapStr = formData.get('minTeamMembers') as string
+  const min_team_members = minCapStr ? parseInt(minCapStr) : 2
+  const maxCapStr = formData.get('maxTeamMembers') as string
+  const max_team_members = maxCapStr ? parseInt(maxCapStr) : 4
+
   if (venueId) {
     const { data: venue } = await supabase.from('venues').select('name').eq('id', venueId).single()
     if (venue) location = venue.name
@@ -107,7 +114,11 @@ export async function createEvent(formData: FormData) {
     allow_open_registration,
     assigned_faculty_id,
     approval_status: profile?.role === 'teacher' ? 'pending_hod' : 'draft',
-    targeted_department: profile?.role === 'teacher' ? (profile?.department || null) : null
+    targeted_department: profile?.role === 'teacher' ? (profile?.department || null) : null,
+    event_type,
+    team_formation_enabled,
+    min_team_members,
+    max_team_members
   }
 
   if (pregeneratedId) {
@@ -167,6 +178,13 @@ export async function updateEvent(eventId: string, formData: FormData) {
   const is_compulsory = formData.get('isCompulsory') === 'true'
   const allow_open_registration = formData.get('allowOpenRegistration') === 'true'
   const assigned_faculty_id = (formData.get('assignedFacultyId') as string) || null
+
+  const event_type = (formData.get('eventType') as string) || 'general'
+  const team_formation_enabled = formData.get('teamFormationEnabled') === 'true'
+  const minCapStr = formData.get('minTeamMembers') as string
+  const min_team_members = minCapStr ? parseInt(minCapStr) : 2
+  const maxCapStr = formData.get('maxTeamMembers') as string
+  const max_team_members = maxCapStr ? parseInt(maxCapStr) : 4
 
   if (venueId) {
     const { data: venue } = await supabase.from('venues').select('name').eq('id', venueId).single()
@@ -239,7 +257,11 @@ export async function updateEvent(eventId: string, formData: FormData) {
     event_category,
     is_compulsory,
     allow_open_registration,
-    assigned_faculty_id
+    assigned_faculty_id,
+    event_type,
+    team_formation_enabled,
+    min_team_members,
+    max_team_members
   }).eq('id', eventId)
 
   if (updateError) return { error: updateError.message }

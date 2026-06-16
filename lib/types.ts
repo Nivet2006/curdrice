@@ -71,6 +71,10 @@ export interface Event {
   created_by: string
   created_at: string
   custom_background?: string | null
+  event_type?: 'general' | 'hackathon'
+  team_formation_enabled?: boolean
+  min_team_members?: number | null
+  max_team_members?: number | null
 }
 
 export interface Report {
