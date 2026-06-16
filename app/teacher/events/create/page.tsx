@@ -41,6 +41,11 @@ export default function TeacherCreateEventPage() {
   const [selectedCategory, setSelectedCategory] = useState('guest_lecture')
   const [visitLocation, setVisitLocation] = useState<{ name: string; displayName: string; lat: number; lng: number } | null>(null)
 
+  const [eventType, setEventType] = useState('general')
+  const [teamFormationEnabled, setTeamFormationEnabled] = useState(false)
+  const [minTeamMembers, setMinTeamMembers] = useState(2)
+  const [maxTeamMembers, setMaxTeamMembers] = useState(4)
+
   // Poster Lab specific states
   const [eventId] = useState(() => uuidv4())
   const [title, setTitle] = useState('')
@@ -392,6 +397,69 @@ export default function TeacherCreateEventPage() {
                   ))}
                 </select>
               </div>
+
+              {/* Event Type selection */}
+              <div>
+                <label className="text-[10px] font-mono uppercase text-zinc-400 mb-2 block">
+                  Event Type
+                </label>
+                <select
+                  name="eventType"
+                  value={eventType}
+                  onChange={e => setEventType(e.target.value)}
+                  className="w-full rounded-xl border border-[#d0d0d0] dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-2.5 text-sm focus:ring-2 focus:ring-black outline-none dark:text-white"
+                >
+                  <option value="general">General (Standard Event)</option>
+                  <option value="hackathon">Hackathon (Requires Team Portal)</option>
+                </select>
+              </div>
+
+              {/* Hackathon Settings */}
+              {eventType === 'hackathon' && (
+                <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800 space-y-4">
+                  <p className="font-mono text-[9px] uppercase text-zinc-400 tracking-wider font-bold">Hackathon Team Portal</p>
+                  
+                  <label className="flex items-center gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      name="teamFormationEnabled"
+                      checked={teamFormationEnabled}
+                      onChange={e => setTeamFormationEnabled(e.target.checked)}
+                      className="w-4 h-4 rounded border-zinc-300 text-black focus:ring-black cursor-pointer"
+                    />
+                    <span className="text-xs font-mono text-zinc-650 dark:text-zinc-305 group-hover:text-black dark:group-hover:text-white transition-colors">
+                      Enable Student Team Formation
+                    </span>
+                  </label>
+
+                  {teamFormationEnabled && (
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-[9px] font-mono uppercase text-zinc-400 mb-1 block">Min Members</label>
+                        <input
+                          type="number"
+                          name="minTeamMembers"
+                          min="1"
+                          value={minTeamMembers}
+                          onChange={e => setMinTeamMembers(parseInt(e.target.value) || 2)}
+                          className="w-full rounded-xl border border-[#d0d0d0] dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-1.5 text-xs focus:ring-2 focus:ring-black outline-none dark:text-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[9px] font-mono uppercase text-zinc-400 mb-1 block">Max Members</label>
+                        <input
+                          type="number"
+                          name="maxTeamMembers"
+                          min="1"
+                          value={maxTeamMembers}
+                          onChange={e => setMaxTeamMembers(parseInt(e.target.value) || 4)}
+                          className="w-full rounded-xl border border-[#d0d0d0] dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-1.5 text-xs focus:ring-2 focus:ring-black outline-none dark:text-white"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Public toggle */}
               <div>

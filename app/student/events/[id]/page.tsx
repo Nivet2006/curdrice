@@ -17,6 +17,7 @@ import { EventThread } from '@/components/student/EventThread'
 import { getEventThread } from '@/lib/actions/event-threads'
 import { MessageSquare, Lock } from 'lucide-react'
 import { parseCustomBackground } from '@/lib/custom-background'
+import { TeamFormationPortal } from '@/components/student/TeamFormationPortal'
 
 export default async function EventDetailPage({ 
   params,
@@ -30,7 +31,7 @@ export default async function EventDetailPage({
   const { invitedBy } = await searchParams
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { data } = await supabase.from('events').select('id, title, description, club_name, location, location_lat, location_lng, event_date, registration_deadline, max_capacity, waitlist_max, status, banner_url, custom_background, created_by, created_at, approval_status, discussion_enabled, feedback_open, feedback_config, is_public, targeted_department, rejection_data, is_compulsory').eq('id', id).single()
+  const { data } = await supabase.from('events').select('id, title, description, club_name, location, location_lat, location_lng, event_date, registration_deadline, max_capacity, waitlist_max, status, banner_url, custom_background, created_by, created_at, approval_status, discussion_enabled, feedback_open, feedback_config, is_public, targeted_department, rejection_data, is_compulsory, event_type, team_formation_enabled, min_team_members, max_team_members').eq('id', id).single()
   const event = withDynamicSingleEventStatus(data as Event)
 
   if (!event) return <div>Event not found</div>
@@ -259,6 +260,13 @@ export default async function EventDetailPage({
             </div>
           </div>
         </div>
+
+        {/* Hackathon Team Formation Portal */}
+        {event.event_type === 'hackathon' && event.team_formation_enabled && isRegistered && (
+          <div className="mt-12">
+            <TeamFormationPortal eventId={id} currentUserId={user?.id || ''} />
+          </div>
+        )}
 
         {/* Event Discussion Thread */}
         {event.discussion_enabled && (
