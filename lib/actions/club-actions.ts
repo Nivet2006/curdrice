@@ -96,6 +96,30 @@ export async function addMemberToClub(formData: FormData) {
     return { error: insertError.message }
   }
 
+  // Automatically ensure subclub members are added to the parent club too
+  const { data: clubDetails } = await supabase
+    .from('clubs')
+    .select('parent_id')
+    .eq('id', clubId)
+    .single()
+
+  if (clubDetails?.parent_id) {
+    const { data: parentMember } = await supabase
+      .from('club_members')
+      .select('id')
+      .eq('club_id', clubDetails.parent_id)
+      .eq('profile_id', profileId)
+      .maybeSingle()
+
+    if (!parentMember) {
+      await supabase.from('club_members').insert({
+        club_id: clubDetails.parent_id,
+        profile_id: profileId,
+        role: 'Member'
+      })
+    }
+  }
+
   // Automatically promote student's profile role to 'cc'
   await supabase
     .from('profiles')
