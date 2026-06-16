@@ -150,21 +150,38 @@ export function GamificationSection({
       {/* Content Rendering */}
       <div className="pt-2">
         {/* LEADERBOARD TAB */}
-        {activeTab === 'leaderboard' && (
-          <div className="border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden bg-white dark:bg-zinc-900">
-            {/* Table Header */}
-            <div className="grid grid-cols-[60px_1fr_120px_100px_120px] gap-2 px-6 py-3.5 border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 items-center font-mono text-[10px] uppercase tracking-widest text-zinc-400 font-bold">
-              <span className="text-center">Rank</span>
-              <span>Student / USN</span>
-              <span>Branch</span>
-              <span>Badges</span>
-              <span className="text-right">Score</span>
-            </div>
+        {activeTab === 'leaderboard' && (() => {
+          const allZeroPoints = leaderboard.length === 0 || leaderboard.every(entry => entry.points === 0)
+          
+          if (allZeroPoints) {
+            return (
+              <div className="py-16 text-center border-2 border-dashed border-zinc-200 dark:border-zinc-850 rounded-2xl bg-zinc-50/50 dark:bg-zinc-950/10">
+                <Trophy size={28} className="mx-auto text-zinc-300 dark:text-zinc-700 mb-2" />
+                <p className="font-mono text-xs text-zinc-400 uppercase tracking-widest">No Active Leaderboard</p>
+                <p className="text-[10px] text-zinc-500 mt-1">Waiting for students to join events and earn points!</p>
+              </div>
+            )
+          }
 
-            {/* List */}
-            <div className="divide-y divide-zinc-100 dark:divide-zinc-800 max-h-[400px] overflow-y-auto">
-              {leaderboard.length > 0 ? (
-                leaderboard.map((entry, idx) => {
+          const top15 = leaderboard.slice(0, 15)
+          const isUserInTop15 = top15.some(entry => entry.id === currentUserId)
+          const userIndex = leaderboard.findIndex(entry => entry.id === currentUserId)
+          const currentUserEntry = userIndex !== -1 ? leaderboard[userIndex] : null
+
+          return (
+            <div className="border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden bg-white dark:bg-zinc-900">
+              {/* Table Header */}
+              <div className="grid grid-cols-[60px_1fr_120px_100px_120px] gap-2 px-6 py-3.5 border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 items-center font-mono text-[10px] uppercase tracking-widest text-zinc-400 font-bold">
+                <span className="text-center">Rank</span>
+                <span>Student / USN</span>
+                <span>Branch</span>
+                <span>Badges</span>
+                <span className="text-right">Score</span>
+              </div>
+
+              {/* List */}
+              <div className="divide-y divide-zinc-100 dark:divide-zinc-800 max-h-[400px] overflow-y-auto">
+                {top15.map((entry, idx) => {
                   const isSelf = entry.id === currentUserId
                   const displayRank = idx + 1
 
@@ -221,15 +238,64 @@ export function GamificationSection({
                       </div>
                     </div>
                   )
-                })
-              ) : (
-                <div className="py-12 text-center text-zinc-400 font-mono text-xs">
-                  No leaderboard records found.
-                </div>
-              )}
+                })}
+
+                {!isUserInTop15 && currentUserEntry && (
+                  <>
+                    <div className="px-6 py-2 bg-zinc-50 dark:bg-zinc-950/50 text-center text-xs font-mono text-zinc-400 tracking-widest border-t border-b border-zinc-100 dark:border-zinc-850">
+                      •••
+                    </div>
+                    {(() => {
+                      const displayRank = userIndex + 1
+                      return (
+                        <div
+                          key={currentUserEntry.id}
+                          className="grid grid-cols-[60px_1fr_120px_100px_120px] gap-2 px-6 py-4 items-center transition-colors bg-amber-500/5 dark:bg-amber-500/10 font-bold border-l-4 border-amber-500 pl-5"
+                        >
+                          {/* Rank Column */}
+                          <div className="font-mono text-center text-xs">
+                            #{displayRank}
+                          </div>
+
+                          {/* Name & USN */}
+                          <div className="min-w-0">
+                            <p className="text-sm font-bold text-zinc-850 dark:text-zinc-200 truncate flex items-center gap-2">
+                              {currentUserEntry.full_name}
+                              <span className="text-[9px] font-mono uppercase bg-amber-500/15 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded-full font-black">
+                                You
+                              </span>
+                            </p>
+                            <p className="font-mono text-[9px] text-zinc-400 uppercase tracking-widest mt-0.5">{currentUserEntry.usn}</p>
+                          </div>
+
+                          {/* Department */}
+                          <span className="font-mono text-xs text-zinc-500">{currentUserEntry.department}</span>
+
+                          {/* Badges preview */}
+                          <div className="flex items-center gap-1.5 overflow-hidden">
+                            {currentUserEntry.user_badges?.slice(0, 3).map((b, bIdx) => (
+                              <div key={bIdx} title={b.badge_name}>
+                                {getBadgeIcon(b.badge_icon, 14)}
+                              </div>
+                            ))}
+                            {currentUserEntry.user_badges?.length > 3 && (
+                              <span className="text-[9px] font-mono text-zinc-400">+{currentUserEntry.user_badges.length - 3}</span>
+                            )}
+                          </div>
+
+                          {/* Score */}
+                          <div className="text-right font-mono text-sm font-black text-zinc-800 dark:text-zinc-150">
+                            {currentUserEntry.points || 0} <span className="text-[10px] text-zinc-400 font-normal">pts</span>
+                          </div>
+                        </div>
+                      )
+                    })()}
+                  </>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )
+        })()}
 
         {/* MY BADGES TAB */}
         {activeTab === 'badges' && (

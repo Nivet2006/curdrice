@@ -8,7 +8,7 @@ export async function getLeaderboard() {
     .from('profiles')
     .select('id, full_name, usn, department, points, user_badges(badge_name, badge_icon)')
     .order('points', { ascending: false })
-    .limit(20)
+    .limit(100)
 
   if (error) return { error: error.message }
   return { leaderboard: data || [] }
