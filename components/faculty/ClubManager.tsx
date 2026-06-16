@@ -414,7 +414,7 @@ export function ClubManager() {
                     >
                       <div className="flex items-center gap-2 min-w-0">
                         {getClubLogo(parent.name) ? (
-                          <img src={getClubLogo(parent.name)!} alt={parent.name} className="w-5 h-5 object-contain rounded-md bg-white p-0.5 shrink-0" />
+                          <img src={getClubLogo(parent.name)!} alt={parent.name} className="w-5 h-5 object-contain shrink-0" />
                         ) : (
                           <div className="w-5 h-5 flex items-center justify-center bg-zinc-200 dark:bg-zinc-850 text-[10px] font-bold rounded-md uppercase font-mono shrink-0">
                             {parent.name.charAt(0)}
@@ -442,7 +442,7 @@ export function ClubManager() {
                             >
                               <div className="flex items-center gap-1.5 min-w-0">
                                 {getClubLogo(sub.name) ? (
-                                  <img src={getClubLogo(sub.name)!} alt={sub.name} className="w-4 h-4 object-contain rounded bg-white p-0.5 shrink-0" />
+                                  <img src={getClubLogo(sub.name)!} alt={sub.name} className="w-4 h-4 object-contain shrink-0" />
                                 ) : (
                                   <div className="w-4 h-4 flex items-center justify-center bg-zinc-200 dark:bg-zinc-850 text-[8px] font-bold rounded uppercase font-mono shrink-0">
                                     {sub.name.charAt(0)}
@@ -475,7 +475,7 @@ export function ClubManager() {
               {/* Selected Club Overview Card */}
               <div className="bg-zinc-50 dark:bg-zinc-950 p-6 rounded-[2rem] border border-zinc-150 dark:border-zinc-800 relative overflow-hidden flex items-start gap-4">
                 {getClubLogo(selectedClub.name) ? (
-                  <img src={getClubLogo(selectedClub.name)!} alt={selectedClub.name} className="w-12 h-12 object-contain rounded-xl bg-white p-1 border border-zinc-200 shadow-sm shrink-0" />
+                  <img src={getClubLogo(selectedClub.name)!} alt={selectedClub.name} className="w-12 h-12 object-contain shrink-0" />
                 ) : (
                   <div className="w-12 h-12 flex items-center justify-center bg-zinc-200 dark:bg-zinc-800 text-lg font-black rounded-xl uppercase font-mono shrink-0">
                     {selectedClub.name.charAt(0)}
