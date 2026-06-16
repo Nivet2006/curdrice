@@ -9,6 +9,7 @@ import { submitEventForReview } from '@/lib/actions/cc-events'
 import { AdminManualOverride } from '@/components/admin/AdminManualOverride'
 import { FeedbackToggle } from '@/components/cc/FeedbackToggle'
 import { DiscussionToggle } from '@/components/cc/DiscussionToggle'
+import { RegistrationToggle } from '@/components/cc/RegistrationToggle'
 import { ReportHubCard } from '@/components/iic/ReportHubCard'
 import { EventPhotosGallery } from '@/components/cc/EventPhotosGallery'
 import { EventThread } from '@/components/student/EventThread'
@@ -21,7 +22,7 @@ export default async function CCEventDetailPage({ params }: { params: Promise<{ 
 
    // Fetch event and constraints in parallel to eliminate sequential database roundtrips
    const [eventRes, constraintsRes] = await Promise.all([
-      supabase.from('events').select('id, title, description, club_name, location, event_date, registration_deadline, max_capacity, status, approval_status, rejection_data, feedback_config, feedback_open, targeted_department, banner_url, custom_background, is_public, discussion_enabled, thread_mode, created_by, created_at, event_type').eq('id', id).maybeSingle(),
+      supabase.from('events').select('id, title, description, club_name, location, event_date, registration_deadline, max_capacity, status, approval_status, rejection_data, feedback_config, feedback_open, registration_stopped, targeted_department, banner_url, custom_background, is_public, discussion_enabled, thread_mode, created_by, created_at, event_type').eq('id', id).maybeSingle(),
       supabase.from('event_constraints').select('id, event_id, allowed_semesters, allowed_years, allowed_departments, created_at').eq('event_id', id).maybeSingle()
    ])
 
@@ -277,20 +278,21 @@ export default async function CCEventDetailPage({ params }: { params: Promise<{ 
 
                   {event.approval_status === 'approved' ? (
                      <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
+                        <RegistrationToggle eventId={event.id} initialStopped={!!event.registration_stopped} />
                         <FeedbackToggle eventId={event.id} initialStatus={event.feedback_open} />
                         <DiscussionToggle eventId={event.id} initialStatus={event.discussion_enabled || false} initialMode={event.thread_mode || 'open'} />
                         {(() => {
-                           const isRegistrationsClosed = new Date() > new Date(event.registration_deadline);
+                           const isRegistrationsClosed = !!event.registration_stopped || (event.registration_deadline ? new Date() > new Date(event.registration_deadline) : false);
                            return (
                               <div className={`p-6 rounded-3xl border ${isRegistrationsClosed ? 'bg-zinc-100 dark:bg-zinc-800/50 border-zinc-300 dark:border-zinc-700' : 'bg-black text-white dark:bg-zinc-900 border-white/10'}`}>
                                  <div className={`flex items-center gap-2 mb-2 ${isRegistrationsClosed ? 'text-zinc-500' : 'text-emerald-400'}`}>
                                     {isRegistrationsClosed ? <XCircle size={16} /> : <Heart size={16} fill="currentColor" />}
                                     <span className="text-[10px] font-mono font-black uppercase tracking-widest">
-                                       {isRegistrationsClosed ? 'Registrations Closed' : 'Public Interest'}
+                                       {isRegistrationsClosed ? 'Registrations Closed / Stopped' : 'Public Interest'}
                                     </span>
                                  </div>
                                  <p className={`text-sm font-medium ${isRegistrationsClosed ? 'text-zinc-600 dark:text-zinc-400' : 'text-white'}`}>
-                                    {isRegistrationsClosed ? 'The registration window has concluded. You can now focus on event execution and feedback collection.' : 'Your event is currently attracting registrations.'}
+                                    {isRegistrationsClosed ? 'The registration window has concluded or has been stopped.' : 'Your event is currently attracting registrations.'}
                                  </p>
                               </div>
                            );

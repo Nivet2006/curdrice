@@ -50,6 +50,7 @@ export interface Event {
   location: string | null
   event_date: string
   registration_deadline: string | null
+  registration_stopped?: boolean
   max_capacity: number | null
   status: EventStatus
   approval_status: ApprovalStatus

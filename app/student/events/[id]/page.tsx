@@ -31,7 +31,7 @@ export default async function EventDetailPage({
   const { invitedBy } = await searchParams
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { data } = await supabase.from('events').select('id, title, description, club_name, location, location_lat, location_lng, event_date, registration_deadline, max_capacity, waitlist_max, status, banner_url, custom_background, created_by, created_at, approval_status, discussion_enabled, feedback_open, feedback_config, is_public, targeted_department, rejection_data, is_compulsory, event_type, team_formation_enabled, min_team_members, max_team_members').eq('id', id).single()
+  const { data } = await supabase.from('events').select('id, title, description, club_name, location, location_lat, location_lng, event_date, registration_deadline, max_capacity, waitlist_max, status, banner_url, custom_background, created_by, created_at, approval_status, discussion_enabled, feedback_open, feedback_config, is_public, targeted_department, rejection_data, is_compulsory, event_type, team_formation_enabled, min_team_members, max_team_members, registration_stopped').eq('id', id).single()
   const event = withDynamicSingleEventStatus(data as Event)
 
   if (!event) return <div>Event not found</div>
@@ -198,54 +198,71 @@ export default async function EventDetailPage({
               <div className="w-full h-1.5 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
                 <div className="h-full bg-current" style={{ width: `${progressPct}%` }} />
               </div>
-              {event.registration_deadline && (
+              {event.registration_stopped ? (
+                <p className="font-mono text-xs text-rose-500 font-bold mt-3">Registrations stopped by organizer</p>
+              ) : event.registration_deadline ? (
                 <p className="font-mono text-xs opacity-70 mt-3">Closes {new Date(event.registration_deadline).toLocaleDateString()}</p>
-              )}
+              ) : null}
 
-              {isRegistered ? (
-                <div className="mt-6 space-y-4">
-                  {registration.is_waitlisted ? (
-                    <>
-                      <Button className="w-full opacity-90 bg-amber-500 hover:bg-amber-600 text-white cursor-not-allowed">
-                        Waitlisted (Position #{waitlistPosition})
-                      </Button>
-                      {!event.is_compulsory && <CancelRegistrationButton eventId={id} />}
-                    </>
-                  ) : (
-                    <>
-                      <Button className="w-full opacity-50 cursor-not-allowed">Registered ✓</Button>
-                      
-                      <StudentFeedbackTerminal 
-                        event={event} 
-                        studentId={user?.id || ''} 
-                        hasSubmitted={hasSubmittedFeedback} 
-                      />
+              {(() => {
+                const isRegistrationsClosed = !!event.registration_stopped || (event.registration_deadline ? new Date() > new Date(event.registration_deadline) : false);
+                if (isRegistered) {
+                  return (
+                    <div className="mt-6 space-y-4">
+                      {registration.is_waitlisted ? (
+                        <>
+                          <Button className="w-full opacity-90 bg-amber-500 hover:bg-amber-600 text-white cursor-not-allowed">
+                            Waitlisted (Position #{waitlistPosition})
+                          </Button>
+                          {!event.is_compulsory && <CancelRegistrationButton eventId={id} />}
+                        </>
+                      ) : (
+                        <>
+                          <Button className="w-full opacity-50 cursor-not-allowed">Registered ✓</Button>
+                          
+                          <StudentFeedbackTerminal 
+                            event={event} 
+                            studentId={user?.id || ''} 
+                            hasSubmitted={hasSubmittedFeedback} 
+                          />
 
-                      <QRButton 
-                        token={registration?.qr_token || ''} 
-                        studentName={profile?.full_name || ''} 
-                        usn={profile?.usn || ''} 
-                        eventName={event.title} 
-                      />
+                          <QRButton 
+                            token={registration?.qr_token || ''} 
+                            studentName={profile?.full_name || ''} 
+                            usn={profile?.usn || ''} 
+                            eventName={event.title} 
+                          />
 
-                      {!event.is_compulsory && <CancelRegistrationButton eventId={id} />}
-                    </>
-                  )}
-                </div>
-              ) : isEligible ? (
-                 <div>
-                   {event.max_capacity && activeCount >= event.max_capacity && (
-                     <p className="text-xs font-mono text-amber-600 bg-amber-50 border border-amber-200 rounded-lg p-2.5 mb-3">
-                       ⚠️ Event capacity reached. Registering will put you on the waitlist (max capacity: {event.waitlist_max}).
-                     </p>
-                   )}
-                   <RegisterButton eventId={id} />
-                 </div>
-              ) : (
-                <div className="mt-6 border border-dashed border-current/25 rounded-xl p-4 bg-white/5">
-                  <p className="text-xs font-mono opacity-80">You are not eligible for this event based on the current constraints.</p>
-                </div>
-              )}
+                          {!event.is_compulsory && <CancelRegistrationButton eventId={id} />}
+                        </>
+                      )}
+                    </div>
+                  );
+                } else if (isRegistrationsClosed) {
+                  return (
+                    <div className="mt-6 border border-dashed border-rose-500/35 rounded-xl p-4 bg-rose-500/5">
+                      <p className="text-xs font-mono text-rose-600 dark:text-rose-400 font-bold text-center">Registrations Closed / Stopped</p>
+                    </div>
+                  );
+                } else if (isEligible) {
+                  return (
+                    <div>
+                      {event.max_capacity && activeCount >= event.max_capacity && (
+                        <p className="text-xs font-mono text-amber-600 bg-amber-50 border border-amber-200 rounded-lg p-2.5 mb-3">
+                          ⚠️ Event capacity reached. Registering will put you on the waitlist (max capacity: {event.waitlist_max}).
+                        </p>
+                      )}
+                      <RegisterButton eventId={id} />
+                    </div>
+                  );
+                } else {
+                  return (
+                    <div className="mt-6 border border-dashed border-current/25 rounded-xl p-4 bg-white/5">
+                      <p className="text-xs font-mono opacity-80">You are not eligible for this event based on the current constraints.</p>
+                    </div>
+                  );
+                }
+              })()}
               
               <div className="mt-4 pt-4 border-t border-current/10">
                 <ShareEventButton 
