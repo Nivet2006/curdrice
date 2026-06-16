@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { ShieldAlert, CheckCircle, ArrowRight, User, Award, FileText, PlusCircle, FileDown } from 'lucide-react'
 import { ManageStudentsPanel } from '@/components/faculty/ManageStudentsPanel'
+import { VenueAvailabilityManager } from '@/components/faculty/VenueAvailabilityManager'
 import type { Profile } from '@/lib/types'
 export const dynamic = 'force-dynamic'
 
@@ -316,6 +317,9 @@ export default async function TeacherDashboard() {
             )}
           </div>
         </div>
+
+        {/* Venue Availability Feeds */}
+        <VenueAvailabilityManager />
 
         {/* Manage Students Section */}
         <ManageStudentsPanel

@@ -13,6 +13,7 @@ import { LocationMapEmbed } from '@/components/shared/LocationMapEmbed'
 import PosterDesigner from '@/components/shared/PosterDesigner'
 import { ImagePreview } from '@/components/shared/ImagePreview'
 import { v4 as uuidv4 } from 'uuid'
+import { VenueSelector } from '@/components/shared/VenueSelector'
 
 const EVENT_CATEGORIES = [
   { value: 'faculty', label: 'Faculty Initiative', icon: GraduationCap, desc: 'Department-led academic activity' },
@@ -30,7 +31,9 @@ export default function TeacherCreateEventPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [eventDate, setEventDate] = useState('')
+  const [endTime, setEndTime] = useState('')
   const [deadline, setDeadline] = useState('')
+  const [selectedVenueId, setSelectedVenueId] = useState<string | null>(null)
   const [isPublic, setIsPublic] = useState(false)
   const [isCompulsory, setIsCompulsory] = useState(false)
   const [semesters, setSemesters] = useState<number[]>([])
@@ -57,6 +60,17 @@ export default function TeacherCreateEventPage() {
       return
     }
 
+    if (selectedCategory !== 'industrial_visit') {
+      if (!endTime) {
+        setError('Event End Time is required.')
+        return
+      }
+      if (!selectedVenueId) {
+        setError('Please select a venue.')
+        return
+      }
+    }
+
     if (selectedCategory === 'industrial_visit' && (!visitLocation || !visitLocation.lat)) {
       setError('Please search and pin a visit location on the map for Industrial Visit events.')
       return
@@ -76,6 +90,12 @@ export default function TeacherCreateEventPage() {
     formData.set('isCompulsory', isCompulsory ? 'true' : 'false')
     formData.set('semesters', JSON.stringify(semesters))
     formData.set('years', JSON.stringify(years))
+    
+    if (selectedCategory !== 'industrial_visit') {
+      formData.set('endTime', endTime)
+      formData.set('venueId', selectedVenueId || '')
+      formData.set('location', location)
+    }
 
     if (visitLocation && selectedCategory === 'industrial_visit') {
       formData.set('locationLat', String(visitLocation.lat))
@@ -224,18 +244,8 @@ export default function TeacherCreateEventPage() {
               <h2 className="font-mono text-[10px] uppercase tracking-widest text-zinc-400 border-b border-zinc-100 dark:border-zinc-800 pb-2">
                 Logistics & Venue
               </h2>
-              {/* For industrial_visit, location is set via hidden input above */}
-              {selectedCategory !== 'industrial_visit' && (
-                <Input
-                  label="Venue / Virtual Link *"
-                  name="location"
-                  required
-                  placeholder="Seminar Hall A / Google Meet link"
-                  value={location}
-                  onChange={e => setLocation(e.target.value)}
-                />
-              )}
-              <div className="grid grid-cols-2 gap-4">
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="flex flex-col gap-1">
                   <label className="text-xs font-mono text-[#555555] dark:text-zinc-400 uppercase tracking-widest">
                     Event Date & Time *
@@ -246,6 +256,19 @@ export default function TeacherCreateEventPage() {
                     required
                     value={eventDate}
                     onChange={e => setEventDate(e.target.value)}
+                    className="rounded-xl border border-[#d0d0d0] dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-2.5 text-sm focus:ring-2 focus:ring-black dark:text-white"
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-mono text-[#555555] dark:text-zinc-400 uppercase tracking-widest">
+                    Event End Time *
+                  </label>
+                  <input
+                    type="datetime-local"
+                    name="endTime"
+                    required
+                    value={endTime}
+                    onChange={e => setEndTime(e.target.value)}
                     className="rounded-xl border border-[#d0d0d0] dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-2.5 text-sm focus:ring-2 focus:ring-black dark:text-white"
                   />
                 </div>
@@ -263,13 +286,43 @@ export default function TeacherCreateEventPage() {
                   />
                 </div>
               </div>
-              <Input
-                label="Attendee Capacity"
-                name="capacity"
-                type="number"
-                defaultValue={0}
-                placeholder="0 for unlimited"
-              />
+
+              {selectedCategory !== 'industrial_visit' ? (
+                <>
+                  <VenueSelector
+                    selectedVenueId={selectedVenueId}
+                    onSelectVenue={(id, name) => {
+                      setSelectedVenueId(id)
+                      setLocation(name)
+                    }}
+                    startTime={eventDate}
+                    endTime={endTime}
+                  />
+                  <input type="hidden" name="venueId" value={selectedVenueId || ''} />
+                  <input type="hidden" name="location" value={location || ''} />
+                </>
+              ) : (
+                <div className="p-4 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 text-xs text-zinc-500 dark:text-zinc-400">
+                  Location is set above via the pinned Map Destination.
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-4">
+                <Input
+                  label="Attendee Capacity"
+                  name="capacity"
+                  type="number"
+                  defaultValue={0}
+                  placeholder="0 for unlimited"
+                />
+                <Input
+                  label="Waitlist Max Capacity"
+                  name="waitlistMax"
+                  type="number"
+                  defaultValue={0}
+                  placeholder="0 for no waitlist"
+                />
+              </div>
             </section>
 
             {/* Visual Branding */}

@@ -6,6 +6,7 @@ import Link from 'next/link'
 import type { Event } from '@/lib/types'
 import { LocationMapEmbed } from '@/components/shared/LocationMapEmbed'
 import { RegisterButton } from '@/components/student/RegisterButton'
+import { CancelRegistrationButton } from '@/components/student/CancelRegistrationButton'
 import { registerForEvent } from '@/lib/actions/events'
 import { QRButton } from '@/components/student/QRButton'
 import { ShareEventButton } from '@/components/student/ShareEventButton'
@@ -203,9 +204,12 @@ export default async function EventDetailPage({
               {isRegistered ? (
                 <div className="mt-6 space-y-4">
                   {registration.is_waitlisted ? (
-                    <Button className="w-full opacity-90 bg-amber-500 hover:bg-amber-600 text-white cursor-not-allowed">
-                      Waitlisted (Position #{waitlistPosition})
-                    </Button>
+                    <>
+                      <Button className="w-full opacity-90 bg-amber-500 hover:bg-amber-600 text-white cursor-not-allowed">
+                        Waitlisted (Position #{waitlistPosition})
+                      </Button>
+                      {!event.is_compulsory && <CancelRegistrationButton eventId={id} />}
+                    </>
                   ) : (
                     <>
                       <Button className="w-full opacity-50 cursor-not-allowed">Registered ✓</Button>
@@ -222,6 +226,8 @@ export default async function EventDetailPage({
                         usn={profile?.usn || ''} 
                         eventName={event.title} 
                       />
+
+                      {!event.is_compulsory && <CancelRegistrationButton eventId={id} />}
                     </>
                   )}
                 </div>

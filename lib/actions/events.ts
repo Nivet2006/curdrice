@@ -15,7 +15,9 @@ export async function createEvent(formData: FormData) {
   const club_name = (formData.get('clubName') as string)?.trim()
   const status = formData.get('status') as string
   const description = (formData.get('description') as string)?.trim()
-  const location = (formData.get('location') as string)?.trim()
+  const venueId = formData.get('venueId') as string || null
+  const endTimeStr = formData.get('endTime') as string || null
+  let location = (formData.get('location') as string)?.trim() || ''
   const event_date = formData.get('eventDate') as string
   const deadlineStr = formData.get('deadline') as string
   const banner_url = (formData.get('bannerUrl') as string)?.trim() || null
@@ -29,6 +31,11 @@ export async function createEvent(formData: FormData) {
   const is_compulsory = formData.get('isCompulsory') === 'true'
   const allow_open_registration = formData.get('allowOpenRegistration') === 'true'
   const assigned_faculty_id = (formData.get('assignedFacultyId') as string) || null
+
+  if (venueId) {
+    const { data: venue } = await supabase.from('venues').select('name').eq('id', venueId).single()
+    if (venue) location = venue.name
+  }
 
   if (!title) return { error: 'Event Title is required.' }
   if (!club_name) return { error: 'Club / Host Identity is required.' }
@@ -54,9 +61,43 @@ export async function createEvent(formData: FormData) {
 
   const pregeneratedId = formData.get('id') as string | null
 
+  // VENUE CONFLICT CHECK
+  if (venueId && endTimeStr) {
+    const { getVenuesWithStatus } = await import('@/lib/actions/venue-actions')
+    const startIso = eventDt.toISOString()
+    const endIso = new Date(endTimeStr).toISOString()
+    const statusRes = await getVenuesWithStatus(startIso, endIso, pregeneratedId)
+    if (statusRes.error) return { error: statusRes.error }
+    const currentVenueStatus = statusRes.venues?.find(v => v.id === venueId)
+    if (currentVenueStatus?.status === 'locked') return { error: currentVenueStatus.message }
+    if (currentVenueStatus?.status === 'unavailable') return { error: currentVenueStatus.message }
+  } else {
+    // Fallback conflict check
+    const fourHoursInMs = 4 * 60 * 60 * 1000
+    const startTime = new Date(eventDt.getTime() - fourHoursInMs).toISOString()
+    const endTime = new Date(eventDt.getTime() + fourHoursInMs).toISOString()
+
+    const { data: conflict } = await supabase
+      .from('events')
+      .select('title, event_date')
+      .eq('location', location)
+      .eq('approval_status', 'approved')
+      .gte('event_date', startTime)
+      .lte('event_date', endTime)
+      .maybeSingle()
+
+    if (conflict) {
+      return { 
+        error: `Venue Conflict: "${location}" is already booked for "${conflict.title}" at ${new Date(conflict.event_date).toLocaleTimeString()}. Please choose a different venue or time.` 
+      }
+    }
+  }
+
   const insertPayload: any = {
     title, club_name, status, description, location,
     event_date: eventDt.toISOString(),
+    end_time: endTimeStr ? new Date(endTimeStr).toISOString() : null,
+    venue_id: venueId,
     registration_deadline: deadlineDt.toISOString(),
     max_capacity, banner_url, waitlist_max,
     custom_background,
@@ -110,7 +151,9 @@ export async function updateEvent(eventId: string, formData: FormData) {
   const club_name = (formData.get('clubName') as string)?.trim()
   const status = formData.get('status') as string
   const description = (formData.get('description') as string)?.trim()
-  const location = (formData.get('location') as string)?.trim()
+  const venueId = formData.get('venueId') as string || null
+  const endTimeStr = formData.get('endTime') as string || null
+  let location = (formData.get('location') as string)?.trim() || ''
   const event_date = formData.get('eventDate') as string
   const deadlineStr = formData.get('deadline') as string
   const banner_url = (formData.get('bannerUrl') as string)?.trim() || null
@@ -124,6 +167,11 @@ export async function updateEvent(eventId: string, formData: FormData) {
   const is_compulsory = formData.get('isCompulsory') === 'true'
   const allow_open_registration = formData.get('allowOpenRegistration') === 'true'
   const assigned_faculty_id = (formData.get('assignedFacultyId') as string) || null
+
+  if (venueId) {
+    const { data: venue } = await supabase.from('venues').select('name').eq('id', venueId).single()
+    if (venue) location = venue.name
+  }
 
   if (!title) return { error: 'Event Title is required.' }
   if (!club_name) return { error: 'Club / Host Identity is required.' }
@@ -147,9 +195,44 @@ export async function updateEvent(eventId: string, formData: FormData) {
   const years = JSON.parse(yearStr || '[]')
   const depts = JSON.parse(deptStr || '[]')
 
+  // VENUE CONFLICT CHECK
+  if (venueId && endTimeStr) {
+    const { getVenuesWithStatus } = await import('@/lib/actions/venue-actions')
+    const startIso = eventDt.toISOString()
+    const endIso = new Date(endTimeStr).toISOString()
+    const statusRes = await getVenuesWithStatus(startIso, endIso, eventId)
+    if (statusRes.error) return { error: statusRes.error }
+    const currentVenueStatus = statusRes.venues?.find(v => v.id === venueId)
+    if (currentVenueStatus?.status === 'locked') return { error: currentVenueStatus.message }
+    if (currentVenueStatus?.status === 'unavailable') return { error: currentVenueStatus.message }
+  } else {
+    // Fallback conflict check (± 4 hours for a session)
+    const fourHoursInMs = 4 * 60 * 60 * 1000
+    const startTime = new Date(eventDt.getTime() - fourHoursInMs).toISOString()
+    const endTime = new Date(eventDt.getTime() + fourHoursInMs).toISOString()
+
+    const { data: conflict } = await supabase
+      .from('events')
+      .select('title, event_date')
+      .eq('location', location)
+      .eq('approval_status', 'approved')
+      .neq('id', eventId)
+      .gte('event_date', startTime)
+      .lte('event_date', endTime)
+      .maybeSingle()
+
+    if (conflict) {
+      return { 
+        error: `Venue Conflict: "${location}" is already booked for "${conflict.title}" at ${new Date(conflict.event_date).toLocaleTimeString()}. Please choose a different venue or time.` 
+      }
+    }
+  }
+
   const { error: updateError } = await supabase.from('events').update({
     title, club_name, status, description, location,
     event_date: eventDt.toISOString(),
+    end_time: endTimeStr ? new Date(endTimeStr).toISOString() : null,
+    venue_id: venueId,
     registration_deadline: deadlineDt.toISOString(),
     max_capacity, banner_url, waitlist_max,
     custom_background,
@@ -404,5 +487,57 @@ export async function updateStudentProfile(data: {
   } catch (err: unknown) {
     const errorMsg = err instanceof Error ? err.message : 'Unknown error'
     return { error: errorMsg || 'Failed to update profile' }
+  }
+}
+
+export async function cancelRegistration(eventId: string) {
+  try {
+    const { revalidatePath } = await import('next/cache')
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Unauthorized' }
+
+    // Check if event is compulsory
+    const { data: event, error: eventError } = await supabase
+      .from('events')
+      .select('is_compulsory')
+      .eq('id', eventId)
+      .single()
+
+    if (eventError || !event) return { error: 'Event not found or database error' }
+    if (event.is_compulsory) {
+      return { error: 'You cannot cancel registration for a compulsory event.' }
+    }
+
+    // Delete registration
+    const { error: deleteError } = await supabase
+      .from('registrations')
+      .delete()
+      .eq('event_id', eventId)
+      .eq('student_id', user.id)
+
+    if (deleteError) return { error: deleteError.message }
+
+    // Remove from conversation if exists
+    const { data: conv } = await supabase
+      .from('conversations')
+      .select('id')
+      .eq('event_id', eventId)
+      .eq('type', 'group')
+      .maybeSingle()
+
+    if (conv) {
+      await supabase
+        .from('conversation_members')
+        .delete()
+        .eq('conversation_id', conv.id)
+        .eq('user_id', user.id)
+    }
+
+    revalidatePath(`/student/events/${eventId}`)
+    return { success: true }
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : 'Unknown error'
+    return { error: errorMsg }
   }
 }
