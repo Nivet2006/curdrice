@@ -1,11 +1,9 @@
 'use client'
 
 import React, { useState, useEffect, useCallback } from 'react'
-import { FileText, Trash2, Clock, ChevronDown, ChevronUp, FolderOpen, Plus, AlertCircle } from 'lucide-react'
+import { FileText, Trash2, Clock, ChevronDown, ChevronUp, FolderOpen, AlertCircle } from 'lucide-react'
 import { toast } from 'sonner'
-
-const DRAFT_KEY = 'teacher_event_drafts'
-const MAX_DRAFTS = 5
+import { useRouter } from 'next/navigation'
 
 export interface EventDraft {
   id: string
@@ -32,43 +30,32 @@ export interface EventDraft {
   customBackground: string
 }
 
-export function loadDrafts(): EventDraft[] {
-  try {
-    const raw = localStorage.getItem(DRAFT_KEY)
-    return raw ? JSON.parse(raw) : []
-  } catch {
-    return []
-  }
-}
+export async function saveDraft(draft: Omit<EventDraft, 'savedAt'>) {
+  const { saveTeacherEventDraft } = await import('@/lib/actions/teacher-events')
+  const formData = new FormData()
+  formData.append('id', draft.id)
+  formData.append('title', draft.title)
+  formData.append('description', draft.description)
+  formData.append('eventCategory', draft.selectedCategory)
+  formData.append('eventDate', draft.eventDate)
+  formData.append('endTime', draft.endTime)
+  formData.append('deadline', draft.deadline)
+  formData.append('location', draft.location)
+  formData.append('bannerUrl', draft.bannerUrl)
+  formData.append('isPublic', draft.isPublic ? 'true' : 'false')
+  formData.append('isCompulsory', draft.isCompulsory ? 'true' : 'false')
+  formData.append('semesters', JSON.stringify(draft.semesters))
+  formData.append('years', JSON.stringify(draft.years))
+  formData.append('targetedDepartment', draft.targetedDepartment)
+  formData.append('eventType', draft.eventType)
+  formData.append('teamFormationEnabled', draft.teamFormationEnabled ? 'true' : 'false')
+  formData.append('minTeamMembers', String(draft.minTeamMembers))
+  formData.append('maxTeamMembers', String(draft.maxTeamMembers))
+  formData.append('capacity', draft.capacity)
+  formData.append('waitlistMax', draft.waitlistMax)
+  formData.append('customBackground', draft.customBackground)
 
-export function saveDraft(draft: Omit<EventDraft, 'id' | 'savedAt'>): EventDraft {
-  const drafts = loadDrafts()
-
-  const newDraft: EventDraft = {
-    ...draft,
-    id: crypto.randomUUID(),
-    savedAt: new Date().toISOString(),
-  }
-
-  // Prepend newest draft
-  let updated = [newDraft, ...drafts]
-
-  // Enforce max 5 — drop oldest (last in array)
-  if (updated.length > MAX_DRAFTS) {
-    const dropped = updated.length - MAX_DRAFTS
-    updated = updated.slice(0, MAX_DRAFTS)
-    if (dropped > 0) {
-      toast.info(`Oldest draft removed (limit: ${MAX_DRAFTS})`)
-    }
-  }
-
-  localStorage.setItem(DRAFT_KEY, JSON.stringify(updated))
-  return newDraft
-}
-
-export function deleteDraft(id: string) {
-  const drafts = loadDrafts().filter(d => d.id !== id)
-  localStorage.setItem(DRAFT_KEY, JSON.stringify(drafts))
+  return await saveTeacherEventDraft(formData)
 }
 
 function timeAgo(iso: string): string {
@@ -82,32 +69,59 @@ function timeAgo(iso: string): string {
 }
 
 interface DraftManagerProps {
-  onLoad: (draft: EventDraft) => void
+  onLoad?: (draft: EventDraft) => void
   draftsKey?: number // increment to re-render after save
 }
 
 export function DraftManager({ onLoad, draftsKey }: DraftManagerProps) {
+  const router = useRouter()
   const [drafts, setDrafts] = useState<EventDraft[]>([])
   const [open, setOpen] = useState(false)
+  const [loading, setLoading] = useState(true)
+
+  const fetchDrafts = useCallback(async () => {
+    try {
+      const { getTeacherDrafts } = await import('@/lib/actions/teacher-events')
+      const dbDrafts = await getTeacherDrafts()
+      setDrafts(dbDrafts)
+    } catch (err) {
+      console.error('Failed to fetch drafts:', err)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
 
   useEffect(() => {
-    setDrafts(loadDrafts())
-  }, [draftsKey])
+    fetchDrafts()
+  }, [draftsKey, fetchDrafts])
 
   function handleLoad(draft: EventDraft) {
-    onLoad(draft)
+    if (onLoad) {
+      onLoad(draft)
+    } else {
+      router.push(`/teacher/events/${draft.id}/edit`)
+    }
     setOpen(false)
     toast.success(`Draft "${draft.title || 'Untitled'}" loaded.`)
   }
 
-  function handleDelete(id: string, e: React.MouseEvent) {
+  async function handleDelete(id: string, e: React.MouseEvent) {
     e.stopPropagation()
-    deleteDraft(id)
-    setDrafts(prev => prev.filter(d => d.id !== id))
-    toast.success('Draft deleted.')
+    try {
+      const { deleteTeacherDraft } = await import('@/lib/actions/teacher-events')
+      const res = await deleteTeacherDraft(id)
+      if (res?.error) {
+        toast.error(res.error)
+      } else {
+        setDrafts(prev => prev.filter(d => d.id !== id))
+        toast.success('Draft deleted.')
+      }
+    } catch (err) {
+      toast.error('Failed to delete draft.')
+    }
   }
 
-  if (drafts.length === 0) return null
+  if (loading || drafts.length === 0) return null
 
   return (
     <div className="border border-zinc-200 dark:border-zinc-700 rounded-2xl overflow-hidden">
@@ -161,7 +175,7 @@ export function DraftManager({ onLoad, draftsKey }: DraftManagerProps) {
           ))}
           <div className="px-4 py-2 bg-zinc-50 dark:bg-zinc-900/50 flex items-center gap-1.5">
             <AlertCircle size={10} className="text-zinc-300" />
-            <p className="text-[9px] font-mono text-zinc-400">Max {MAX_DRAFTS} drafts. Oldest is auto-removed when limit is reached.</p>
+            <p className="text-[9px] font-mono text-zinc-400">Drafts are saved securely in the cloud. You can access them from any device.</p>
           </div>
         </div>
       )}

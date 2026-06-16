@@ -453,7 +453,7 @@ export default function CCCreateEventPage() {
                 className="w-full bg-white border border-zinc-200 text-black py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-zinc-50 transition-all active:scale-95 disabled:opacity-50"
               >
                 <Save size={18} />
-                {loading ? 'Saving...' : 'Save as Local Draft'}
+                {loading ? 'Saving...' : 'Save as Draft'}
               </button>
             </div>
           </aside>

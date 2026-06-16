@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { Input } from '@/components/ui/Input'
-import { createFacultyEvent } from '@/lib/actions/teacher-events'
+import { updateFacultyEvent } from '@/lib/actions/teacher-events'
 import Link from 'next/link'
 import { ArrowLeft, Send, BookOpen, Mic, GraduationCap, Star, MoreHorizontal, Truck, AlertCircle, Users, Save } from 'lucide-react'
 import { EventBackgroundCustomizer } from '@/components/shared/EventBackgroundCustomizer'
@@ -12,9 +12,8 @@ import { LocationPicker } from '@/components/teacher/LocationPicker'
 import { LocationMapEmbed } from '@/components/shared/LocationMapEmbed'
 import PosterDesigner from '@/components/shared/PosterDesigner'
 import { ImagePreview } from '@/components/shared/ImagePreview'
-import { v4 as uuidv4 } from 'uuid'
 import { VenueSelector } from '@/components/shared/VenueSelector'
-import { DraftManager, saveDraft, type EventDraft } from '@/components/teacher/DraftManager'
+import { type EventDraft } from '@/components/teacher/DraftManager'
 
 const EVENT_CATEGORIES = [
   { value: 'faculty', label: 'Faculty Initiative', icon: GraduationCap, desc: 'Department-led academic activity' },
@@ -27,96 +26,111 @@ const EVENT_CATEGORIES = [
 
 const DEPARTMENTS = ['CSE', 'ECE', 'ME', 'CV', 'ISE', 'EEE']
 
-export default function TeacherCreateEventPage() {
+interface EditEventFormProps {
+  event: any
+  constraints: any
+}
+
+export default function EditEventForm({ event, constraints }: EditEventFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [eventDate, setEventDate] = useState('')
-  const [endTime, setEndTime] = useState('')
-  const [deadline, setDeadline] = useState('')
-  const [selectedVenueId, setSelectedVenueId] = useState<string | null>(null)
-  const [isPublic, setIsPublic] = useState(false)
-  const [isCompulsory, setIsCompulsory] = useState(false)
-  const [semesters, setSemesters] = useState<number[]>([])
-  const [years, setYears] = useState<number[]>([])
-  const [selectedCategory, setSelectedCategory] = useState('guest_lecture')
-  const [visitLocation, setVisitLocation] = useState<{ name: string; displayName: string; lat: number; lng: number } | null>(null)
-  const [draftsKey, setDraftsKey] = useState(0)
 
-  const [eventType, setEventType] = useState('general')
-  const [teamFormationEnabled, setTeamFormationEnabled] = useState(false)
-  const [minTeamMembers, setMinTeamMembers] = useState(2)
-  const [maxTeamMembers, setMaxTeamMembers] = useState(4)
+  // Format dates for input[type="datetime-local"]
+  const formatForInput = (dateStr: string | null) => {
+    if (!dateStr) return ''
+    const d = new Date(dateStr)
+    return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
+  }
 
-  // Poster Lab specific states
-  const [eventId] = useState(() => uuidv4())
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [location, setLocation] = useState('')
-  const [bannerUrl, setBannerUrl] = useState('')
-  const [capacity, setCapacity] = useState('')
-  const [waitlistMax, setWaitlistMax] = useState('')
-  const [targetedDepartment, setTargetedDepartment] = useState('CSE')
-  const [customBackground, setCustomBackground] = useState('')
+  const [eventDate, setEventDate] = useState(formatForInput(event.event_date))
+  const [endTime, setEndTime] = useState(formatForInput(event.end_time))
+  const [deadline, setDeadline] = useState(formatForInput(event.registration_deadline))
+  const [selectedVenueId, setSelectedVenueId] = useState<string | null>(event.venue_id || null)
+  const [isPublic, setIsPublic] = useState(!!event.is_public)
+  const [isCompulsory, setIsCompulsory] = useState(!!event.is_compulsory)
+  const [semesters, setSemesters] = useState<number[]>(constraints?.allowed_semesters || [])
+  const [years, setYears] = useState<number[]>(constraints?.allowed_years || [])
+  const [selectedCategory, setSelectedCategory] = useState(event.event_category || 'faculty')
+  
+  // Industrial Visit specific
+  const [visitLocation, setVisitLocation] = useState<{ name: string; displayName: string; lat: number; lng: number } | null>(() => {
+    if (event.event_category === 'industrial_visit' && event.location_lat) {
+      return {
+        name: event.location || '',
+        displayName: event.location || '',
+        lat: event.location_lat,
+        lng: event.location_lng || 0
+      }
+    }
+    return null
+  })
+
+  const [eventType, setEventType] = useState(event.event_type || 'general')
+  const [teamFormationEnabled, setTeamFormationEnabled] = useState(event.team_formation_enabled || false)
+  const [minTeamMembers, setMinTeamMembers] = useState(event.min_team_members || 2)
+  const [maxTeamMembers, setMaxTeamMembers] = useState(event.max_team_members || 4)
+
+  const [title, setTitle] = useState(event.title || '')
+  const [description, setDescription] = useState(event.description || '')
+  const [location, setLocation] = useState(event.location || '')
+  const [bannerUrl, setBannerUrl] = useState(event.banner_url || '')
+  const [capacity, setCapacity] = useState(event.max_capacity !== null ? String(event.max_capacity) : '')
+  const [waitlistMax, setWaitlistMax] = useState(event.waitlist_max !== null ? String(event.waitlist_max) : '')
+  const [targetedDepartment, setTargetedDepartment] = useState(event.targeted_department || 'CSE')
+  const [customBackground, setCustomBackground] = useState(event.custom_background || '')
 
   const toggleSem = (s: number) => setSemesters(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s])
   const toggleYear = (y: number) => setYears(prev => prev.includes(y) ? prev.filter(x => x !== y) : [...prev, y])
 
   async function handleSaveDraft() {
     setLoading(true)
-    const result = await saveDraft({
-      id: eventId,
-      title,
-      description,
-      selectedCategory,
-      eventDate,
-      endTime,
-      deadline,
-      location,
-      bannerUrl,
-      isPublic,
-      isCompulsory,
-      semesters,
-      years,
-      targetedDepartment,
-      eventType,
-      teamFormationEnabled,
-      minTeamMembers,
-      maxTeamMembers,
-      capacity,
-      waitlistMax,
-      customBackground,
-    })
+    setError(null)
+    const formData = new FormData()
+    formData.set('id', event.id)
+    formData.set('title', title)
+    formData.set('description', description)
+    formData.set('eventCategory', selectedCategory)
+    formData.set('eventDate', eventDate)
+    formData.set('endTime', endTime)
+    formData.set('deadline', deadline)
+    formData.set('bannerUrl', bannerUrl)
+    formData.set('isPublic', isPublic ? 'true' : 'false')
+    formData.set('isCompulsory', isCompulsory ? 'true' : 'false')
+    formData.set('semesters', JSON.stringify(semesters))
+    formData.set('years', JSON.stringify(years))
+    formData.set('targetedDepartment', targetedDepartment)
+    formData.set('eventType', eventType)
+    formData.set('teamFormationEnabled', teamFormationEnabled ? 'true' : 'false')
+    formData.set('minTeamMembers', String(minTeamMembers))
+    formData.set('maxTeamMembers', String(maxTeamMembers))
+    formData.set('capacity', capacity)
+    formData.set('waitlistMax', waitlistMax)
+    formData.set('customBackground', customBackground)
+    formData.set('submitForReview', 'false')
+
+    if (selectedCategory !== 'industrial_visit') {
+      formData.set('venueId', selectedVenueId || '')
+      formData.set('location', location)
+    }
+
+    if (visitLocation && selectedCategory === 'industrial_visit') {
+      formData.set('locationLat', String(visitLocation.lat))
+      formData.set('locationLng', String(visitLocation.lng))
+      formData.set('location', visitLocation.displayName || visitLocation.name)
+    }
+
+    const { saveTeacherEventDraft } = await import('@/lib/actions/teacher-events')
+    const result = await saveTeacherEventDraft(formData)
     setLoading(false)
+
     if (result?.error) {
       setError(result.error)
       toast.error(result.error)
     } else {
-      setDraftsKey(k => k + 1)
-      toast.success('Draft saved! You can continue later from any device.')
+      toast.success('Draft updated successfully!')
+      router.refresh()
     }
-  }
-
-  function handleLoadDraft(draft: EventDraft) {
-    setTitle(draft.title)
-    setDescription(draft.description)
-    setSelectedCategory(draft.selectedCategory)
-    setEventDate(draft.eventDate)
-    setEndTime(draft.endTime)
-    setDeadline(draft.deadline)
-    setLocation(draft.location)
-    setBannerUrl(draft.bannerUrl)
-    setIsPublic(draft.isPublic)
-    setIsCompulsory(draft.isCompulsory)
-    setSemesters(draft.semesters)
-    setYears(draft.years)
-    setTargetedDepartment(draft.targetedDepartment)
-    setEventType(draft.eventType)
-    setTeamFormationEnabled(draft.teamFormationEnabled)
-    setMinTeamMembers(draft.minTeamMembers)
-    setMaxTeamMembers(draft.maxTeamMembers)
-    setCapacity(draft.capacity)
-    setWaitlistMax(draft.waitlistMax)
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -152,12 +166,13 @@ export default function TeacherCreateEventPage() {
     setLoading(true)
     const form = e.currentTarget
     const formData = new FormData(form)
-    formData.set('id', eventId)
+    formData.set('id', event.id)
     formData.set('isPublic', isPublic ? 'true' : 'false')
     formData.set('eventCategory', selectedCategory)
     formData.set('isCompulsory', isCompulsory ? 'true' : 'false')
     formData.set('semesters', JSON.stringify(semesters))
     formData.set('years', JSON.stringify(years))
+    formData.set('submitForReview', 'true')
     
     if (selectedCategory !== 'industrial_visit') {
       formData.set('endTime', endTime)
@@ -171,7 +186,7 @@ export default function TeacherCreateEventPage() {
       formData.set('location', visitLocation.displayName || visitLocation.name)
     }
 
-    const result = await createFacultyEvent(formData)
+    const result = await updateFacultyEvent(event.id, formData)
 
     if (result?.error) {
       setError(result.error)
@@ -197,16 +212,15 @@ export default function TeacherCreateEventPage() {
         </Link>
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-          <span className="font-mono text-[10px] uppercase text-zinc-400 tracking-tighter">Faculty Event Proposal</span>
+          <span className="font-mono text-[10px] uppercase text-zinc-400 tracking-tighter">Edit Draft Proposal</span>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-12">
-        {/* Page title */}
         <header>
-          <h1 className="text-4xl font-bold tracking-tight text-[#0a0a0a] dark:text-white">Faculty Event Proposal</h1>
+          <h1 className="text-4xl font-bold tracking-tight text-[#0a0a0a] dark:text-white">Edit Event Draft</h1>
           <p className="text-[#555] dark:text-zinc-400 mt-2">
-            Submit a faculty-led event. It goes directly to HOD for approval.
+            Revise your saved draft. It goes to HOD for approval once submitted.
           </p>
         </header>
 
@@ -240,8 +254,6 @@ export default function TeacherCreateEventPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           {/* Main Form */}
           <div className="lg:col-span-2 space-y-8">
-
-            {/* Event Details */}
             <section className="space-y-6">
               <h2 className="font-mono text-[10px] uppercase tracking-widest text-zinc-400 border-b border-zinc-100 dark:border-zinc-800 pb-2">
                 Event Details
@@ -259,10 +271,11 @@ export default function TeacherCreateEventPage() {
                   label="Guest Speaker / Expert Name"
                   name="guestName"
                   placeholder="Ex: Dr. Rajesh Kumar, IISc Bangalore"
+                  defaultValue={event.club_name?.startsWith('Guest Lecture — ') ? event.club_name.replace('Guest Lecture — ', '') : ''}
                 />
               )}
 
-              {/* Industrial Visit — location picker appears here */}
+              {/* Industrial Visit */}
               {selectedCategory === 'industrial_visit' && (
                 <div className="space-y-4">
                   <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-2xl border border-blue-100 dark:border-blue-800">
@@ -270,16 +283,14 @@ export default function TeacherCreateEventPage() {
                       Industrial Visit — Pin the Destination
                     </p>
                     <p className="text-xs text-blue-600 dark:text-blue-500">
-                      Search and select the visit location below. Students and HOD will see a live map with a direct link to Google Maps / Apple Maps.
+                      Search and select the visit location below. Students and HOD will see a live map.
                     </p>
                   </div>
                   <LocationPicker
                     onSelect={(loc) => setVisitLocation(loc.lat ? loc : null)}
                     selected={visitLocation}
                   />
-                  {/* Hidden form value for server action */}
                   <input type="hidden" name="location" value={visitLocation?.displayName || visitLocation?.name || ''} />
-                  {/* Map preview */}
                   {visitLocation && visitLocation.lat !== 0 && (
                     <LocationMapEmbed
                       lat={visitLocation.lat}
@@ -365,6 +376,7 @@ export default function TeacherCreateEventPage() {
                     }}
                     startTime={eventDate}
                     endTime={endTime}
+                    excludingEventId={event.id}
                   />
                   <input type="hidden" name="venueId" value={selectedVenueId || ''} />
                   <input type="hidden" name="location" value={location || ''} />
@@ -400,7 +412,7 @@ export default function TeacherCreateEventPage() {
               <h2 className="font-mono text-[10px] uppercase tracking-widest text-zinc-400 border-b border-zinc-100 dark:border-zinc-800 pb-2">
                 Visual Branding
               </h2>
-              <EventBackgroundCustomizer />
+              <EventBackgroundCustomizer initialValue={event.custom_background} />
               <div className="bg-zinc-50 dark:bg-zinc-950 p-6 rounded-3xl border border-zinc-200 dark:border-zinc-800 space-y-4">
                 <div className="flex justify-between items-end gap-4">
                   <div className="flex-1">
@@ -415,7 +427,7 @@ export default function TeacherCreateEventPage() {
                   </div>
                   <div className="pb-1">
                     <PosterDesigner
-                      eventId={eventId}
+                      eventId={event.id}
                       initialTitle={title}
                       initialClubName={
                         selectedCategory === 'guest_lecture'
@@ -435,9 +447,6 @@ export default function TeacherCreateEventPage() {
                     />
                   </div>
                 </div>
-                <p className="text-[10px] font-mono text-zinc-400 italic">
-                  This will appear on the student dashboard once approved by HOD.
-                </p>
               </div>
             </section>
           </div>
@@ -494,7 +503,7 @@ export default function TeacherCreateEventPage() {
                       onChange={e => setTeamFormationEnabled(e.target.checked)}
                       className="w-4 h-4 rounded border-zinc-300 text-black focus:ring-black cursor-pointer"
                     />
-                    <span className="text-xs font-mono text-zinc-650 dark:text-zinc-305 group-hover:text-black dark:group-hover:text-white transition-colors">
+                    <span className="text-xs font-mono text-zinc-600 group-hover:text-black dark:group-hover:text-white transition-colors">
                       Enable Student Team Formation
                     </span>
                   </label>
@@ -544,7 +553,7 @@ export default function TeacherCreateEventPage() {
                 </label>
               </div>
 
-              {/* ─── COMPULSORY TOGGLE ─── */}
+              {/* Compulsory toggle */}
               <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800 space-y-4">
                 <div>
                   <p className="text-[10px] font-mono uppercase text-zinc-400 mb-1">Compulsory Event</p>
@@ -563,7 +572,6 @@ export default function TeacherCreateEventPage() {
 
                 {isCompulsory && (
                   <div className="space-y-4">
-                    {/* Semester targets */}
                     <div>
                       <p className="text-[10px] font-mono uppercase text-zinc-400 mb-2 flex items-center gap-1">
                         <Users size={10} /> Target Semesters
@@ -576,7 +584,7 @@ export default function TeacherCreateEventPage() {
                             onClick={() => toggleSem(s)}
                             className={`w-8 h-8 rounded-full border text-[10px] font-mono font-bold transition-all ${
                               semesters.includes(s)
-                                ? 'bg-rose-500 text-white border-rose-500'
+                                ? 'bg-rose-50 text-white border-rose-500'
                                 : 'border-zinc-200 dark:border-zinc-600 hover:border-rose-400 text-zinc-600 dark:text-zinc-300'
                             }`}
                           >
@@ -586,7 +594,6 @@ export default function TeacherCreateEventPage() {
                       </div>
                     </div>
 
-                    {/* Year targets */}
                     <div>
                       <p className="text-[10px] font-mono uppercase text-zinc-400 mb-2">Target Years</p>
                       <div className="flex flex-wrap gap-2">
@@ -597,7 +604,7 @@ export default function TeacherCreateEventPage() {
                             onClick={() => toggleYear(y)}
                             className={`w-8 h-8 rounded-full border text-[10px] font-mono font-bold transition-all ${
                               years.includes(y)
-                                ? 'bg-rose-500 text-white border-rose-500'
+                                ? 'bg-rose-50 text-white border-rose-500'
                                 : 'border-zinc-200 dark:border-zinc-600 hover:border-rose-400 text-zinc-600 dark:text-zinc-300'
                             }`}
                           >
@@ -606,32 +613,10 @@ export default function TeacherCreateEventPage() {
                         ))}
                       </div>
                     </div>
-
-                    {/* Warning */}
-                    <div className="p-3 bg-rose-50 dark:bg-rose-900/20 rounded-xl border border-rose-100 dark:border-rose-800 flex items-start gap-2">
-                      <AlertCircle size={14} className="text-rose-500 shrink-0 mt-0.5" />
-                      <p className="text-[10px] font-mono text-rose-600 dark:text-rose-400">
-                        All matched students will be <strong>auto-registered with QR codes</strong> upon HOD approval. No manual action required.
-                      </p>
-                    </div>
                   </div>
                 )}
               </div>
-
-              {/* Approval flow badge */}
-              <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-2xl border border-amber-100 dark:border-amber-800">
-                <p className="text-[10px] font-mono text-amber-700 dark:text-amber-400 uppercase tracking-wider font-bold mb-1">
-                  Approval Flow
-                </p>
-                <p className="text-xs text-amber-600 dark:text-amber-500">
-                  Faculty events go directly to <strong>HOD</strong> for approval.
-                  {isCompulsory && <span className="block mt-1 font-bold">Auto-registration triggers on HOD approval.</span>}
-                </p>
-              </div>
             </div>
-
-            {/* Drafts */}
-            <DraftManager onLoad={handleLoadDraft} draftsKey={draftsKey} />
 
             {error && (
               <div className="p-4 bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-800 text-rose-600 dark:text-rose-400 rounded-2xl text-xs font-mono">
@@ -643,10 +628,11 @@ export default function TeacherCreateEventPage() {
             <button
               type="button"
               onClick={handleSaveDraft}
-              className="w-full py-3 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all border-2 border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:border-amber-400 hover:text-amber-600 dark:hover:border-amber-500 dark:hover:text-amber-400 active:scale-95"
+              disabled={loading}
+              className="w-full py-3 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all border-2 border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:border-amber-400 hover:text-amber-600 dark:hover:border-amber-500 dark:hover:text-amber-400 active:scale-95 disabled:opacity-50"
             >
               <Save size={16} />
-              Save as Draft
+              {loading ? 'Saving...' : 'Save Draft Changes'}
             </button>
 
             <button
