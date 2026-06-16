@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { ShieldAlert, CheckCircle, ArrowRight, User, Award, FileText, PlusCircle, FileDown } from 'lucide-react'
 import { ManageStudentsPanel } from '@/components/faculty/ManageStudentsPanel'
 import { VenueAvailabilityManager } from '@/components/faculty/VenueAvailabilityManager'
+import { ClubManager } from '@/components/faculty/ClubManager'
 import type { Profile } from '@/lib/types'
 export const dynamic = 'force-dynamic'
 
@@ -320,6 +321,9 @@ export default async function TeacherDashboard() {
 
         {/* Venue Availability Feeds */}
         <VenueAvailabilityManager />
+
+        {/* Club Member & Role Management */}
+        <ClubManager />
 
         {/* Manage Students Section */}
         <ManageStudentsPanel

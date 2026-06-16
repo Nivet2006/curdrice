@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { FileDown, CheckCircle2, Building, ExternalLink, ShieldCheck, ClipboardCheck, FileText } from 'lucide-react'
 import { ExportButton } from '@/components/hod/ExportButton'
 import { ProfileUpdateApprovalQueue } from '@/components/hod/ProfileUpdateApprovalQueue'
+import { ClubManager } from '@/components/faculty/ClubManager'
 import { createClient } from '@/lib/supabase/client'
 import { Event, ProfileUpdateRequest } from '@/lib/types'
 
@@ -264,6 +265,9 @@ export function HODDashboardClient({
            </div>
         </div>
       </div>
+
+      {/* Club Member & Role Management — full width section */}
+      <ClubManager />
 
       {/* Profile Update Requests — full width section below main grid */}
       <ProfileUpdateApprovalQueue
