@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import { Input } from '@/components/ui/Input'
 import { createFacultyEvent } from '@/lib/actions/teacher-events'
 import Link from 'next/link'
-import { ArrowLeft, Send, BookOpen, Mic, GraduationCap, Star, MoreHorizontal, Truck, AlertCircle, Users } from 'lucide-react'
+import { ArrowLeft, Send, BookOpen, Mic, GraduationCap, Star, MoreHorizontal, Truck, AlertCircle, Users, Save } from 'lucide-react'
 import { EventBackgroundCustomizer } from '@/components/shared/EventBackgroundCustomizer'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -14,6 +14,7 @@ import PosterDesigner from '@/components/shared/PosterDesigner'
 import { ImagePreview } from '@/components/shared/ImagePreview'
 import { v4 as uuidv4 } from 'uuid'
 import { VenueSelector } from '@/components/shared/VenueSelector'
+import { DraftManager, saveDraft, type EventDraft } from '@/components/teacher/DraftManager'
 
 const EVENT_CATEGORIES = [
   { value: 'faculty', label: 'Faculty Initiative', icon: GraduationCap, desc: 'Department-led academic activity' },
@@ -40,6 +41,7 @@ export default function TeacherCreateEventPage() {
   const [years, setYears] = useState<number[]>([])
   const [selectedCategory, setSelectedCategory] = useState('guest_lecture')
   const [visitLocation, setVisitLocation] = useState<{ name: string; displayName: string; lat: number; lng: number } | null>(null)
+  const [draftsKey, setDraftsKey] = useState(0)
 
   const [eventType, setEventType] = useState('general')
   const [teamFormationEnabled, setTeamFormationEnabled] = useState(false)
@@ -52,9 +54,62 @@ export default function TeacherCreateEventPage() {
   const [description, setDescription] = useState('')
   const [location, setLocation] = useState('')
   const [bannerUrl, setBannerUrl] = useState('')
+  const [capacity, setCapacity] = useState('')
+  const [waitlistMax, setWaitlistMax] = useState('')
+  const [targetedDepartment, setTargetedDepartment] = useState('CSE')
+  const [customBackground, setCustomBackground] = useState('')
 
   const toggleSem = (s: number) => setSemesters(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s])
   const toggleYear = (y: number) => setYears(prev => prev.includes(y) ? prev.filter(x => x !== y) : [...prev, y])
+
+  function handleSaveDraft() {
+    saveDraft({
+      title,
+      description,
+      selectedCategory,
+      eventDate,
+      endTime,
+      deadline,
+      location,
+      bannerUrl,
+      isPublic,
+      isCompulsory,
+      semesters,
+      years,
+      targetedDepartment,
+      eventType,
+      teamFormationEnabled,
+      minTeamMembers,
+      maxTeamMembers,
+      capacity,
+      waitlistMax,
+      customBackground,
+    })
+    setDraftsKey(k => k + 1)
+    toast.success('Draft saved! You can continue later.')
+  }
+
+  function handleLoadDraft(draft: EventDraft) {
+    setTitle(draft.title)
+    setDescription(draft.description)
+    setSelectedCategory(draft.selectedCategory)
+    setEventDate(draft.eventDate)
+    setEndTime(draft.endTime)
+    setDeadline(draft.deadline)
+    setLocation(draft.location)
+    setBannerUrl(draft.bannerUrl)
+    setIsPublic(draft.isPublic)
+    setIsCompulsory(draft.isCompulsory)
+    setSemesters(draft.semesters)
+    setYears(draft.years)
+    setTargetedDepartment(draft.targetedDepartment)
+    setEventType(draft.eventType)
+    setTeamFormationEnabled(draft.teamFormationEnabled)
+    setMinTeamMembers(draft.minTeamMembers)
+    setMaxTeamMembers(draft.maxTeamMembers)
+    setCapacity(draft.capacity)
+    setWaitlistMax(draft.waitlistMax)
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -317,14 +372,16 @@ export default function TeacherCreateEventPage() {
                   label="Attendee Capacity"
                   name="capacity"
                   type="number"
-                  defaultValue={0}
+                  value={capacity}
+                  onChange={e => setCapacity(e.target.value)}
                   placeholder="0 for unlimited"
                 />
                 <Input
                   label="Waitlist Max Capacity"
                   name="waitlistMax"
                   type="number"
-                  defaultValue={0}
+                  value={waitlistMax}
+                  onChange={e => setWaitlistMax(e.target.value)}
                   placeholder="0 for no waitlist"
                 />
               </div>
@@ -390,6 +447,8 @@ export default function TeacherCreateEventPage() {
                 <select
                   name="targetedDepartment"
                   required
+                  value={targetedDepartment}
+                  onChange={e => setTargetedDepartment(e.target.value)}
                   className="w-full rounded-xl border border-[#d0d0d0] dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-2.5 text-sm focus:ring-2 focus:ring-black outline-none dark:text-white"
                 >
                   {DEPARTMENTS.map(d => (
@@ -563,11 +622,24 @@ export default function TeacherCreateEventPage() {
               </div>
             </div>
 
+            {/* Drafts */}
+            <DraftManager onLoad={handleLoadDraft} draftsKey={draftsKey} />
+
             {error && (
               <div className="p-4 bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-800 text-rose-600 dark:text-rose-400 rounded-2xl text-xs font-mono">
                 {error}
               </div>
             )}
+
+            {/* Save Draft button */}
+            <button
+              type="button"
+              onClick={handleSaveDraft}
+              className="w-full py-3 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all border-2 border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:border-amber-400 hover:text-amber-600 dark:hover:border-amber-500 dark:hover:text-amber-400 active:scale-95"
+            >
+              <Save size={16} />
+              Save as Draft
+            </button>
 
             <button
               type="submit"
