@@ -94,11 +94,27 @@ export function ClubManager() {
   const [submittingClub, setSubmittingClub] = useState(false)
 
   // Pre-calculate parent clubs and dynamic hierarchical club tree
-  const parentClubs = useMemo(() => clubs.filter(c => !c.parent_id), [clubs])
+  const parentClubs = useMemo(() => {
+    const filtered = clubs.filter(c => !c.parent_id)
+    return [...filtered].sort((a, b) => {
+      const a1 = a.name.toLowerCase().includes('1%')
+      const b1 = b.name.toLowerCase().includes('1%')
+      if (a1 && !b1) return 1
+      if (!a1 && b1) return -1
+      return a.name.localeCompare(b.name)
+    })
+  }, [clubs])
   
   const clubTree = useMemo(() => {
     const rootClubs = clubs.filter(c => !c.parent_id)
-    return rootClubs.map(parent => ({
+    const sortedRoots = [...rootClubs].sort((a, b) => {
+      const a1 = a.name.toLowerCase().includes('1%')
+      const b1 = b.name.toLowerCase().includes('1%')
+      if (a1 && !b1) return 1
+      if (!a1 && b1) return -1
+      return a.name.localeCompare(b.name)
+    })
+    return sortedRoots.map(parent => ({
       ...parent,
       subclubs: clubs.filter(c => c.parent_id === parent.id)
     }))
@@ -487,7 +503,22 @@ export function ClubManager() {
                       Subclub of {clubs.find(c => c.id === selectedClub.parent_id)?.name || 'Parent Club'}
                     </span>
                   )}
-                  <h3 className="text-xl font-black uppercase text-zinc-900 dark:text-white mb-1">{selectedClub.name}</h3>
+                  <div className="flex items-center gap-3 mb-1">
+                    <h3 className="text-xl font-black uppercase text-zinc-900 dark:text-white">{selectedClub.name}</h3>
+                    {!selectedClub.parent_id && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setParentId(selectedClub.id)
+                          setShowAddClub(true)
+                        }}
+                        className="flex items-center gap-1 px-2.5 py-1 bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-850 dark:text-zinc-200 rounded-lg text-[10px] font-mono uppercase font-bold transition-all"
+                      >
+                        <Plus size={10} />
+                        Create Subgroup
+                      </button>
+                    )}
+                  </div>
                   <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed font-mono">
                     {selectedClub.description || 'No description provided.'}
                   </p>
