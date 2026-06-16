@@ -386,9 +386,13 @@ export async function registerForEvent(eventId: string) {
 
   const { data: event } = await supabase
     .from('events')
-    .select('registration_deadline, max_capacity, waitlist_max, is_compulsory, allow_open_registration')
+    .select('registration_deadline, max_capacity, waitlist_max, is_compulsory, allow_open_registration, registration_stopped')
     .eq('id', eventId)
     .single()
+
+  if (event?.registration_stopped) {
+    return { error: 'Registration has been stopped by the organizer.' }
+  }
 
   if (event?.is_compulsory && !event.allow_open_registration) {
     return { error: 'Registration is closed for this selective compulsory event.' }

@@ -370,3 +370,33 @@ export async function toggleFeedback(eventId: string, isOpen: boolean) {
   revalidatePath(`/student/events/${eventId}`)
   return { success: true }
 }
+
+export async function toggleRegistrationStopped(eventId: string, stopped: boolean) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Unauthorized' }
+
+  // Check ownership/role
+  const { data: event } = await supabase.from('events').select('created_by, club_name').eq('id', eventId).single()
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  
+  const isOwner = event?.created_by === user.id
+  const isStaff = ['admin', 'teacher', 'hod', 'pr', 'cc', 'manager'].includes(profile?.role || '')
+
+  if (!isOwner && !isStaff) {
+    return { error: 'Unauthorized: You do not have permission to toggle registrations for this event.' }
+  }
+
+  const { error, data } = await supabase
+    .from('events')
+    .update({ registration_stopped: stopped })
+    .eq('id', eventId)
+    .select()
+
+  if (error) return { error: error.message }
+  if (!data || data.length === 0) return { error: 'Failed to update: Event not found or permission denied.' }
+  
+  revalidatePath(`/cc/events/${eventId}`)
+  revalidatePath(`/student/events/${eventId}`)
+  return { success: true }
+}
