@@ -301,18 +301,43 @@ export function PRIICAuditWrapper({
       </div>
 
       {/* Submit Action */}
-      <button
-        onClick={decision === 'approve' ? handleApprove : handleDecline}
-        disabled={loading || !decision}
-        className={`w-full py-5 rounded-[2rem] font-black uppercase tracking-[0.2em] text-xs flex items-center justify-center gap-3 transition-all disabled:opacity-20 active:scale-95 shadow-[0_0_50px_rgba(255,255,255,0.1)] ${
-          decision === 'decline'
-            ? 'bg-rose-600 text-white hover:bg-rose-500'
-            : 'bg-white text-black hover:bg-zinc-200'
-        }`}
-      >
-        {loading ? 'Processing...' : decision === 'decline' ? `Submit Rejection to CC` : 'Finalize Audit'}
-        <Send size={16} />
-      </button>
+      <div className="space-y-3">
+        <button
+          onClick={decision === 'approve' ? handleApprove : handleDecline}
+          disabled={loading || !decision}
+          className={`w-full py-5 rounded-[2rem] font-black uppercase tracking-[0.2em] text-xs flex items-center justify-center gap-3 transition-all disabled:opacity-20 active:scale-95 shadow-[0_0_50px_rgba(255,255,255,0.1)] ${
+            decision === 'decline'
+              ? 'bg-rose-600 text-white hover:bg-rose-500'
+              : 'bg-white text-black hover:bg-zinc-200'
+          }`}
+        >
+          {loading ? 'Processing...' : decision === 'decline' ? `Submit Rejection to CC` : 'Finalize Audit'}
+          <Send size={16} />
+        </button>
+
+        <button
+          type="button"
+          onClick={async () => {
+            const code = prompt("Enter Admin TOTP code to bypass IIC report approval:")
+            if (code) {
+              setLoading(true)
+              const { bypassIICReportApprovalAction } = await import('@/lib/actions/bypass')
+              const res = await bypassIICReportApprovalAction(reportId, code)
+              if (res?.error) {
+                alert(res.error)
+                setLoading(false)
+              } else {
+                alert("IIC Report bypassed and approved successfully!")
+                window.location.reload()
+              }
+            }
+          }}
+          disabled={loading}
+          className="w-full py-5 rounded-[2rem] font-black uppercase tracking-[0.2em] text-xs flex items-center justify-center gap-3 transition-all disabled:opacity-20 active:scale-95 bg-amber-500 text-white hover:bg-amber-600"
+        >
+          Bypass (Admin TOTP)
+        </button>
+      </div>
     </div>
   )
 }

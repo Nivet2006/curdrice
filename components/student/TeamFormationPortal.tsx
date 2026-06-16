@@ -23,6 +23,7 @@ import {
   leaveTeam
 } from '@/lib/actions/hackathon-actions'
 import { toast } from 'sonner'
+import { ProjectSubmissionPortal } from '@/components/student/ProjectSubmissionPortal'
 
 interface TeamFormationPortalProps {
   eventId: string
@@ -170,7 +171,8 @@ export function TeamFormationPortal({ eventId, currentUserId }: TeamFormationPor
       </div>
 
       {myTeam ? (
-        /* USER IS IN A TEAM */
+        <>
+        {/* USER IS IN A TEAM */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left: My Team Members */}
           <div className="lg:col-span-2 space-y-6">
@@ -334,6 +336,17 @@ export function TeamFormationPortal({ eventId, currentUserId }: TeamFormationPor
             )}
           </div>
         </div>
+
+        {/* Project Submission Section */}
+        <div className="mt-2">
+          <ProjectSubmissionPortal
+            eventId={eventId}
+            teamId={myTeam.id}
+            teamName={myTeam.team_name}
+            isTeamMember={true}
+          />
+        </div>
+        </>
       ) : (
         /* USER IS NOT IN A TEAM */
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

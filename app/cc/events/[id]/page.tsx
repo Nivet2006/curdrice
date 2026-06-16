@@ -1,5 +1,5 @@
 import { createClient, getCachedAuthUser, getCachedUserProfile } from '@/lib/supabase/server'
-import { ArrowLeft, Clock, XCircle, FileText, Send, Edit3, Heart } from 'lucide-react'
+import { ArrowLeft, Clock, XCircle, FileText, Send, Edit3, Heart, Trophy } from 'lucide-react'
 import { EventRegistrationStats } from '@/components/admin/EventRegistrationStats'
 import { parseCustomBackground } from '@/lib/custom-background'
 import Link from 'next/link'
@@ -21,7 +21,7 @@ export default async function CCEventDetailPage({ params }: { params: Promise<{ 
 
    // Fetch event and constraints in parallel to eliminate sequential database roundtrips
    const [eventRes, constraintsRes] = await Promise.all([
-      supabase.from('events').select('id, title, description, club_name, location, event_date, registration_deadline, max_capacity, status, approval_status, rejection_data, feedback_config, feedback_open, targeted_department, banner_url, custom_background, is_public, discussion_enabled, thread_mode, created_by, created_at').eq('id', id).maybeSingle(),
+      supabase.from('events').select('id, title, description, club_name, location, event_date, registration_deadline, max_capacity, status, approval_status, rejection_data, feedback_config, feedback_open, targeted_department, banner_url, custom_background, is_public, discussion_enabled, thread_mode, created_by, created_at, event_type').eq('id', id).maybeSingle(),
       supabase.from('event_constraints').select('id, event_id, allowed_semesters, allowed_years, allowed_departments, created_at').eq('event_id', id).maybeSingle()
    ])
 
@@ -86,6 +86,19 @@ export default async function CCEventDetailPage({ params }: { params: Promise<{ 
                </Link>
                <div className="flex items-center gap-3">
                   <div className="flex gap-2 mr-4">
+                     {event.event_type === 'hackathon' && (
+                        <Link
+                           href={`/cc/events/${id}/hackathon`}
+                           className={`flex items-center gap-2 px-4 py-2 border rounded-full text-xs font-bold transition-all active:scale-95 ${
+                             bg.hasCustomBg 
+                               ? 'border-violet-400 text-violet-300 hover:bg-violet-400/10' 
+                               : 'border-violet-500 text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-500/10'
+                           }`}
+                        >
+                           <Trophy size={14} />
+                           Hackathon Controls
+                        </Link>
+                     )}
                      <Link
                         href={`/cc/events/${id}/edit`}
                         className={`flex items-center gap-2 px-4 py-2 border rounded-full text-xs font-bold transition-all active:scale-95 ${
