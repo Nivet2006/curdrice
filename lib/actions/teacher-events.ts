@@ -22,13 +22,17 @@ export async function createFacultyEvent(formData: FormData) {
 
   const title = (formData.get('title') as string)?.trim()
   const description = (formData.get('description') as string)?.trim()
-  const location = (formData.get('location') as string)?.trim()
+  const venueId = formData.get('venueId') as string || null
+  const endTimeStr = formData.get('endTime') as string || null
+  let location = (formData.get('location') as string)?.trim() || ''
   const event_date = formData.get('eventDate') as string
   const deadlineStr = formData.get('deadline') as string
   const banner_url = (formData.get('bannerUrl') as string)?.trim() || null
   const custom_background = (formData.get('customBackground') as string) || null
   const capStr = formData.get('capacity') as string
   const max_capacity = capStr && parseInt(capStr) > 0 ? parseInt(capStr) : null
+  const waitlistCapStr = formData.get('waitlistMax') as string
+  const waitlist_max = waitlistCapStr && parseInt(waitlistCapStr) > 0 ? parseInt(waitlistCapStr) : 0
   const targeted_department = (formData.get('targetedDepartment') as string) || profile.department || null
   const event_category = (formData.get('eventCategory') as string) || 'faculty'
   const guest_name = (formData.get('guestName') as string)?.trim() || null
@@ -38,6 +42,11 @@ export async function createFacultyEvent(formData: FormData) {
   const locationLngStr = formData.get('locationLng') as string | null
   const location_lat = locationLatStr ? parseFloat(locationLatStr) : null
   const location_lng = locationLngStr ? parseFloat(locationLngStr) : null
+
+  if (venueId && event_category !== 'industrial_visit') {
+    const { data: venue } = await supabase.from('venues').select('name').eq('id', venueId).single()
+    if (venue) location = venue.name
+  }
 
   // Parse semesters/years for compulsory events
   let allowed_semesters: number[] | null = null
@@ -75,29 +84,48 @@ export async function createFacultyEvent(formData: FormData) {
     return { error: 'Registration deadline must be before the event date.' }
   }
 
+  const pregeneratedId = formData.get('id') as string | null
+
   // Venue conflict check (±4 hours) — skip for industrial visits (external location)
   if (event_category !== 'industrial_visit') {
-    const fourHoursMs = 4 * 60 * 60 * 1000
-    const startTime = new Date(eventDt.getTime() - fourHoursMs).toISOString()
-    const endTime = new Date(eventDt.getTime() + fourHoursMs).toISOString()
+    if (venueId && endTimeStr) {
+      const { getVenuesWithStatus } = await import('@/lib/actions/venue-actions')
+      const startIso = eventDt.toISOString()
+      const endIso = new Date(endTimeStr).toISOString()
+      
+      const statusRes = await getVenuesWithStatus(startIso, endIso, pregeneratedId)
+      if (statusRes.error) {
+        return { error: statusRes.error }
+      }
+      const currentVenueStatus = statusRes.venues?.find(v => v.id === venueId)
+      if (currentVenueStatus?.status === 'locked') {
+        return { error: currentVenueStatus.message }
+      }
+      if (currentVenueStatus?.status === 'unavailable') {
+        return { error: currentVenueStatus.message }
+      }
+    } else {
+      const fourHoursMs = 4 * 60 * 60 * 1000
+      const startTime = new Date(eventDt.getTime() - fourHoursMs).toISOString()
+      const endTime = new Date(eventDt.getTime() + fourHoursMs).toISOString()
 
-    const { data: conflict } = await supabase
-      .from('events')
-      .select('title, event_date')
-      .eq('location', location)
-      .eq('approval_status', 'approved')
-      .gte('event_date', startTime)
-      .lte('event_date', endTime)
-      .maybeSingle()
+      const { data: conflict } = await supabase
+        .from('events')
+        .select('title, event_date')
+        .eq('location', location)
+        .eq('approval_status', 'approved')
+        .gte('event_date', startTime)
+        .lte('event_date', endTime)
+        .maybeSingle()
 
-    if (conflict) {
-      return {
-        error: `Venue Conflict: "${location}" is already booked for "${conflict.title}" at ${new Date(conflict.event_date).toLocaleTimeString()}. Please choose a different venue or time.`
+      if (conflict) {
+        return {
+          error: `Venue Conflict: "${location}" is already booked for "${conflict.title}" at ${new Date(conflict.event_date).toLocaleTimeString()}. Please choose a different venue or time.`
+        }
       }
     }
   }
 
-  const pregeneratedId = formData.get('id') as string | null
   // Faculty events skip teacher review — go straight to pending_hod
   const approval_status = 'pending_hod'
 
@@ -107,8 +135,11 @@ export async function createFacultyEvent(formData: FormData) {
     description,
     location,
     event_date: eventDt.toISOString(),
+    end_time: endTimeStr ? new Date(endTimeStr).toISOString() : null,
+    venue_id: venueId,
     registration_deadline: deadlineDt.toISOString(),
     max_capacity,
+    waitlist_max,
     banner_url,
     custom_background,
     created_by: user.id,

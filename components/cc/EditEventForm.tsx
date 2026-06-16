@@ -12,6 +12,7 @@ import { toast } from 'sonner'
 import { EventBackgroundCustomizer } from '@/components/shared/EventBackgroundCustomizer'
 import PosterDesigner from '@/components/shared/PosterDesigner'
 import { ImagePreview } from '@/components/shared/ImagePreview'
+import { VenueSelector } from '@/components/shared/VenueSelector'
 
 interface EditEventFormProps {
   event: any
@@ -31,7 +32,9 @@ export default function EditEventForm({ event, constraints }: EditEventFormProps
   }
 
   const [eventDate, setEventDate] = useState(formatForInput(event.event_date))
+  const [endTime, setEndTime] = useState(formatForInput(event.end_time))
   const [deadline, setDeadline] = useState(formatForInput(event.registration_deadline))
+  const [selectedVenueId, setSelectedVenueId] = useState<string | null>(event.venue_id || null)
 
   const [semesters, setSemesters] = useState<number[]>(constraints?.allowed_semesters || [])
   const [years, setYears] = useState<number[]>(constraints?.allowed_years || [])
@@ -50,13 +53,20 @@ export default function EditEventForm({ event, constraints }: EditEventFormProps
 
   async function handleAction(form: HTMLFormElement, isFinalSubmit: boolean) {
     setError(null)
-    if (!eventDate || !deadline) {
-      setError('Event Date and Deadline are required.')
+    if (!eventDate || !endTime || !deadline) {
+      setError('Event Date, End Time, and Deadline are required.')
+      return
+    }
+
+    if (!selectedVenueId) {
+      setError('Please select a venue.')
       return
     }
 
     setLoading(true)
     const formData = new FormData(form)
+    formData.append('endTime', endTime)
+    formData.append('venueId', selectedVenueId || '')
     formData.append('semesters', JSON.stringify(semesters))
     formData.append('years', JSON.stringify(years))
     formData.append('feedbackConfig', JSON.stringify(questions))
@@ -133,21 +143,6 @@ export default function EditEventForm({ event, constraints }: EditEventFormProps
                  </div>
              </section>
 
-             <section className="space-y-6">
-                <h2 className="font-mono text-[10px] uppercase tracking-widest text-zinc-400 border-b border-zinc-100 pb-2">Logistics & Venue</h2>
-                 <Input label="Venue / Virtual Link *" name="location" value={location} onChange={e => setLocation(e.target.value)} required />
-                <div className="grid grid-cols-2 gap-4">
-                   <div className="flex flex-col gap-1">
-                      <label className="text-xs font-mono text-[#555555] uppercase tracking-widest">Event Date *</label>
-                      <input type="datetime-local" name="eventDate" required value={eventDate} onChange={e => setEventDate(e.target.value)} className="rounded-xl border border-[#d0d0d0] bg-white px-4 py-2.5 text-sm focus:ring-2 focus:ring-black" />
-                   </div>
-                   <div className="flex flex-col gap-1">
-                      <label className="text-xs font-mono text-[#555555] uppercase tracking-widest">Registration Deadline *</label>
-                      <input type="datetime-local" name="deadline" required value={deadline} onChange={e => setDeadline(e.target.value)} className="rounded-xl border border-[#d0d0d0] bg-white px-4 py-2.5 text-sm focus:ring-2 focus:ring-black" />
-                   </div>
-                </div>
-                <Input label="Attendee Capacity" name="capacity" type="number" defaultValue={event.max_capacity || 0} />
-             </section>
 
              <section className="pt-8 border-t border-zinc-100">
                 <FeedbackFormBuilder 
@@ -155,6 +150,43 @@ export default function EditEventForm({ event, constraints }: EditEventFormProps
                   onChange={setQuestions} 
                 />
              </section>
+
+              <section className="space-y-6">
+                 <h2 className="font-mono text-[10px] uppercase tracking-widest text-zinc-400 border-b border-zinc-100 pb-2">Logistics & Venue</h2>
+                 
+                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="flex flex-col gap-1">
+                       <label className="text-xs font-mono text-[#555555] uppercase tracking-widest">Event Date (Start) *</label>
+                       <input type="datetime-local" name="eventDate" required value={eventDate} onChange={e => setEventDate(e.target.value)} className="rounded-xl border border-[#d0d0d0] bg-white px-4 py-2.5 text-sm focus:ring-2 focus:ring-black" />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                       <label className="text-xs font-mono text-[#555555] uppercase tracking-widest">Event End Time *</label>
+                       <input type="datetime-local" name="endTime" required value={endTime} onChange={e => setEndTime(e.target.value)} className="rounded-xl border border-[#d0d0d0] bg-white px-4 py-2.5 text-sm focus:ring-2 focus:ring-black" />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                       <label className="text-xs font-mono text-[#555555] uppercase tracking-widest">Registration Deadline *</label>
+                       <input type="datetime-local" name="deadline" required value={deadline} onChange={e => setDeadline(e.target.value)} className="rounded-xl border border-[#d0d0d0] bg-white px-4 py-2.5 text-sm focus:ring-2 focus:ring-black" />
+                    </div>
+                 </div>
+
+                 <VenueSelector
+                   selectedVenueId={selectedVenueId}
+                   onSelectVenue={(id, name) => {
+                     setSelectedVenueId(id)
+                     setLocation(name)
+                   }}
+                   startTime={eventDate}
+                   endTime={endTime}
+                   excludingEventId={event.id}
+                 />
+                 <input type="hidden" name="venueId" value={selectedVenueId || ''} />
+                 <input type="hidden" name="location" value={location || ''} />
+
+                  <div className="grid grid-cols-2 gap-4">
+                     <Input label="Attendee Capacity" name="capacity" type="number" defaultValue={event.max_capacity || 0} />
+                     <Input label="Waitlist Max Capacity" name="waitlistMax" type="number" defaultValue={event.waitlist_max || 0} />
+                  </div>
+              </section>
 
               <section className="space-y-6">
                  <h2 className="font-mono text-[10px] uppercase tracking-widest text-zinc-400 border-b border-zinc-100 pb-2">Visual Branding</h2>

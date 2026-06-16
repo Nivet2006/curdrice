@@ -19,16 +19,25 @@ export async function createDraftEvent(formData: FormData) {
   const title = (formData.get('title') as string)?.trim()
   const club_name = (formData.get('clubName') as string)?.trim()
   const description = (formData.get('description') as string)?.trim()
-  const location = (formData.get('location') as string)?.trim()
+  const venueId = formData.get('venueId') as string || null
+  const endTimeStr = formData.get('endTime') as string || null
+  let location = (formData.get('location') as string)?.trim() || ''
   const event_date = formData.get('eventDate') as string
   const deadlineStr = formData.get('deadline') as string
   const banner_url = (formData.get('bannerUrl') as string)?.trim() || null
   const custom_background = (formData.get('customBackground') as string) || null
   const capStr = formData.get('capacity') as string
   const max_capacity = capStr && parseInt(capStr) > 0 ? parseInt(capStr) : null
+  const waitlistCapStr = formData.get('waitlistMax') as string
+  const waitlist_max = waitlistCapStr && parseInt(waitlistCapStr) > 0 ? parseInt(waitlistCapStr) : 0
   const targeted_department = (formData.get('targetedDepartment') as string) || null
   const feedback_config = JSON.parse(formData.get('feedbackConfig') as string || '[]')
   const is_public = formData.get('isPublic') === 'true'
+
+  if (venueId) {
+    const { data: venue } = await supabase.from('venues').select('name').eq('id', venueId).single()
+    if (venue) location = venue.name
+  }
 
   if (!feedback_config || feedback_config.length < 3) {
     return { error: 'Policy: You must define at least 3 feedback questions for the event survey.' }
@@ -39,24 +48,44 @@ export async function createDraftEvent(formData: FormData) {
   }
 
   const eventDt = new Date(event_date)
-  
-  // VENUE CONFLICT CHECK (± 4 hours for a session)
-  const fourHoursInMs = 4 * 60 * 60 * 1000
-  const startTime = new Date(eventDt.getTime() - fourHoursInMs).toISOString()
-  const endTime = new Date(eventDt.getTime() + fourHoursInMs).toISOString()
+  const pregeneratedId = formData.get('id') as string | null
 
-  const { data: conflict } = await supabase
-    .from('events')
-    .select('title, event_date')
-    .eq('location', location)
-    .eq('approval_status', 'approved')
-    .gte('event_date', startTime)
-    .lte('event_date', endTime)
-    .maybeSingle()
+  // VENUE CONFLICT CHECK
+  if (venueId && endTimeStr) {
+    const { getVenuesWithStatus } = await import('@/lib/actions/venue-actions')
+    const startIso = eventDt.toISOString()
+    const endIso = new Date(endTimeStr).toISOString()
+    
+    const statusRes = await getVenuesWithStatus(startIso, endIso, pregeneratedId)
+    if (statusRes.error) {
+      return { error: statusRes.error }
+    }
+    const currentVenueStatus = statusRes.venues?.find(v => v.id === venueId)
+    if (currentVenueStatus?.status === 'locked') {
+      return { error: currentVenueStatus.message }
+    }
+    if (currentVenueStatus?.status === 'unavailable') {
+      return { error: currentVenueStatus.message }
+    }
+  } else {
+    // Fallback conflict check
+    const fourHoursInMs = 4 * 60 * 60 * 1000
+    const startTime = new Date(eventDt.getTime() - fourHoursInMs).toISOString()
+    const endTime = new Date(eventDt.getTime() + fourHoursInMs).toISOString()
 
-  if (conflict) {
-    return { 
-      error: `Venue Conflict: "${location}" is already booked for "${conflict.title}" at ${new Date(conflict.event_date).toLocaleTimeString()}. Please choose a different venue or time.` 
+    const { data: conflict } = await supabase
+      .from('events')
+      .select('title, event_date')
+      .eq('location', location)
+      .eq('approval_status', 'approved')
+      .gte('event_date', startTime)
+      .lte('event_date', endTime)
+      .maybeSingle()
+
+    if (conflict) {
+      return { 
+        error: `Venue Conflict: "${location}" is already booked for "${conflict.title}" at ${new Date(conflict.event_date).toLocaleTimeString()}. Please choose a different venue or time.` 
+      }
     }
   }
 
@@ -69,15 +98,16 @@ export async function createDraftEvent(formData: FormData) {
   const sems = JSON.parse(semStr || '[]')
   const years = JSON.parse(yearStr || '[]')
 
-  const pregeneratedId = formData.get('id') as string | null
   const isSubmission = formData.get('submitForReview') === 'true'
   const approval_status = isSubmission ? 'pending_teacher' : 'draft'
 
   const insertData: any = {
     title, club_name, description, location,
     event_date: eventDt.toISOString(),
+    end_time: endTimeStr ? new Date(endTimeStr).toISOString() : null,
+    venue_id: venueId,
     registration_deadline: deadlineDt.toISOString(),
-    max_capacity, banner_url,
+    max_capacity, banner_url, waitlist_max,
     custom_background,
     created_by: user.id,
     approval_status,
@@ -165,16 +195,25 @@ export async function updateEventDraft(id: string, formData: FormData) {
   const title = (formData.get('title') as string)?.trim()
   const club_name = (formData.get('clubName') as string)?.trim()
   const description = (formData.get('description') as string)?.trim()
-  const location = (formData.get('location') as string)?.trim()
+  const venueId = formData.get('venueId') as string || null
+  const endTimeStr = formData.get('endTime') as string || null
+  let location = (formData.get('location') as string)?.trim() || ''
   const event_date = formData.get('eventDate') as string
   const deadlineStr = formData.get('deadline') as string
   const banner_url = (formData.get('bannerUrl') as string)?.trim() || null
   const custom_background = (formData.get('customBackground') as string) || null
   const capStr = formData.get('capacity') as string
   const max_capacity = capStr && parseInt(capStr) > 0 ? parseInt(capStr) : null
+  const waitlistCapStr = formData.get('waitlistMax') as string
+  const waitlist_max = waitlistCapStr && parseInt(waitlistCapStr) > 0 ? parseInt(waitlistCapStr) : 0
   const targeted_department = (formData.get('targetedDepartment') as string) || null
   const feedback_config = JSON.parse(formData.get('feedbackConfig') as string || '[]')
   const is_public = formData.get('isPublic') === 'true'
+
+  if (venueId) {
+    const { data: venue } = await supabase.from('venues').select('name').eq('id', venueId).single()
+    if (venue) location = venue.name
+  }
 
   if (!feedback_config || feedback_config.length < 3) {
     return { error: 'Policy: You must define at least 3 feedback questions before submitting or saving.' }
@@ -193,24 +232,43 @@ export async function updateEventDraft(id: string, formData: FormData) {
   const sems = JSON.parse(semStr || '[]')
   const years = JSON.parse(yearStr || '[]')
 
-  // VENUE CONFLICT CHECK (± 4 hours for a session)
-  const fourHoursInMs = 4 * 60 * 60 * 1000
-  const startTime = new Date(eventDt.getTime() - fourHoursInMs).toISOString()
-  const endTime = new Date(eventDt.getTime() + fourHoursInMs).toISOString()
+  // VENUE CONFLICT CHECK
+  if (venueId && endTimeStr) {
+    const { getVenuesWithStatus } = await import('@/lib/actions/venue-actions')
+    const startIso = eventDt.toISOString()
+    const endIso = new Date(endTimeStr).toISOString()
+    
+    const statusRes = await getVenuesWithStatus(startIso, endIso, id)
+    if (statusRes.error) {
+      return { error: statusRes.error }
+    }
+    const currentVenueStatus = statusRes.venues?.find(v => v.id === venueId)
+    if (currentVenueStatus?.status === 'locked') {
+      return { error: currentVenueStatus.message }
+    }
+    if (currentVenueStatus?.status === 'unavailable') {
+      return { error: currentVenueStatus.message }
+    }
+  } else {
+    // Fallback conflict check (± 4 hours for a session)
+    const fourHoursInMs = 4 * 60 * 60 * 1000
+    const startTime = new Date(eventDt.getTime() - fourHoursInMs).toISOString()
+    const endTime = new Date(eventDt.getTime() + fourHoursInMs).toISOString()
 
-  const { data: conflict } = await supabase
-    .from('events')
-    .select('title, event_date')
-    .eq('location', location)
-    .eq('approval_status', 'approved')
-    .neq('id', id)
-    .gte('event_date', startTime)
-    .lte('event_date', endTime)
-    .maybeSingle()
+    const { data: conflict } = await supabase
+      .from('events')
+      .select('title, event_date')
+      .eq('location', location)
+      .eq('approval_status', 'approved')
+      .neq('id', id)
+      .gte('event_date', startTime)
+      .lte('event_date', endTime)
+      .maybeSingle()
 
-  if (conflict) {
-    return { 
-      error: `Venue Conflict: "${location}" is already booked for "${conflict.title}" at ${new Date(conflict.event_date).toLocaleTimeString()}. Please choose a different venue or time.` 
+    if (conflict) {
+      return { 
+        error: `Venue Conflict: "${location}" is already booked for "${conflict.title}" at ${new Date(conflict.event_date).toLocaleTimeString()}. Please choose a different venue or time.` 
+      }
     }
   }
 
@@ -234,8 +292,10 @@ export async function updateEventDraft(id: string, formData: FormData) {
   const { error: eventError } = await supabase.from('events').update({
     title, club_name, description, location,
     event_date: eventDt.toISOString(),
+    end_time: endTimeStr ? new Date(endTimeStr).toISOString() : null,
+    venue_id: venueId,
     registration_deadline: deadlineDt.toISOString(),
-    max_capacity, banner_url,
+    max_capacity, banner_url, waitlist_max,
     custom_background,
     approval_status,
     targeted_department,
