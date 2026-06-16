@@ -31,6 +31,14 @@ export default async function TeacherDashboard() {
     .eq('targeted_department', dept)
     .order('created_at', { ascending: true })
 
+  // Teacher's own event drafts
+  const { data: ownDrafts } = await supabase
+    .from('events')
+    .select('id, title, description, club_name, location, event_date, created_at')
+    .eq('created_by', user?.id || '')
+    .eq('approval_status', 'draft')
+    .order('created_at', { ascending: false })
+
   // Post-Event IIC Reports pending teacher verification (assigned to teacher or matching department)
   const { data: allPendingReports } = await supabase
     .from('iic_event_reports')
@@ -183,6 +191,48 @@ export default async function TeacherDashboard() {
             )}
           </div>
         </div>
+
+        {/* Saved Drafts */}
+        {ownDrafts && ownDrafts.length > 0 && (
+          <div className="space-y-8 animate-in fade-in duration-500">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-zinc-500/10 rounded-lg">
+                <FileText size={20} className="text-zinc-600 dark:text-zinc-400" />
+              </div>
+              <h2 className="text-lg font-black uppercase tracking-tighter text-zinc-800 dark:text-zinc-200">Saved Drafts ({ownDrafts.length})</h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {ownDrafts.map(draft => (
+                <div key={draft.id} className="group bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-[2rem] p-8 hover:shadow-2xl hover:border-black dark:hover:border-white transition-all cursor-pointer relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-1 h-full bg-zinc-400"></div>
+                  <div className="flex justify-between items-start mb-6">
+                    <div className="space-y-1">
+                      <h3 className="text-2xl font-black text-[#0a0a0a] dark:text-white leading-tight group-hover:underline transition-all uppercase tracking-tighter">{draft.title}</h3>
+                      <p className="font-mono text-[10px] text-zinc-400 uppercase tracking-widest">{draft.club_name}</p>
+                    </div>
+                    <Link
+                      href={`/teacher/events/${draft.id}/edit`}
+                      className="bg-[#0a0a0a] text-white w-12 h-12 rounded-full flex items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-xl"
+                    >
+                      <ArrowRight size={20} />
+                    </Link>
+                  </div>
+                  <div className="space-y-4">
+                    <p className="text-sm text-zinc-500 font-medium leading-relaxed line-clamp-3 italic">
+                      {draft.description || 'No description provided.'}
+                    </p>
+                    <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800/50 flex items-center gap-4 text-[10px] font-mono text-zinc-400 uppercase tracking-widest">
+                      <span>Saved: {new Date(draft.created_at).toLocaleDateString()}</span>
+                      <span className="w-1 h-1 rounded-full bg-zinc-200"></span>
+                      <span>{draft.location || 'No location set'}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* IIC Post-Event Reports Queue */}
         <div className="space-y-8">
