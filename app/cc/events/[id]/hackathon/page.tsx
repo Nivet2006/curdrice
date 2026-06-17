@@ -46,11 +46,11 @@ export default async function CCHackathonControlPage({
     .select('id, judge_id, judge:profiles(id, full_name, usn, department, role)')
     .eq('event_id', id)
 
-  // Fetch faculty to assign as judges (teachers, cc, hod, admin)
+  // Fetch faculty to assign as judges (only teachers)
   const { data: allFaculty } = await supabase
     .from('profiles')
     .select('id, full_name, usn, department, role')
-    .in('role', ['teacher', 'cc', 'hod', 'admin'])
+    .eq('role', 'teacher')
     .order('full_name', { ascending: true })
 
   // Fetch teams

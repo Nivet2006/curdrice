@@ -24,6 +24,7 @@ export function Navbar({ role, name }: { role?: Role; name?: string }) {
   const [messagesOpen, setMessagesOpen] = React.useState(false)
   const [unreadCount, setUnreadCount] = React.useState(0)
   const [userId, setUserId] = React.useState<string | null>(null)
+  const [isJudge, setIsJudge] = React.useState(false)
 
   React.useEffect(() => {
     const checkUser = async () => {
@@ -32,10 +33,17 @@ export function Navbar({ role, name }: { role?: Role; name?: string }) {
         setUserId(user.id)
         const count = await getUnreadNotificationsCount(user.id)
         setUnreadCount(count)
+        if (role === 'teacher') {
+          const { count: judgeCount } = await supabase
+            .from('hackathon_judges')
+            .select('id', { count: 'exact', head: true })
+            .eq('judge_id', user.id)
+          setIsJudge((judgeCount || 0) > 0)
+        }
       }
     }
     checkUser()
-  }, [])
+  }, [role])
 
   const handleLogout = async () => {
     setSidebarOpen(false)
@@ -73,7 +81,7 @@ export function Navbar({ role, name }: { role?: Role; name?: string }) {
     ] : []),
     ...(role === 'teacher' ? [
       { href: '/teacher/events/create', label: 'Create Event', icon: Plus },
-      { href: '/teacher/hackathon', label: 'Judge Panel', icon: Trophy },
+      ...(isJudge ? [{ href: '/teacher/hackathon', label: 'Judge Panel', icon: Trophy }] : []),
     ] : []),
     ...(role === 'hod' ? [
       { href: '/hod/approvals', label: 'Approvals', icon: ClipboardList },

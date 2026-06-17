@@ -83,6 +83,58 @@ export async function assignJudge(eventId: string, judgeId: string) {
   return { success: true }
 }
 
+// Remove a Judge from a hackathon
+export async function removeJudge(eventId: string, judgeId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Unauthorized' }
+
+  // Check role
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (!profile || !['admin', 'cc', 'teacher'].includes(profile.role)) {
+    return { error: 'Unauthorized role to remove judges.' }
+  }
+
+  const { error } = await supabase
+    .from('hackathon_judges')
+    .delete()
+    .eq('event_id', eventId)
+    .eq('judge_id', judgeId)
+
+  if (error) return { error: error.message }
+  return { success: true }
+}
+
+// Get assigned judges for an event
+export async function getAssignedJudges(eventId: string) {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('hackathon_judges')
+    .select('id, judge_id, judge:profiles(full_name, usn, department)')
+    .eq('event_id', eventId)
+
+  if (error) return { error: error.message, data: [] }
+  return { data: data || [] }
+}
+
+// Get available teachers to be assigned as judges
+export async function getAvailableTeachers() {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id, full_name, usn, department')
+    .eq('role', 'teacher')
+    .order('full_name')
+
+  if (error) return { error: error.message, data: [] }
+  return { data: data || [] }
+}
+
 // 3. Submit Evaluation Scores
 export async function submitEvaluation(
   submissionId: string,
