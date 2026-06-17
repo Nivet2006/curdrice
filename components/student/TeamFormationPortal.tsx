@@ -287,7 +287,7 @@ export function TeamFormationPortal({ eventId, currentUserId }: TeamFormationPor
             </div>
 
             {/* Leader Panel: Join Requests */}
-            {myTeam.leader_id === currentUserId && (
+            {myTeam.leader_id === currentUserId && event.team_join_requests_enabled !== false && (
               <div className="space-y-4">
                 <h4 className="font-bold text-xs uppercase tracking-wider text-zinc-500">Pending Join Requests ({myTeamRequests.length})</h4>
                 <div className="border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden bg-white dark:bg-zinc-900 divide-y divide-zinc-150 dark:divide-zinc-800">
