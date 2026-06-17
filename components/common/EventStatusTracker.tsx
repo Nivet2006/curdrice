@@ -16,7 +16,7 @@ export function EventStatusTracker({ status, creatorRole }: EventStatusTrackerPr
     ? [
         {
           id: 'draft',
-          label: 'Draft Submitted',
+          label: 'Draft Submitted (TEACHER)',
           isCompleted: status !== 'draft',
           isActive: false, // Once submitted, it's done
         },
@@ -36,7 +36,7 @@ export function EventStatusTracker({ status, creatorRole }: EventStatusTrackerPr
     : [
         {
           id: 'draft',
-          label: 'Draft Submitted',
+          label: 'Draft Submitted (CC)',
           isCompleted: status !== 'draft',
           isActive: false, // Once submitted, it's done
         },
