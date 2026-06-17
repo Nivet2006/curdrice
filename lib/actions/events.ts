@@ -568,3 +568,56 @@ export async function cancelRegistration(eventId: string) {
     return { error: errorMsg }
   }
 }
+
+export async function updateHackathonConfig(
+  eventId: string,
+  criteria: any[],
+  showEvaluationCriteria: boolean,
+  showScoreboard: boolean
+) {
+  try {
+    const { revalidatePath } = await import('next/cache')
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Unauthorized' }
+
+    // Check permissions
+    const { data: event, error: eventError } = await supabase
+      .from('events')
+      .select('created_by')
+      .eq('id', eventId)
+      .single()
+
+    if (eventError || !event) return { error: 'Event not found' }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    const isCreator = event.created_by === user.id
+    const isAdminOrHOD = profile && ['admin', 'hod'].includes(profile.role)
+
+    if (!isCreator && !isAdminOrHOD) {
+      return { error: 'You are not authorized to configure this event.' }
+    }
+
+    const { error: updateError } = await supabase
+      .from('events')
+      .update({
+        hackathon_criteria: criteria,
+        show_evaluation_criteria: showEvaluationCriteria,
+        show_scoreboard: showScoreboard
+      })
+      .eq('id', eventId)
+
+    if (updateError) return { error: updateError.message }
+
+    revalidatePath(`/student/events/${eventId}`)
+    return { success: true }
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : 'Unknown error'
+    return { error: errorMsg }
+  }
+}

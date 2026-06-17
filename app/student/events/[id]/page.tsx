@@ -18,6 +18,7 @@ import { getEventThread } from '@/lib/actions/event-threads'
 import { MessageSquare, Lock } from 'lucide-react'
 import { parseCustomBackground } from '@/lib/custom-background'
 import { TeamFormationPortal } from '@/components/student/TeamFormationPortal'
+import { HackathonConfigPanel } from '@/components/student/HackathonConfigPanel'
 
 export default async function EventDetailPage({ 
   params,
@@ -31,10 +32,12 @@ export default async function EventDetailPage({
   const { invitedBy } = await searchParams
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { data } = await supabase.from('events').select('id, title, description, club_name, location, location_lat, location_lng, event_date, registration_deadline, max_capacity, waitlist_max, status, banner_url, custom_background, created_by, created_at, approval_status, discussion_enabled, feedback_open, feedback_config, is_public, targeted_department, rejection_data, is_compulsory, event_type, team_formation_enabled, min_team_members, max_team_members, registration_stopped, profiles:created_by(role, full_name)').eq('id', id).single()
+  const { data } = await supabase.from('events').select('id, title, description, club_name, location, location_lat, location_lng, event_date, registration_deadline, max_capacity, waitlist_max, status, banner_url, custom_background, created_by, created_at, approval_status, discussion_enabled, feedback_open, feedback_config, is_public, targeted_department, rejection_data, is_compulsory, event_type, team_formation_enabled, min_team_members, max_team_members, registration_stopped, hackathon_criteria, show_evaluation_criteria, show_scoreboard, profiles:created_by(role, full_name)').eq('id', id).single()
   const event = withDynamicSingleEventStatus(data as Event)
 
   if (!event) return <div>Event not found</div>
+
+  const isCreator = user?.id === event.created_by
 
   // Run remaining queries in parallel
   const [activeRegCountRes, waitlistRegCountRes, profileRes, registrationRes, feedbackRes] = await Promise.all([
@@ -205,6 +208,17 @@ export default async function EventDetailPage({
               </div>
             </div>
             
+            {event.event_type === 'hackathon' && isCreator && (
+              <HackathonConfigPanel
+                eventId={id}
+                initialCriteria={event.hackathon_criteria as any}
+                initialShowCriteria={event.show_evaluation_criteria ?? true}
+                initialShowScoreboard={event.show_scoreboard ?? false}
+                cardClass={bg.cardClass}
+                cardStyle={bg.cardStyle}
+              />
+            )}
+
             {event.event_type === 'hackathon' && event.team_formation_enabled && isRegistered && (
               <div className={`${bg.cardClass} custom-bg-card overflow-hidden`} style={bg.cardStyle}>
                 <div className="flex items-center justify-between mb-6 border-b border-zinc-200/50 dark:border-zinc-800/50 pb-4">
@@ -222,9 +236,16 @@ export default async function EventDetailPage({
               </div>
             )}
 
-            {event.event_type === 'hackathon' && isRegistered && (
+            {event.event_type === 'hackathon' && isRegistered && (event.show_scoreboard || isCreator) && (
               <div className={`${bg.cardClass} custom-bg-card overflow-hidden`} style={bg.cardStyle}>
-                <h3 className="font-bold text-lg mb-4 uppercase tracking-tight">🏆 Scoreboard</h3>
+                <div className="flex justify-between items-center mb-4 border-b border-zinc-100 dark:border-zinc-900 pb-2">
+                  <h3 className="font-bold text-lg uppercase tracking-tight">🏆 Scoreboard</h3>
+                  {isCreator && !event.show_scoreboard && (
+                    <span className="font-mono text-[9px] uppercase tracking-wider text-rose-500 font-bold border border-rose-500/20 px-2 py-0.5 rounded-full bg-rose-500/5">
+                      Hidden from students
+                    </span>
+                  )}
+                </div>
                 <div className="p-6 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-2xl text-center bg-zinc-50/50 dark:bg-zinc-900/20">
                   <p className="font-mono text-xs uppercase tracking-wider font-bold text-zinc-500 dark:text-zinc-400 mb-1">Scores not yet published</p>
                   <p className="text-xs text-zinc-400">Judges are still evaluating.</p>
@@ -232,29 +253,51 @@ export default async function EventDetailPage({
               </div>
             )}
 
-            {event.event_type === 'hackathon' && isRegistered && (
+            {event.event_type === 'hackathon' && isRegistered && (event.show_evaluation_criteria !== false || isCreator) && (
               <div className={`${bg.cardClass} custom-bg-card overflow-hidden`} style={bg.cardStyle}>
-                <h3 className="font-bold text-lg mb-6 uppercase tracking-tight">📊 Evaluation Criteria</h3>
+                <div className="flex justify-between items-center mb-6 border-b border-zinc-100 dark:border-zinc-900 pb-2">
+                  <h3 className="font-bold text-lg uppercase tracking-tight">📊 Evaluation Criteria</h3>
+                  {isCreator && event.show_evaluation_criteria === false && (
+                    <span className="font-mono text-[9px] uppercase tracking-wider text-rose-500 font-bold border border-rose-500/20 px-2 py-0.5 rounded-full bg-rose-500/5">
+                      Hidden from students
+                    </span>
+                  )}
+                </div>
                 <div className="space-y-4 font-mono text-xs uppercase tracking-wider">
-                  <div className="flex justify-between items-center border-b border-zinc-100 dark:border-zinc-900 pb-2">
-                    <span className="text-zinc-500 font-bold">Innovation</span>
-                    <span className="font-black text-zinc-900 dark:text-zinc-100">20 pts</span>
-                  </div>
-                  <div className="flex justify-between items-center border-b border-zinc-100 dark:border-zinc-900 pb-2">
-                    <span className="text-zinc-500 font-bold">Technical</span>
-                    <span className="font-black text-zinc-900 dark:text-zinc-100">20 pts</span>
-                  </div>
-                  <div className="flex justify-between items-center border-b border-zinc-100 dark:border-zinc-900 pb-2">
-                    <span className="text-zinc-500 font-bold">Design/UX</span>
-                    <span className="font-black text-zinc-900 dark:text-zinc-100">20 pts</span>
-                  </div>
-                  <div className="flex justify-between items-center border-b border-zinc-100 dark:border-zinc-900 pb-2">
-                    <span className="text-zinc-500 font-bold">Presentation</span>
-                    <span className="font-black text-zinc-900 dark:text-zinc-100">20 pts</span>
-                  </div>
+                  {Array.isArray(event.hackathon_criteria) && event.hackathon_criteria.length > 0 ? (
+                    (event.hackathon_criteria as any[]).map((crit, idx) => (
+                      <div key={idx} className="flex justify-between items-center border-b border-zinc-100 dark:border-zinc-900 pb-2">
+                        <span className="text-zinc-500 font-bold">{crit.name}</span>
+                        <span className="font-black text-zinc-900 dark:text-zinc-100">{crit.max_points} pts</span>
+                      </div>
+                    ))
+                  ) : (
+                    <>
+                      <div className="flex justify-between items-center border-b border-zinc-100 dark:border-zinc-900 pb-2">
+                        <span className="text-zinc-500 font-bold">Innovation</span>
+                        <span className="font-black text-zinc-900 dark:text-zinc-100">20 pts</span>
+                      </div>
+                      <div className="flex justify-between items-center border-b border-zinc-100 dark:border-zinc-900 pb-2">
+                        <span className="text-zinc-500 font-bold">Technical</span>
+                        <span className="font-black text-zinc-900 dark:text-zinc-100">20 pts</span>
+                      </div>
+                      <div className="flex justify-between items-center border-b border-zinc-100 dark:border-zinc-900 pb-2">
+                        <span className="text-zinc-500 font-bold">Design/UX</span>
+                        <span className="font-black text-zinc-900 dark:text-zinc-100">20 pts</span>
+                      </div>
+                      <div className="flex justify-between items-center border-b border-zinc-100 dark:border-zinc-900 pb-2">
+                        <span className="text-zinc-500 font-bold">Presentation</span>
+                        <span className="font-black text-zinc-900 dark:text-zinc-100">20 pts</span>
+                      </div>
+                    </>
+                  )}
                   <div className="flex justify-between items-center pt-2 font-black text-sm text-zinc-900 dark:text-zinc-100">
                     <span>Total</span>
-                    <span>80 pts</span>
+                    <span>
+                      {Array.isArray(event.hackathon_criteria) && event.hackathon_criteria.length > 0
+                        ? (event.hackathon_criteria as any[]).reduce((sum, c) => sum + (c.max_points || 0), 0)
+                        : 80} pts
+                    </span>
                   </div>
                 </div>
               </div>
