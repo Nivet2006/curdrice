@@ -10,6 +10,7 @@ import { PRAssignmentPanel } from '@/components/faculty/PRAssignmentPanel'
 import { EventThread } from '@/components/student/EventThread'
 import { getEventThread } from '@/lib/actions/event-threads'
 import { EditableVerifyDetails } from '@/components/teacher/EditableVerifyDetails'
+import { JudgeAssignmentPanel } from '@/components/faculty/JudgeAssignmentPanel'
 
 export default async function TeacherVerifyPage({ params }: { params: Promise<{ id: string }> }) {
    const supabase = await createClient()
@@ -68,6 +69,9 @@ export default async function TeacherVerifyPage({ params }: { params: Promise<{ 
                            <p className="text-xs font-mono opacity-80 italic">This event is currently published and open for student registrations. Approval phase is closed.</p>
                         </div>
                         <PRAssignmentPanel eventId={event.id} />
+                        {event.event_type === 'hackathon' && (
+                           <JudgeAssignmentPanel eventId={event.id} />
+                        )}
                         <EventRegistrationStats eventId={event.id} />
                      </div>
                   ) : (
