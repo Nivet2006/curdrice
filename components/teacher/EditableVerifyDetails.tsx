@@ -595,18 +595,18 @@ export function EditableVerifyDetails({ event, constraints }: EditableVerifyDeta
         <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm font-mono text-zinc-500 uppercase tracking-wider">
           <div className="flex items-center gap-2 text-black dark:text-white font-bold">
             <span className="w-2 h-2 rounded-full bg-black dark:bg-white"></span>
-            <span>{event.club_name}</span>
+            <span>Club: {event.club_name}</span>
           </div>
           <span className="opacity-30">/</span>
-          <span>Prop: {event.profiles?.full_name || 'Faculty'}</span>
+          <span>Proposer: {event.profiles?.full_name || 'Faculty'}</span>
           <span className="opacity-30">/</span>
-          <span className="text-black dark:text-white font-bold">{event.targeted_department || 'All Departments'}</span>
+          <span className="text-black dark:text-white font-bold">Dept: {event.targeted_department || 'All'}</span>
           <span className="opacity-30">/</span>
-          <span className="px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-black dark:text-white text-[10px] font-black">{event.event_category?.replace(/_/g, ' ').toUpperCase() || 'STANDARD'}</span>
+          <span className="px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 text-[10px] font-black">Category: {event.event_category?.replace(/_/g, ' ').toUpperCase() || 'STANDARD'}</span>
           {event.event_type && (
             <>
               <span className="opacity-30">/</span>
-              <span className="px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-black dark:text-white text-[10px] font-black">{event.event_type.toUpperCase()}</span>
+              <span className="px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 text-[10px] font-black">Type: {event.event_type.toUpperCase()}</span>
             </>
           )}
         </div>

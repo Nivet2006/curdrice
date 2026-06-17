@@ -52,11 +52,11 @@ export default async function HODApprovalPage({ params }: { params: Promise<{ id
             <div className="flex flex-wrap items-center gap-3 mt-2">
               <p className="font-mono text-sm font-bold text-zinc-500 uppercase tracking-widest">Formal Activity Request by {(event.profiles as any)?.full_name}</p>
               <span className="w-1.5 h-1.5 rounded-full bg-zinc-300"></span>
-              <span className="bg-black text-white px-3 py-1 rounded-md text-[10px] font-mono font-black uppercase tracking-wider">{event.event_category?.replace(/_/g, ' ') || 'STANDARD'}</span>
+              <span className="bg-black text-white px-3 py-1 rounded-md text-[10px] font-mono font-black uppercase tracking-wider">Category: {event.event_category?.replace(/_/g, ' ') || 'STANDARD'}</span>
               {event.event_type && (
                 <>
                   <span className="w-1.5 h-1.5 rounded-full bg-zinc-300"></span>
-                  <span className="bg-black text-white px-3 py-1 rounded-md text-[10px] font-mono font-black uppercase tracking-wider">{event.event_type}</span>
+                  <span className="bg-black text-white px-3 py-1 rounded-md text-[10px] font-mono font-black uppercase tracking-wider">Type: {event.event_type}</span>
                 </>
               )}
             </div>
