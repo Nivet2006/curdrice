@@ -36,7 +36,7 @@ export default async function TeacherVerifyPage({ params }: { params: Promise<{ 
    const bg = parseCustomBackground(event.custom_background, event.banner_url)
 
    return (
-      <div className="max-w-[1400px] mx-auto space-y-12 pb-20 transition-colors">
+      <div className="max-w-[1400px] mx-auto space-y-6 pb-12 transition-colors">
          <div className="flex items-center justify-between">
             <Link href="/teacher/dashboard" className="flex items-center gap-2 text-zinc-500 hover:text-black dark:text-zinc-400 dark:hover:text-white font-mono text-xs uppercase tracking-widest transition-all">
                <ArrowLeft size={14} />
@@ -48,14 +48,14 @@ export default async function TeacherVerifyPage({ params }: { params: Promise<{ 
             </div>
          </div>
 
-         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Left: Editable Event Details (7/12) */}
-            <div className="lg:col-span-7 space-y-10">
+            <div className="lg:col-span-7 space-y-6">
                <EditableVerifyDetails event={event} constraints={constraints} />
             </div>
 
             {/* Right: Status & Terminal (5/12) */}
-            <div className="lg:col-span-5 space-y-8">
+            <div className="lg:col-span-5 space-y-4">
                <EventStatusTracker 
                   status={event.approval_status} 
                   creatorRole={(Array.isArray(event.profiles) ? event.profiles[0] : event.profiles)?.role}

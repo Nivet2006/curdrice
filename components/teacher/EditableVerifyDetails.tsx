@@ -566,11 +566,11 @@ export function EditableVerifyDetails({ event, constraints }: EditableVerifyDeta
   const bg = parseCustomBackground(event.custom_background, event.banner_url)
 
   return (
-    <div className="space-y-10">
-      <header className="space-y-6">
+    <div className="space-y-5">
+      <header className="space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
-            <h1 className="text-5xl font-black tracking-tighter text-[#0a0a0a] dark:text-white leading-tight">
+            <h1 className="text-4xl font-black tracking-tighter text-[#0a0a0a] dark:text-white leading-tight">
               {event.title}
             </h1>
           </div>
@@ -616,13 +616,13 @@ export function EditableVerifyDetails({ event, constraints }: EditableVerifyDeta
         </div>
       </header>
 
-      <div className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-[2.5rem] p-10 space-y-8 shadow-sm transition-colors">
+      <div className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 space-y-4 shadow-sm transition-colors">
         <div>
-          <h3 className="text-[10px] font-mono text-zinc-500 dark:text-zinc-600 uppercase tracking-[0.2em] mb-4">Executive Summary</h3>
-          <p className="text-zinc-800 dark:text-zinc-300 leading-relaxed text-lg font-medium whitespace-pre-wrap">{event.description}</p>
+          <h3 className="text-[10px] font-mono text-zinc-500 dark:text-zinc-600 uppercase tracking-[0.2em] mb-2">Executive Summary</h3>
+          <p className="text-zinc-800 dark:text-zinc-300 leading-relaxed text-base font-medium whitespace-pre-wrap">{event.description}</p>
         </div>
 
-        <div className="grid grid-cols-2 gap-8 border-t border-zinc-100 dark:border-zinc-900 pt-8">
+        <div className="grid grid-cols-2 gap-4 border-t border-zinc-100 dark:border-zinc-900 pt-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-zinc-400">
               <MapPin size={14} />
@@ -643,7 +643,7 @@ export function EditableVerifyDetails({ event, constraints }: EditableVerifyDeta
       </div>
 
       {bg.hasBg && (
-        <div className="w-full aspect-[16/9] rounded-[2.5rem] overflow-hidden border border-zinc-200 dark:border-zinc-800 shadow-2xl relative group transition-all flex items-end p-6 sm:p-10">
+        <div className="w-full aspect-[16/9] rounded-3xl overflow-hidden border border-zinc-200 dark:border-zinc-800 shadow-2xl relative group transition-all flex items-end p-6">
           {bg.customStyleBlock && <style dangerouslySetInnerHTML={{ __html: bg.customStyleBlock }} />}
           
           <div 
