@@ -434,8 +434,22 @@ export async function updateFacultyEvent(id: string, formData: FormData) {
     .eq('id', user.id)
     .single()
 
-  if (!profile || !['teacher', 'admin'].includes(profile.role)) {
-    return { error: 'Unauthorized: Only Faculty (Teacher) can update events.' }
+  if (!profile || !['teacher', 'hod', 'admin'].includes(profile.role)) {
+    return { error: 'Unauthorized: Only Faculty or Admin can update events.' }
+  }
+
+  const { data: event } = await supabase
+    .from('events')
+    .select('created_by, approval_status')
+    .eq('id', id)
+    .single()
+
+  if (!event) return { error: 'Event not found' }
+
+  // Allow update if user is the creator OR is faculty/admin
+  const canUpdate = event.created_by === user.id || ['teacher', 'hod', 'admin'].includes(profile.role)
+  if (!canUpdate) {
+    return { error: 'Unauthorized to update this event.' }
   }
 
   const title = (formData.get('title') as string)?.trim()
@@ -495,8 +509,11 @@ export async function updateFacultyEvent(id: string, formData: FormData) {
     ? 'Industrial Visit'
     : event_category.charAt(0).toUpperCase() + event_category.slice(1)
 
-  const isSubmission = formData.get('submitForReview') === 'true'
-  const approval_status = isSubmission ? 'pending_hod' : 'draft'
+  const submitForReviewVal = formData.get('submitForReview')
+  const isSubmission = submitForReviewVal === 'true'
+  const approval_status = submitForReviewVal !== null 
+    ? (isSubmission ? 'pending_hod' : 'draft')
+    : event.approval_status
 
   if (isSubmission && (!title || !description || !location || !event_date || !deadlineStr)) {
     return { error: 'Missing required fields for submission.' }
@@ -538,7 +555,6 @@ export async function updateFacultyEvent(id: string, formData: FormData) {
     .from('events')
     .update(updatePayload)
     .eq('id', id)
-    .eq('created_by', user.id)
 
   if (updateError) return { error: updateError.message }
 
@@ -554,6 +570,7 @@ export async function updateFacultyEvent(id: string, formData: FormData) {
   if (constraintError) return { error: constraintError.message }
 
   revalidatePath('/teacher/dashboard')
+  revalidatePath(`/teacher/verify/${id}`)
   revalidatePath(`/teacher/events/${id}/edit`)
   return { success: true }
 }
