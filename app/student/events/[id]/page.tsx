@@ -140,7 +140,12 @@ export default async function EventDetailPage({
         <div className="flex flex-col lg:flex-row gap-12">
           <div className="flex-1 space-y-8">
             <div className={`${bg.cardClass} custom-bg-card`} style={bg.cardStyle}>
-              <div className="flex gap-3 mb-4">
+              <div className="flex gap-3 mb-4 flex-wrap">
+                {event.event_type === 'hackathon' && (
+                  <span className="border-[1.5px] border-violet-500 text-violet-600 dark:text-violet-400 font-mono rounded-full px-3 py-1 text-xs bg-violet-500/10 uppercase tracking-wider font-bold">
+                    🚀 Hackathon
+                  </span>
+                )}
                 <span className="border-[1.5px] border-current font-mono rounded-full px-3 py-1 text-xs bg-black/10 dark:bg-white/10">
                   {(() => {
                     const creator = event.profiles ? (Array.isArray(event.profiles) ? event.profiles[0] : event.profiles) : null;
