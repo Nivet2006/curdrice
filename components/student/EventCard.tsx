@@ -54,7 +54,13 @@ export function EventCard({ event, registeredCount = 0, isRegistered = false, is
           )}
           <EventStatusBadge status={event.status} className="absolute top-3 left-3" />
           <div className="absolute top-3 right-3 bg-white border border-[#e0e0e0] rounded-full text-xs font-mono px-2 py-0.5 text-[#0a0a0a]">
-            {event.club_name}
+            {(() => {
+              const creator = event.profiles ? (Array.isArray(event.profiles) ? event.profiles[0] : event.profiles) : null;
+              if (event.club_name === 'Others' && creator?.role === 'teacher' && creator?.full_name) {
+                return `By: ${creator.full_name}`;
+              }
+              return event.club_name;
+            })()}
           </div>
         </div>
 
