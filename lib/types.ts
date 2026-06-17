@@ -76,6 +76,9 @@ export interface Event {
   team_formation_enabled?: boolean
   min_team_members?: number | null
   max_team_members?: number | null
+  hackathon_criteria?: any[] | null
+  show_evaluation_criteria?: boolean
+  show_scoreboard?: boolean
   profiles?: {
     role: Role
     full_name?: string
