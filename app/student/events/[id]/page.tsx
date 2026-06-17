@@ -33,8 +33,8 @@ export default async function EventDetailPage({
   const { invitedBy } = await searchParams
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { data } = await supabase.from('events').select('id, title, description, club_name, location, location_lat, location_lng, event_date, registration_deadline, max_capacity, waitlist_max, status, banner_url, custom_background, created_by, created_at, approval_status, discussion_enabled, feedback_open, feedback_config, is_public, targeted_department, rejection_data, is_compulsory, event_type, team_formation_enabled, min_team_members, max_team_members, registration_stopped, hackathon_criteria, show_evaluation_criteria, show_scoreboard, submissions_enabled, submission_config, show_project_submission, profiles:created_by(role, full_name)').eq('id', id).single()
-  const event = withDynamicSingleEventStatus(data as Event)
+  const { data } = await supabase.from('events').select('id, title, description, club_name, location, location_lat, location_lng, event_date, registration_deadline, max_capacity, waitlist_max, status, banner_url, custom_background, created_by, created_at, approval_status, discussion_enabled, feedback_open, feedback_config, is_public, targeted_department, rejection_data, is_compulsory, event_type, team_formation_enabled, min_team_members, max_team_members, registration_stopped, hackathon_criteria, show_evaluation_criteria, show_scoreboard, submissions_enabled, submission_config, show_project_submission, team_creation_enabled, team_deletion_enabled, team_join_requests_enabled, team_invites_enabled, profiles:created_by(role, full_name)').eq('id', id).single()
+  const event = withDynamicSingleEventStatus(data as any as Event)
 
   if (!event) return <div>Event not found</div>
 
@@ -218,6 +218,10 @@ export default async function EventDetailPage({
                 initialSubmissionsEnabled={event.submissions_enabled ?? true}
                 initialSubmissionConfig={event.submission_config as any}
                 initialShowProjectSubmission={event.show_project_submission ?? true}
+                initialTeamCreationEnabled={(event as any).team_creation_enabled ?? true}
+                initialTeamDeletionEnabled={(event as any).team_deletion_enabled ?? true}
+                initialTeamJoinRequestsEnabled={(event as any).team_join_requests_enabled ?? true}
+                initialTeamInvitesEnabled={(event as any).team_invites_enabled ?? true}
                 cardClass={bg.cardClass}
                 cardStyle={bg.cardStyle}
               />

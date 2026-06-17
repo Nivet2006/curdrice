@@ -29,6 +29,10 @@ interface HackathonConfigPanelProps {
   initialSubmissionsEnabled?: boolean
   initialSubmissionConfig?: SubmissionConfig
   initialShowProjectSubmission?: boolean
+  initialTeamCreationEnabled?: boolean
+  initialTeamDeletionEnabled?: boolean
+  initialTeamJoinRequestsEnabled?: boolean
+  initialTeamInvitesEnabled?: boolean
   cardClass: string
   cardStyle: React.CSSProperties
 }
@@ -41,6 +45,10 @@ export function HackathonConfigPanel({
   initialSubmissionsEnabled,
   initialSubmissionConfig,
   initialShowProjectSubmission,
+  initialTeamCreationEnabled,
+  initialTeamDeletionEnabled,
+  initialTeamJoinRequestsEnabled,
+  initialTeamInvitesEnabled,
   cardClass,
   cardStyle
 }: HackathonConfigPanelProps) {
@@ -69,6 +77,10 @@ export function HackathonConfigPanel({
     future_scope: false,
     ...initialSubmissionConfig
   })
+  const [teamCreationEnabled, setTeamCreationEnabled] = useState(initialTeamCreationEnabled ?? true)
+  const [teamDeletionEnabled, setTeamDeletionEnabled] = useState(initialTeamDeletionEnabled ?? true)
+  const [teamJoinRequestsEnabled, setTeamJoinRequestsEnabled] = useState(initialTeamJoinRequestsEnabled ?? true)
+  const [teamInvitesEnabled, setTeamInvitesEnabled] = useState(initialTeamInvitesEnabled ?? true)
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -113,7 +125,11 @@ export function HackathonConfigPanel({
       showScoreboard,
       submissionsEnabled,
       submissionConfig,
-      showProjectSubmission
+      showProjectSubmission,
+      teamCreationEnabled,
+      teamDeletionEnabled,
+      teamJoinRequestsEnabled,
+      teamInvitesEnabled
     )
     setLoading(false)
 
@@ -188,6 +204,78 @@ export function HackathonConfigPanel({
             {showProjectSubmission ? 'Visible' : 'Hidden'}
           </span>
         </button>
+      </div>
+
+      {/* Team Formation Controls */}
+      <div className="border-t border-dashed border-zinc-200 dark:border-zinc-800 pt-5 mt-5 mb-6 space-y-4">
+        <h4 className="font-mono text-xs uppercase font-bold text-zinc-500 dark:text-zinc-400">
+          👥 Team Formation Rules
+        </h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {/* Allow Team Creation */}
+          <button
+            type="button"
+            onClick={() => setTeamCreationEnabled(!teamCreationEnabled)}
+            className={`flex items-center justify-between p-3 rounded-xl border transition-all ${
+              teamCreationEnabled
+                ? 'bg-amber-500/10 border-amber-500/35 text-amber-600 dark:text-amber-400'
+                : 'bg-zinc-500/10 border-zinc-500/25 text-zinc-500 dark:text-zinc-400'
+            }`}
+          >
+            <span className="font-mono text-[10px] uppercase font-bold">Allow Team Creation</span>
+            <span className="text-[10px] font-sans font-bold uppercase">
+              {teamCreationEnabled ? 'Yes' : 'No'}
+            </span>
+          </button>
+
+          {/* Allow Team Leaving/Deletion */}
+          <button
+            type="button"
+            onClick={() => setTeamDeletionEnabled(!teamDeletionEnabled)}
+            className={`flex items-center justify-between p-3 rounded-xl border transition-all ${
+              teamDeletionEnabled
+                ? 'bg-amber-500/10 border-amber-500/35 text-amber-600 dark:text-amber-400'
+                : 'bg-zinc-500/10 border-zinc-500/25 text-zinc-500 dark:text-zinc-400'
+            }`}
+          >
+            <span className="font-mono text-[10px] uppercase font-bold">Allow Delete/Leave Team</span>
+            <span className="text-[10px] font-sans font-bold uppercase">
+              {teamDeletionEnabled ? 'Yes' : 'No'}
+            </span>
+          </button>
+
+          {/* Allow Direct Invites */}
+          <button
+            type="button"
+            onClick={() => setTeamInvitesEnabled(!teamInvitesEnabled)}
+            className={`flex items-center justify-between p-3 rounded-xl border transition-all ${
+              teamInvitesEnabled
+                ? 'bg-amber-500/10 border-amber-500/35 text-amber-600 dark:text-amber-400'
+                : 'bg-zinc-500/10 border-zinc-500/25 text-zinc-500 dark:text-zinc-400'
+            }`}
+          >
+            <span className="font-mono text-[10px] uppercase font-bold">Allow Direct Invites</span>
+            <span className="text-[10px] font-sans font-bold uppercase">
+              {teamInvitesEnabled ? 'Yes' : 'No'}
+            </span>
+          </button>
+
+          {/* Allow Join Requests */}
+          <button
+            type="button"
+            onClick={() => setTeamJoinRequestsEnabled(!teamJoinRequestsEnabled)}
+            className={`flex items-center justify-between p-3 rounded-xl border transition-all ${
+              teamJoinRequestsEnabled
+                ? 'bg-amber-500/10 border-amber-500/35 text-amber-600 dark:text-amber-400'
+                : 'bg-zinc-500/10 border-zinc-500/25 text-zinc-500 dark:text-zinc-400'
+            }`}
+          >
+            <span className="font-mono text-[10px] uppercase font-bold">Allow Join Requests</span>
+            <span className="text-[10px] font-sans font-bold uppercase">
+              {teamJoinRequestsEnabled ? 'Yes' : 'No'}
+            </span>
+          </button>
+        </div>
       </div>
 
       {/* Project Submission Controls */}

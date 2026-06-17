@@ -209,6 +209,10 @@ export default function EditEventForm({ event, constraints }: EditEventFormProps
                         initialSubmissionsEnabled={event.submissions_enabled ?? true}
                         initialSubmissionConfig={event.submission_config as any}
                         initialShowProjectSubmission={event.show_project_submission ?? true}
+                        initialTeamCreationEnabled={(event as any).team_creation_enabled ?? true}
+                        initialTeamDeletionEnabled={(event as any).team_deletion_enabled ?? true}
+                        initialTeamJoinRequestsEnabled={(event as any).team_join_requests_enabled ?? true}
+                        initialTeamInvitesEnabled={(event as any).team_invites_enabled ?? true}
                         cardClass="border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 bg-zinc-50/50 dark:bg-zinc-900/30"
                         cardStyle={{}}
                       />
