@@ -39,7 +39,7 @@ export function CancelRegistrationButton({ eventId }: { eventId: string }) {
           type="button" 
           onClick={handleCancel} 
           disabled={loading || cancelled}
-          className={`w-full ${cancelled ? 'opacity-50 cursor-not-allowed bg-zinc-400' : 'bg-transparent border border-rose-500/30 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 hover:border-rose-500'} font-semibold transition-all`}
+          className={`w-full ${cancelled ? 'opacity-50 cursor-not-allowed bg-zinc-400 text-white' : 'bg-red-600 hover:bg-red-700 text-white'} font-semibold transition-all`}
         >
           {loading ? 'Cancelling...' : cancelled ? 'Cancelled' : 'Cancel Registration'}
         </Button>
