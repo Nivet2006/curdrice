@@ -49,7 +49,17 @@ export default async function HODApprovalPage({ params }: { params: Promise<{ id
               </div>
             </div>
             <h1 className="text-7xl font-black tracking-tightest leading-[0.9] text-[#0a0a0a] uppercase">{event.title}</h1>
-            <p className="font-mono text-sm font-bold text-zinc-500 uppercase tracking-widest">Formal Activity Request by {(event.profiles as any)?.full_name}</p>
+            <div className="flex flex-wrap items-center gap-3 mt-2">
+              <p className="font-mono text-sm font-bold text-zinc-500 uppercase tracking-widest">Formal Activity Request by {(event.profiles as any)?.full_name}</p>
+              <span className="w-1.5 h-1.5 rounded-full bg-zinc-300"></span>
+              <span className="bg-black text-white px-3 py-1 rounded-md text-[10px] font-mono font-black uppercase tracking-wider">{event.event_category?.replace(/_/g, ' ') || 'STANDARD'}</span>
+              {event.event_type && (
+                <>
+                  <span className="w-1.5 h-1.5 rounded-full bg-zinc-300"></span>
+                  <span className="bg-black text-white px-3 py-1 rounded-md text-[10px] font-mono font-black uppercase tracking-wider">{event.event_type}</span>
+                </>
+              )}
+            </div>
             {event.is_compulsory && (
               <div className="inline-flex items-center gap-2 bg-rose-500 text-white px-4 py-2 rounded-full text-xs font-mono font-black uppercase tracking-widest mt-2 w-fit">
                 <ShieldAlert size={12} />

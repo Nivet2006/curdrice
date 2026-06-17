@@ -601,6 +601,14 @@ export function EditableVerifyDetails({ event, constraints }: EditableVerifyDeta
           <span>Prop: {event.profiles?.full_name || 'Faculty'}</span>
           <span className="opacity-30">/</span>
           <span className="text-black dark:text-white font-bold">{event.targeted_department || 'All Departments'}</span>
+          <span className="opacity-30">/</span>
+          <span className="px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-black dark:text-white text-[10px] font-black">{event.event_category?.replace(/_/g, ' ').toUpperCase() || 'STANDARD'}</span>
+          {event.event_type && (
+            <>
+              <span className="opacity-30">/</span>
+              <span className="px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-black dark:text-white text-[10px] font-black">{event.event_type.toUpperCase()}</span>
+            </>
+          )}
         </div>
       </header>
 
