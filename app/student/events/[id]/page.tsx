@@ -124,12 +124,7 @@ export default async function EventDetailPage({
           ← Events
         </Link>
 
-        {/* Hero banner / Poster */}
-        {event.banner_url && (
-          <div className="w-full max-h-[600px] flex justify-center items-center rounded-2xl mb-10 overflow-hidden relative border border-[#e0e0e0] dark:border-zinc-800 shadow-md bg-black/[0.02] dark:bg-white/[0.02]">
-            <img src={event.banner_url} alt={event.title} className="max-h-[600px] w-auto max-w-full object-contain" />
-          </div>
-        )}
+
 
         <div className="flex flex-col lg:flex-row gap-12">
           <div className="flex-1 space-y-8">
@@ -195,7 +190,12 @@ export default async function EventDetailPage({
             </div>
           </div>
 
-          <div className="w-full lg:w-[320px] shrink-0">
+          <div className="w-full lg:w-[320px] shrink-0 space-y-6">
+            {event.banner_url && (
+              <div className="rounded-[2rem] overflow-hidden border border-zinc-200 dark:border-zinc-800 shadow-lg bg-black/[0.02] dark:bg-white/[0.02]">
+                <img src={event.banner_url} alt={event.title} className="w-full h-auto object-contain" />
+              </div>
+            )}
             <div className={`sticky top-24 ${bg.cardClass}`} style={bg.cardStyle}>
               {invitedBy && (
                 <p className="font-mono text-[10px] uppercase tracking-tighter mb-5 border-b border-current/20 pb-2">
