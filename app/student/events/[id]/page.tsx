@@ -97,12 +97,23 @@ export default async function EventDetailPage({
 
   return (
     <div className={`w-full min-h-screen relative transition-all ${bg.textClass}`}>
+      <style dangerouslySetInnerHTML={{ __html: `
+        [data-theme='dark'] .custom-bg-backdrop {
+          background-color: #000000 !important;
+          background-image: none !important;
+        }
+        [data-theme='dark'] .custom-bg-card {
+          background-color: #0a0a0a !important;
+          border-color: #27272a !important;
+          color: #ffffff !important;
+        }
+      `}} />
       {bg.customStyleBlock && <style dangerouslySetInnerHTML={{ __html: bg.customStyleBlock }} />}
       {bg.hasCustomBg && (
         <>
           <div 
             style={bg.backdropStyle} 
-            className={`fixed inset-0 w-full h-full -z-10 pointer-events-none transition-all ${bg.backdropClass}`} 
+            className={`fixed inset-0 w-full h-full -z-10 pointer-events-none transition-all custom-bg-backdrop ${bg.backdropClass}`} 
           />
           {bg.backdropOverlayClass && (
             <div 
@@ -128,7 +139,7 @@ export default async function EventDetailPage({
 
         <div className="flex flex-col lg:flex-row gap-12">
           <div className="flex-1 space-y-8">
-            <div className={bg.cardClass} style={bg.cardStyle}>
+            <div className={`${bg.cardClass} custom-bg-card`} style={bg.cardStyle}>
               <div className="flex gap-3 mb-4">
                 <span className="border-[1.5px] border-current font-mono rounded-full px-3 py-1 text-xs bg-black/10 dark:bg-white/10">
                   {(() => {
@@ -158,7 +169,7 @@ export default async function EventDetailPage({
               <p className="text-base leading-relaxed whitespace-pre-wrap opacity-95">{event.description}</p>
             </div>
 
-            <div className={bg.cardClass} style={bg.cardStyle}>
+            <div className={`${bg.cardClass} custom-bg-card`} style={bg.cardStyle}>
               <h3 className="font-bold text-lg mb-4 uppercase tracking-tight">Details</h3>
               <div className="space-y-4 font-mono text-sm">
                 <div className="flex items-center gap-3">
@@ -196,7 +207,7 @@ export default async function EventDetailPage({
                 <img src={event.banner_url} alt={event.title} className="w-full h-auto object-contain" />
               </div>
             )}
-            <div className={`sticky top-24 ${bg.cardClass}`} style={bg.cardStyle}>
+            <div className={`sticky top-24 ${bg.cardClass} custom-bg-card`} style={bg.cardStyle}>
               {invitedBy && (
                 <p className="font-mono text-[10px] uppercase tracking-tighter mb-5 border-b border-current/20 pb-2">
                   {invitedBy} invites you to join this event
