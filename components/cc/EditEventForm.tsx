@@ -208,6 +208,7 @@ export default function EditEventForm({ event, constraints }: EditEventFormProps
                         initialShowScoreboard={event.show_scoreboard ?? false}
                         initialSubmissionsEnabled={event.submissions_enabled ?? true}
                         initialSubmissionConfig={event.submission_config as any}
+                        initialShowProjectSubmission={event.show_project_submission ?? true}
                         cardClass="border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 bg-zinc-50/50 dark:bg-zinc-900/30"
                         cardStyle={{}}
                       />

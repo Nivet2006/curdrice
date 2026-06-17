@@ -24,6 +24,7 @@ interface HackathonConfigPanelProps {
   initialShowScoreboard: boolean
   initialSubmissionsEnabled?: boolean
   initialSubmissionConfig?: SubmissionConfig
+  initialShowProjectSubmission?: boolean
   cardClass: string
   cardStyle: React.CSSProperties
 }
@@ -35,6 +36,7 @@ export function HackathonConfigPanel({
   initialShowScoreboard,
   initialSubmissionsEnabled,
   initialSubmissionConfig,
+  initialShowProjectSubmission,
   cardClass,
   cardStyle
 }: HackathonConfigPanelProps) {
@@ -50,6 +52,7 @@ export function HackathonConfigPanel({
   )
   const [showCriteria, setShowCriteria] = useState(initialShowCriteria)
   const [showScoreboard, setShowScoreboard] = useState(initialShowScoreboard)
+  const [showProjectSubmission, setShowProjectSubmission] = useState(initialShowProjectSubmission ?? true)
   const [submissionsEnabled, setSubmissionsEnabled] = useState(initialSubmissionsEnabled ?? true)
   const [submissionConfig, setSubmissionConfig] = useState<SubmissionConfig>(
     initialSubmissionConfig || {
@@ -102,7 +105,8 @@ export function HackathonConfigPanel({
       showCriteria,
       showScoreboard,
       submissionsEnabled,
-      submissionConfig
+      submissionConfig,
+      showProjectSubmission
     )
     setLoading(false)
 
@@ -126,7 +130,7 @@ export function HackathonConfigPanel({
       </p>
 
       {/* Visibility Toggles */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <button
           onClick={() => setShowCriteria(!showCriteria)}
           className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${
@@ -140,7 +144,7 @@ export function HackathonConfigPanel({
             Criteria Card
           </div>
           <span className="text-[10px] font-sans font-bold uppercase">
-            {showCriteria ? 'Visible to Students' : 'Hidden'}
+            {showCriteria ? 'Visible' : 'Hidden'}
           </span>
         </button>
 
@@ -157,7 +161,24 @@ export function HackathonConfigPanel({
             Scoreboard Card
           </div>
           <span className="text-[10px] font-sans font-bold uppercase">
-            {showScoreboard ? 'Visible to Students' : 'Hidden'}
+            {showScoreboard ? 'Visible' : 'Hidden'}
+          </span>
+        </button>
+
+        <button
+          onClick={() => setShowProjectSubmission(!showProjectSubmission)}
+          className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${
+            showProjectSubmission
+              ? 'bg-emerald-500/10 border-emerald-500/35 text-emerald-600 dark:text-emerald-400'
+              : 'bg-zinc-500/10 border-zinc-500/25 text-zinc-500 dark:text-zinc-400'
+          }`}
+        >
+          <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider font-bold">
+            {showProjectSubmission ? <Eye size={14} /> : <EyeOff size={14} />}
+            Submission Card
+          </div>
+          <span className="text-[10px] font-sans font-bold uppercase">
+            {showProjectSubmission ? 'Visible' : 'Hidden'}
           </span>
         </button>
       </div>

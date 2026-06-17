@@ -69,6 +69,7 @@ export default async function TeacherVerifyPage({ params }: { params: Promise<{ 
                      initialShowScoreboard={event.show_scoreboard ?? false}
                      initialSubmissionsEnabled={event.submissions_enabled ?? true}
                      initialSubmissionConfig={event.submission_config as any}
+                     initialShowProjectSubmission={event.show_project_submission ?? true}
                      cardClass={bg.cardClass}
                      cardStyle={bg.cardStyle}
                   />
