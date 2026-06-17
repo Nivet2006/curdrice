@@ -81,6 +81,7 @@ export interface Event {
   show_scoreboard?: boolean
   submissions_enabled?: boolean
   submission_config?: any | null
+  show_project_submission?: boolean
   profiles?: {
     role: Role
     full_name?: string

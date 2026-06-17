@@ -75,6 +75,7 @@ export function TeamFormationPortal({ eventId, currentUserId }: TeamFormationPor
                   ...prev.event,
                   submissions_enabled: payload.new.submissions_enabled,
                   submission_config: payload.new.submission_config,
+                  show_project_submission: payload.new.show_project_submission,
                   min_team_members: payload.new.min_team_members,
                   max_team_members: payload.new.max_team_members,
                   team_formation_enabled: payload.new.team_formation_enabled
@@ -375,16 +376,18 @@ export function TeamFormationPortal({ eventId, currentUserId }: TeamFormationPor
         </div>
 
         {/* Project Submission Section */}
-        <div className="mt-2">
-          <ProjectSubmissionPortal
-            eventId={eventId}
-            teamId={myTeam.id}
-            teamName={myTeam.team_name}
-            isTeamMember={true}
-            submissionsEnabled={event.submissions_enabled ?? true}
-            submissionConfig={event.submission_config}
-          />
-        </div>
+        {event.show_project_submission !== false && (
+          <div className="mt-2">
+            <ProjectSubmissionPortal
+              eventId={eventId}
+              teamId={myTeam.id}
+              teamName={myTeam.team_name}
+              isTeamMember={true}
+              submissionsEnabled={event.submissions_enabled ?? true}
+              submissionConfig={event.submission_config}
+            />
+          </div>
+        )}
         </>
       ) : (
         /* USER IS NOT IN A TEAM */
