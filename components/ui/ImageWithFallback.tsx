@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface ImageWithFallbackProps {
   src: string | null | undefined;
@@ -16,6 +16,15 @@ export function ImageWithFallback({
   fallbackText = 'No image uploaded',
 }: ImageWithFallbackProps) {
   const [status, setStatus] = useState<'loading' | 'loaded' | 'error'>('loading');
+
+  useEffect(() => {
+    if (status === 'loading' && src) {
+      const timer = setTimeout(() => {
+        setStatus('error');
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [status, src]);
 
   if (!src) {
     return (
@@ -53,6 +62,11 @@ export function ImageWithFallback({
         className={`w-full h-full object-cover transition-opacity duration-300 ${
           status === 'loaded' ? 'opacity-100' : 'opacity-0'
         }`}
+        ref={(el) => {
+          if (el && el.complete && status === 'loading') {
+            setTimeout(() => setStatus('loaded'), 0);
+          }
+        }}
         onLoad={() => setStatus('loaded')}
         onError={() => setStatus('error')}
       />
