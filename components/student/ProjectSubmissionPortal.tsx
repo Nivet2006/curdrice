@@ -27,6 +27,10 @@ interface ProjectSubmissionPortalProps {
     description?: boolean
     repo_url?: boolean
     demo_url?: boolean
+    slides_url?: boolean
+    design_url?: boolean
+    tech_stack?: boolean
+    future_scope?: boolean
   }
 }
 
@@ -35,6 +39,10 @@ interface Submission {
   project_description: string
   repo_url: string | null
   demo_url: string | null
+  tech_stack: string | null
+  slides_url: string | null
+  design_url: string | null
+  future_scope: string | null
   submitted_at: string
 }
 
@@ -44,7 +52,7 @@ export function ProjectSubmissionPortal({
   teamName,
   isTeamMember,
   submissionsEnabled = true,
-  submissionConfig = { title: true, description: true, repo_url: true, demo_url: true }
+  submissionConfig = { title: true, description: true, repo_url: true, demo_url: true, slides_url: false, design_url: false, tech_stack: false, future_scope: false }
 }: ProjectSubmissionPortalProps) {
   const [submission, setSubmission] = useState<Submission | null>(null)
   const [loading, setLoading] = useState(true)
@@ -55,6 +63,10 @@ export function ProjectSubmissionPortal({
   const [description, setDescription] = useState('')
   const [repoUrl, setRepoUrl] = useState('')
   const [demoUrl, setDemoUrl] = useState('')
+  const [techStack, setTechStack] = useState('')
+  const [slidesUrl, setSlidesUrl] = useState('')
+  const [designUrl, setDesignUrl] = useState('')
+  const [futureScope, setFutureScope] = useState('')
 
   useEffect(() => {
     fetchSubmission()
@@ -72,6 +84,10 @@ export function ProjectSubmissionPortal({
           setDescription(data.submission.project_description)
           setRepoUrl(data.submission.repo_url || '')
           setDemoUrl(data.submission.demo_url || '')
+          setTechStack(data.submission.tech_stack || '')
+          setSlidesUrl(data.submission.slides_url || '')
+          setDesignUrl(data.submission.design_url || '')
+          setFutureScope(data.submission.future_scope || '')
         }
       }
     } catch {
@@ -86,7 +102,18 @@ export function ProjectSubmissionPortal({
     if (!title.trim() || !description.trim()) return
 
     setSubmitting(true)
-    const res = await submitProject(eventId, teamId, title.trim(), description.trim(), repoUrl.trim(), demoUrl.trim())
+    const res = await submitProject(
+      eventId,
+      teamId,
+      title.trim(),
+      description.trim(),
+      repoUrl.trim(),
+      demoUrl.trim(),
+      techStack.trim(),
+      slidesUrl.trim(),
+      designUrl.trim(),
+      futureScope.trim()
+    )
     setSubmitting(false)
 
     if (res.error) {
@@ -112,6 +139,10 @@ export function ProjectSubmissionPortal({
   // Check which fields are collected
   const showRepoField = submissionConfig?.repo_url !== false
   const showDemoField = submissionConfig?.demo_url !== false
+  const showSlidesField = submissionConfig?.slides_url === true
+  const showDesignField = submissionConfig?.design_url === true
+  const showTechField = submissionConfig?.tech_stack === true
+  const showFutureField = submissionConfig?.future_scope === true
 
   return (
     <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-[2.5rem] p-6 md:p-8 space-y-6 shadow-sm">
@@ -161,10 +192,28 @@ export function ProjectSubmissionPortal({
               <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 mb-1">Project Title</p>
               <h3 className="text-xl font-black text-zinc-900 dark:text-white">{submission.project_title}</h3>
             </div>
+            {showTechField && submission.tech_stack && (
+              <div>
+                <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 mb-1">Tech Stack Used</p>
+                <div className="flex flex-wrap gap-1.5 mt-1">
+                  {submission.tech_stack.split(',').map((tech, i) => (
+                    <span key={i} className="text-[10px] font-mono uppercase font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-350 px-2 py-0.5 rounded">
+                      {tech.trim()}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
             <div>
               <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 mb-1">Description</p>
               <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed whitespace-pre-wrap">{submission.project_description}</p>
             </div>
+            {showFutureField && submission.future_scope && (
+              <div>
+                <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 mb-1">Future Scope / Next Steps</p>
+                <p className="text-xs text-zinc-650 dark:text-zinc-400 leading-relaxed whitespace-pre-wrap">{submission.future_scope}</p>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -206,6 +255,30 @@ export function ProjectSubmissionPortal({
                 </div>
               )
             )}
+            {showSlidesField && submission.slides_url && (
+              <a
+                href={submission.slides_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-4 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-xs font-mono font-bold transition-all group"
+              >
+                <Video size={14} />
+                Presentation Slides
+                <ExternalLink size={10} className="ml-auto opacity-60 group-hover:opacity-100" />
+              </a>
+            )}
+            {showDesignField && submission.design_url && (
+              <a
+                href={submission.design_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-4 py-3 bg-pink-600 hover:bg-pink-700 text-white rounded-xl text-xs font-mono font-bold transition-all group"
+              >
+                <ExternalLink size={14} />
+                Figma / Design File
+                <ExternalLink size={10} className="ml-auto opacity-60 group-hover:opacity-100" />
+              </a>
+            )}
           </div>
         </div>
       ) : !submissionsEnabled ? (
@@ -233,6 +306,22 @@ export function ProjectSubmissionPortal({
             />
           </div>
 
+          {showTechField && (
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 flex items-center gap-1">
+                <Code2 size={10} />
+                Tech Stack Used (comma separated)
+              </label>
+              <input
+                type="text"
+                value={techStack}
+                onChange={e => setTechStack(e.target.value)}
+                placeholder="e.g. Next.js, TailwindCSS, Supabase, TypeScript"
+                className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-sm text-zinc-900 dark:text-white outline-none focus:ring-2 focus:ring-violet-500/40 focus:border-violet-500 transition-all"
+              />
+            </div>
+          )}
+
           <div className="space-y-1.5">
             <label className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 flex items-center gap-1">
               <FileText size={10} />
@@ -248,40 +337,84 @@ export function ProjectSubmissionPortal({
             />
           </div>
 
-          {(showRepoField || showDemoField) && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {showRepoField && (
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 flex items-center gap-1">
-                    <Github size={10} />
-                    Repository URL
-                  </label>
-                  <input
-                    type="url"
-                    value={repoUrl}
-                    onChange={e => setRepoUrl(e.target.value)}
-                    placeholder="https://github.com/..."
-                    className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-sm text-zinc-900 dark:text-white outline-none focus:ring-2 focus:ring-violet-500/40 focus:border-violet-500 transition-all"
-                  />
-                </div>
-              )}
-              {showDemoField && (
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 flex items-center gap-1">
-                    <Video size={10} />
-                    Demo / Video URL
-                  </label>
-                  <input
-                    type="url"
-                    value={demoUrl}
-                    onChange={e => setDemoUrl(e.target.value)}
-                    placeholder="https://youtube.com/... or https://..."
-                    className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-sm text-zinc-900 dark:text-white outline-none focus:ring-2 focus:ring-violet-500/40 focus:border-violet-500 transition-all"
-                  />
-                </div>
-              )}
+          {showFutureField && (
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 flex items-center gap-1">
+                <FileText size={10} />
+                Future Scope / Next Steps
+              </label>
+              <textarea
+                value={futureScope}
+                onChange={e => setFutureScope(e.target.value)}
+                placeholder="Where do you see this project heading next? Any planned features?"
+                rows={3}
+                className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-sm text-zinc-900 dark:text-white outline-none focus:ring-2 focus:ring-violet-500/40 focus:border-violet-500 transition-all resize-none"
+              />
             </div>
           )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {showRepoField && (
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 flex items-center gap-1">
+                  <Github size={10} />
+                  Repository URL
+                </label>
+                <input
+                  type="url"
+                  value={repoUrl}
+                  onChange={e => setRepoUrl(e.target.value)}
+                  placeholder="https://github.com/..."
+                  className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-sm text-zinc-900 dark:text-white outline-none focus:ring-2 focus:ring-violet-500/40 focus:border-violet-500 transition-all"
+                />
+              </div>
+            )}
+            {showDemoField && (
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 flex items-center gap-1">
+                  <Video size={10} />
+                  Demo / Video URL
+                </label>
+                <input
+                  type="url"
+                  value={demoUrl}
+                  onChange={e => setDemoUrl(e.target.value)}
+                  placeholder="https://youtube.com/... or https://..."
+                  className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-sm text-zinc-900 dark:text-white outline-none focus:ring-2 focus:ring-violet-500/40 focus:border-violet-500 transition-all"
+                />
+              </div>
+            )}
+            {showSlidesField && (
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 flex items-center gap-1">
+                  <Video size={10} />
+                  Presentation Slides URL
+                </label>
+                <input
+                  type="url"
+                  value={slidesUrl}
+                  onChange={e => setSlidesUrl(e.target.value)}
+                  placeholder="https://docs.google.com/presentation/..."
+                  className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-sm text-zinc-900 dark:text-white outline-none focus:ring-2 focus:ring-violet-500/40 focus:border-violet-500 transition-all"
+                />
+              </div>
+            )}
+            {showDesignField && (
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 flex items-center gap-1">
+                  <ExternalLink size={10} />
+                  Figma / Design File URL
+                </label>
+                <input
+                  type="url"
+                  value={designUrl}
+                  onChange={e => setDesignUrl(e.target.value)}
+                  placeholder="https://figma.com/file/..."
+                  className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-sm text-zinc-900 dark:text-white outline-none focus:ring-2 focus:ring-violet-500/40 focus:border-violet-500 transition-all"
+                />
+              </div>
+            )}
+          </div>
 
           <div className="flex gap-3 pt-2">
             {editing && (
