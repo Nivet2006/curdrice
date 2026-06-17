@@ -70,6 +70,10 @@ export default async function TeacherVerifyPage({ params }: { params: Promise<{ 
                      initialSubmissionsEnabled={event.submissions_enabled ?? true}
                      initialSubmissionConfig={event.submission_config as any}
                      initialShowProjectSubmission={event.show_project_submission ?? true}
+                     initialTeamCreationEnabled={(event as any).team_creation_enabled ?? true}
+                     initialTeamDeletionEnabled={(event as any).team_deletion_enabled ?? true}
+                     initialTeamJoinRequestsEnabled={(event as any).team_join_requests_enabled ?? true}
+                     initialTeamInvitesEnabled={(event as any).team_invites_enabled ?? true}
                      cardClass={bg.cardClass}
                      cardStyle={bg.cardStyle}
                   />

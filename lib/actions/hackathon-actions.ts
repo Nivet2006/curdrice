@@ -12,6 +12,20 @@ export async function createTeam(eventId: string, teamName: string) {
   const trimmedName = teamName.trim()
   if (!trimmedName) return { error: 'Team name cannot be empty.' }
 
+  // Check if team formation/creation is enabled
+  const { data: event } = await supabase
+    .from('events')
+    .select('team_formation_enabled, team_creation_enabled')
+    .eq('id', eventId)
+    .single()
+
+  if (event && event.team_formation_enabled === false) {
+    return { error: 'Team formation is not enabled for this event.' }
+  }
+  if (event && event.team_creation_enabled === false) {
+    return { error: 'Team creation is currently closed/disabled by the host.' }
+  }
+
   // Check if registered
   const { data: reg } = await supabase
     .from('registrations')
@@ -84,11 +98,16 @@ export async function sendJoinRequest(teamId: string) {
   // Fetch team info
   const { data: team } = await supabase
     .from('hackathon_teams')
-    .select('event_id')
+    .select('event_id, event:events(team_join_requests_enabled)')
     .eq('id', teamId)
     .single()
 
   if (!team) return { error: 'Team not found.' }
+
+  const eventSettings = (team as any).event
+  if (eventSettings && eventSettings.team_join_requests_enabled === false) {
+    return { error: 'Sending join requests is currently closed/disabled by the host.' }
+  }
 
   // Check registration
   const { data: reg } = await supabase
@@ -150,6 +169,11 @@ export async function respondToRequest(requestId: string, approve: boolean) {
     return { success: true }
   }
 
+  // Check if team join requests are enabled
+  if (team.event && team.event.team_join_requests_enabled === false) {
+    return { error: 'Approving join requests is currently closed/disabled by the host.' }
+  }
+
   // Check max members
   const { count: memberCount } = await supabase
     .from('hackathon_team_members')
@@ -204,6 +228,9 @@ export async function inviteMember(teamId: string, profileId: string) {
     .single()
 
   if (!team) return { error: 'Team not found.' }
+  if (team.event && team.event.team_invites_enabled === false) {
+    return { error: 'Direct invitations are currently closed/disabled by the host.' }
+  }
   if (team.leader_id !== user.id) return { error: 'Only the team leader can add members.' }
 
   // Check if invitee is registered
@@ -269,11 +296,16 @@ export async function leaveTeam(teamId: string) {
   // Fetch team info
   const { data: team } = await supabase
     .from('hackathon_teams')
-    .select('*')
+    .select('*, event:events(team_deletion_enabled)')
     .eq('id', teamId)
     .single()
 
   if (!team) return { error: 'Team not found.' }
+
+  const eventSettings = (team as any).event
+  if (eventSettings && eventSettings.team_deletion_enabled === false) {
+    return { error: 'Leaving or deleting teams is currently closed/disabled by the host.' }
+  }
 
   if (team.leader_id === user.id) {
     // If leader leaves, delete the team entirely

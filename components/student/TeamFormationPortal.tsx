@@ -78,7 +78,11 @@ export function TeamFormationPortal({ eventId, currentUserId }: TeamFormationPor
                   show_project_submission: payload.new.show_project_submission,
                   min_team_members: payload.new.min_team_members,
                   max_team_members: payload.new.max_team_members,
-                  team_formation_enabled: payload.new.team_formation_enabled
+                  team_formation_enabled: payload.new.team_formation_enabled,
+                  team_creation_enabled: payload.new.team_creation_enabled,
+                  team_deletion_enabled: payload.new.team_deletion_enabled,
+                  team_join_requests_enabled: payload.new.team_join_requests_enabled,
+                  team_invites_enabled: payload.new.team_invites_enabled
                 }
               }
             })
@@ -227,13 +231,19 @@ export function TeamFormationPortal({ eventId, currentUserId }: TeamFormationPor
                     Team Size: {myTeamMembers.length} / {maxMembers} (Min: {minMembers})
                   </p>
                 </div>
-                <button
-                  onClick={handleLeaveTeam}
-                  className="flex items-center gap-1.5 px-3 py-1.5 border border-rose-200 hover:bg-rose-50 text-rose-500 hover:text-rose-600 dark:border-rose-950/20 dark:hover:bg-rose-950/20 rounded-xl text-xs font-mono uppercase font-bold transition-all"
-                >
-                  <LogOut size={12} />
-                  {myTeam.leader_id === currentUserId ? 'Delete Team' : 'Leave'}
-                </button>
+                {event.team_deletion_enabled !== false ? (
+                  <button
+                    onClick={handleLeaveTeam}
+                    className="flex items-center gap-1.5 px-3 py-1.5 border border-rose-200 hover:bg-rose-50 text-rose-500 hover:text-rose-600 dark:border-rose-950/20 dark:hover:bg-rose-950/20 rounded-xl text-xs font-mono uppercase font-bold transition-all"
+                  >
+                    <LogOut size={12} />
+                    {myTeam.leader_id === currentUserId ? 'Delete Team' : 'Leave'}
+                  </button>
+                ) : (
+                  <span className="text-[10px] font-mono uppercase bg-zinc-500/10 border border-zinc-500/20 text-zinc-500 px-2.5 py-1 rounded-full font-bold flex items-center gap-1">
+                    🔒 Locked
+                  </span>
+                )}
               </div>
 
               {/* Members List */}
@@ -321,48 +331,58 @@ export function TeamFormationPortal({ eventId, currentUserId }: TeamFormationPor
           {/* Right: Leader recruiting / Member invite */}
           <div className="space-y-6">
             {myTeam.leader_id === currentUserId ? (
-              <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 rounded-[2rem] space-y-4">
-                <h4 className="font-bold text-xs uppercase tracking-wider text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
-                  <UserPlus size={14} className="text-zinc-400" />
-                  Recruit Registered Members
-                </h4>
-                <div className="relative">
-                  <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
-                  <input
-                    type="text"
-                    placeholder="Search registered, team-less students..."
-                    value={inviteSearchQuery}
-                    onChange={e => setInviteSearchQuery(e.target.value)}
-                    className="w-full pl-8 pr-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-xs outline-none focus:ring-2 focus:ring-black dark:text-white"
-                  />
-                </div>
+              event.team_invites_enabled !== false ? (
+                <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 rounded-[2rem] space-y-4">
+                  <h4 className="font-bold text-xs uppercase tracking-wider text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
+                    <UserPlus size={14} className="text-zinc-400" />
+                    Recruit Registered Members
+                  </h4>
+                  <div className="relative">
+                    <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+                    <input
+                      type="text"
+                      placeholder="Search registered, team-less students..."
+                      value={inviteSearchQuery}
+                      onChange={e => setInviteSearchQuery(e.target.value)}
+                      className="w-full pl-8 pr-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-xs outline-none focus:ring-2 focus:ring-black dark:text-white"
+                    />
+                  </div>
 
-                <div className="divide-y divide-zinc-100 dark:divide-zinc-800 max-h-[200px] overflow-y-auto pr-1">
-                  {inviteSearchQuery.trim() !== '' ? (
-                    filteredInvitations.length > 0 ? (
-                      filteredInvitations.map((student: any) => (
-                        <div key={student.id} className="flex justify-between items-center py-2">
-                          <div className="min-w-0 pr-2">
-                            <p className="text-xs font-bold text-zinc-800 dark:text-zinc-200 truncate">{student.full_name}</p>
-                            <p className="text-[8px] font-mono text-zinc-400 uppercase tracking-widest">{student.usn}</p>
+                  <div className="divide-y divide-zinc-100 dark:divide-zinc-800 max-h-[200px] overflow-y-auto pr-1">
+                    {inviteSearchQuery.trim() !== '' ? (
+                      filteredInvitations.length > 0 ? (
+                        filteredInvitations.map((student: any) => (
+                          <div key={student.id} className="flex justify-between items-center py-2">
+                            <div className="min-w-0 pr-2">
+                              <p className="text-xs font-bold text-zinc-800 dark:text-zinc-200 truncate">{student.full_name}</p>
+                              <p className="text-[8px] font-mono text-zinc-400 uppercase tracking-widest">{student.usn}</p>
+                            </div>
+                            <button
+                              onClick={() => handleInvite(student.id)}
+                              disabled={invitingId === student.id}
+                              className="text-[9px] font-mono uppercase bg-black hover:bg-zinc-800 text-white dark:bg-white dark:text-black dark:hover:bg-zinc-200 px-2 py-1 rounded-lg font-bold shrink-0"
+                            >
+                              Add
+                            </button>
                           </div>
-                          <button
-                            onClick={() => handleInvite(student.id)}
-                            disabled={invitingId === student.id}
-                            className="text-[9px] font-mono uppercase bg-black hover:bg-zinc-800 text-white dark:bg-white dark:text-black dark:hover:bg-zinc-200 px-2 py-1 rounded-lg font-bold shrink-0"
-                          >
-                            Add
-                          </button>
-                        </div>
-                      ))
+                        ))
+                      ) : (
+                        <p className="text-[9px] font-mono text-zinc-400 py-2">No matching students found.</p>
+                      )
                     ) : (
-                      <p className="text-[9px] font-mono text-zinc-400 py-2">No matching students found.</p>
-                    )
-                  ) : (
-                    <p className="text-[9px] font-mono text-zinc-400 py-2">Type student name or USN to invite.</p>
-                  )}
+                      <p className="text-[9px] font-mono text-zinc-400 py-2">Type student name or USN to invite.</p>
+                    )}
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-6 rounded-[2rem] text-center space-y-2">
+                  <ShieldAlert size={20} className="mx-auto text-zinc-400" />
+                  <p className="font-bold text-xs text-zinc-700 dark:text-zinc-300">Recruitment Closed</p>
+                  <p className="text-[10px] text-zinc-400 font-mono">
+                    Direct recruitment is locked/disabled by the event host.
+                  </p>
+                </div>
+              )
             ) : (
               <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-6 rounded-[2rem] text-center space-y-2">
                 <Bookmark size={20} className="mx-auto text-zinc-300" />
@@ -395,29 +415,39 @@ export function TeamFormationPortal({ eventId, currentUserId }: TeamFormationPor
           {/* Left: Create Team Form & My Sent Requests */}
           <div className="space-y-6 lg:col-span-1">
             {/* Create Team Card */}
-            <form onSubmit={handleCreateTeam} className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-6 rounded-[2rem] space-y-4">
-              <h3 className="font-bold text-xs uppercase tracking-wider text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
-                <Plus size={14} className="text-zinc-400" />
-                Create New Team
-              </h3>
-              <div className="flex flex-col gap-1.5">
-                <input
-                  type="text"
-                  placeholder="Enter a unique team name..."
-                  value={teamName}
-                  onChange={e => setTeamName(e.target.value)}
-                  required
-                  className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-black dark:text-white"
-                />
+            {event.team_creation_enabled !== false ? (
+              <form onSubmit={handleCreateTeam} className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-6 rounded-[2rem] space-y-4">
+                <h3 className="font-bold text-xs uppercase tracking-wider text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
+                  <Plus size={14} className="text-zinc-400" />
+                  Create New Team
+                </h3>
+                <div className="flex flex-col gap-1.5">
+                  <input
+                    type="text"
+                    placeholder="Enter a unique team name..."
+                    value={teamName}
+                    onChange={e => setTeamName(e.target.value)}
+                    required
+                    className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-black dark:text-white"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={creating || !teamName.trim()}
+                  className="w-full py-2.5 bg-black hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-200 dark:text-black text-white rounded-xl text-xs font-mono font-bold uppercase tracking-wider transition-all disabled:opacity-50"
+                >
+                  {creating ? 'Creating...' : 'Form Team'}
+                </button>
+              </form>
+            ) : (
+              <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-6 rounded-[2rem] text-center space-y-2">
+                <ShieldAlert size={20} className="mx-auto text-zinc-405" />
+                <p className="font-bold text-xs text-zinc-700 dark:text-zinc-300">Creation Closed</p>
+                <p className="text-[10px] text-zinc-400 font-mono">
+                  Team creation is currently locked/closed by the event host.
+                </p>
               </div>
-              <button
-                type="submit"
-                disabled={creating || !teamName.trim()}
-                className="w-full py-2.5 bg-black hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-200 dark:text-black text-white rounded-xl text-xs font-mono font-bold uppercase tracking-wider transition-all disabled:opacity-50"
-              >
-                {creating ? 'Creating...' : 'Form Team'}
-              </button>
-            </form>
+            )}
 
             {/* Sent Requests Card */}
             <div className="space-y-3">
@@ -481,16 +511,18 @@ export function TeamFormationPortal({ eventId, currentUserId }: TeamFormationPor
 
                       <button
                         onClick={() => handleRequestJoin(team.id)}
-                        disabled={hasRequested || isFull}
+                        disabled={hasRequested || isFull || event.team_join_requests_enabled === false}
                         className={`w-full py-2 rounded-xl text-xs font-mono uppercase font-bold transition-all border ${
                           hasRequested
                             ? 'bg-zinc-50 border-zinc-200 text-zinc-400 cursor-not-allowed'
                             : isFull
                             ? 'bg-zinc-50 border-rose-100 text-rose-400 cursor-not-allowed'
+                            : event.team_join_requests_enabled === false
+                            ? 'bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 text-zinc-400 cursor-not-allowed'
                             : 'bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 border-transparent shadow-sm'
                         }`}
                       >
-                        {hasRequested ? 'Requested' : isFull ? 'Full' : 'Request to Join'}
+                        {hasRequested ? 'Requested' : isFull ? 'Full' : event.team_join_requests_enabled === false ? 'Requests Closed' : 'Request to Join'}
                       </button>
                     </div>
                   )
