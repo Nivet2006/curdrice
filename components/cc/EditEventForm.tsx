@@ -13,6 +13,7 @@ import { EventBackgroundCustomizer } from '@/components/shared/EventBackgroundCu
 import PosterDesigner from '@/components/shared/PosterDesigner'
 import { ImagePreview } from '@/components/shared/ImagePreview'
 import { VenueSelector } from '@/components/shared/VenueSelector'
+import { HackathonConfigPanel } from '@/components/student/HackathonConfigPanel'
 
 interface EditEventFormProps {
   event: any
@@ -195,6 +196,19 @@ export default function EditEventForm({ event, constraints }: EditEventFormProps
                           />
                         </div>
                       )}
+                    </div>
+                  )}
+
+                  {eventType === 'hackathon' && (
+                    <div className="mt-6">
+                      <HackathonConfigPanel
+                        eventId={event.id}
+                        initialCriteria={event.hackathon_criteria as any}
+                        initialShowCriteria={event.show_evaluation_criteria ?? true}
+                        initialShowScoreboard={event.show_scoreboard ?? false}
+                        cardClass="border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 bg-zinc-50/50 dark:bg-zinc-900/30"
+                        cardStyle={{}}
+                      />
                     </div>
                   )}
                  <div className="w-full flex flex-col gap-1">
