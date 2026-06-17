@@ -14,7 +14,7 @@ export default async function StudentEventsPage() {
   const [allEventsRes, profileRes, registrationsRes] = await Promise.all([
     supabase
       .from('events')
-      .select(eventColumns)
+      .select(`${eventColumns}, profiles:created_by(role, full_name)`)
       .eq('approval_status', 'approved')
       .order('event_date', { ascending: true }),
     supabase

@@ -18,11 +18,11 @@ export default async function StudentDashboard() {
     supabase.from('profiles').select('id, full_name, usn, department, semester, year, username, role').eq('id', user?.id).single(),
     supabase
       .from('registrations')
-      .select(`event_id, qr_token, is_waitlisted, events(${eventColumns})`)
+      .select(`event_id, qr_token, is_waitlisted, events(${eventColumns}, profiles:created_by(role, full_name))`)
       .eq('student_id', user?.id),
     supabase
       .from('events')
-      .select(eventColumns)
+      .select(`${eventColumns}, profiles:created_by(role, full_name)`)
       .eq('approval_status', 'approved')
       .order('event_date', { ascending: true }),
   ])

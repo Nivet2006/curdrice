@@ -292,13 +292,20 @@ export function StudentEventsView({ initialEvents, registrations, profile }: Pro
                           </h3>
 
                           {/* Host info */}
-                          <div className="flex items-center gap-2 mt-3 text-xs text-zinc-500 font-medium">
-                            <div className="flex -space-x-1.5 shrink-0">
-                              <div className="w-5 h-5 rounded-full bg-zinc-800 border-2 border-white flex items-center justify-center text-[8px] font-bold text-white uppercase">{event.club_name?.[0] || 'C'}</div>
-                              <div className="w-5 h-5 rounded-full bg-zinc-200 border-2 border-white flex items-center justify-center text-[8px] font-bold text-zinc-600">👤</div>
-                            </div>
-                            <span>By <span className="text-zinc-800 font-bold">{event.club_name || 'Campus Club'}</span></span>
-                          </div>
+                          {(() => {
+                            const creator = event.profiles ? (Array.isArray(event.profiles) ? event.profiles[0] : event.profiles) : null;
+                            const isTeacherOthers = event.club_name === 'Others' && creator?.role === 'teacher' && creator?.full_name;
+                            const displayClub = isTeacherOthers ? creator.full_name : (event.club_name || 'Campus Club');
+                            return (
+                              <div className="flex items-center gap-2 mt-3 text-xs text-zinc-500 font-medium">
+                                <div className="flex -space-x-1.5 shrink-0">
+                                  <div className="w-5 h-5 rounded-full bg-zinc-800 border-2 border-white flex items-center justify-center text-[8px] font-bold text-white uppercase">{displayClub?.[0] || 'C'}</div>
+                                  <div className="w-5 h-5 rounded-full bg-zinc-200 border-2 border-white flex items-center justify-center text-[8px] font-bold text-zinc-600">👤</div>
+                                </div>
+                                <span>By <span className="text-zinc-800 font-bold">{displayClub}</span></span>
+                              </div>
+                            );
+                          })()}
 
                           {/* Location */}
                           <div className="flex items-center gap-1.5 mt-3 text-xs text-zinc-400 font-mono">

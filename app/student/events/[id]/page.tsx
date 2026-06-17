@@ -31,7 +31,7 @@ export default async function EventDetailPage({
   const { invitedBy } = await searchParams
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { data } = await supabase.from('events').select('id, title, description, club_name, location, location_lat, location_lng, event_date, registration_deadline, max_capacity, waitlist_max, status, banner_url, custom_background, created_by, created_at, approval_status, discussion_enabled, feedback_open, feedback_config, is_public, targeted_department, rejection_data, is_compulsory, event_type, team_formation_enabled, min_team_members, max_team_members, registration_stopped').eq('id', id).single()
+  const { data } = await supabase.from('events').select('id, title, description, club_name, location, location_lat, location_lng, event_date, registration_deadline, max_capacity, waitlist_max, status, banner_url, custom_background, created_by, created_at, approval_status, discussion_enabled, feedback_open, feedback_config, is_public, targeted_department, rejection_data, is_compulsory, event_type, team_formation_enabled, min_team_members, max_team_members, registration_stopped, profiles:created_by(role, full_name)').eq('id', id).single()
   const event = withDynamicSingleEventStatus(data as Event)
 
   if (!event) return <div>Event not found</div>
@@ -135,7 +135,15 @@ export default async function EventDetailPage({
           <div className="flex-1 space-y-8">
             <div className={bg.cardClass} style={bg.cardStyle}>
               <div className="flex gap-3 mb-4">
-                <span className="border-[1.5px] border-current font-mono rounded-full px-3 py-1 text-xs bg-black/10 dark:bg-white/10">{event.club_name}</span>
+                <span className="border-[1.5px] border-current font-mono rounded-full px-3 py-1 text-xs bg-black/10 dark:bg-white/10">
+                  {(() => {
+                    const creator = event.profiles ? (Array.isArray(event.profiles) ? event.profiles[0] : event.profiles) : null;
+                    if (event.club_name === 'Others' && creator?.role === 'teacher' && creator?.full_name) {
+                      return `By: ${creator.full_name}`;
+                    }
+                    return event.club_name;
+                  })()}
+                </span>
                 <EventStatusBadge status={event.status} className="px-3 py-1 text-xs rounded-full" />
               </div>
               
