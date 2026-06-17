@@ -206,28 +206,20 @@ export default async function EventDetailPage({
             </div>
             
             {event.event_type === 'hackathon' && event.team_formation_enabled && isRegistered && (
-              <details className={`${bg.cardClass} custom-bg-card group overflow-hidden transition-all duration-300`} style={bg.cardStyle}>
-                <summary className="list-none cursor-pointer flex items-center justify-between select-none outline-none">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-bold text-lg uppercase tracking-tight">🏆 Hackathon Team Portal</h3>
-                  </div>
-                  <span className="font-mono text-[10px] px-3 py-1.5 rounded-xl bg-violet-600 hover:bg-violet-750 text-white font-bold uppercase tracking-wider transition-colors">
-                    Click to Open
-                  </span>
-                </summary>
-                <div className="mt-6 pt-6 border-t border-zinc-200/50 dark:border-zinc-800/50">
-                  <div className="flex items-center justify-between mb-6">
-                    <p className="text-xs font-mono opacity-70 uppercase">Team Creation & Recruitment</p>
-                    <a
-                      href={`/student/events/${id}/showcase`}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white text-xs font-mono font-bold uppercase rounded-xl transition-all"
-                    >
-                      🏆 View Showcase & Scores
-                    </a>
-                  </div>
+              <div className={`${bg.cardClass} custom-bg-card overflow-hidden`} style={bg.cardStyle}>
+                <div className="flex items-center justify-between mb-6 border-b border-zinc-200/50 dark:border-zinc-800/50 pb-4">
+                  <h3 className="font-bold text-lg uppercase tracking-tight">🏆 Hackathon Team Portal</h3>
+                  <a
+                    href={`/student/events/${id}/showcase`}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white text-xs font-mono font-bold uppercase rounded-xl transition-all"
+                  >
+                    🏆 View Showcase & Scores
+                  </a>
+                </div>
+                <div className="mt-4">
                   <TeamFormationPortal eventId={id} currentUserId={user?.id || ''} />
                 </div>
-              </details>
+              </div>
             )}
           </div>
 
