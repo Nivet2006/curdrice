@@ -221,6 +221,44 @@ export default async function EventDetailPage({
                 </div>
               </div>
             )}
+
+            {event.event_type === 'hackathon' && isRegistered && (
+              <div className={`${bg.cardClass} custom-bg-card overflow-hidden`} style={bg.cardStyle}>
+                <h3 className="font-bold text-lg mb-4 uppercase tracking-tight">🏆 Scoreboard</h3>
+                <div className="p-6 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-2xl text-center bg-zinc-50/50 dark:bg-zinc-900/20">
+                  <p className="font-mono text-xs uppercase tracking-wider font-bold text-zinc-500 dark:text-zinc-400 mb-1">Scores not yet published</p>
+                  <p className="text-xs text-zinc-400">Judges are still evaluating.</p>
+                </div>
+              </div>
+            )}
+
+            {event.event_type === 'hackathon' && isRegistered && (
+              <div className={`${bg.cardClass} custom-bg-card overflow-hidden`} style={bg.cardStyle}>
+                <h3 className="font-bold text-lg mb-6 uppercase tracking-tight">📊 Evaluation Criteria</h3>
+                <div className="space-y-4 font-mono text-xs uppercase tracking-wider">
+                  <div className="flex justify-between items-center border-b border-zinc-100 dark:border-zinc-900 pb-2">
+                    <span className="text-zinc-500 font-bold">Innovation</span>
+                    <span className="font-black text-zinc-900 dark:text-zinc-100">20 pts</span>
+                  </div>
+                  <div className="flex justify-between items-center border-b border-zinc-100 dark:border-zinc-900 pb-2">
+                    <span className="text-zinc-500 font-bold">Technical</span>
+                    <span className="font-black text-zinc-900 dark:text-zinc-100">20 pts</span>
+                  </div>
+                  <div className="flex justify-between items-center border-b border-zinc-100 dark:border-zinc-900 pb-2">
+                    <span className="text-zinc-500 font-bold">Design/UX</span>
+                    <span className="font-black text-zinc-900 dark:text-zinc-100">20 pts</span>
+                  </div>
+                  <div className="flex justify-between items-center border-b border-zinc-100 dark:border-zinc-900 pb-2">
+                    <span className="text-zinc-500 font-bold">Presentation</span>
+                    <span className="font-black text-zinc-900 dark:text-zinc-100">20 pts</span>
+                  </div>
+                  <div className="flex justify-between items-center pt-2 font-black text-sm text-zinc-900 dark:text-zinc-100">
+                    <span>Total</span>
+                    <span>80 pts</span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="w-full lg:w-[320px] shrink-0 space-y-6">
