@@ -23,6 +23,7 @@ import {
   leaveTeam
 } from '@/lib/actions/hackathon-actions'
 import { toast } from 'sonner'
+import { createClient } from '@/lib/supabase/client'
 import { ProjectSubmissionPortal } from '@/components/student/ProjectSubmissionPortal'
 
 interface TeamFormationPortalProps {
@@ -52,6 +53,42 @@ export function TeamFormationPortal({ eventId, currentUserId }: TeamFormationPor
 
   useEffect(() => {
     loadData()
+
+    const supabase = createClient()
+    const channel = supabase
+      .channel(`realtime-team-event-${eventId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'events',
+          filter: `id=eq.${eventId}`
+        },
+        (payload) => {
+          if (payload.new) {
+            setData((prev: any) => {
+              if (!prev) return prev
+              return {
+                ...prev,
+                event: {
+                  ...prev.event,
+                  submissions_enabled: payload.new.submissions_enabled,
+                  submission_config: payload.new.submission_config,
+                  min_team_members: payload.new.min_team_members,
+                  max_team_members: payload.new.max_team_members,
+                  team_formation_enabled: payload.new.team_formation_enabled
+                }
+              }
+            })
+          }
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }, [eventId])
 
   if (loading) {
@@ -344,6 +381,8 @@ export function TeamFormationPortal({ eventId, currentUserId }: TeamFormationPor
             teamId={myTeam.id}
             teamName={myTeam.team_name}
             isTeamMember={true}
+            submissionsEnabled={event.submissions_enabled ?? true}
+            submissionConfig={event.submission_config}
           />
         </div>
         </>

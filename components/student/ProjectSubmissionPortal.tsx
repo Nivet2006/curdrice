@@ -21,6 +21,13 @@ interface ProjectSubmissionPortalProps {
   teamId: string
   teamName: string
   isTeamMember: boolean
+  submissionsEnabled?: boolean
+  submissionConfig?: {
+    title?: boolean
+    description?: boolean
+    repo_url?: boolean
+    demo_url?: boolean
+  }
 }
 
 interface Submission {
@@ -35,7 +42,9 @@ export function ProjectSubmissionPortal({
   eventId,
   teamId,
   teamName,
-  isTeamMember
+  isTeamMember,
+  submissionsEnabled = true,
+  submissionConfig = { title: true, description: true, repo_url: true, demo_url: true }
 }: ProjectSubmissionPortalProps) {
   const [submission, setSubmission] = useState<Submission | null>(null)
   const [loading, setLoading] = useState(true)
@@ -73,6 +82,7 @@ export function ProjectSubmissionPortal({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (!submissionsEnabled) return
     if (!title.trim() || !description.trim()) return
 
     setSubmitting(true)
@@ -99,6 +109,10 @@ export function ProjectSubmissionPortal({
 
   const showForm = editing || !submission
 
+  // Check which fields are collected
+  const showRepoField = submissionConfig?.repo_url !== false
+  const showDemoField = submissionConfig?.demo_url !== false
+
   return (
     <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-[2.5rem] p-6 md:p-8 space-y-6 shadow-sm">
       {/* Header */}
@@ -112,7 +126,7 @@ export function ProjectSubmissionPortal({
             Team: <span className="text-zinc-600 dark:text-zinc-300 font-bold">{teamName}</span>
           </p>
         </div>
-        {submission && !editing && isTeamMember && (
+        {submission && !editing && isTeamMember && submissionsEnabled && (
           <button
             onClick={() => setEditing(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 rounded-xl text-xs font-mono uppercase font-bold transition-all"
@@ -126,12 +140,21 @@ export function ProjectSubmissionPortal({
       {/* Submitted view */}
       {submission && !editing ? (
         <div className="space-y-5">
-          <div className="flex items-center gap-2 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
-            <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
-            <span className="text-xs font-mono font-bold text-emerald-700 dark:text-emerald-400">
-              Submitted · {new Date(submission.submitted_at).toLocaleDateString()}
-            </span>
-          </div>
+          {submissionsEnabled ? (
+            <div className="flex items-center gap-2 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+              <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+              <span className="text-xs font-mono font-bold text-emerald-700 dark:text-emerald-400">
+                Submitted · {new Date(submission.submitted_at).toLocaleDateString()}
+              </span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl">
+              <AlertCircle size={16} className="text-rose-600 shrink-0" />
+              <span className="text-xs font-mono font-bold text-rose-700 dark:text-rose-400">
+                Submissions Closed · Project Submitted
+              </span>
+            </div>
+          )}
 
           <div className="space-y-4">
             <div>
@@ -145,41 +168,52 @@ export function ProjectSubmissionPortal({
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {submission.repo_url ? (
-              <a
-                href={submission.repo_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-3 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-xl text-xs font-mono font-bold hover:bg-zinc-800 dark:hover:bg-white transition-all group"
-              >
-                <Github size={14} />
-                Repository
-                <ExternalLink size={10} className="ml-auto opacity-60 group-hover:opacity-100" />
-              </a>
-            ) : (
-              <div className="flex items-center gap-2 px-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-dashed border-zinc-200 dark:border-zinc-700 rounded-xl text-xs font-mono text-zinc-400">
-                <Github size={14} />
-                No repo link provided
-              </div>
+            {showRepoField && (
+              submission.repo_url ? (
+                <a
+                  href={submission.repo_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-4 py-3 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-xl text-xs font-mono font-bold hover:bg-zinc-800 dark:hover:bg-white transition-all group"
+                >
+                  <Github size={14} />
+                  Repository
+                  <ExternalLink size={10} className="ml-auto opacity-60 group-hover:opacity-100" />
+                </a>
+              ) : (
+                <div className="flex items-center gap-2 px-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-dashed border-zinc-200 dark:border-zinc-700 rounded-xl text-xs font-mono text-zinc-400">
+                  <Github size={14} />
+                  No repo link provided
+                </div>
+              )
             )}
-            {submission.demo_url ? (
-              <a
-                href={submission.demo_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-3 bg-violet-600 text-white rounded-xl text-xs font-mono font-bold hover:bg-violet-700 transition-all group"
-              >
-                <Video size={14} />
-                Demo / Presentation
-                <ExternalLink size={10} className="ml-auto opacity-60 group-hover:opacity-100" />
-              </a>
-            ) : (
-              <div className="flex items-center gap-2 px-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-dashed border-zinc-200 dark:border-zinc-700 rounded-xl text-xs font-mono text-zinc-400">
-                <Video size={14} />
-                No demo link provided
-              </div>
+            {showDemoField && (
+              submission.demo_url ? (
+                <a
+                  href={submission.demo_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-4 py-3 bg-violet-600 text-white rounded-xl text-xs font-mono font-bold hover:bg-violet-700 transition-all group"
+                >
+                  <Video size={14} />
+                  Demo / Presentation
+                  <ExternalLink size={10} className="ml-auto opacity-60 group-hover:opacity-100" />
+                </a>
+              ) : (
+                <div className="flex items-center gap-2 px-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-dashed border-zinc-200 dark:border-zinc-700 rounded-xl text-xs font-mono text-zinc-400">
+                  <Video size={14} />
+                  No demo link provided
+                </div>
+              )
             )}
           </div>
+        </div>
+      ) : !submissionsEnabled ? (
+        /* Submissions closed view when no submission exists */
+        <div className="py-8 text-center space-y-2">
+          <AlertCircle size={24} className="mx-auto text-rose-500" />
+          <p className="text-sm font-mono text-rose-600 dark:text-rose-450 font-bold uppercase tracking-wider">Project Submissions are Closed</p>
+          <p className="text-xs text-zinc-450 dark:text-zinc-400">Your team did not submit a project before the deadline.</p>
         </div>
       ) : isTeamMember ? (
         /* Submission form */
@@ -214,34 +248,40 @@ export function ProjectSubmissionPortal({
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 flex items-center gap-1">
-                <Github size={10} />
-                Repository URL
-              </label>
-              <input
-                type="url"
-                value={repoUrl}
-                onChange={e => setRepoUrl(e.target.value)}
-                placeholder="https://github.com/..."
-                className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-sm text-zinc-900 dark:text-white outline-none focus:ring-2 focus:ring-violet-500/40 focus:border-violet-500 transition-all"
-              />
+          {(showRepoField || showDemoField) && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {showRepoField && (
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 flex items-center gap-1">
+                    <Github size={10} />
+                    Repository URL
+                  </label>
+                  <input
+                    type="url"
+                    value={repoUrl}
+                    onChange={e => setRepoUrl(e.target.value)}
+                    placeholder="https://github.com/..."
+                    className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-sm text-zinc-900 dark:text-white outline-none focus:ring-2 focus:ring-violet-500/40 focus:border-violet-500 transition-all"
+                  />
+                </div>
+              )}
+              {showDemoField && (
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 flex items-center gap-1">
+                    <Video size={10} />
+                    Demo / Video URL
+                  </label>
+                  <input
+                    type="url"
+                    value={demoUrl}
+                    onChange={e => setDemoUrl(e.target.value)}
+                    placeholder="https://youtube.com/... or https://..."
+                    className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-sm text-zinc-900 dark:text-white outline-none focus:ring-2 focus:ring-violet-500/40 focus:border-violet-500 transition-all"
+                  />
+                </div>
+              )}
             </div>
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 flex items-center gap-1">
-                <Video size={10} />
-                Demo / Video URL
-              </label>
-              <input
-                type="url"
-                value={demoUrl}
-                onChange={e => setDemoUrl(e.target.value)}
-                placeholder="https://youtube.com/... or https://..."
-                className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-sm text-zinc-900 dark:text-white outline-none focus:ring-2 focus:ring-violet-500/40 focus:border-violet-500 transition-all"
-              />
-            </div>
-          </div>
+          )}
 
           <div className="flex gap-3 pt-2">
             {editing && (

@@ -79,6 +79,8 @@ export interface Event {
   hackathon_criteria?: any[] | null
   show_evaluation_criteria?: boolean
   show_scoreboard?: boolean
+  submissions_enabled?: boolean
+  submission_config?: any | null
   profiles?: {
     role: Role
     full_name?: string

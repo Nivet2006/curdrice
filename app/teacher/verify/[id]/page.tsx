@@ -67,6 +67,8 @@ export default async function TeacherVerifyPage({ params }: { params: Promise<{ 
                      initialCriteria={event.hackathon_criteria as any}
                      initialShowCriteria={event.show_evaluation_criteria ?? true}
                      initialShowScoreboard={event.show_scoreboard ?? false}
+                     initialSubmissionsEnabled={event.submissions_enabled ?? true}
+                     initialSubmissionConfig={event.submission_config as any}
                      cardClass={bg.cardClass}
                      cardStyle={bg.cardStyle}
                   />
