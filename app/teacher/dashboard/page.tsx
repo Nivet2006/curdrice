@@ -166,7 +166,7 @@ export default async function TeacherDashboard() {
                         {(Array.isArray(event.profiles) ? event.profiles[0] : event.profiles)?.role === 'teacher' ? (
                           <span className="px-2 py-0.5 text-[8px] font-mono font-bold uppercase tracking-wider bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded-md border border-blue-200 dark:border-blue-800/30">TEACHER</span>
                         ) : (
-                          <span className="px-2 py-0.5 text-[8px] font-mono font-bold uppercase tracking-wider bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 rounded-md border border-purple-200 dark:border-purple-800/30">STUDENT</span>
+                          <span className="px-2 py-0.5 text-[8px] font-mono font-bold uppercase tracking-wider bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 rounded-md border border-purple-200 dark:border-purple-800/30">CC</span>
                         )}
                       </div>
                     </div>
@@ -417,7 +417,7 @@ export default async function TeacherDashboard() {
                         </div>
                       ) : (
                         <div className="px-4 py-1.5 rounded-full font-mono text-[9px] uppercase tracking-widest font-bold border bg-purple-500/10 text-purple-600 border-purple-500/20">
-                          STUDENT
+                          CC
                         </div>
                       )}
                       <div className={`px-4 py-1.5 rounded-full font-mono text-[9px] uppercase tracking-widest font-bold border ${event.approval_status === 'approved'
