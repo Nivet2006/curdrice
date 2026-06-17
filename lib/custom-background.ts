@@ -237,24 +237,6 @@ export function parseCustomBackground(
     const cardBlurVal = config.cardBlur || (config.glassmorphism ? 'md' : 'sm')
     const borderVal = config.borderIntensity || (config.glassmorphism ? 'medium' : 'low')
 
-    if (textClass.includes('text-white')) {
-      cardStyle.backgroundColor = `rgba(0, 0, 0, ${cardOpacityVal / 100})`
-      cardStyle.color = '#ffffff'
-      
-      if (borderVal === 'none') cardStyle.border = 'none'
-      else if (borderVal === 'low') cardStyle.borderColor = 'rgba(255, 255, 255, 0.08)'
-      else if (borderVal === 'medium') cardStyle.borderColor = 'rgba(255, 255, 255, 0.18)'
-      else if (borderVal === 'high') cardStyle.borderColor = 'rgba(255, 255, 255, 0.35)'
-    } else {
-      cardStyle.backgroundColor = `rgba(255, 255, 255, ${cardOpacityVal / 100})`
-      cardStyle.color = '#09090b'
-      
-      if (borderVal === 'none') cardStyle.border = 'none'
-      else if (borderVal === 'low') cardStyle.borderColor = 'rgba(9, 9, 11, 0.08)'
-      else if (borderVal === 'medium') cardStyle.borderColor = 'rgba(9, 9, 11, 0.15)'
-      else if (borderVal === 'high') cardStyle.borderColor = 'rgba(9, 9, 11, 0.28)'
-    }
-
     // Card blur
     if (cardBlurVal === 'none') {
       cardStyle.backdropFilter = 'none'
@@ -270,7 +252,11 @@ export function parseCustomBackground(
       cardStyle.WebkitBackdropFilter = 'blur(24px)'
     }
 
-    const cardClass = 'rounded-3xl p-6 shadow-xl border ' + textClass
+    let borderClass = 'border-zinc-200/50 dark:border-zinc-800/50'
+    if (borderVal === 'none') borderClass = 'border-transparent'
+    else if (borderVal === 'high') borderClass = 'border-zinc-300 dark:border-zinc-700'
+
+    const cardClass = `rounded-3xl p-6 shadow-xl border bg-white/90 dark:bg-zinc-950/80 text-zinc-900 dark:text-white ${borderClass}`
 
     return {
       pageStyle,
