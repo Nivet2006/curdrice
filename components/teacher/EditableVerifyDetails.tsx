@@ -595,10 +595,14 @@ export function EditableVerifyDetails({ event, constraints }: EditableVerifyDeta
         <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm font-mono text-zinc-500 uppercase tracking-wider">
           <div className="flex items-center gap-2 text-black dark:text-white font-bold">
             <span className="w-2 h-2 rounded-full bg-black dark:bg-white"></span>
-            <span>Club: {event.club_name}</span>
+            <span>{event.club_name === 'Others' ? `By: ${event.profiles?.full_name || 'Faculty'}` : `Club: ${event.club_name}`}</span>
           </div>
-          <span className="opacity-30">/</span>
-          <span>Proposer: {event.profiles?.full_name || 'Faculty'}</span>
+          {event.club_name !== 'Others' && (
+            <>
+              <span className="opacity-30">/</span>
+              <span>Proposer: {event.profiles?.full_name || 'Faculty'}</span>
+            </>
+          )}
           <span className="opacity-30">/</span>
           <span className="text-black dark:text-white font-bold">Dept: {event.targeted_department || 'All'}</span>
           <span className="opacity-30">/</span>
