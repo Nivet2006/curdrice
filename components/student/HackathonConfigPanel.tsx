@@ -15,6 +15,10 @@ interface SubmissionConfig {
   description: boolean
   repo_url: boolean
   demo_url: boolean
+  slides_url: boolean
+  design_url: boolean
+  tech_stack: boolean
+  future_scope: boolean
 }
 
 interface HackathonConfigPanelProps {
@@ -54,14 +58,17 @@ export function HackathonConfigPanel({
   const [showScoreboard, setShowScoreboard] = useState(initialShowScoreboard)
   const [showProjectSubmission, setShowProjectSubmission] = useState(initialShowProjectSubmission ?? true)
   const [submissionsEnabled, setSubmissionsEnabled] = useState(initialSubmissionsEnabled ?? true)
-  const [submissionConfig, setSubmissionConfig] = useState<SubmissionConfig>(
-    initialSubmissionConfig || {
-      title: true,
-      description: true,
-      repo_url: true,
-      demo_url: true
-    }
-  )
+  const [submissionConfig, setSubmissionConfig] = useState<SubmissionConfig>({
+    title: true,
+    description: true,
+    repo_url: true,
+    demo_url: true,
+    slides_url: false,
+    design_url: false,
+    tech_stack: false,
+    future_scope: false,
+    ...initialSubmissionConfig
+  })
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -245,6 +252,50 @@ export function HackathonConfigPanel({
                   className="rounded border-zinc-300 dark:border-zinc-700 text-violet-600 focus:ring-violet-500 cursor-pointer"
                 />
                 <span>Demo / Video URL</span>
+              </label>
+
+              {/* Slides URL */}
+              <label className="flex items-center gap-2 text-xs font-mono text-zinc-650 dark:text-zinc-300 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={submissionConfig.slides_url}
+                  onChange={(e) => setSubmissionConfig({ ...submissionConfig, slides_url: e.target.checked })}
+                  className="rounded border-zinc-300 dark:border-zinc-700 text-violet-600 focus:ring-violet-500 cursor-pointer"
+                />
+                <span>Presentation Slides URL</span>
+              </label>
+
+              {/* Design URL */}
+              <label className="flex items-center gap-2 text-xs font-mono text-zinc-650 dark:text-zinc-300 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={submissionConfig.design_url}
+                  onChange={(e) => setSubmissionConfig({ ...submissionConfig, design_url: e.target.checked })}
+                  className="rounded border-zinc-300 dark:border-zinc-700 text-violet-600 focus:ring-violet-500 cursor-pointer"
+                />
+                <span>Figma / Design URL</span>
+              </label>
+
+              {/* Tech Stack */}
+              <label className="flex items-center gap-2 text-xs font-mono text-zinc-650 dark:text-zinc-300 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={submissionConfig.tech_stack}
+                  onChange={(e) => setSubmissionConfig({ ...submissionConfig, tech_stack: e.target.checked })}
+                  className="rounded border-zinc-300 dark:border-zinc-700 text-violet-600 focus:ring-violet-500 cursor-pointer"
+                />
+                <span>Tech Stack Used</span>
+              </label>
+
+              {/* Future Scope */}
+              <label className="flex items-center gap-2 text-xs font-mono text-zinc-650 dark:text-zinc-300 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={submissionConfig.future_scope}
+                  onChange={(e) => setSubmissionConfig({ ...submissionConfig, future_scope: e.target.checked })}
+                  className="rounded border-zinc-300 dark:border-zinc-700 text-violet-600 focus:ring-violet-500 cursor-pointer"
+                />
+                <span>Future Scope / Next Steps</span>
               </label>
             </div>
           </div>

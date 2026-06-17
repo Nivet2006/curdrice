@@ -10,7 +10,11 @@ export async function submitProject(
   title: string,
   description: string,
   repoUrl: string,
-  demoUrl: string
+  demoUrl: string,
+  techStack?: string,
+  slidesUrl?: string,
+  designUrl?: string,
+  futureScope?: string
 ) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -37,6 +41,10 @@ export async function submitProject(
       project_description: description,
       repo_url: repoUrl,
       demo_url: demoUrl,
+      tech_stack: techStack,
+      slides_url: slidesUrl,
+      design_url: designUrl,
+      future_scope: futureScope,
       submitted_at: new Date().toISOString()
     }, {
       onConflict: 'team_id'
