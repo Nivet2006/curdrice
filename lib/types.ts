@@ -76,6 +76,17 @@ export interface Event {
   team_formation_enabled?: boolean
   min_team_members?: number | null
   max_team_members?: number | null
+  profiles?: {
+    role: Role
+    full_name?: string
+    usn?: string
+    department?: string
+  } | {
+    role: Role
+    full_name?: string
+    usn?: string
+    department?: string
+  }[]
 }
 
 export interface Report {
