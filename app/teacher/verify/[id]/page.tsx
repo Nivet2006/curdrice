@@ -11,6 +11,8 @@ import { EventThread } from '@/components/student/EventThread'
 import { getEventThread } from '@/lib/actions/event-threads'
 import { EditableVerifyDetails } from '@/components/teacher/EditableVerifyDetails'
 import { JudgeAssignmentPanel } from '@/components/faculty/JudgeAssignmentPanel'
+import { HackathonConfigPanel } from '@/components/student/HackathonConfigPanel'
+import { parseCustomBackground } from '@/lib/custom-background'
 
 export default async function TeacherVerifyPage({ params }: { params: Promise<{ id: string }> }) {
    const supabase = await createClient()
@@ -30,6 +32,8 @@ export default async function TeacherVerifyPage({ params }: { params: Promise<{ 
 
    const { data: { user } } = await supabase.auth.getUser()
    const thread = event.discussion_enabled ? await getEventThread(id) : null
+   const isCreator = event.created_by === user?.id
+   const bg = parseCustomBackground(event.custom_background, event.banner_url)
 
    return (
       <div className="max-w-[1400px] mx-auto space-y-12 pb-20 transition-colors">
@@ -56,6 +60,17 @@ export default async function TeacherVerifyPage({ params }: { params: Promise<{ 
                   status={event.approval_status} 
                   creatorRole={(Array.isArray(event.profiles) ? event.profiles[0] : event.profiles)?.role}
                />
+
+               {event.event_type === 'hackathon' && isCreator && (
+                  <HackathonConfigPanel
+                     eventId={id}
+                     initialCriteria={event.hackathon_criteria as any}
+                     initialShowCriteria={event.show_evaluation_criteria ?? true}
+                     initialShowScoreboard={event.show_scoreboard ?? false}
+                     cardClass={bg.cardClass}
+                     cardStyle={bg.cardStyle}
+                  />
+               )}
 
                {/* Decision Terminal or Stats */}
                <div className="lg:sticky lg:top-12 h-fit">
