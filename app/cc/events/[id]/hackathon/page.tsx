@@ -77,13 +77,6 @@ export default async function CCHackathonControlPage({
           <ArrowLeft size={14} />
           Back to Event
         </Link>
-        <Link
-          href={`/student/events/${id}/showcase`}
-          className="inline-flex items-center gap-2 px-4 py-2 border border-zinc-200 dark:border-zinc-700 text-xs font-mono font-bold text-zinc-600 dark:text-zinc-300 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-all"
-        >
-          <ExternalLink size={12} />
-          View Public Showcase
-        </Link>
       </div>
 
       {/* Header */}
