@@ -22,7 +22,7 @@ export default async function CCEventDetailPage({ params }: { params: Promise<{ 
 
    // Fetch event and constraints in parallel to eliminate sequential database roundtrips
    const [eventRes, constraintsRes] = await Promise.all([
-      supabase.from('events').select('id, title, description, club_name, location, event_date, registration_deadline, max_capacity, status, approval_status, rejection_data, feedback_config, feedback_open, registration_stopped, targeted_department, banner_url, custom_background, is_public, discussion_enabled, thread_mode, created_by, created_at, event_type').eq('id', id).maybeSingle(),
+      supabase.from('events').select('id, title, description, club_name, location, event_date, registration_deadline, max_capacity, status, approval_status, rejection_data, feedback_config, feedback_open, registration_stopped, targeted_department, banner_url, custom_background, is_public, discussion_enabled, thread_mode, created_by, created_at, event_type, profiles!created_by(role)').eq('id', id).maybeSingle(),
       supabase.from('event_constraints').select('id, event_id, allowed_semesters, allowed_years, allowed_departments, created_at').eq('event_id', id).maybeSingle()
    ])
 
@@ -274,7 +274,10 @@ export default async function CCEventDetailPage({ params }: { params: Promise<{ 
                </div>
 
                <aside className="space-y-6">
-                  <EventStatusTracker status={event.approval_status} />
+                  <EventStatusTracker 
+                     status={event.approval_status} 
+                     creatorRole={(Array.isArray(event.profiles) ? event.profiles[0] : event.profiles)?.role}
+                  />
 
                   {event.approval_status === 'approved' ? (
                      <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">

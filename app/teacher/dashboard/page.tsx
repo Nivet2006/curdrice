@@ -26,7 +26,7 @@ export default async function TeacherDashboard() {
   // Events pending teacher verification (scoped to department)
   const { data: pendingEvents } = await supabase
     .from('events')
-    .select('id, title, description, club_name, location, event_date, registration_deadline, max_capacity, status, approval_status, rejection_data, feedback_config, feedback_open, targeted_department, banner_url, is_public, discussion_enabled, thread_mode, created_by, created_at')
+    .select('id, title, description, club_name, location, event_date, registration_deadline, max_capacity, status, approval_status, rejection_data, feedback_config, feedback_open, targeted_department, banner_url, is_public, discussion_enabled, thread_mode, created_by, created_at, profiles!created_by(role)')
     .eq('approval_status', 'pending_teacher')
     .eq('targeted_department', dept)
     .order('created_at', { ascending: true })
@@ -99,7 +99,7 @@ export default async function TeacherDashboard() {
   // Events already approved or forwarded to HOD (scoped to department or created by teacher)
   const { data: allApprovedEvents } = await supabase
     .from('events')
-    .select('id, title, description, club_name, location, event_date, registration_deadline, max_capacity, status, approval_status, rejection_data, feedback_config, feedback_open, targeted_department, banner_url, is_public, discussion_enabled, thread_mode, created_by, created_at, event_category')
+    .select('id, title, description, club_name, location, event_date, registration_deadline, max_capacity, status, approval_status, rejection_data, feedback_config, feedback_open, targeted_department, banner_url, is_public, discussion_enabled, thread_mode, created_by, created_at, event_category, profiles!created_by(role)')
     .in('approval_status', ['pending_hod', 'approved'])
     .order('event_date', { ascending: false })
 
@@ -161,7 +161,14 @@ export default async function TeacherDashboard() {
                   <div className="flex justify-between items-start mb-6">
                     <div className="space-y-1">
                       <h3 className="text-2xl font-black text-[#0a0a0a] dark:text-white leading-tight group-hover:underline transition-all uppercase tracking-tighter">{event.title}</h3>
-                      <p className="font-mono text-[10px] text-zinc-400 uppercase tracking-widest">{event.club_name}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-mono text-[10px] text-zinc-400 uppercase tracking-widest">{event.club_name}</p>
+                        {(Array.isArray(event.profiles) ? event.profiles[0] : event.profiles)?.role === 'teacher' ? (
+                          <span className="px-2 py-0.5 text-[8px] font-mono font-bold uppercase tracking-wider bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded-md border border-blue-200 dark:border-blue-800/30">TEACHER</span>
+                        ) : (
+                          <span className="px-2 py-0.5 text-[8px] font-mono font-bold uppercase tracking-wider bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 rounded-md border border-purple-200 dark:border-purple-800/30">STUDENT</span>
+                        )}
+                      </div>
                     </div>
                     <Link
                       href={`/teacher/verify/${event.id}`}
@@ -404,6 +411,15 @@ export default async function TeacherDashboard() {
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
+                      {(Array.isArray(event.profiles) ? event.profiles[0] : event.profiles)?.role === 'teacher' ? (
+                        <div className="px-4 py-1.5 rounded-full font-mono text-[9px] uppercase tracking-widest font-bold border bg-blue-500/10 text-blue-600 border-blue-500/20">
+                          TEACHER
+                        </div>
+                      ) : (
+                        <div className="px-4 py-1.5 rounded-full font-mono text-[9px] uppercase tracking-widest font-bold border bg-purple-500/10 text-purple-600 border-purple-500/20">
+                          STUDENT
+                        </div>
+                      )}
                       <div className={`px-4 py-1.5 rounded-full font-mono text-[9px] uppercase tracking-widest font-bold border ${event.approval_status === 'approved'
                           ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
                           : 'bg-zinc-500/10 text-zinc-500 border-zinc-500/20'

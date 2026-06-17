@@ -7,35 +7,58 @@ export type EventApprovalStatus = 'draft' | 'pending_teacher' | 'pending_hod' | 
 
 interface EventStatusTrackerProps {
   status: EventApprovalStatus
+  creatorRole?: string
 }
 
-export function EventStatusTracker({ status }: EventStatusTrackerProps) {
-  const steps = [
-    {
-      id: 'draft',
-      label: 'Draft Submitted',
-      isCompleted: status !== 'draft',
-      isActive: false, // Once submitted, it's done
-    },
-    {
-      id: 'teacher',
-      label: 'Faculty Review',
-      isCompleted: ['pending_hod', 'approved'].includes(status),
-      isActive: status === 'pending_teacher',
-    },
-    {
-      id: 'hod',
-      label: 'HOD Authorization',
-      isCompleted: status === 'approved',
-      isActive: status === 'pending_hod',
-    },
-    {
-      id: 'published',
-      label: 'Event Published',
-      isCompleted: status === 'approved',
-      isActive: false,
-    }
-  ]
+export function EventStatusTracker({ status, creatorRole }: EventStatusTrackerProps) {
+  const isTeacherCreated = creatorRole === 'teacher'
+  const steps = isTeacherCreated
+    ? [
+        {
+          id: 'draft',
+          label: 'Draft Submitted',
+          isCompleted: status !== 'draft',
+          isActive: false, // Once submitted, it's done
+        },
+        {
+          id: 'hod',
+          label: 'HOD Authorization',
+          isCompleted: status === 'approved',
+          isActive: status === 'pending_hod',
+        },
+        {
+          id: 'published',
+          label: 'Event Published',
+          isCompleted: status === 'approved',
+          isActive: false,
+        }
+      ]
+    : [
+        {
+          id: 'draft',
+          label: 'Draft Submitted',
+          isCompleted: status !== 'draft',
+          isActive: false, // Once submitted, it's done
+        },
+        {
+          id: 'teacher',
+          label: 'Faculty Review',
+          isCompleted: ['pending_hod', 'approved'].includes(status),
+          isActive: status === 'pending_teacher',
+        },
+        {
+          id: 'hod',
+          label: 'HOD Authorization',
+          isCompleted: status === 'approved',
+          isActive: status === 'pending_hod',
+        },
+        {
+          id: 'published',
+          label: 'Event Published',
+          isCompleted: status === 'approved',
+          isActive: false,
+        }
+      ]
 
   return (
     <div className="bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-3xl p-8 space-y-8 shadow-sm transition-colors">

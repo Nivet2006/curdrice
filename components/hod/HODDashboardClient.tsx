@@ -50,14 +50,14 @@ export function HODDashboardClient({
           // Alternatively, we could manually update the state, but re-fetching is safer for complex status changes
           const { data: pending } = await supabase
             .from('events')
-            .select('*')
+            .select('*, profiles!created_by(role)')
             .eq('approval_status', 'pending_hod')
             .eq('targeted_department', dept)
             .order('created_at', { ascending: true })
 
           const { data: approved } = await supabase
             .from('events')
-            .select('*')
+            .select('*, profiles!created_by(role)')
             .eq('approval_status', 'approved')
             .eq('targeted_department', dept)
             .order('event_date', { ascending: false })
@@ -110,10 +110,17 @@ export function HODDashboardClient({
               {pendingApprovals.length > 0 ? (
                 pendingApprovals.map(event => (
                   <div key={event.id} className="bg-white border-2 border-black p-8 rounded-[2rem] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all cursor-pointer group">
-                     <div className="flex justify-between items-start mb-6">
-                        <span className="text-[10px] font-mono border border-black px-2 py-0.5 rounded-full uppercase font-bold tracking-tighter">Event Protocol 40.2</span>
-                        <CheckCircle2 size={24} className="text-zinc-200 group-hover:text-black transition-colors" />
-                     </div>
+                      <div className="flex justify-between items-start mb-6">
+                         <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-mono border border-black px-2 py-0.5 rounded-full uppercase font-bold tracking-tighter">Event Protocol 40.2</span>
+                            {(Array.isArray(event.profiles) ? event.profiles[0] : event.profiles)?.role === 'teacher' ? (
+                              <span className="px-2 py-0.5 text-[8px] font-mono font-bold uppercase tracking-wider bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded-md border border-blue-200 dark:border-blue-800/30">TEACHER</span>
+                            ) : (
+                              <span className="px-2 py-0.5 text-[8px] font-mono font-bold uppercase tracking-wider bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 rounded-md border border-purple-200 dark:border-purple-800/30">STUDENT</span>
+                            )}
+                         </div>
+                         <CheckCircle2 size={24} className="text-zinc-200 group-hover:text-black transition-colors" />
+                      </div>
                      <h3 className="text-2xl font-black mb-3 leading-none group-hover:underline underline-offset-4 uppercase">{event.title}</h3>
                      <div className="flex items-center gap-4 mb-8">
                         <div className="flex flex-col">
@@ -192,10 +199,17 @@ export function HODDashboardClient({
               {approvedEvents.length > 0 ? (
                 approvedEvents.map(event => (
                   <div key={event.id} className="bg-white border border-zinc-200 p-8 rounded-[2rem] hover:border-black transition-all group">
-                     <div className="flex justify-between items-start mb-6">
-                        <span className="text-[10px] font-mono bg-black text-white px-2 py-0.5 rounded-md uppercase font-bold tracking-tighter">Live Status</span>
-                        <ExternalLink size={20} className="text-zinc-300 group-hover:text-black transition-colors" />
-                     </div>
+                      <div className="flex justify-between items-start mb-6">
+                         <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-mono bg-black text-white px-2 py-0.5 rounded-md uppercase font-bold tracking-tighter">Live Status</span>
+                            {(Array.isArray(event.profiles) ? event.profiles[0] : event.profiles)?.role === 'teacher' ? (
+                              <span className="px-2 py-0.5 text-[8px] font-mono font-bold uppercase tracking-wider bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded-md border border-blue-200 dark:border-blue-800/30">TEACHER</span>
+                            ) : (
+                              <span className="px-2 py-0.5 text-[8px] font-mono font-bold uppercase tracking-wider bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 rounded-md border border-purple-200 dark:border-purple-800/30">STUDENT</span>
+                            )}
+                         </div>
+                         <ExternalLink size={20} className="text-zinc-300 group-hover:text-black transition-colors" />
+                      </div>
                      <h3 className="text-2xl font-black mb-3 leading-none uppercase group-hover:underline">{event.title}</h3>
                      <p className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest mb-6">{event.club_name}</p>
                      <Link 

@@ -17,7 +17,7 @@ export default async function TeacherVerifyPage({ params }: { params: Promise<{ 
 
    const { data: event } = await supabase
       .from('events')
-      .select('*, profiles!created_by(full_name, usn, department), event_constraints(*)')
+      .select('*, profiles!created_by(full_name, usn, department, role), event_constraints(*)')
       .eq('id', id)
       .single()
 
@@ -51,7 +51,10 @@ export default async function TeacherVerifyPage({ params }: { params: Promise<{ 
 
             {/* Right: Status & Terminal (5/12) */}
             <div className="lg:col-span-5 space-y-8">
-               <EventStatusTracker status={event.approval_status} />
+               <EventStatusTracker 
+                  status={event.approval_status} 
+                  creatorRole={(Array.isArray(event.profiles) ? event.profiles[0] : event.profiles)?.role}
+               />
 
                {/* Decision Terminal or Stats */}
                <div className="lg:sticky lg:top-12 h-fit">

@@ -575,14 +575,16 @@ export function EditableVerifyDetails({ event, constraints }: EditableVerifyDeta
             </h1>
           </div>
           <div className="flex items-center gap-3 self-start sm:self-center">
-            <button
-              type="button"
-              onClick={() => setIsEditing(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-zinc-950 border-2 border-black dark:border-white rounded-xl font-mono text-[10px] uppercase font-bold tracking-wider hover:bg-zinc-50 dark:hover:bg-zinc-900 hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transition-all active:translate-y-[0px] active:shadow-none"
-            >
-              <Edit size={12} />
-              Edit Details
-            </button>
+            {(Array.isArray(event.profiles) ? event.profiles[0] : event.profiles)?.role === 'teacher' && (
+              <button
+                type="button"
+                onClick={() => setIsEditing(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-zinc-950 border-2 border-black dark:border-white rounded-xl font-mono text-[10px] uppercase font-bold tracking-wider hover:bg-zinc-50 dark:hover:bg-zinc-900 hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transition-all active:translate-y-[0px] active:shadow-none"
+              >
+                <Edit size={12} />
+                Edit Details
+              </button>
+            )}
             <div className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-4 py-2 rounded-2xl">
               <span className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest">ID</span>
               <span className="text-lg font-black font-mono text-[#0a0a0a] dark:text-white tracking-tighter italic">{event.id}</span>

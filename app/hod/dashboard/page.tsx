@@ -18,14 +18,14 @@ export default async function HODDashboard() {
   // Initial Fetches (Server Side)
   const { data: pendingApprovals } = await supabase
     .from('events')
-    .select('id, title, description, club_name, location, event_date, registration_deadline, max_capacity, status, approval_status, rejection_data, feedback_config, feedback_open, targeted_department, banner_url, is_public, discussion_enabled, thread_mode, created_by, created_at')
+    .select('id, title, description, club_name, location, event_date, registration_deadline, max_capacity, status, approval_status, rejection_data, feedback_config, feedback_open, targeted_department, banner_url, is_public, discussion_enabled, thread_mode, created_by, created_at, profiles!created_by(role)')
     .eq('approval_status', 'pending_hod')
     .eq('targeted_department', dept)
     .order('created_at', { ascending: true })
   
   const { data: approvedEvents } = await supabase
     .from('events')
-    .select('id, title, description, club_name, location, event_date, registration_deadline, max_capacity, status, approval_status, rejection_data, feedback_config, feedback_open, targeted_department, banner_url, is_public, discussion_enabled, thread_mode, created_by, created_at')
+    .select('id, title, description, club_name, location, event_date, registration_deadline, max_capacity, status, approval_status, rejection_data, feedback_config, feedback_open, targeted_department, banner_url, is_public, discussion_enabled, thread_mode, created_by, created_at, profiles!created_by(role)')
     .eq('approval_status', 'approved')
     .eq('targeted_department', dept)
     .order('event_date', { ascending: false })
@@ -52,8 +52,8 @@ export default async function HODDashboard() {
 
   return (
     <HODDashboardClient 
-      initialPending={(pendingApprovals || []) as Event[]}
-      initialApproved={(approvedEvents || []) as Event[]}
+      initialPending={(pendingApprovals || []) as unknown as Event[]}
+      initialApproved={(approvedEvents || []) as unknown as Event[]}
       initialProfileRequests={pendingProfileRequests}
       initialPendingIIC={pendingIICReports || []}
       initialApprovedIIC={approvedIICReports || []}
