@@ -597,9 +597,9 @@ export async function updateHackathonConfig(
       .single()
 
     const isCreator = event.created_by === user.id
-    const isAdminOrHOD = profile && ['admin', 'hod'].includes(profile.role)
+    const isAdminOrHODOrTeacher = profile && ['admin', 'hod', 'teacher'].includes(profile.role)
 
-    if (!isCreator && !isAdminOrHOD) {
+    if (!isCreator && !isAdminOrHODOrTeacher) {
       return { error: 'You are not authorized to configure this event.' }
     }
 
@@ -615,6 +615,8 @@ export async function updateHackathonConfig(
     if (updateError) return { error: updateError.message }
 
     revalidatePath(`/student/events/${eventId}`)
+    revalidatePath(`/teacher/verify/${eventId}`)
+    revalidatePath(`/cc/events/${eventId}/edit`)
     return { success: true }
   } catch (err: unknown) {
     const errorMsg = err instanceof Error ? err.message : 'Unknown error'

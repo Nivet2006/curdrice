@@ -61,7 +61,7 @@ export default async function TeacherVerifyPage({ params }: { params: Promise<{ 
                   creatorRole={(Array.isArray(event.profiles) ? event.profiles[0] : event.profiles)?.role}
                />
 
-               {event.event_type === 'hackathon' && isCreator && (
+               {event.event_type === 'hackathon' && (
                   <HackathonConfigPanel
                      eventId={id}
                      initialCriteria={event.hackathon_criteria as any}
