@@ -10,11 +10,20 @@ interface CriteriaItem {
   max_points: number
 }
 
+interface SubmissionConfig {
+  title: boolean
+  description: boolean
+  repo_url: boolean
+  demo_url: boolean
+}
+
 interface HackathonConfigPanelProps {
   eventId: string
   initialCriteria: CriteriaItem[]
   initialShowCriteria: boolean
   initialShowScoreboard: boolean
+  initialSubmissionsEnabled?: boolean
+  initialSubmissionConfig?: SubmissionConfig
   cardClass: string
   cardStyle: React.CSSProperties
 }
@@ -24,6 +33,8 @@ export function HackathonConfigPanel({
   initialCriteria,
   initialShowCriteria,
   initialShowScoreboard,
+  initialSubmissionsEnabled,
+  initialSubmissionConfig,
   cardClass,
   cardStyle
 }: HackathonConfigPanelProps) {
@@ -39,6 +50,15 @@ export function HackathonConfigPanel({
   )
   const [showCriteria, setShowCriteria] = useState(initialShowCriteria)
   const [showScoreboard, setShowScoreboard] = useState(initialShowScoreboard)
+  const [submissionsEnabled, setSubmissionsEnabled] = useState(initialSubmissionsEnabled ?? true)
+  const [submissionConfig, setSubmissionConfig] = useState<SubmissionConfig>(
+    initialSubmissionConfig || {
+      title: true,
+      description: true,
+      repo_url: true,
+      demo_url: true
+    }
+  )
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -76,7 +96,14 @@ export function HackathonConfigPanel({
     setError(null)
     setSuccess(false)
 
-    const res = await updateHackathonConfig(eventId, criteria, showCriteria, showScoreboard)
+    const res = await updateHackathonConfig(
+      eventId,
+      criteria,
+      showCriteria,
+      showScoreboard,
+      submissionsEnabled,
+      submissionConfig
+    )
     setLoading(false)
 
     if (res.error) {
@@ -133,6 +160,74 @@ export function HackathonConfigPanel({
             {showScoreboard ? 'Visible to Students' : 'Hidden'}
           </span>
         </button>
+      </div>
+
+      {/* Project Submission Controls */}
+      <div className="border-t border-dashed border-zinc-200 dark:border-zinc-800 pt-5 mt-5 mb-6 space-y-4">
+        <h4 className="font-mono text-xs uppercase font-bold text-zinc-500 dark:text-zinc-400">
+          📤 Project Submission Settings
+        </h4>
+        
+        {/* Submissions Switch */}
+        <button
+          type="button"
+          onClick={() => setSubmissionsEnabled(!submissionsEnabled)}
+          className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all ${
+            submissionsEnabled
+              ? 'bg-violet-500/10 border-violet-500/35 text-violet-600 dark:text-violet-400'
+              : 'bg-zinc-500/10 border-zinc-500/25 text-zinc-500 dark:text-zinc-400'
+          }`}
+        >
+          <span className="font-mono text-xs uppercase tracking-wider font-bold">
+            Project Submissions status
+          </span>
+          <span className="text-xs font-sans font-bold uppercase font-black">
+            {submissionsEnabled ? '🟢 OPEN (Start)' : '🔴 CLOSED (End)'}
+          </span>
+        </button>
+
+        {submissionsEnabled && (
+          <div className="p-4 bg-zinc-500/5 dark:bg-zinc-950/10 border border-zinc-200 dark:border-zinc-800 rounded-2xl space-y-3">
+            <p className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 font-bold">
+              Details to collect from teams:
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              {/* Title (Always required/true) */}
+              <div className="flex items-center gap-2 text-xs font-mono text-zinc-400">
+                <input type="checkbox" checked readOnly className="rounded border-zinc-300 dark:border-zinc-700 text-violet-600" />
+                <span>Project Title *</span>
+              </div>
+
+              {/* Description (Always required/true) */}
+              <div className="flex items-center gap-2 text-xs font-mono text-zinc-400">
+                <input type="checkbox" checked readOnly className="rounded border-zinc-300 dark:border-zinc-700 text-violet-600" />
+                <span>Description *</span>
+              </div>
+
+              {/* Repository URL */}
+              <label className="flex items-center gap-2 text-xs font-mono text-zinc-650 dark:text-zinc-300 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={submissionConfig.repo_url}
+                  onChange={(e) => setSubmissionConfig({ ...submissionConfig, repo_url: e.target.checked })}
+                  className="rounded border-zinc-300 dark:border-zinc-700 text-violet-600 focus:ring-violet-500 cursor-pointer"
+                />
+                <span>Repository URL</span>
+              </label>
+
+              {/* Demo URL */}
+              <label className="flex items-center gap-2 text-xs font-mono text-zinc-650 dark:text-zinc-300 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={submissionConfig.demo_url}
+                  onChange={(e) => setSubmissionConfig({ ...submissionConfig, demo_url: e.target.checked })}
+                  className="rounded border-zinc-300 dark:border-zinc-700 text-violet-600 focus:ring-violet-500 cursor-pointer"
+                />
+                <span>Demo / Video URL</span>
+              </label>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Criteria List Editor */}

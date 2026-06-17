@@ -573,7 +573,9 @@ export async function updateHackathonConfig(
   eventId: string,
   criteria: any[],
   showEvaluationCriteria: boolean,
-  showScoreboard: boolean
+  showScoreboard: boolean,
+  submissionsEnabled?: boolean,
+  submissionConfig?: any
 ) {
   try {
     const { revalidatePath } = await import('next/cache')
@@ -608,7 +610,9 @@ export async function updateHackathonConfig(
       .update({
         hackathon_criteria: criteria,
         show_evaluation_criteria: showEvaluationCriteria,
-        show_scoreboard: showScoreboard
+        show_scoreboard: showScoreboard,
+        submissions_enabled: submissionsEnabled,
+        submission_config: submissionConfig
       })
       .eq('id', eventId)
 
