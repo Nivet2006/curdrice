@@ -255,7 +255,7 @@ export default async function EventDetailPage({
                           <Button className="w-full opacity-90 bg-amber-500 hover:bg-amber-600 text-white cursor-not-allowed">
                             Waitlisted (Position #{waitlistPosition})
                           </Button>
-                          {!event.is_compulsory && <CancelRegistrationButton eventId={id} />}
+                          {event.is_compulsory !== true && <CancelRegistrationButton eventId={id} />}
                         </>
                       ) : (
                         <>
@@ -274,7 +274,7 @@ export default async function EventDetailPage({
                             eventName={event.title} 
                           />
 
-                          {!event.is_compulsory && <CancelRegistrationButton eventId={id} />}
+                          {event.is_compulsory !== true && <CancelRegistrationButton eventId={id} />}
                         </>
                       )}
                     </div>
