@@ -231,12 +231,6 @@ export default async function EventDetailPage({
               <div className={`${bg.cardClass} custom-bg-card overflow-hidden`} style={bg.cardStyle}>
                 <div className="flex items-center justify-between mb-6 border-b border-zinc-200/50 dark:border-zinc-800/50 pb-4">
                   <h3 className="font-bold text-lg uppercase tracking-tight">🏆 Hackathon Team Portal</h3>
-                  <a
-                    href={`/student/events/${id}/showcase`}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white text-xs font-mono font-bold uppercase rounded-xl transition-all"
-                  >
-                    🏆 View Showcase & Scores
-                  </a>
                 </div>
                 <div className="mt-4">
                   <TeamFormationPortal eventId={id} currentUserId={user?.id || ''} />
