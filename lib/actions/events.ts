@@ -154,7 +154,8 @@ export async function updateEvent(eventId: string, formData: FormData) {
   const { data: event } = await supabase.from('events').select('created_by').eq('id', eventId).single()
 
   if (!event) return { error: 'Event not found' }
-  if (profile?.role !== 'admin' && profile?.role !== 'manager' && !(profile?.role === 'teacher' && event.created_by === user.id)) {
+  const isAuthorized = ['admin', 'manager', 'teacher', 'hod'].includes(profile?.role || '') || event.created_by === user.id
+  if (!isAuthorized) {
     return { error: 'Unauthorized' }
   }
 

@@ -3,14 +3,13 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import { TeacherActionWrapper } from './TeacherActionWrapper'
 import { EventRegistrationStats } from '@/components/admin/EventRegistrationStats'
-import { ArrowLeft, User, ShieldAlert, CheckCircle2, Clock, MapPin } from 'lucide-react'
+import { ArrowLeft, ShieldAlert, CheckCircle2 } from 'lucide-react'
 import Link from 'next/link'
 import { EventStatusTracker } from '@/components/common/EventStatusTracker'
 import { PRAssignmentPanel } from '@/components/faculty/PRAssignmentPanel'
 import { EventThread } from '@/components/student/EventThread'
 import { getEventThread } from '@/lib/actions/event-threads'
-import { ImageWithFallback } from '@/components/ui/ImageWithFallback'
-import { parseCustomBackground } from '@/lib/custom-background'
+import { EditableVerifyDetails } from '@/components/teacher/EditableVerifyDetails'
 
 export default async function TeacherVerifyPage({ params }: { params: Promise<{ id: string }> }) {
    const supabase = await createClient()
@@ -18,11 +17,15 @@ export default async function TeacherVerifyPage({ params }: { params: Promise<{ 
 
    const { data: event } = await supabase
       .from('events')
-      .select('*, profiles!created_by(full_name, usn, department)')
+      .select('*, profiles!created_by(full_name, usn, department), event_constraints(*)')
       .eq('id', id)
       .single()
 
    if (!event) notFound()
+
+   const constraints = Array.isArray((event as any).event_constraints)
+      ? (event as any).event_constraints[0]
+      : (event as any).event_constraints
 
    const { data: { user } } = await supabase.auth.getUser()
    const thread = event.discussion_enabled ? await getEventThread(id) : null
@@ -41,91 +44,9 @@ export default async function TeacherVerifyPage({ params }: { params: Promise<{ 
          </div>
 
          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-            {/* Left: Event Details (7/12) */}
+            {/* Left: Editable Event Details (7/12) */}
             <div className="lg:col-span-7 space-y-10">
-               <header className="space-y-6">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                     <h1 className="text-5xl font-black tracking-tighter text-[#0a0a0a] dark:text-white leading-tight">{event.title}</h1>
-                     <div className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-4 py-2 rounded-2xl w-fit self-start sm:self-center">
-                        <span className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest">Event ID</span>
-                        <span className="text-lg font-black font-mono text-[#0a0a0a] dark:text-white tracking-tighter italic">{event.id}</span>
-                     </div>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm font-mono text-zinc-500 uppercase tracking-wider">
-                     <div className="flex items-center gap-2 text-black dark:text-white font-bold">
-                        <span className="w-2 h-2 rounded-full bg-black dark:bg-white"></span>
-                        <span>{event.club_name}</span>
-                     </div>
-                     <span className="opacity-30">/</span>
-                     <span>Prop: {(event.profiles as any)?.full_name}</span>
-                     <span className="opacity-30">/</span>
-                     <span className="text-black dark:text-white font-bold">{event.targeted_department || 'All Departments'}</span>
-                  </div>
-               </header>
-
-               <div className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-[2.5rem] p-10 space-y-8 shadow-sm transition-colors">
-                  <div>
-                     <h3 className="text-[10px] font-mono text-zinc-500 dark:text-zinc-600 uppercase tracking-[0.2em] mb-4">Executive Summary</h3>
-                     <p className="text-zinc-800 dark:text-zinc-300 leading-relaxed text-lg font-medium whitespace-pre-wrap">{event.description}</p>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-8 border-t border-zinc-100 dark:border-zinc-900 pt-8">
-                     <div className="space-y-1">
-                        <div className="flex items-center gap-2 text-zinc-400">
-                           <MapPin size={14} />
-                           <h3 className="text-[10px] font-mono uppercase tracking-[0.2em]">Logistics</h3>
-                        </div>
-                        <p className="font-bold text-black dark:text-white">{event.location}</p>
-                        <p className="text-xs text-zinc-500">{new Date(event.event_date).toLocaleString([], { dateStyle: 'long', timeStyle: 'short' })}</p>
-                     </div>
-                     <div className="space-y-1">
-                        <div className="flex items-center gap-2 text-zinc-400">
-                           <User size={14} />
-                           <h3 className="text-[10px] font-mono uppercase tracking-[0.2em]">Capacity</h3>
-                        </div>
-                        <p className="font-bold text-black dark:text-white">{event.max_capacity || 'Unlimited'}</p>
-                        <p className="text-xs text-zinc-500">Scheduled Attendee Limit</p>
-                     </div>
-                  </div>
-               </div>
-
-               {(() => {
-                  const bg = parseCustomBackground(event.custom_background, event.banner_url)
-                  if (!bg.hasBg) return null
-                  return (
-                     <div className="w-full aspect-[16/9] rounded-[2.5rem] overflow-hidden border border-zinc-200 dark:border-zinc-800 shadow-2xl relative group transition-all flex items-end p-6 sm:p-10">
-                        {bg.customStyleBlock && <style dangerouslySetInnerHTML={{ __html: bg.customStyleBlock }} />}
-                        
-                        {/* Backdrop Layer */}
-                        <div 
-                           style={bg.backdropStyle} 
-                           className={`absolute inset-0 w-full h-full pointer-events-none transition-all ${bg.backdropClass}`} 
-                        />
-                        
-                        {/* Backdrop Overlay */}
-                        {bg.backdropOverlayClass && (
-                           <div 
-                              style={bg.backdropOverlayStyle} 
-                              className={`absolute inset-0 w-full h-full pointer-events-none transition-all ${bg.backdropOverlayClass}`} 
-                           />
-                        )}
-
-                        {/* Mesh pattern overlay */}
-                        {bg.meshPatternStyle && (
-                           <div 
-                              style={bg.meshPatternStyle} 
-                              className="absolute inset-0 w-full h-full pointer-events-none opacity-80" 
-                           />
-                        )}
-                        
-                        {/* Banner Content Card */}
-                        <div className={`w-full max-w-xl relative z-10 transition-all ${bg.cardClass}`} style={bg.cardStyle}>
-                           <p className="font-mono text-[10px] uppercase tracking-[0.5em] opacity-80 mb-2">Visual Asset Preview</p>
-                           <h4 className="text-xl font-bold tracking-tight uppercase">{event.title}</h4>
-                        </div>
-                     </div>
-                  )
-               })()}
+               <EditableVerifyDetails event={event} constraints={constraints} />
             </div>
 
             {/* Right: Status & Terminal (5/12) */}
