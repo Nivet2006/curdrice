@@ -147,14 +147,7 @@ export default function LoginPage() {
         </Link>
       </Card>
 
-      <footer className="mt-8 text-center text-xs text-[#888888] dark:text-[#555555] max-w-sm px-4">
-        <p className="font-sans">
-          Developed by <span className="font-semibold text-[#666666] dark:text-[#777777]">nived</span> (<span className="font-mono text-[10px]">nivet2006</span> / <span className="font-mono text-[10px]">nivet.2006</span>)
-        </p>
-        <p className="mt-1 text-[10px] leading-relaxed font-sans">
-          Clubeve by nived (clubeve nivet, clubevenived) is an all-in-one college event management, student collaboration, and hackathon evaluation platform.
-        </p>
-      </footer>
+
 
       {/* Test Credentials Helper */}
       <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
