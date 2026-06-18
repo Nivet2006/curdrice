@@ -10,7 +10,7 @@ Files reviewed:
 - lib/auth-guard.ts
 - supabase/migrations/0001_rls_policies.sql
 
-## Finding 1 — ⚠️ NOTED (migration file created: 0040_fix_manager_rls.sql — apply to live DB)
+## Finding 1 — ✅ DONE
 
 ### Title
 Role-wide manager RLS allows cross-manager event modification
