@@ -47,8 +47,8 @@ export default function LoginPage() {
         setStep('totp')
         setLoading(false)
       } else {
-        // ✅ Wait for all 4 loader steps to complete before redirecting
-        await new Promise(r => setTimeout(r, 4 * 150))
+        // // ✅ Wait for all 4 loader steps to complete before redirecting
+        // await new Promise(r => setTimeout(r, 4 * 150))
         const searchParams = new URLSearchParams(window.location.search)
         const redirectTo = searchParams.get('redirectTo')
         if (redirectTo && redirectTo.startsWith('/')) {
@@ -70,7 +70,7 @@ export default function LoginPage() {
   if (step === 'totp' && adminData) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-4 relative">
-        {loading && <ShieldLoader />}
+        {/* {loading && <ShieldLoader />} */}
         <div className="absolute top-6 left-8 font-mono font-bold text-lg">{'>'} Club-Eve</div>
         <div className="absolute top-6 right-8 flex items-center gap-3">
           <ThemeToggle />
@@ -86,7 +86,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 relative">
 
-      {loading && <ShieldLoader />}
+      {/* {loading && <ShieldLoader />} */}
 
       <div className="absolute top-6 left-8 font-mono font-bold text-lg">
         {'>'} Club-Eve
