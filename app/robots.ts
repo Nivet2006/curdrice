@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: ['/api/', '/admin/', '/cc/', '/hod/', '/pr/', '/student/', '/teacher/'],
     },
-    sitemap: 'https://club-eve.vercel.app/sitemap.xml',
+    sitemap: 'https://cooking.nivet2006.in/sitemap.xml',
   }
 }
