@@ -48,8 +48,8 @@ export function Navbar({ role, name }: { role?: Role; name?: string }) {
     setSidebarOpen(false)
     setLoading(true)
     await supabase.auth.signOut()
-    // ✅ Wait for all 4 loader steps to complete before redirecting
-    await new Promise(r => setTimeout(r, 4 * 150))
+    // // ✅ Wait for all 4 loader steps to complete before redirecting
+    // await new Promise(r => setTimeout(r, 4 * 150))
     window.location.href = '/login'
   }
 
@@ -94,7 +94,7 @@ export function Navbar({ role, name }: { role?: Role; name?: string }) {
 
   return (
     <>
-      {loading && (
+      {/* {loading && (
         <ShieldLoader
           message="Signing you out"
           steps={[
@@ -104,7 +104,7 @@ export function Navbar({ role, name }: { role?: Role; name?: string }) {
             "Redirecting to login"
           ]}
         />
-      )}
+      )} */}
       {/* ── Top Navbar ── */}
       <div className="border-b border-[#e0e0e0] bg-white sticky top-0 z-50">
         <nav className="h-[60px] flex items-center justify-between px-4 md:px-8 w-full max-w-[1280px] mx-auto">
