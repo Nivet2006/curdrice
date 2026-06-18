@@ -4,7 +4,6 @@ import React, { useState } from 'react'
 import { Trash2, Download, Filter, Calendar, Zap, AlertTriangle } from 'lucide-react'
 import { clearAllLogs, clearLogsByRange, clearLogsByIP } from '@/lib/actions/audit-mgmt'
 import { toast } from 'sonner'
-import * as XLSX from 'xlsx'
 
 interface AuditManagementProps {
   logs: any[]
@@ -41,7 +40,8 @@ export function AuditManagement({ logs }: AuditManagementProps) {
     setLoading(false)
   }
 
-  const exportLogs = (format: 'xlsx' | 'json' | 'csv') => {
+  const exportLogs = async (format: 'xlsx' | 'json' | 'csv') => {
+    const XLSX = await import('xlsx')
     const data = logs.map(l => ({
       Timestamp: new Date(l.created_at).toLocaleString(),
       Action: l.action_type,

@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react'
-import * as XLSX from 'xlsx'
 import { Button } from '@/components/ui/Button'
 import { ChevronDown, Download } from 'lucide-react'
 
@@ -31,7 +30,8 @@ export function RegistrationExportMenu({ registrations, eventTitle }: { registra
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
-  const exportFormat = (format: 'xlsx' | 'csv' | 'txt') => {
+  const exportFormat = async (format: 'xlsx' | 'csv' | 'txt') => {
+    const XLSX = await import('xlsx')
     const simplifiedData = registrations.map(r => ({
       'Full Name': r.profiles?.full_name || 'N/A',
       'USN': r.profiles?.usn || 'N/A',

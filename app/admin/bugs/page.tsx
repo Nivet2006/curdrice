@@ -2,11 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 import { toast } from 'sonner'
-import * as XLSX from 'xlsx'
 import { Download, Save, FileText, Camera, Printer, Trash2, Send, Smile, MessageSquare } from 'lucide-react'
-import { toPng } from 'html-to-image'
 
 type Report = {
   id: string
@@ -44,7 +42,6 @@ const STATUS_COLORS: Record<string, string> = {
 }
 
 export default function AdminBugsPage() {
-  const supabase = createClient()
   const [activeTab, setActiveTab] = useState<'reports' | 'access'>('reports')
   
   // Reports state
@@ -275,7 +272,8 @@ export default function AdminBugsPage() {
     setSavingNote(false)
   }
 
-  const exportToExcel = (data: Report[], filename = 'Bug_Reports_Export') => {
+  const exportToExcel = async (data: Report[], filename = 'Bug_Reports_Export') => {
+    const XLSX = await import('xlsx')
     const rows = data.map(r => ({
       ID: r.id,
       Date: new Date(r.created_at).toLocaleString(),
@@ -369,6 +367,7 @@ export default function AdminBugsPage() {
     
     setCreating(true)
     try {
+      const { toPng } = await import('html-to-image')
       const dataUrl = await toPng(node, { 
         cacheBust: true,
         pixelRatio: 3,

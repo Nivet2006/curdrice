@@ -29,65 +29,45 @@ export function StudentEventsView({ initialEvents, registrations, profile }: Pro
     token: string
     eventName: string
   } | null>(null)
-  const [attendees, setAttendees] = useState<Record<string, { initials: string[]; totalCount: number }>>({})
+  const [attendees, setAttendees] = useState<Record<string, number>>({})
 
   const now = useMemo(() => new Date(), [])
 
-  // Fetch dynamic attendance data (total count + first 3 initials)
+  // Fetch dynamic attendance count (lightweight — no profile join)
   useEffect(() => {
     async function fetchAttendance() {
       if (events.length === 0) return
       const eventIds = events.map(e => e.id)
-      
+
+      // Select only event_id — avoid fetching full profile rows just to count
       const { data, error } = await supabase
         .from('registrations')
-        .select('event_id, profiles(full_name)')
+        .select('event_id')
         .in('event_id', eventIds)
 
       if (error || !data) return
 
-      const mapping: Record<string, { initials: string[]; totalCount: number }> = {}
-      
-      // Initialize empty structure for all events
-      for (const id of eventIds) {
-        mapping[id] = { initials: [], totalCount: 0 }
+      const counts: Record<string, number> = {}
+      for (const id of eventIds) counts[id] = 0
+      for (const row of data) {
+        if (row.event_id in counts) counts[row.event_id]++
       }
-
-      // Populate based on queried data
-      for (const item of data) {
-        const reg = item as any
-        const eId = reg.event_id
-        if (!mapping[eId]) continue
-        
-        mapping[eId].totalCount++
-        
-        const fullName = reg.profiles?.full_name
-        if (fullName && mapping[eId].initials.length < 3) {
-          const firstLetter = fullName.trim().split(/\s+/)[0]?.[0]?.toUpperCase() || '?'
-          mapping[eId].initials.push(firstLetter)
-        }
-      }
-
-      setAttendees(mapping)
+      setAttendees(counts)
     }
 
     fetchAttendance()
 
-    // Subscribe to registrations to update live as students join or leave!
+    // Subscribe to registrations to update live as students join or leave
     const channel = supabase
       .channel('public-registrations-timeline-realtime')
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'registrations' },
-        () => {
-          fetchAttendance()
-        }
+        () => { fetchAttendance() }
       )
       .subscribe()
 
-    return () => {
-      supabase.removeChannel(channel)
-    }
+    return () => { supabase.removeChannel(channel) }
   }, [events]) // supabase is a singleton — stable, safe to omit
 
   // Real-time events update
@@ -355,30 +335,15 @@ export function StudentEventsView({ initialEvents, registrations, profile }: Pro
                             )}
                           </div>
 
-                          {/* Attendee Avatar Cluster (Dynamic) */}
+                          {/* Attendee Count (Dynamic) */}
                           {(() => {
-                            const attInfo = attendees[event.id] || { initials: [], totalCount: 0 }
-                            const bgColors = ['bg-blue-100 text-blue-700', 'bg-emerald-100 text-emerald-700', 'bg-amber-100 text-amber-700', 'bg-purple-100 text-purple-700', 'bg-pink-100 text-pink-700']
+                            const count = attendees[event.id] || 0
                             return (
                               <div className="flex items-center gap-1.5">
-                                {attInfo.totalCount > 0 ? (
-                                  <>
-                                    <div className="flex -space-x-1">
-                                      {attInfo.initials.map((init, i) => (
-                                        <div
-                                          key={i}
-                                          className={`w-5 h-5 rounded-full ${bgColors[i % bgColors.length]} border-2 border-white flex items-center justify-center text-[7px] font-bold uppercase`}
-                                        >
-                                          {init}
-                                        </div>
-                                      ))}
-                                    </div>
-                                    {attInfo.totalCount > attInfo.initials.length && (
-                                      <span className="text-[10px] font-mono text-zinc-400 font-bold">
-                                        +{attInfo.totalCount - attInfo.initials.length}
-                                      </span>
-                                    )}
-                                  </>
+                                {count > 0 ? (
+                                  <span className="text-[10px] font-mono text-zinc-400 font-bold">
+                                    {count} attending
+                                  </span>
                                 ) : (
                                   <span className="text-[10px] font-mono text-zinc-400 font-medium">0 attending</span>
                                 )}
