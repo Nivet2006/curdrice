@@ -20,21 +20,15 @@ export async function login(identifier: string, pass: string) {
 
     const { data: profile } = await supabaseAdmin
       .from('profiles')
-      .select('id')
+      .select('id, email')
       .ilike('usn', identifier)
       .single()
 
-    if (!profile) {
+    if (!profile || !profile.email) {
       return { error: 'Invalid Credentials' }
     }
 
-    const { data: authData } = await supabaseAdmin.auth.admin.getUserById(profile.id)
-    
-    if (!authData.user?.email) {
-      return { error: 'Invalid Credentials' }
-    }
-    
-    email = authData.user.email
+    email = profile.email
   }
 
   const supabase = await createClient()
@@ -131,7 +125,8 @@ export async function registerProfile(formData: FormData) {
       department: result.data.department,
       semester: result.data.semester,
       year: result.data.year,
-      role: 'student'
+      role: 'student',
+      email: result.data.email
     })
 
     if (profileError) {
