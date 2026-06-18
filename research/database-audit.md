@@ -12,7 +12,7 @@ Files reviewed:
 - supabase/migrations/0035_hackathon_criteria.sql
 - supabase/migrations/0039_hackathon_team_controls.sql
 
-## Finding 1
+## Finding 1 — ⚠️ NOTED (cosmetic — document applied order, use unique prefixes going forward)
 
 ### Title
 Duplicate migration sequence number 0035 can make migration history ambiguous
@@ -47,7 +47,7 @@ Use unique, monotonically increasing migration identifiers. Do not rename existi
 0041_follow_up.sql
 ```
 
-## Finding 2
+## Finding 2 — ⚠️ NOTED (requires new migration)
 
 ### Title
 RLS policy names imply ownership constraints but manager event mutations are role-wide

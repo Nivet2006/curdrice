@@ -59,7 +59,10 @@ export function TotpCodeInput({ onComplete, isLoading, error, onReset }: TotpCod
 
   return (
     <div className="space-y-6 flex flex-col items-center">
-      <div 
+      {/* role="group" + aria-label gives screen readers context for the whole OTP field */}
+      <div
+        role="group"
+        aria-label="Six digit verification code"
         className={`flex gap-3 ${error ? 'animate-shake' : ''}`}
         onPaste={handlePaste}
       >
@@ -74,6 +77,10 @@ export function TotpCodeInput({ onComplete, isLoading, error, onReset }: TotpCod
             onChange={e => handleChange(e.target.value, index)}
             onKeyDown={e => handleKeyDown(e, index)}
             disabled={isLoading}
+            // aria-label tells screen readers which digit position this is
+            aria-label={`Verification code digit ${index + 1}`}
+            // autoComplete="one-time-code" on the first input enables SMS autofill on iOS/Android
+            autoComplete={index === 0 ? 'one-time-code' : 'off'}
             className={`w-14 h-16 text-center text-3xl font-black font-mono bg-white border-2 rounded-xl transition-all outline-none 
               ${error ? 'border-red-500 text-red-600 bg-red-50' : 'border-black focus:ring-4 focus:ring-zinc-100'}
               ${isLoading ? 'opacity-50 cursor-wait' : ''}
@@ -84,7 +91,8 @@ export function TotpCodeInput({ onComplete, isLoading, error, onReset }: TotpCod
 
       {error && (
         <div className="flex flex-col items-center gap-2">
-            <p className="text-red-600 font-mono text-[10px] uppercase font-black tracking-widest">{error}</p>
+            {/* role="alert" makes screen readers announce errors immediately */}
+            <p role="alert" className="text-red-600 font-mono text-[10px] uppercase font-black tracking-widest">{error}</p>
             <button 
                 onClick={() => {
                     setCode(['', '', '', '', '', '']);
@@ -107,3 +115,4 @@ export function TotpCodeInput({ onComplete, isLoading, error, onReset }: TotpCod
     </div>
   )
 }
+

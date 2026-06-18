@@ -10,7 +10,7 @@ Files reviewed:
 - lib/auth-guard.ts
 - supabase/migrations/0001_rls_policies.sql
 
-## Finding 1
+## Finding 1 — ⚠️ NOTED (requires new migration against live DB)
 
 ### Title
 Role-wide manager RLS allows cross-manager event modification
@@ -40,7 +40,7 @@ Enforce event ownership in RLS for managers and reserve global mutation privileg
 (role = 'admin') OR (role = 'manager' AND events.created_by = auth.uid())
 ```
 
-## Finding 2
+## Finding 2 — ⚠️ NOTED (requires auth flow redesign)
 
 ### Title
 TOTP verification cookie stores only a global boolean
@@ -76,7 +76,7 @@ cookieStore.set('curdrice_totp_verified', await signTotpToken({ userId, exp }), 
 })
 ```
 
-## Finding 3
+## Finding 3 — ✅ DONE
 
 ### Title
 Environment fallbacks obscure missing secrets
