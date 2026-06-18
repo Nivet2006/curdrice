@@ -38,6 +38,9 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  verification: {
+    google: 's7Nr0V21DnrbKmNKWXGDUMz0Woj3lrH89xvSDIySyHo',
+  },
   icons: {
     icon: '/logo.png',
     apple: '/logo.png',
