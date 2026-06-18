@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { z } from 'zod'
 import { redirect } from 'next/navigation'
+import { cookies } from 'next/headers'
+import { signTotpChallenge } from '@/lib/totp-challenge'
 
 export async function login(identifier: string, pass: string) {
   let email = identifier;
@@ -59,12 +61,26 @@ export async function login(identifier: string, pass: string) {
 
   const role = profile?.role || 'student'
   
-  // ✅ Return success with role and TOTP info
+  // If TOTP is required, set a signed server-side pending-challenge cookie.
+  // This means the verify-login route does NOT need to trust the client-supplied userId.
+  if (!!profile?.totp_enabled) {
+    const challengeToken = await signTotpChallenge(data.user.id, 300) // 5-min TTL
+    const cookieStore = await cookies()
+    cookieStore.set('curdrice_totp_pending', challengeToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 300, // 5 minutes
+      path: '/',
+    })
+    return { success: true, role, totpEnabled: true }
+  }
+
+  // ✅ Return success with role (no userId exposed — not needed when TOTP is disabled)
   return { 
     success: true, 
     role, 
-    userId: data.user.id,
-    totpEnabled: !!profile?.totp_enabled 
+    totpEnabled: false
   }
 }
 

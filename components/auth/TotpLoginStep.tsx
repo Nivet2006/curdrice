@@ -4,27 +4,26 @@ import { useState } from 'react'
 import { Lock, ArrowLeft } from 'lucide-react'
 import { TotpCodeInput } from './TotpCodeInput'
 import { supabase } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
 
 interface TotpLoginStepProps {
-  userId: string
   onSuccess: () => void
 }
 
-export function TotpLoginStep({ userId, onSuccess }: TotpLoginStepProps) {
+export function TotpLoginStep({ onSuccess }: TotpLoginStepProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const router = useRouter()
 
   const handleVerify = async (code: string) => {
     setIsLoading(true)
     setError(null)
     
     try {
+      // Note: we no longer send userId in the body.
+      // The server reads it from the signed curdrice_totp_pending cookie.
       const res = await fetch('/api/auth/totp/verify-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code, userId })
+        body: JSON.stringify({ code })
       })
       
       const data = await res.json()

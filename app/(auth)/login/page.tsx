@@ -19,7 +19,7 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [step, setStep] = useState<'credentials' | 'totp'>('credentials')
-  const [adminData, setAdminData] = useState<{ userId: string; role: string } | null>(null)
+  const [adminData, setAdminData] = useState<{ role: string } | null>(null)
   const [showTestCreds, setShowTestCreds] = useState(false)
 
   const handleCopy = (text: string) => {
@@ -43,7 +43,7 @@ export default function LoginPage() {
       setLoading(false)
     } else if (result?.success) {
       if (result.role === 'admin' && result.totpEnabled) {
-        setAdminData({ userId: result.userId!, role: result.role })
+        setAdminData({ role: result.role })
         setStep('totp')
         setLoading(false)
       } else {
@@ -77,7 +77,6 @@ export default function LoginPage() {
           <BrandMark />
         </div>
         <TotpLoginStep 
-          userId={adminData.userId} 
           onSuccess={handleTotpSuccess} 
         />
       </div>

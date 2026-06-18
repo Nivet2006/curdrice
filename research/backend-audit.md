@@ -13,7 +13,7 @@ Files reviewed:
 - lib/supabase/admin.ts
 - lib/supabase/client.ts
 
-## Finding 1 — ⚠️ NOTED (requires auth flow redesign — rate-limiting partially mitigates)
+## Finding 1 — ✅ DONE
 
 ### Title
 TOTP verification API trusts a client-supplied userId
