@@ -44,6 +44,12 @@ async function logNavigation(payload: {
 }
 
 export async function proxy(request: NextRequest) {
+  const ip =
+    request.headers.get('x-real-ip') ||
+    request.headers.get('cf-connecting-ip') ||
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    '127.0.0.1'
+
   const nonce = crypto.randomUUID()
   const requestHeaders = new Headers(request.headers)
   requestHeaders.set('x-nonce', nonce)
@@ -126,7 +132,7 @@ export async function proxy(request: NextRequest) {
         supabaseResponse.cookies.delete('curdrice_user_totp')
         supabaseResponse.cookies.delete('curdrice_totp_verified')
         if (isApiRoute) {
-          return getUnauthorizedResponse();
+          return getUnauthorizedResponse(ip);
         }
         const loginUrl = request.nextUrl.clone()
         loginUrl.pathname = '/login'
@@ -200,7 +206,7 @@ export async function proxy(request: NextRequest) {
     supabaseResponse.cookies.delete('curdrice_user_totp')
     supabaseResponse.cookies.delete('curdrice_totp_verified')
     if (isApiRoute) {
-      return getUnauthorizedResponse();
+      return getUnauthorizedResponse(ip);
     }
     const url = request.nextUrl.clone()
     url.pathname = '/login'
@@ -277,12 +283,6 @@ export async function proxy(request: NextRequest) {
   }
 
   // Log Navigation
-  const ip =
-    request.headers.get('x-real-ip') ||
-    request.headers.get('cf-connecting-ip') ||
-    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    '0.0.0.0'
-
   void logNavigation({
     session_id: sessionId!,
     user_id: user?.id,
@@ -340,7 +340,7 @@ function buildCSP(nonce: string): string {
   ].join('; ')
 }
 
-function getUnauthorizedResponse() {
+function getUnauthorizedResponse(ip: string) {
   const htmlContent = `
 <!DOCTYPE html>
 <html lang="en">
@@ -542,7 +542,7 @@ function getUnauthorizedResponse() {
     <div class="card">
         <div class="badge">
             <span class="badge-dot"></span>
-            Node // CE-Proxy-01
+            Node // IP: ${ip}
         </div>
         <h1>ClubEve API</h1>
         <p>You have accessed the secure ClubEve Backend Node. This server handles digital keys, event check-ins, and automated administration for ClubEve App.</p>
