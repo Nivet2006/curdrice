@@ -5,6 +5,8 @@ import { PatternProvider } from "@/components/shared/PatternProvider";
 
 import { Toaster } from 'sonner'
 
+export const dynamic = 'force-dynamic'
+
 const sans = Outfit({ subsets: ['latin'], variable: '--font-sans' })
 const mono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono' })
 
