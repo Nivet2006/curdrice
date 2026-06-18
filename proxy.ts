@@ -44,8 +44,15 @@ async function logNavigation(payload: {
 }
 
 export async function proxy(request: NextRequest) {
+  const nonce = crypto.randomUUID()
+  const requestHeaders = new Headers(request.headers)
+  requestHeaders.set('x-nonce', nonce)
+  requestHeaders.set('Content-Security-Policy', buildCSP(nonce))
+
   let supabaseResponse = NextResponse.next({
-    request,
+    request: {
+      headers: requestHeaders,
+    },
   })
 
   // Skip static/internal routes
@@ -84,7 +91,9 @@ export async function proxy(request: NextRequest) {
             request.cookies.set(name, value)
           )
           supabaseResponse = NextResponse.next({
-            request,
+            request: {
+              headers: requestHeaders,
+            },
           })
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, {
@@ -286,13 +295,12 @@ export async function proxy(request: NextRequest) {
   })
 
   // Apply security headers
-  applySecurityHeaders(supabaseResponse)
+  applySecurityHeaders(supabaseResponse, nonce)
 
   return supabaseResponse
 }
 
-function applySecurityHeaders(response: NextResponse) {
-  const nonce = crypto.randomUUID()
+function applySecurityHeaders(response: NextResponse, nonce: string) {
   response.headers.set('x-nonce', nonce)
 
   response.headers.set('Content-Security-Policy', buildCSP(nonce))
