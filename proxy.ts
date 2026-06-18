@@ -547,7 +547,7 @@ function getUnauthorizedResponse() {
         <h1>ClubEve API</h1>
         <p>You have accessed the secure ClubEve Backend Node. This server handles digital keys, event check-ins, and automated administration for ClubEve App.</p>
         
-        <a href="https://curdrice.nivet2006.in/login" class="btn">
+        <a href="https://cooking.nivet2006.in/login" class="btn">
             Go to ClubEve
         </a>
 
