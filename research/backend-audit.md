@@ -13,7 +13,7 @@ Files reviewed:
 - lib/supabase/admin.ts
 - lib/supabase/client.ts
 
-## Finding 1
+## Finding 1 — ⚠️ NOTED (requires auth flow redesign — rate-limiting partially mitigates)
 
 ### Title
 TOTP verification API trusts a client-supplied userId
@@ -46,7 +46,7 @@ if (!pending || pending.userId !== userId || pending.expiresAt < Date.now()) {
 }
 ```
 
-## Finding 2
+## Finding 2 — ✅ DONE
 
 ### Title
 Production configuration can silently fall back to placeholder Supabase credentials

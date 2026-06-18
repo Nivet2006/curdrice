@@ -11,7 +11,7 @@ Files reviewed:
 - package.json
 - supabase/migrations/0013_performance_indexes.sql
 
-## Finding 1
+## Finding 1 — ✅ DONE
 
 ### Title
 Supabase client is recreated during render and used as an effect dependency
@@ -41,7 +41,7 @@ Memoize the client or instantiate it outside render through a stable provider/ho
 const supabase = useMemo(() => createClient(), [])
 ```
 
-## Finding 2
+## Finding 2 — ⚠️ NOTED (not applied — requires DB migration)
 
 ### Title
 Attendance counts fetch joined registration rows for every event instead of using aggregate data
@@ -74,7 +74,7 @@ from registrations
 group by event_id;
 ```
 
-## Finding 3
+## Finding 3 — ⚠️ NOTED (verify before acting)
 
 ### Title
 Heavy PDF, canvas, spreadsheet, and document libraries are present and should be isolated from critical bundles

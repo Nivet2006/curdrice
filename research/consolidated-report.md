@@ -23,21 +23,21 @@ No Critical severity issues were identified.
 
 ## 3. High Priority Issues
 
-### H1: TOTP verification API trusts a client-supplied userId
+### H1: TOTP verification API trusts a client-supplied userId — ⚠️ NOTED
 - Source report: `research/backend-audit.md`
 - Evidence: `app/api/auth/totp/verify-login/route.ts`, function `POST`, lines 8-19 parse `{ code, userId }` from the request body and query `profiles` using `supabaseAdmin` where `id = userId`.
 - Impact: Attackers with a known or guessed user UUID can target the TOTP endpoint and potentially induce lockouts or brute-force attempts outside a verified pending-login challenge.
 - Recommendation: Bind verification to a signed, server-issued, short-lived pending-login challenge.
 - Confidence: High
 
-### H2: Role-wide manager RLS allows cross-manager event modification
+### H2: Role-wide manager RLS allows cross-manager event modification — ⚠️ NOTED
 - Source reports: `research/database-audit.md`, `research/security-audit.md`
 - Evidence: `supabase/migrations/0001_rls_policies.sql`, RLS policy migration, lines 20-28 check only `role IN ('manager', 'admin')` for event update/delete, despite policy names saying "own events".
 - Impact: Managers may update or delete events owned by other managers or clubs.
 - Recommendation: Add ownership predicates for managers while preserving admin-wide privileges.
 - Confidence: High
 
-### H3: Supabase client is recreated during render and used as an effect dependency
+### H3: Supabase client is recreated during render and used as an effect dependency — ✅ DONE
 - Source report: `research/performance-audit.md`
 - Evidence: `components/student/StudentEventsView.tsx`, `StudentEventsView`, line 34 calls `createClient()` during render; effects at lines 38-92 and 95-138 depend on `supabase`.
 - Impact: Repeated rerenders can cause repeated fetches, realtime subscription churn, and increased Supabase load.
@@ -46,35 +46,35 @@ No Critical severity issues were identified.
 
 ## 4. Medium Priority Issues
 
-### M1: Student events view has too many responsibilities
+### M1: Student events view has too many responsibilities — ⚠️ NOTED
 - Source report: `research/frontend-audit.md`
 - Evidence: `components/student/StudentEventsView.tsx`, `StudentEventsView`, lines 24-183 include state setup, Supabase client creation, attendance fetch, subscriptions, filtering, and grouping.
 - Impact: Harder maintenance, higher regression risk, and more complex debugging.
 - Recommendation: Extract hooks for subscription, attendance counts, and grouped event derivation.
 - Confidence: High
 
-### M2: Production configuration can silently fall back to placeholder Supabase credentials
+### M2: Production configuration can silently fall back to placeholder Supabase credentials — ✅ DONE
 - Source reports: `research/backend-audit.md`, `research/security-audit.md`
 - Evidence: `lib/supabase/admin.ts` lines 3-4 and `lib/supabase/client.ts` lines 5-6 use placeholder fallbacks.
 - Impact: Misconfigured deployments may appear to run while using invalid credentials.
 - Recommendation: Fail fast for missing required environment variables.
 - Confidence: High
 
-### M3: Duplicate migration sequence number 0035 can make migration history ambiguous
+### M3: Duplicate migration sequence number 0035 — ⚠️ NOTED
 - Source report: `research/database-audit.md`
 - Evidence: `supabase/migrations/0035_add_registration_stopped.sql` and `supabase/migrations/0035_hackathon_criteria.sql` share prefix `0035`.
 - Impact: Migration ordering is less clear for future maintainers and CI environments.
 - Recommendation: Ensure future migrations use unique monotonically increasing identifiers and document existing applied order.
 - Confidence: High
 
-### M4: TOTP verification cookie stores only a global boolean
+### M4: TOTP verification cookie stores only a global boolean — ⚠️ NOTED
 - Source report: `research/security-audit.md`
 - Evidence: `app/api/auth/totp/verify-login/route.ts`, `POST`, lines 56-64 set `curdrice_totp_verified` to `'true'` without visible user binding or expiry metadata.
 - Impact: If downstream checks only read the boolean, stale or misplaced state could satisfy 2FA for an unintended context.
 - Recommendation: Use signed, short-lived, user-bound verification state.
 - Confidence: Medium
 
-### M5: Attendance counts fetch joined registration rows for every event
+### M5: Attendance counts fetch joined registration rows for every event — ⚠️ NOTED
 - Source report: `research/performance-audit.md`
 - Evidence: `components/student/StudentEventsView.tsx`, `fetchAttendance`, lines 41-47 query all relevant registration rows with joined profile names, then count client-side in lines 50-70.
 - Impact: Higher client bandwidth and slower realtime refreshes as attendance scales.
@@ -83,14 +83,14 @@ No Critical severity issues were identified.
 
 ## 5. Low Priority Issues
 
-### L1: TOTP digit inputs lack accessible labels
+### L1: TOTP digit inputs lack accessible labels — ✅ DONE
 - Source report: `research/frontend-audit.md`
 - Evidence: `components/auth/TotpCodeInput.tsx`, `TotpCodeInput`, lines 66-81 render six inputs without `aria-label`, `name`, `autocomplete`, or grouped instructions.
 - Impact: Screen reader users may struggle to complete 2FA.
 - Recommendation: Add labels, grouped semantics, and alert roles.
 - Confidence: High
 
-### L2: Heavy document/PDF/canvas/spreadsheet libraries should be isolated from critical bundles
+### L2: Heavy document/PDF/canvas/spreadsheet libraries — ⚠️ NOTED
 - Source report: `research/performance-audit.md`
 - Evidence: `package.json` lines 18-48 include `canvas`, `pdfjs-dist`, `@react-pdf/renderer`, `xlsx`, `exceljs`, `docx`, `html-to-image`, and `chartjs-node-canvas`.
 - Impact: Potential bundle size, cold-start, or build-time concerns if imported on common paths.

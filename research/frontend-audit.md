@@ -14,7 +14,7 @@ Files reviewed:
 - components/auth/TotpSettingsCard.tsx
 - components/auth/TotpSetupWizard.tsx
 
-## Finding 1
+## Finding 1 — ✅ DONE
 
 ### Title
 TOTP digit inputs lack accessible labels
@@ -53,7 +53,7 @@ Add per-digit labels, a group label, `autoComplete="one-time-code"`, and announc
 {error && <p role="alert">{error}</p>}
 ```
 
-## Finding 2
+## Finding 2 — ⚠️ NOTED (refactor deferred — functional, not broken)
 
 ### Title
 Student events view combines real-time subscriptions, fetching, filtering, grouping, and UI rendering in one large component
