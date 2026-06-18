@@ -112,6 +112,10 @@ export async function proxy(request: NextRequest) {
         error.message?.includes('Invalid Refresh Token')
       ) {
         await supabase.auth.signOut()
+        supabaseResponse.cookies.delete('curdrice_user_role')
+        supabaseResponse.cookies.delete('curdrice_user_name')
+        supabaseResponse.cookies.delete('curdrice_user_totp')
+        supabaseResponse.cookies.delete('curdrice_totp_verified')
         if (isApiRoute) {
           return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
@@ -124,12 +128,43 @@ export async function proxy(request: NextRequest) {
 
     user = data?.user || null
     if (user) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role, full_name, totp_enabled')
-        .eq('id', user.id)
-        .single()
-      userProfile = profile
+      // ⚡ Try to get profile from cookies first to avoid database queries on every route
+      const cachedRole = request.cookies.get('curdrice_user_role')?.value
+      const cachedName = request.cookies.get('curdrice_user_name')?.value
+      const cachedTotp = request.cookies.get('curdrice_user_totp')?.value
+
+      if (cachedRole && cachedName) {
+        userProfile = {
+          role: cachedRole,
+          full_name: cachedName,
+          totp_enabled: cachedTotp === 'true'
+        }
+      } else {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role, full_name, totp_enabled')
+          .eq('id', user.id)
+          .single()
+        
+        userProfile = profile
+        if (profile) {
+          supabaseResponse.cookies.set('curdrice_user_role', profile.role, {
+            path: '/',
+            maxAge: 3600 * 24, // 1 day
+            sameSite: 'lax',
+          })
+          supabaseResponse.cookies.set('curdrice_user_name', profile.full_name, {
+            path: '/',
+            maxAge: 3600 * 24, // 1 day
+            sameSite: 'lax',
+          })
+          supabaseResponse.cookies.set('curdrice_user_totp', String(!!profile.totp_enabled), {
+            path: '/',
+            maxAge: 3600 * 24, // 1 day
+            sameSite: 'lax',
+          })
+        }
+      }
     }
   } catch (error: any) {
     user = null
@@ -151,6 +186,10 @@ export async function proxy(request: NextRequest) {
     !isPublicEventPage &&
     !isRedirectPage
   ) {
+    supabaseResponse.cookies.delete('curdrice_user_role')
+    supabaseResponse.cookies.delete('curdrice_user_name')
+    supabaseResponse.cookies.delete('curdrice_user_totp')
+    supabaseResponse.cookies.delete('curdrice_totp_verified')
     if (isApiRoute) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -163,6 +202,10 @@ export async function proxy(request: NextRequest) {
   if (user) {
     if (role === 'deleted') {
       await supabase.auth.signOut()
+      supabaseResponse.cookies.delete('curdrice_user_role')
+      supabaseResponse.cookies.delete('curdrice_user_name')
+      supabaseResponse.cookies.delete('curdrice_user_totp')
+      supabaseResponse.cookies.delete('curdrice_totp_verified')
       if (isApiRoute) {
         return NextResponse.json({ error: 'Account suspended' }, { status: 403 })
       }
