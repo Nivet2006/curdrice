@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
-import { v4 as uuidv4 } from 'uuid'
+import { verifyTotpChallenge } from '@/lib/totp-challenge'
 
 async function logNavigation(payload: {
   session_id: string
@@ -13,12 +13,15 @@ async function logNavigation(payload: {
   resource_path: string
 }) {
   try {
+    if (!process.env.LOGS_SUPABASE_URL || !process.env.LOGS_SUPABASE_SERVICE_KEY) {
+      return
+    }
     await fetch(`${process.env.LOGS_SUPABASE_URL}/rest/v1/audit_logs`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'apikey': process.env.LOGS_SUPABASE_SERVICE_KEY!,
-        'Authorization': `Bearer ${process.env.LOGS_SUPABASE_SERVICE_KEY!}`,
+        'apikey': process.env.LOGS_SUPABASE_SERVICE_KEY,
+        'Authorization': `Bearer ${process.env.LOGS_SUPABASE_SERVICE_KEY}`,
         'Prefer': 'return=minimal',
       },
       body: JSON.stringify({
@@ -57,10 +60,10 @@ export async function proxy(request: NextRequest) {
     return supabaseResponse
   }
 
-  // Get or create session_id cookie
+  // Get or create session_id cookie using native crypto.randomUUID()
   let sessionId = request.cookies.get('cr_session_id')?.value
   if (!sessionId) {
-    sessionId = uuidv4()
+    sessionId = crypto.randomUUID()
     supabaseResponse.cookies.set('cr_session_id', sessionId, {
       httpOnly: true,
       sameSite: 'lax',
@@ -77,12 +80,19 @@ export async function proxy(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value)
+          )
           supabaseResponse = NextResponse.next({
             request,
           })
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+            supabaseResponse.cookies.set(name, value, {
+              ...options,
+              secure: process.env.NODE_ENV === 'production',
+              sameSite: 'lax',
+              httpOnly: name.startsWith('sb-') ? false : options?.httpOnly,
+            })
           )
         },
       },
@@ -92,6 +102,7 @@ export async function proxy(request: NextRequest) {
   let user = null
   let userProfile = null
   try {
+    // CRITICAL: getUser() is called on every matched request to refresh session
     const { data, error } = await supabase.auth.getUser()
 
     if (error) {
@@ -108,26 +119,38 @@ export async function proxy(request: NextRequest) {
         loginUrl.pathname = '/login'
         return NextResponse.redirect(loginUrl)
       }
+      console.error('[Middleware] Auth error:', error.message)
     }
 
     user = data?.user || null
     if (user) {
-        const { data: profile } = await supabase.from('profiles').select('role, full_name, totp_enabled').eq('id', user.id).single()
-        userProfile = profile
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role, full_name, totp_enabled')
+        .eq('id', user.id)
+        .single()
+      userProfile = profile
     }
   } catch (error: any) {
     user = null
   }
 
   const role = userProfile?.role || 'student'
-  const isAuthPage = request.nextUrl.pathname.startsWith('/login') ||
+  const isAuthPage =
+    request.nextUrl.pathname.startsWith('/login') ||
     request.nextUrl.pathname.startsWith('/register')
 
   const isPublicEventPage = request.nextUrl.pathname.startsWith('/events/')
   const isRedirectPage = request.nextUrl.pathname.startsWith('/redirect/')
 
   // Redirect unauthenticated users to login, but bypass public event details and redirect pages
-  if (!user && !isAuthPage && request.nextUrl.pathname !== '/' && !isPublicEventPage && !isRedirectPage) {
+  if (
+    !user &&
+    !isAuthPage &&
+    request.nextUrl.pathname !== '/' &&
+    !isPublicEventPage &&
+    !isRedirectPage
+  ) {
     if (isApiRoute) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -138,65 +161,67 @@ export async function proxy(request: NextRequest) {
 
   // Handle authenticated users
   if (user) {
-      if (role === 'deleted') {
-          await supabase.auth.signOut()
-          if (isApiRoute) {
-              return NextResponse.json({ error: 'Account suspended' }, { status: 403 })
-          }
-          const url = request.nextUrl.clone()
-          url.pathname = '/login'
-          url.searchParams.set('error', 'account_suspended')
-          return NextResponse.redirect(url)
+    if (role === 'deleted') {
+      await supabase.auth.signOut()
+      if (isApiRoute) {
+        return NextResponse.json({ error: 'Account suspended' }, { status: 403 })
       }
+      const url = request.nextUrl.clone()
+      url.pathname = '/login'
+      url.searchParams.set('error', 'account_suspended')
+      return NextResponse.redirect(url)
+    }
 
-      if (isAuthPage) {
-          const url = request.nextUrl.clone()
-          url.pathname = `/${role}/dashboard`
-          return NextResponse.redirect(url)
-      }
+    if (isAuthPage) {
+      const url = request.nextUrl.clone()
+      url.pathname = `/${role}/dashboard`
+      return NextResponse.redirect(url)
+    }
 
-      // TOTP Check for Admins
-      if (path.startsWith('/admin') && role === 'admin' && userProfile?.totp_enabled) {
-          const totpVerified = request.cookies.get('curdrice_totp_verified')?.value === 'true'
-          if (!totpVerified && path !== '/auth/totp-verify') {
-              const url = request.nextUrl.clone()
-              url.pathname = '/auth/totp-verify'
-              url.searchParams.set('redirect', path)
-              return NextResponse.redirect(url)
-          }
+    // TOTP Check for Admins: verify the signed HMAC challenge token
+    if (path.startsWith('/admin') && role === 'admin' && userProfile?.totp_enabled) {
+      const totpVerifiedToken = request.cookies.get('curdrice_totp_verified')?.value
+      const verifiedUserId = totpVerifiedToken ? await verifyTotpChallenge(totpVerifiedToken) : null
+      
+      if (verifiedUserId !== user.id && path !== '/auth/totp-verify') {
+        const url = request.nextUrl.clone()
+        url.pathname = '/auth/totp-verify'
+        url.searchParams.set('redirect', path)
+        return NextResponse.redirect(url)
       }
+    }
 
-      // RBAC
-      if (path.startsWith('/admin') && role !== 'admin') {
-          const url = request.nextUrl.clone()
-          url.pathname = `/${role}/dashboard`
-          return NextResponse.redirect(url)
-      }
-      if (path.startsWith('/manager') && !['manager', 'admin'].includes(role)) {
-          const url = request.nextUrl.clone()
-          url.pathname = `/${role}/dashboard`
-          return NextResponse.redirect(url)
-      }
-      if (path.startsWith('/cc') && !['cc', 'admin'].includes(role)) {
-          const url = request.nextUrl.clone()
-          url.pathname = `/${role}/dashboard`
-          return NextResponse.redirect(url)
-      }
-      if (path.startsWith('/pr') && !['pr', 'admin'].includes(role)) {
-          const url = request.nextUrl.clone()
-          url.pathname = `/${role}/dashboard`
-          return NextResponse.redirect(url)
-      }
-      if (path.startsWith('/teacher') && !['teacher', 'admin'].includes(role)) {
-          const url = request.nextUrl.clone()
-          url.pathname = `/${role}/dashboard`
-          return NextResponse.redirect(url)
-      }
-      if (path.startsWith('/hod') && !['hod', 'admin'].includes(role)) {
-          const url = request.nextUrl.clone()
-          url.pathname = `/${role}/dashboard`
-          return NextResponse.redirect(url)
-      }
+    // RBAC rules
+    if (path.startsWith('/admin') && role !== 'admin') {
+      const url = request.nextUrl.clone()
+      url.pathname = `/${role}/dashboard`
+      return NextResponse.redirect(url)
+    }
+    if (path.startsWith('/manager') && !['manager', 'admin'].includes(role)) {
+      const url = request.nextUrl.clone()
+      url.pathname = `/${role}/dashboard`
+      return NextResponse.redirect(url)
+    }
+    if (path.startsWith('/cc') && !['cc', 'admin'].includes(role)) {
+      const url = request.nextUrl.clone()
+      url.pathname = `/${role}/dashboard`
+      return NextResponse.redirect(url)
+    }
+    if (path.startsWith('/pr') && !['pr', 'admin'].includes(role)) {
+      const url = request.nextUrl.clone()
+      url.pathname = `/${role}/dashboard`
+      return NextResponse.redirect(url)
+    }
+    if (path.startsWith('/teacher') && !['teacher', 'admin'].includes(role)) {
+      const url = request.nextUrl.clone()
+      url.pathname = `/${role}/dashboard`
+      return NextResponse.redirect(url)
+    }
+    if (path.startsWith('/hod') && !['hod', 'admin'].includes(role)) {
+      const url = request.nextUrl.clone()
+      url.pathname = `/${role}/dashboard`
+      return NextResponse.redirect(url)
+    }
   }
 
   // Log Navigation
@@ -217,8 +242,50 @@ export async function proxy(request: NextRequest) {
     resource_path: path,
   })
 
+  // Apply security headers
+  applySecurityHeaders(supabaseResponse)
+
   return supabaseResponse
 }
+
+function applySecurityHeaders(response: NextResponse) {
+  const nonce = crypto.randomUUID()
+  response.headers.set('x-nonce', nonce)
+
+  response.headers.set('Content-Security-Policy', buildCSP(nonce))
+  response.headers.set('X-Frame-Options', 'DENY')
+  response.headers.set('X-Content-Type-Options', 'nosniff')
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
+  response.headers.set(
+    'Permissions-Policy',
+    'camera=(), microphone=(), geolocation=(), payment=()'
+  )
+  if (process.env.NODE_ENV === 'production') {
+    response.headers.set(
+      'Strict-Transport-Security',
+      'max-age=63072000; includeSubDomains; preload'
+    )
+  }
+}
+
+function buildCSP(nonce: string): string {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
+  return [
+    `default-src 'self'`,
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`,
+    `style-src 'self' 'unsafe-inline'`,
+    `img-src 'self' data: https: blob:`,
+    `font-src 'self' data:`,
+    `connect-src 'self' ${supabaseUrl} wss://${new URL(supabaseUrl).host}`,
+    `frame-ancestors 'none'`,
+    `base-uri 'self'`,
+    `form-action 'self'`,
+    `object-src 'none'`,
+    `upgrade-insecure-requests`,
+  ].join('; ')
+}
+
+export default proxy
 
 export const config = {
   matcher: [
