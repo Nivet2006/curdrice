@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 import { getCollectedData } from '@/hooks/useBugCollector'
 import { useUser } from '@/hooks/useUser'
 import { LogOut, MessageSquare, Send, ArrowLeft, Smile } from 'lucide-react'
@@ -47,7 +47,6 @@ function getSavedPosition() {
 }
 
 export function BugReporterWidget() {
-  const supabase = createClient()
   const { user } = useUser()
 
   const [pos, setPos] = useState({ x: 0, y: 0 })
@@ -111,7 +110,7 @@ export function BugReporterWidget() {
     return () => {
       supabase.removeChannel(globalChannel)
     }
-  }, [supabase, user?.id])
+  }, [user?.id]) // supabase is a singleton — stable, safe to omit
 
   // ── Drag logic ──────────────────────────────────────────────
   const onMouseDown = useCallback((e: React.MouseEvent) => {
@@ -191,7 +190,7 @@ export function BugReporterWidget() {
     } else {
       setHistory([])
     }
-  }, [accessId, supabase, isVerified, user?.id])
+  }, [accessId, isVerified, user?.id]) // supabase is a singleton — stable, safe to omit
 
   // ── Chat subscription ──────────────────────────────────────
   useEffect(() => {
@@ -220,7 +219,7 @@ export function BugReporterWidget() {
       .subscribe()
 
     return () => { supabase.removeChannel(channel) }
-  }, [selectedChat, supabase, user?.id])
+  }, [selectedChat, user?.id]) // supabase is a singleton — stable, safe to omit
 
   // ── Verification ─────────────────────────────────────────────
   const handleVerify = async (e: React.FormEvent) => {

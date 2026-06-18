@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 import { Search, MapPin, Clock, Video, QrCode } from 'lucide-react'
 import type { Event, Profile } from '@/lib/types'
 import { QRDisplay } from '@/components/student/QRDisplay'
@@ -31,7 +31,6 @@ export function StudentEventsView({ initialEvents, registrations, profile }: Pro
   } | null>(null)
   const [attendees, setAttendees] = useState<Record<string, { initials: string[]; totalCount: number }>>({})
 
-  const supabase = createClient()
   const now = useMemo(() => new Date(), [])
 
   // Fetch dynamic attendance data (total count + first 3 initials)
@@ -89,7 +88,7 @@ export function StudentEventsView({ initialEvents, registrations, profile }: Pro
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [events, supabase])
+  }, [events]) // supabase is a singleton — stable, safe to omit
 
   // Real-time events update
   useEffect(() => {
@@ -135,7 +134,7 @@ export function StudentEventsView({ initialEvents, registrations, profile }: Pro
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [supabase])
+  }, []) // supabase is a singleton — stable, safe to omit
 
   // Filtered events by tab and search
   const filteredEvents = useMemo(() => {

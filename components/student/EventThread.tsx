@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 import {
   getThreadMessages,
   sendThreadMessage,
@@ -53,7 +53,6 @@ export function EventThread({
   threadMode = 'open',
   userRole = 'student',
 }: EventThreadProps) {
-  const supabase = createClient()
   const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState('')
   const [sending, setSending] = useState(false)

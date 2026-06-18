@@ -4,7 +4,7 @@ import * as React from 'react'
 import Link from 'next/link'
 import { LogOut, Menu, X, LayoutDashboard, Calendar, Users, ScanLine, ClipboardList, Database, UserCircle, Bug, Award, Plus, Trophy } from 'lucide-react'
 import { Badge } from '../ui/Badge'
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 import { useRouter, usePathname } from 'next/navigation'
 import type { Role } from '@/lib/types'
 import { ThemeToggle } from '@/components/shared/ThemeToggle'
@@ -18,7 +18,6 @@ import { EveBot } from '@/components/shared/EveBot'
 export function Navbar({ role, name }: { role?: Role; name?: string }) {
   const router = useRouter()
   const pathname = usePathname()
-  const supabase = createClient()
   const [loading, setLoading] = React.useState(false)
   const [sidebarOpen, setSidebarOpen] = React.useState(false)
   const [messagesOpen, setMessagesOpen] = React.useState(false)

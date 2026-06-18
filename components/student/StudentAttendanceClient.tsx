@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import { Card } from '@/components/ui/Card'
 import { ClipboardList, CheckCircle, CalendarDays, ShieldAlert, RefreshCw, WifiOff } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 
 interface AttendanceRecord {
   id: string
@@ -24,7 +24,6 @@ export function StudentAttendanceClient({ initialAttendance, userId }: Props) {
   const [attendedList, setAttendedList] = useState<AttendanceRecord[]>(initialAttendance)
   const [isRealtimeConnected, setIsRealtimeConnected] = useState<boolean | null>(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
-  const supabase = createClient()
 
   const handleManualRefresh = async () => {
     setIsRefreshing(true)

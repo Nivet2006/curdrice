@@ -12,7 +12,7 @@ import {
     X
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
 type FeedbackQuestion = {
@@ -52,7 +52,7 @@ export function StudentFeedbackTerminal({ event, studentId, hasSubmitted: initia
     const [responses, setResponses] = useState<Record<string, any>>({})
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [hoveredStar, setHoveredStar] = useState<Record<number, number>>({})
-    const supabase = createClient()
+
     const router = useRouter()
 
     // Sync with server state changes IF they happen via page revalidations/props
@@ -83,7 +83,7 @@ export function StudentFeedbackTerminal({ event, studentId, hasSubmitted: initia
         return () => {
             supabase.removeChannel(channel)
         }
-    }, [event.id, supabase])
+    }, [event.id]) // supabase is a singleton — stable reference, safe to omit from deps
 
     const questions = event.feedback_config || []
 

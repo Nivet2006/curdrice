@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 import { CalendarView } from './CalendarView'
 import type { Event } from '@/lib/types'
 
@@ -14,7 +14,6 @@ interface Props {
 
 export function RealtimeCalendarView({ initialEvents, registrationMap, studentName, studentUsn }: Props) {
   const [events, setEvents] = useState<Event[]>(initialEvents)
-  const supabase = createClient()
 
   useEffect(() => {
     const channel = supabase

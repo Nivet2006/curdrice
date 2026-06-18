@@ -3,11 +3,10 @@
 import React, { useState } from 'react'
 import { FileDown } from 'lucide-react'
 import { exportToJSON } from '@/lib/utils/export'
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 
 export function ExportButton({ dept }: { dept: string }) {
   const [loading, setLoading] = useState(false)
-  const supabase = createClient()
 
   const handleExport = async () => {
     setLoading(true)

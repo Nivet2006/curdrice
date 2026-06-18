@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Lock, ArrowLeft } from 'lucide-react'
 import { TotpCodeInput } from './TotpCodeInput'
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
 interface TotpLoginStepProps {
@@ -14,7 +14,6 @@ interface TotpLoginStepProps {
 export function TotpLoginStep({ userId, onSuccess }: TotpLoginStepProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const supabase = createClient()
   const router = useRouter()
 
   const handleVerify = async (code: string) => {

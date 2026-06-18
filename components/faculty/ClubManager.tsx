@@ -9,7 +9,7 @@ import {
   removeMemberFromClub,
   updateMemberRole
 } from '@/lib/actions/club-actions'
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 import {
   Users,
   Plus,
@@ -78,7 +78,6 @@ function getClubLogo(name: string): string | null {
 }
 
 export function ClubManager() {
-  const supabase = createClient()
   const [clubs, setClubs] = useState<Club[]>([])
   const [selectedClub, setSelectedClub] = useState<Club | null>(null)
   const [members, setMembers] = useState<ClubMember[]>([])

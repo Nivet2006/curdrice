@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 import { DashboardEventTabs } from './DashboardEventTabs'
 import type { Event, Profile } from '@/lib/types'
 
@@ -19,7 +19,6 @@ interface Props {
 
 export function RealtimeDashboard({ initialEvents, registrations, profile }: Props) {
   const [events, setEvents] = useState<Event[]>(initialEvents)
-  const supabase = createClient()
 
   useEffect(() => {
     const channel = supabase

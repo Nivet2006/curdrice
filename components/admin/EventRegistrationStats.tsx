@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 import { Users, User, Clock, CheckCircle, Download, MessageSquareHeart } from 'lucide-react'
 
 interface Registration {
@@ -17,7 +17,6 @@ interface Registration {
 }
 
 export function EventRegistrationStats({ eventId }: { eventId: string }) {
-  const supabase = createClient()
   const [registrations, setRegistrations] = useState<Registration[]>([])
   const [feedbacks, setFeedbacks] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
@@ -72,7 +71,7 @@ export function EventRegistrationStats({ eventId }: { eventId: string }) {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [eventId, supabase])
+  }, [eventId]) // supabase is a singleton — stable, safe to omit
 
   const exportList = () => {
     const csvContent = "Full Name,USN,Department,Status,Feedback Given\n" +
