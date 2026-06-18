@@ -48,7 +48,7 @@ export default function LoginPage() {
         setLoading(false)
       } else {
         // ✅ Wait for all 4 loader steps to complete before redirecting
-        await new Promise(r => setTimeout(r, 4 * 150))
+        await new Promise(r => setTimeout(r, 4 * 75))
         const searchParams = new URLSearchParams(window.location.search)
         const redirectTo = searchParams.get('redirectTo')
         if (redirectTo && redirectTo.startsWith('/')) {
@@ -63,7 +63,7 @@ export default function LoginPage() {
   const handleTotpSuccess = async () => {
     setLoading(true)
     // Small delay to feel realistic after code verification
-    await new Promise(r => setTimeout(r, 1000))
+    await new Promise(r => setTimeout(r, 300))
     router.push(`/admin/dashboard`)
   }
 
