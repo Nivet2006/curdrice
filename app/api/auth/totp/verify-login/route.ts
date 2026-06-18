@@ -2,13 +2,30 @@ import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { verify } from 'otplib'
 import { cookies } from 'next/headers'
+import { verifyTotpChallenge, signTotpChallenge } from '@/lib/totp-challenge'
 
 export async function POST(req: Request) {
   try {
-    const { code, userId } = await req.json()
+    const { code } = await req.json()
 
-    if (!userId || !code) {
-      return NextResponse.json({ message: 'Missing credentials' }, { status: 400 })
+    if (!code) {
+      return NextResponse.json({ message: 'Missing code' }, { status: 400 })
+    }
+
+    // ── Security fix H1: read userId from the signed server-issued cookie ──
+    // We no longer trust a client-supplied userId in the POST body.
+    const cookieStore = await cookies()
+    const pendingToken = cookieStore.get('curdrice_totp_pending')?.value
+
+    if (!pendingToken) {
+      return NextResponse.json({ message: 'No pending login challenge. Please log in again.' }, { status: 401 })
+    }
+
+    const userId = await verifyTotpChallenge(pendingToken)
+    if (!userId) {
+      // Token expired or tampered with
+      cookieStore.delete('curdrice_totp_pending')
+      return NextResponse.json({ message: 'Login challenge expired. Please log in again.' }, { status: 401 })
     }
 
     // Fetch secret and rate limit data with admin client
@@ -53,15 +70,18 @@ export async function POST(req: Request) {
         totp_last_attempt: null
       }).eq('id', userId)
 
-      // Set the verification cookie
-      const cookieStore = await cookies()
-      cookieStore.set('curdrice_totp_verified', 'true', {
+      // ── Security fix M4: verified cookie is user-bound (signed token), not a plain boolean ──
+      const verifiedToken = await signTotpChallenge(userId, 8 * 60 * 60) // 8-hour session
+      cookieStore.set('curdrice_totp_verified', verifiedToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
-        path: '/'
-        // Expires with session (no maxAge)
+        path: '/',
+        maxAge: 8 * 60 * 60, // 8 hours
       })
+
+      // Clear the short-lived pending challenge cookie
+      cookieStore.delete('curdrice_totp_pending')
 
       return NextResponse.json({ success: true })
     } else {

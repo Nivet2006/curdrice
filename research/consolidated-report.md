@@ -23,14 +23,14 @@ No Critical severity issues were identified.
 
 ## 3. High Priority Issues
 
-### H1: TOTP verification API trusts a client-supplied userId — ⚠️ NOTED
+### H1: TOTP verification API trusts a client-supplied userId — ✅ DONE
 - Source report: `research/backend-audit.md`
 - Evidence: `app/api/auth/totp/verify-login/route.ts`, function `POST`, lines 8-19 parse `{ code, userId }` from the request body and query `profiles` using `supabaseAdmin` where `id = userId`.
 - Impact: Attackers with a known or guessed user UUID can target the TOTP endpoint and potentially induce lockouts or brute-force attempts outside a verified pending-login challenge.
 - Recommendation: Bind verification to a signed, server-issued, short-lived pending-login challenge.
 - Confidence: High
 
-### H2: Role-wide manager RLS allows cross-manager event modification — ⚠️ NOTED
+### H2: Role-wide manager RLS allows cross-manager event modification — ⚠️ NOTED (migration file created: 0040_fix_manager_rls.sql)
 - Source reports: `research/database-audit.md`, `research/security-audit.md`
 - Evidence: `supabase/migrations/0001_rls_policies.sql`, RLS policy migration, lines 20-28 check only `role IN ('manager', 'admin')` for event update/delete, despite policy names saying "own events".
 - Impact: Managers may update or delete events owned by other managers or clubs.
@@ -67,7 +67,7 @@ No Critical severity issues were identified.
 - Recommendation: Ensure future migrations use unique monotonically increasing identifiers and document existing applied order.
 - Confidence: High
 
-### M4: TOTP verification cookie stores only a global boolean — ⚠️ NOTED
+### M4: TOTP verification cookie stores only a global boolean — ✅ DONE
 - Source report: `research/security-audit.md`
 - Evidence: `app/api/auth/totp/verify-login/route.ts`, `POST`, lines 56-64 set `curdrice_totp_verified` to `'true'` without visible user binding or expiry metadata.
 - Impact: If downstream checks only read the boolean, stale or misplaced state could satisfy 2FA for an unintended context.

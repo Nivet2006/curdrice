@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 import { TotpLoginStep } from '@/components/auth/TotpLoginStep'
 import { ShieldLoader } from '@/components/shared/ShieldLoader'
 import { ThemeToggle } from '@/components/shared/ThemeToggle'
@@ -11,9 +11,8 @@ import { BrandMark } from '@/components/shared/BrandMark'
 function TotpVerifyContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [userId, setUserId] = useState<string | null>(null)
+  const [hasValidSession, setHasValidSession] = useState(false)
   const [loading, setLoading] = useState(true)
-  const supabase = createClient()
 
   useEffect(() => {
     async function checkUser() {
@@ -22,11 +21,11 @@ function TotpVerifyContent() {
         router.push('/login')
         return
       }
-      setUserId(user.id)
+      setHasValidSession(true)
       setLoading(false)
     }
     checkUser()
-  }, [supabase, router])
+  }, [router]) // supabase is a singleton — stable, safe to omit
 
   const handleSuccess = () => {
     const redirectUrl = searchParams.get('redirect') || '/admin/dashboard'
@@ -47,9 +46,8 @@ function TotpVerifyContent() {
         <BrandMark />
       </div>
       
-      {userId && (
+      {hasValidSession && (
         <TotpLoginStep 
-          userId={userId} 
           onSuccess={handleSuccess} 
         />
       )}
