@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { EventCalendar } from '@/components/shared/EventCalendar'
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 import type { Event } from '@/lib/types'
 
 type Props = {
@@ -13,7 +13,6 @@ type Props = {
 }
 
 export function CalendarView({ events, registrationMap }: Props) {
-  const supabase = createClient()
   const [regCounts, setRegCounts] = useState<Record<string, number>>({})
 
   // Fetch registration counts for all visible events (client-side, one-time)

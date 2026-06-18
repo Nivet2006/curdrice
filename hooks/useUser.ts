@@ -1,13 +1,12 @@
 'use client'
 
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 import { useEffect, useState } from 'react'
 import { User } from '@supabase/supabase-js'
 
 export function useUser() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
-  const supabase = createClient()
 
   useEffect(() => {
     // Check current session
@@ -25,7 +24,7 @@ export function useUser() {
     return () => {
       subscription.unsubscribe()
     }
-  }, [supabase])
+  }, []) // singleton is stable — no need to include in deps
 
   return { user, loading }
 }

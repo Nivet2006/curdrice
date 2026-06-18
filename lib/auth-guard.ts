@@ -1,6 +1,5 @@
-import { createClient } from './supabase/client'
+import { supabase } from './supabase/client'
 
-const supabase = createClient()
 let isRefreshing = false
 
 export async function safeRefreshSession(): Promise<boolean> {

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { CheckCircle2, ChevronRight, ChevronLeft, Save, Loader2, Download, ExternalLink, FileText, Eye, Edit2, AlertCircle } from 'lucide-react';
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { pushIICReportToPR } from '@/lib/actions/iic-approvals';
@@ -166,7 +166,6 @@ export function MultiStepReportForm({ eventId, eventTitle, eventDate, department
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        const supabase = createClient();
         const { data } = await supabase.from('profiles').select('full_name, usn').eq('role', 'student');
         if (data) {
           setStudentsList(data.map(d => ({ name: d.full_name, usn: d.usn })));

@@ -17,7 +17,7 @@ import {
   respondToInvite,
   searchUsers,
 } from '@/lib/actions/messages'
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 import { Notification } from '@/lib/types'
 import { QRDisplay } from '../student/QRDisplay'
 
@@ -28,7 +28,6 @@ interface MessagesPanelProps {
 }
 
 export default function MessagesPanel({ open, onClose, userId }: MessagesPanelProps) {
-  const supabase = createClient()
   const [activeTab, setActiveTab] = useState<'notifications' | 'inbox'>('notifications')
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [conversations, setConversations] = useState<any[]>([])

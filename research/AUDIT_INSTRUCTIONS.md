@@ -364,4 +364,14 @@ Required sections:
 
 The final report must reference evidence gathered by the workers and summarize all findings.
 
+Coordinator must not perform worker responsibilities.
+
+If a worker fails to produce its report within 10 minutes:
+- Mark worker as failed.
+- Record failure in progress-log.md.
+- Do not replace the worker.
+- Do not complete the worker's audit scope on behalf of the worker.
+
+Only findings produced by workers may appear in the final report.
+
 No source code changes are permitted.

@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 
 interface CriteriaItem {
   name: string
@@ -30,7 +30,6 @@ export function RealtimeHackathonSections({
   isCreator,
   bg
 }: RealtimeHackathonSectionsProps) {
-  const supabase = createClient()
   const [criteria, setCriteria] = useState<CriteriaItem[]>(initialCriteria || [])
   const [showCriteria, setShowCriteria] = useState(initialShowCriteria)
   const [showScoreboard, setShowScoreboard] = useState(initialShowScoreboard)
@@ -60,7 +59,7 @@ export function RealtimeHackathonSections({
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [eventId, supabase])
+  }, [eventId]) // supabase is a singleton — stable reference, safe to omit
 
   return (
     <>

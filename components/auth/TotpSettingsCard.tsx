@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Shield, ShieldAlert, ShieldCheck, Trash2, ArrowRight, X } from 'lucide-react'
 import { TotpSetupWizard } from './TotpSetupWizard'
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 
 export function TotpSettingsCard() {
   const [enabled, setEnabled] = useState<boolean | null>(null)
@@ -13,7 +13,6 @@ export function TotpSettingsCard() {
   const [isDisabling, setIsDisabling] = useState(false)
   const [error, setError] = useState<string | null>(null)
   
-  const supabase = createClient()
 
   useEffect(() => {
     fetchStatus()

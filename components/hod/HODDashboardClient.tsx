@@ -6,7 +6,7 @@ import { FileDown, CheckCircle2, Building, ExternalLink, ShieldCheck, ClipboardC
 import { ExportButton } from '@/components/hod/ExportButton'
 import { ProfileUpdateApprovalQueue } from '@/components/hod/ProfileUpdateApprovalQueue'
 import { ClubManager } from '@/components/faculty/ClubManager'
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 import { Event, ProfileUpdateRequest } from '@/lib/types'
 
 interface HODDashboardClientProps {
@@ -32,7 +32,6 @@ export function HODDashboardClient({
   const [approvedEvents, setApprovedEvents] = useState<Event[]>(initialApproved)
   const [pendingIIC, setPendingIIC] = useState<any[]>(initialPendingIIC)
   const [approvedIIC, setApprovedIIC] = useState<any[]>(initialApprovedIIC)
-  const supabase = createClient()
 
   useEffect(() => {
     const channel = supabase
@@ -71,7 +70,7 @@ export function HODDashboardClient({
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [dept, supabase])
+  }, [dept]) // supabase is a singleton — stable reference, safe to omit
 
   return (
     <div className="space-y-12">

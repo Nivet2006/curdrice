@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { EventCalendar } from '@/components/shared/EventCalendar'
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 import type { Event, Role } from '@/lib/types'
 
 interface RealtimeStaffCalendarProps {
@@ -11,7 +11,6 @@ interface RealtimeStaffCalendarProps {
 }
 
 export function RealtimeStaffCalendar({ initialEvents, role }: RealtimeStaffCalendarProps) {
-  const supabase = createClient()
   const [events, setEvents] = useState<Event[]>(initialEvents)
   const [regCounts, setRegCounts] = useState<Record<string, number>>({})
 
