@@ -12,18 +12,13 @@ const mono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono' })
 
 export const metadata: Metadata = {
   title: {
-    default: 'Clubeve by nived | College Event Management & Collaboration Portal',
-    template: '%s | Clubeve by nived'
+    default: 'ClubEve | College Event Management & Collaboration Portal',
+    template: '%s | ClubEve'
   },
-  description: 'Clubeve by nived (nivet2006, nivet.2006, clubeve nivet, clubevenived) is the ultimate college event management, hackathon submission, attendance tracking, and student club collaboration portal developed by nived.',
+  description: 'ClubEve is the ultimate college event management, hackathon submission, attendance tracking, and student club collaboration portal.',
   metadataBase: new URL('https://club-eve.vercel.app'),
   keywords: [
-    'Clubeve by nived',
-    'nived',
-    'nivet2006',
-    'nivet.2006',
-    'clubeve nivet',
-    'clubevenived',
+    'ClubEve',
     'club-eve',
     'college event management',
     'hackathon evaluation',
@@ -31,9 +26,9 @@ export const metadata: Metadata = {
     'attendance scanner',
     'IIC report generator'
   ],
-  authors: [{ name: 'nived (nivet2006)', url: 'https://github.com/nivet2006' }],
-  creator: 'nived (nivet2006)',
-  publisher: 'Clubeve by nived',
+  authors: [],
+  creator: 'ClubEve Team',
+  publisher: 'ClubEve',
   robots: {
     index: true,
     follow: true,
@@ -49,9 +44,9 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: 'https://club-eve.vercel.app',
-    title: 'Clubeve by nived | College Event Management Portal',
-    description: 'Simplify college event management, team formations, and hackathon submittals with Clubeve by nived (nivet2006).',
-    siteName: 'Clubeve by nived',
+    title: 'ClubEve | College Event Management Portal',
+    description: 'Simplify college event management, team formations, and hackathon submittals with ClubEve.',
+    siteName: 'ClubEve',
     images: [
       {
         url: '/logo.png',
@@ -63,8 +58,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary',
-    title: 'Clubeve by nived | College Event Management Portal',
-    description: 'Simplify college event management, team formations, and hackathon submittals with Clubeve by nived (nivet2006).',
+    title: 'ClubEve | College Event Management Portal',
+    description: 'Simplify college event management, team formations, and hackathon submittals with ClubEve.',
     images: ['/logo.png'],
   }
 }

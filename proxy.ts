@@ -126,7 +126,7 @@ export async function proxy(request: NextRequest) {
         supabaseResponse.cookies.delete('curdrice_user_totp')
         supabaseResponse.cookies.delete('curdrice_totp_verified')
         if (isApiRoute) {
-          return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+          return getUnauthorizedResponse();
         }
         const loginUrl = request.nextUrl.clone()
         loginUrl.pathname = '/login'
@@ -200,7 +200,7 @@ export async function proxy(request: NextRequest) {
     supabaseResponse.cookies.delete('curdrice_user_totp')
     supabaseResponse.cookies.delete('curdrice_totp_verified')
     if (isApiRoute) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return getUnauthorizedResponse();
     }
     const url = request.nextUrl.clone()
     url.pathname = '/login'
@@ -338,6 +338,235 @@ function buildCSP(nonce: string): string {
     `object-src 'none'`,
     `upgrade-insecure-requests`,
   ].join('; ')
+}
+
+function getUnauthorizedResponse() {
+  const htmlContent = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClubEve API Node</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&family=Roboto+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --bg-subtle: #1a1a1a;
+            --bg-card: #141414;
+            --fg: #f5f5f5;
+            --fg-muted: #a0a0a0;
+            --border: #2a2a2a;
+            --accent: #f5f5f5;
+            --accent-fg: #0a0a0a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg);
+            /* Dotted background pattern from Style Guide */
+            background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1.5px, transparent 1.5px);
+            background-size: 24px 24px;
+            color: var(--fg);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Large low-opacity grid lines for industrial brutalist structure */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 120px 120px;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Brutalist Modular Card */
+        .card {
+            background-color: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 20px;
+            padding: 3rem 2.5rem;
+            width: 100%;
+            max-width: 480px;
+            text-align: center;
+            z-index: 10;
+            box-shadow: 6px 6px 0px 0px var(--border);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+        }
+
+        .card:hover {
+            border-color: #ffffff;
+            box-shadow: 10px 10px 0px 0px #ffffff;
+            transform: translate(-4px, -4px);
+        }
+
+        /* Mono Technical Pill */
+        .badge {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            color: var(--fg-muted);
+            padding: 8px 16px;
+            border-radius: 50px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 2rem;
+            font-weight: 600;
+        }
+
+        .badge-dot {
+            width: 6px;
+            height: 6px;
+            background-color: var(--border);
+            border-radius: 50%;
+            transition: background-color 0.3s ease;
+        }
+
+        .card:hover .badge-dot {
+            background-color: #ffffff;
+        }
+
+        h1 {
+            font-size: 2.25rem;
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 1.25rem;
+            letter-spacing: -0.04em;
+            text-transform: uppercase;
+            color: #ffffff;
+        }
+
+        p {
+            font-size: 1rem;
+            color: var(--fg-muted);
+            line-height: 1.6;
+            margin-bottom: 2.5rem;
+            font-weight: 400;
+        }
+
+        /* Brutalist Button & Hover Transforms */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--accent);
+            color: var(--accent-fg);
+            text-decoration: none;
+            padding: 1.1rem 2rem;
+            font-size: 1rem;
+            font-weight: 900;
+            border-radius: 12px;
+            border: 2px solid var(--accent);
+            cursor: pointer;
+            width: 100%;
+            font-family: 'Outfit', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transition: all 0.2s ease;
+            box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 0.5);
+        }
+
+        .btn:hover {
+            background-color: var(--bg-card);
+            color: #ffffff;
+            border-color: #ffffff;
+            transform: translate(-3px, -3px);
+            box-shadow: 6px 6px 0px 0px #ffffff;
+        }
+
+        .btn:active {
+            transform: translate(1px, 1px);
+            box-shadow: 2px 2px 0px 0px #ffffff;
+        }
+
+        /* Mono Operational Status Pill */
+        .status-container {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.75rem;
+            background: rgba(46, 213, 115, 0.08);
+            color: #2ed573;
+            padding: 6px 14px;
+            border-radius: 8px;
+            margin-top: 2rem;
+            border: 1.5px solid rgba(46, 213, 115, 0.2);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #2ed573;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #2ed573;
+            animation: pulse 1.8s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.9); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(0.9); opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="badge">
+            <span class="badge-dot"></span>
+            Node // CE-Proxy-01
+        </div>
+        <h1>ClubEve API</h1>
+        <p>You have accessed the secure ClubEve Backend Node. This server handles digital keys, event check-ins, and automated administration for ClubEve App.</p>
+        
+        <a href="https://curdrice.nivet2006.in/login" class="btn">
+            Go to ClubEve
+        </a>
+
+        <div>
+            <div class="status-container">
+                <span class="status-dot"></span>
+                Status: Operational
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+  `;
+  return new NextResponse(htmlContent, {
+    status: 401,
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8',
+    },
+  });
 }
 
 export default proxy
