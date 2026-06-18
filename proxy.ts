@@ -62,7 +62,7 @@ export async function proxy(request: NextRequest) {
     path.startsWith('/_next') ||
     path.startsWith('/api/health') ||
     path === '/favicon.ico' ||
-    path.match(/\.(png|jpg|svg|ico|webp|css|js)$/)
+    path.match(/\.(png|jpg|svg|ico|webp|css|js|html|txt|xml)$/)
   ) {
     return supabaseResponse
   }
