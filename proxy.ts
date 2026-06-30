@@ -81,6 +81,7 @@ export async function proxy(request: NextRequest) {
       httpOnly: true,
       sameSite: 'lax',
       path: '/',
+      secure: process.env.NODE_ENV === 'production',
     })
   }
 
@@ -295,12 +296,12 @@ export async function proxy(request: NextRequest) {
   })
 
   // Apply security headers
-  applySecurityHeaders(supabaseResponse, nonce)
+  applySecurityHeaders(supabaseResponse, nonce, path)
 
   return supabaseResponse
 }
 
-function applySecurityHeaders(response: NextResponse, nonce: string) {
+function applySecurityHeaders(response: NextResponse, nonce: string, path: string) {
   response.headers.set('x-nonce', nonce)
 
   response.headers.set('Content-Security-Policy', buildCSP(nonce))
@@ -311,6 +312,12 @@ function applySecurityHeaders(response: NextResponse, nonce: string) {
     'Permissions-Policy',
     'camera=(), microphone=(), geolocation=(), payment=()'
   )
+  response.headers.set('Cross-Origin-Opener-Policy', 'same-origin')
+
+  if (!path.startsWith('/api/assets') && !path.startsWith('/api/reports')) {
+    response.headers.set('Cross-Origin-Resource-Policy', 'same-origin')
+  }
+
   if (process.env.NODE_ENV === 'production') {
     response.headers.set(
       'Strict-Transport-Security',
