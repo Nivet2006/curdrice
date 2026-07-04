@@ -54,6 +54,13 @@ export async function submitProject(
 
   if (error) return { error: error.message }
 
+  // Proactively trigger GitHub Repository Scan in background
+  if (repoUrl) {
+    try {
+      scanSubmission(data.id).catch(console.error)
+    } catch {}
+  }
+
   revalidatePath(`/student/events/${eventId}`)
   revalidatePath(`/student/events/${eventId}/showcase`)
   return { success: true, submission: data }
@@ -225,6 +232,7 @@ export async function getScoreboard(eventId: string) {
     if (subsEval.length === 0) {
       return {
         submission_id: sub.id,
+        team_id: sub.team_id,
         team_name: sub.team?.team_name || 'Unknown Team',
         project_title: sub.project_title,
         average_score: 0,
@@ -294,3 +302,80 @@ export async function announceWinners(
   revalidatePath(`/student/events/${eventId}/showcase`)
   return { success: true }
 }
+
+// 6. GitHub Scanner Actions
+export async function scanSubmission(submissionId: string) {
+  try {
+    const { runFullGitScan } = await import('@/lib/services/github-scanner')
+    return await runFullGitScan(submissionId)
+  } catch (e: any) {
+    console.error('Scan error:', e)
+    return { error: e.message || 'Scan failed due to an unexpected error.' }
+  }
+}
+
+// 7. Plagiarism scan action
+export async function runPlagiarismCheck(eventId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Unauthorized' }
+
+  // Verify Role
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (!profile || !['admin', 'cc', 'teacher'].includes(profile.role)) {
+    return { error: 'Unauthorized role.' }
+  }
+
+  // Fetch all submissions
+  const { data: submissions, error } = await supabase
+    .from('hackathon_submissions')
+    .select('id, project_title, project_description, git_readme_content, team_id, team:hackathon_teams(team_name)')
+    .eq('event_id', eventId)
+
+  if (error || !submissions || submissions.length < 2) {
+    return { error: 'Not enough submissions to run check.' }
+  }
+
+  const { computeCosineSimilarity, computeJaroWinkler } = await import('@/lib/services/github-scanner')
+
+  for (let i = 0; i < submissions.length; i++) {
+    let maxSimilarity = 0.0
+    for (let j = 0; j < submissions.length; j++) {
+      if (i === j) continue
+
+      let similarity = 0.0
+      const readme1 = submissions[i].git_readme_content
+      const readme2 = submissions[j].git_readme_content
+
+      if (readme1 && readme2 && readme1.length > 50 && readme2.length > 50) {
+        // Compute on readme contents if available
+        similarity = computeCosineSimilarity(readme1, readme2)
+      } else {
+        // Fallback to title and description
+        const desc1 = `${submissions[i].project_title} ${submissions[i].project_description}`.toLowerCase()
+        const desc2 = `${submissions[j].project_title} ${submissions[j].project_description}`.toLowerCase()
+        similarity = computeJaroWinkler(desc1, desc2)
+      }
+
+      if (similarity > maxSimilarity) {
+        maxSimilarity = similarity
+      }
+    }
+
+    // Save similarity index
+    await supabase
+      .from('hackathon_submissions')
+      .update({ git_plagiarism_index: Math.round(maxSimilarity * 100) / 100 })
+      .eq('id', submissions[i].id)
+  }
+
+  revalidatePath(`/student/events/${eventId}/showcase`)
+  return { success: true }
+}
+
+

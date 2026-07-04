@@ -13,7 +13,8 @@ import {
   ArrowLeft,
   Users,
   Trophy,
-  AlertCircle
+  AlertCircle,
+  ShieldAlert
 } from 'lucide-react'
 import { submitEvaluation } from '@/lib/actions/hackathon-eval-actions'
 import { toast } from 'sonner'
@@ -25,6 +26,11 @@ interface Submission {
   repo_url: string | null
   demo_url: string | null
   submitted_at: string
+  git_scan_status?: string
+  git_commit_velocity?: any
+  git_work_distribution?: any
+  git_plagiarism_index?: number
+  git_security_warnings?: any
   team: {
     team_name: string
     leader: { full_name: string; usn: string }
@@ -233,6 +239,69 @@ export function JudgeEvaluationPanel({ submissions, eventTitle, eventId }: Props
               )}
             </div>
           </div>
+
+          {/* GitHub Intelligence Panel */}
+          {selected.repo_url && (
+            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 space-y-3.5">
+              <h4 className="font-bold text-xs uppercase tracking-widest text-zinc-500">GitHub Intelligence</h4>
+              
+              {/* Scan status */}
+              {selected.git_scan_status === 'scanning' && (
+                <p className="text-xs font-mono text-zinc-400">Scanning repository in progress...</p>
+              )}
+              {selected.git_scan_status === 'failed' && (
+                <p className="text-xs font-mono text-rose-500">Scan failed (repository might be private or invalid).</p>
+              )}
+              
+              {selected.git_scan_status === 'completed' && (
+                <div className="space-y-3">
+                  {/* Plagiarism Alert */}
+                  {selected.git_plagiarism_index !== undefined && selected.git_plagiarism_index > 0.6 && (
+                    <div className="p-3 bg-amber-500/10 border border-amber-500/25 rounded-xl flex items-center gap-2">
+                      <AlertCircle className="text-amber-600 shrink-0" size={14} />
+                      <span className="text-[10px] font-mono text-amber-700 dark:text-amber-400 font-bold">
+                        Plagiarism Warning: Similarity index is {Math.round(selected.git_plagiarism_index * 100)}%
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Security Warnings */}
+                  {Array.isArray(selected.git_security_warnings) && selected.git_security_warnings.length > 0 && (
+                    <div className="p-3 bg-rose-500/10 border border-rose-500/25 rounded-xl flex items-center gap-2">
+                      <ShieldAlert className="text-rose-600 shrink-0" size={14} />
+                      <span className="text-[10px] font-mono text-rose-700 dark:text-rose-455 font-bold">
+                        Security warning: {selected.git_security_warnings.length} leaked secrets detected in code.
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Commit count */}
+                  {Array.isArray(selected.git_commit_velocity) && (
+                    <div className="text-xs font-mono text-zinc-550 dark:text-zinc-450">
+                      Total Commits: <span className="font-black text-zinc-900 dark:text-white">
+                        {selected.git_commit_velocity.reduce((acc: number, curr: any) => acc + (curr.commits || 0), 0)}
+                      </span> during hackathon.
+                    </div>
+                  )}
+
+                  {/* Work distribution breakdown */}
+                  {Array.isArray(selected.git_work_distribution) && selected.git_work_distribution.length > 0 && (
+                    <div className="space-y-1.5 pt-1 border-t border-zinc-100 dark:border-zinc-850">
+                      <p className="text-[9px] font-mono uppercase tracking-widest text-zinc-400">Equity Breakdown</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        {selected.git_work_distribution.map((w: any, idx: number) => (
+                          <div key={idx} className="bg-zinc-50 dark:bg-zinc-900/50 rounded-lg p-2 text-[10px] font-mono">
+                            <p className="font-bold truncate text-zinc-850 dark:text-zinc-300">{w.author}</p>
+                            <p className="text-[9px] text-violet-600 dark:text-violet-400 font-black mt-0.5">{w.percentage}% code</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Scoring sliders */}
           <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 space-y-6">
