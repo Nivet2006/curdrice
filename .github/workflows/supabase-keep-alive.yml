@@ -1,0 +1,37 @@
+name: Supabase Keep Alive
+
+on:
+  schedule:
+    # Runs automatically every 6 hours
+    - cron: "0 */6 * * *"
+
+  # Allows manual testing
+  workflow_dispatch:
+
+jobs:
+  keep-alive:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Ping Supabase Database
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+
+        run: |
+          echo "================================"
+          echo "Supabase Keep Alive Started"
+          echo "Time: $(date)"
+          echo "================================"
+
+          RESPONSE=$(curl --silent --show-error --fail \
+            "${NEXT_PUBLIC_SUPABASE_URL}/rest/v1/keep_alive?select=id,last_ping&limit=1" \
+            -H "apikey: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${NEXT_PUBLIC_SUPABASE_ANON_KEY}")
+
+          echo "Supabase Response:"
+          echo "$RESPONSE"
+
+          echo "================================"
+          echo "Supabase Database Ping Successful"
+          echo "================================"
