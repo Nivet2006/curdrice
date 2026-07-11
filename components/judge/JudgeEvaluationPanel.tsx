@@ -267,11 +267,18 @@ export function JudgeEvaluationPanel({ submissions, eventTitle, eventId }: Props
 
                   {/* Security Warnings */}
                   {Array.isArray(selected.git_security_warnings) && selected.git_security_warnings.length > 0 && (
-                    <div className="p-3 bg-rose-500/10 border border-rose-500/25 rounded-xl flex items-center gap-2">
-                      <ShieldAlert className="text-rose-600 shrink-0" size={14} />
-                      <span className="text-[10px] font-mono text-rose-700 dark:text-rose-455 font-bold">
-                        Security warning: {selected.git_security_warnings.length} leaked secrets detected in code.
-                      </span>
+                    <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl flex flex-col gap-1.5 w-full">
+                      <div className="flex items-center gap-2">
+                        <ShieldAlert className="text-rose-600 shrink-0" size={16} />
+                        <span className="text-xs font-mono font-bold uppercase tracking-wider text-rose-600 dark:text-rose-455">
+                          Security Warnings
+                        </span>
+                      </div>
+                      <ul className="list-disc pl-5 text-xs text-rose-700 dark:text-rose-400 mt-1 space-y-1">
+                        {selected.git_security_warnings.map((warn: string, idx: number) => (
+                          <li key={idx}>{warn}</li>
+                        ))}
+                      </ul>
                     </div>
                   )}
 
