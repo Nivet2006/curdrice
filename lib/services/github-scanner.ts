@@ -49,7 +49,7 @@ export async function fetchCommitTimeline(
   eventStart?: Date,
   eventEnd?: Date
 ): Promise<{
-  timeline: { date: string; count: number }[]
+  timeline: { time: string; commits: number }[]
   prebuiltFlag: boolean
   totalCommits: number
   error?: string
@@ -69,18 +69,23 @@ export async function fetchCommitTimeline(
       return { timeline: [], prebuiltFlag: false, totalCommits: 0 }
     }
 
-    // Map commits by date
-    const dateMap: { [key: string]: number } = {}
+    // Map commits by date/hour (grouping hourly)
+    const hourlyMap: { [key: string]: number } = {}
     commits.forEach((c: any) => {
       try {
-        const dateStr = new Date(c.commit?.author?.date).toISOString().split('T')[0]
-        dateMap[dateStr] = (dateMap[dateStr] || 0) + 1
+        const date = new Date(c.commit?.author?.date)
+        const year = date.getFullYear()
+        const month = String(date.getMonth() + 1).padStart(2, '0')
+        const day = String(date.getDate()).padStart(2, '0')
+        const hours = String(date.getHours()).padStart(2, '0')
+        const key = `${year}-${month}-${day}T${hours}:00:00.000Z`
+        hourlyMap[key] = (hourlyMap[key] || 0) + 1
       } catch (e) {}
     })
 
-    const timeline = Object.entries(dateMap)
-      .map(([date, count]) => ({ date, count }))
-      .sort((a, b) => a.date.localeCompare(b.date))
+    const timeline = Object.entries(hourlyMap)
+      .map(([time, commits]) => ({ time, commits }))
+      .sort((a, b) => a.time.localeCompare(b.time))
 
     // Prebuilt code detection:
     // If there are very few commits (e.g. 1 or 2) but they contain massive changes.
@@ -277,7 +282,7 @@ export function parseArchitecture(filePaths: string[], packageJsonContent?: any,
 
 // 6. Contributor stats helper
 export async function fetchContributorStats(owner: string, repo: string): Promise<{
-  distribution: { author: string; percentage: number; commits: number }[]
+  distribution: { author: string; percentage: number; commits: number; commitCount: number }[]
   error?: string
 }> {
   try {
@@ -309,6 +314,7 @@ export async function fetchContributorStats(owner: string, repo: string): Promis
     const distribution = contribs.map((c) => ({
       author: c.author,
       commits: c.commits,
+      commitCount: c.commits,
       percentage: totalCommits > 0 ? Math.round((c.commits / totalCommits) * 100) : 0,
     })).sort((a, b) => b.commits - a.commits)
 
@@ -352,9 +358,9 @@ export async function runFullGitScan(submissionId: string) {
 
   const { owner, repo } = parsed
 
-  // Set to pending
+  // Set to pending/scanning
   await supabase.from('hackathon_submissions').update({
-    git_scan_status: 'pending',
+    git_scan_status: 'scanning',
   }).eq('id', submissionId)
 
   try {
@@ -438,30 +444,38 @@ export async function runFullGitScan(submissionId: string) {
 
     // C. Commit Timeline & prebuilt code flag
     const eventDate = sub.event?.event_date ? new Date(sub.event.event_date) : undefined
-    // If event_date is defined, let's look at commits from 24h before to 48h after, or just general window
-    const eventStart = eventDate ? new Date(eventDate.getTime() - 24 * 60 * 60 * 1000) : undefined
-    const eventEnd = eventDate ? new Date(eventDate.getTime() + 48 * 60 * 60 * 1000) : undefined
+    // If event_date is defined, look at commits from 2 days before event_date to event_date (hackathon window)
+    const eventStart = eventDate ? new Date(eventDate.getTime() - 2 * 24 * 60 * 60 * 1000) : undefined
+    const eventEnd = eventDate ? new Date(eventDate.getTime()) : undefined
 
     const timelineResult = await fetchCommitTimeline(owner, repo, eventStart, eventEnd)
+
+    if (timelineResult.prebuiltFlag) {
+      securityWarnings.push('Warning: Potential prebuilt code detected (single commit with >5000 additions at the start of the event).')
+    }
 
     // D. Contributor Work Distribution
     const statsResult = await fetchContributorStats(owner, repo)
 
     // E. Parse Tech Stack
     const archResult = parseArchitecture(filePaths, packageJsonContent, requirementsContent)
+    const gitArchitecture = {
+      techStack: [
+        { name: archResult.frontend, type: 'Frontend' },
+        { name: archResult.backend, type: 'Backend' },
+        { name: archResult.database, type: 'Database' }
+      ],
+      mermaidDiagram: archResult.diagram
+    }
 
     // F. Save to Database
     const { error: updateError } = await supabase
       .from('hackathon_submissions')
       .update({
         git_scan_status: 'completed',
-        git_commit_velocity: {
-          timeline: timelineResult.timeline,
-          prebuiltFlag: timelineResult.prebuiltFlag,
-          totalCommits: timelineResult.totalCommits
-        },
+        git_commit_velocity: timelineResult.timeline, // Array of { time, commits } directly
         git_work_distribution: statsResult.distribution,
-        git_architecture: archResult,
+        git_architecture: gitArchitecture,
         git_security_warnings: securityWarnings,
         git_readme_content: readmeContent || 'No README.md found in public repository.',
       })

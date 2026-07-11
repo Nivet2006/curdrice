@@ -346,11 +346,13 @@ export function ShowcaseTabs({
                   {Array.isArray(selectedSub.git_security_warnings) && selectedSub.git_security_warnings.length > 0 && (
                     <div className="flex items-start gap-3 p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl">
                       <ShieldAlert className="text-rose-500 shrink-0 mt-0.5" size={18} />
-                      <div>
-                        <p className="text-xs font-mono font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">Security warnings</p>
-                        <p className="text-xs text-zinc-550 dark:text-zinc-400 mt-1 leading-relaxed">
-                          Hardcoded secret signatures (e.g. Supabase, database URIs) were detected in code repositories. Purge git history.
-                        </p>
+                      <div className="w-full">
+                        <p className="text-xs font-mono font-bold uppercase tracking-wider text-rose-600 dark:text-rose-455">Security warnings</p>
+                        <ul className="list-disc pl-4 text-xs text-rose-700 dark:text-rose-400 mt-1 leading-relaxed space-y-1">
+                          {selectedSub.git_security_warnings.map((warn: string, idx: number) => (
+                            <li key={idx}>{warn}</li>
+                          ))}
+                        </ul>
                       </div>
                     </div>
                   )}
