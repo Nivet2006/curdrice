@@ -105,10 +105,12 @@ export default function EmailAdminPage() {
       toast.error(res.error)
     } else {
       setData(res)
+      const settings = res.settings || []
+      const assignments = res.assignments || []
       // Initialize local configs
       const configs: Record<string, any> = {}
-      res.settings.forEach((s: any) => {
-        const assignment = res.assignments.find((a: any) => a.email_type === s.email_type)
+      settings.forEach((s: any) => {
+        const assignment = assignments.find((a: any) => a.email_type === s.email_type)
         configs[s.email_type] = {
           sender_email: assignment?.sender_email || '',
           sender_name: assignment?.sender_name || '',
@@ -260,7 +262,7 @@ export default function EmailAdminPage() {
             Global toggles, sender assignments, and Brevo delivery queue.
           </p>
         </div>
-        <Button onClick={loadData} variant="outline" size="sm" className="flex items-center gap-2">
+        <Button onClick={loadData} variant="ghost" className="flex items-center gap-2">
           <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
           Refresh
         </Button>
@@ -492,7 +494,7 @@ export default function EmailAdminPage() {
                 value={newSenderName}
                 onChange={e => setNewSenderName(e.target.value)}
               />
-              <Button type="submit" variant="outline" className="w-full flex items-center justify-center gap-2">
+              <Button type="submit" variant="ghost" className="w-full flex items-center justify-center gap-2">
                 <Plus size={14} />
                 Add Verified Sender
               </Button>
@@ -502,7 +504,7 @@ export default function EmailAdminPage() {
 
           <Card className="p-6">
             <h2 className="text-lg font-black tracking-tight mb-4">Queue Management</h2>
-            <Button onClick={() => handleBulkCancel()} variant="outline" className="w-full text-red-500 hover:text-red-600 font-mono text-xs">
+            <Button onClick={() => handleBulkCancel()} variant="ghost" className="w-full text-red-500 hover:text-red-600 font-mono text-xs">
               Cancel All Queued Emails
             </Button>
           </Card>

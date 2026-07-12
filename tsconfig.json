@@ -39,6 +39,7 @@
     "node_modules",
     "seed.ts",
     "tmp",
-    "NATIVE APP"
+    "NATIVE APP",
+    "supabase"
   ]
 }
