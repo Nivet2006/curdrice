@@ -109,6 +109,13 @@ export async function registerProfile(formData: FormData) {
     return { error: result.error.issues[0]?.message || 'Validation failed' }
   }
 
+  const { isEmailTypeEnabled } = await import('@/lib/services/notification-service')
+  const verificationEnabled = await isEmailTypeEnabled('account_verification')
+
+  if (!verificationEnabled) {
+    return { error: 'Email-based account verification is currently unavailable. Please contact the Club Eve administrator.' }
+  }
+
   const supabase = await createClient()
   
   const { data: authData, error: signupError } = await supabase.auth.signUp({
@@ -145,4 +152,24 @@ export async function registerProfile(formData: FormData) {
 
   // ✅ Return success instead of redirecting
   return { success: true, role: 'student' }
+}
+
+export async function recoverAccount(email: string, origin: string) {
+  const { isEmailTypeEnabled } = await import('@/lib/services/notification-service')
+  const recoveryEnabled = await isEmailTypeEnabled('account_recovery')
+
+  if (!recoveryEnabled) {
+    return { error: 'Email-based account recovery is currently unavailable. Please contact the Club Eve administrator.' }
+  }
+
+  const supabase = await createClient()
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${origin}/auth/callback?next=/auth/reset-password`
+  })
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  return { success: true, message: 'Recovery email sent' }
 }

@@ -288,18 +288,47 @@ export async function updateEvent(eventId: string, formData: FormData) {
   }
 }
 
+async function notifyEventCancelled(eventId: string, eventTitle: string) {
+  const supabase = await createClient()
+  const { data: registrants } = await supabase
+    .from('registrations')
+    .select('student_id, profiles(email, full_name)')
+    .eq('event_id', eventId)
+
+  if (registrants && registrants.length > 0) {
+    const { triggerEventCancelled } = await import('@/lib/services/notification-service')
+    for (const reg of registrants) {
+      const student = (reg as any).profiles
+      if (student && student.email) {
+        await triggerEventCancelled(
+          student.email,
+          reg.student_id,
+          eventId,
+          {
+            eventName: eventTitle,
+            reason: 'Cancelled by administrator'
+          }
+        ).catch(console.error)
+      }
+    }
+  }
+}
+
 export async function deleteEvent(eventId: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Unauthorized' }
 
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  const { data: event } = await supabase.from('events').select('created_by').eq('id', eventId).single()
+  const { data: event } = await supabase.from('events').select('created_by, title').eq('id', eventId).single()
 
   if (!event) return { error: 'Event not found' }
   if (profile?.role !== 'admin' && profile?.role !== 'manager' && !(profile?.role === 'teacher' && event.created_by === user.id)) {
     return { error: 'Unauthorized' }
   }
+
+  // Notify registrants before deleting
+  await notifyEventCancelled(eventId, event.title || 'Event')
 
   const { error } = await supabase.from('events').delete().eq('id', eventId)
   if (error) return { error: error.message }
@@ -336,6 +365,18 @@ export async function deleteEventsBulk(eventIds: string[], totpCode: string) {
 
   if (!result || (typeof result === 'object' && !result.valid)) {
     return { error: 'Invalid verification code' }
+  }
+
+  // Fetch all titles for audit/notification
+  const { data: deletedEvents } = await supabase
+    .from('events')
+    .select('id, title')
+    .in('id', eventIds)
+
+  if (deletedEvents) {
+    for (const e of deletedEvents) {
+      await notifyEventCancelled(e.id, e.title || 'Event')
+    }
   }
 
   const { error } = await supabase.from('events').delete().in('id', eventIds)

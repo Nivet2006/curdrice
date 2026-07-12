@@ -123,17 +123,19 @@ export async function processProfileRequest(
 
   const adminClient = supabaseAdmin
 
+  // Fetch the request to get student_id and field/new_value
+  const { data: request } = await adminClient
+    .from('profile_update_requests')
+    .select('student_id, field, new_value, profiles(full_name, email)')
+    .eq('id', requestId)
+    .eq('status', 'pending')
+    .single()
+
+  if (!request) return { error: 'Request not found or already processed.' }
+
+  const studentInfo = (request as any).profiles
+
   if (decision === 'approve') {
-    // Fetch the request to get student_id and field/new_value
-    const { data: request } = await adminClient
-      .from('profile_update_requests')
-      .select('student_id, field, new_value')
-      .eq('id', requestId)
-      .eq('status', 'pending')
-      .single()
-
-    if (!request) return { error: 'Request not found or already processed.' }
-
     // Apply the update to the profile
     let value: any = request.new_value
     if (['semester', 'year'].includes(request.field)) {
@@ -163,6 +165,30 @@ export async function processProfileRequest(
     .eq('id', requestId)
 
   if (statusError) return { error: statusError.message }
+
+  // Trigger Notifications
+  try {
+    if (studentInfo && studentInfo.email) {
+      const { triggerProfileUpdateApproved, triggerProfileUpdateRejected } = await import('@/lib/services/notification-service')
+      if (decision === 'approve') {
+        await triggerProfileUpdateApproved(
+          studentInfo.email,
+          request.student_id,
+          requestId,
+          { studentName: studentInfo.full_name }
+        )
+      } else {
+        await triggerProfileUpdateRejected(
+          studentInfo.email,
+          request.student_id,
+          requestId,
+          { studentName: studentInfo.full_name, reason: feedback || undefined }
+        )
+      }
+    }
+  } catch (triggerErr) {
+    console.error('Failed to trigger profile update notification email:', triggerErr)
+  }
 
   revalidatePath('/hod/dashboard')
   revalidatePath('/student/profile')
