@@ -19,8 +19,38 @@ export async function queueEmail(payload: {
       .maybeSingle()
 
     if (existing) {
-      return existing // Already queued, avoid double queueing
+      return existing
     }
+  }
+
+  // Load configured sender assignment
+  const { data: assignment } = await supabase
+    .from('email_sender_assignments')
+    .select('*')
+    .eq('email_type', payload.emailType)
+    .maybeSingle()
+
+  let status: 'pending' | 'blocked_configuration' = 'pending'
+  let senderEmail = null
+  let senderName = null
+  let replyToEmail = null
+
+  if (assignment && assignment.sender_email) {
+    const { data: sender } = await supabase
+      .from('brevo_senders')
+      .select('status')
+      .eq('email', assignment.sender_email)
+      .maybeSingle()
+
+    if (sender && sender.status === 'Active') {
+      senderEmail = assignment.sender_email
+      senderName = assignment.sender_name || null
+      replyToEmail = assignment.reply_to_email || null
+    } else {
+      status = 'blocked_configuration'
+    }
+  } else {
+    status = 'blocked_configuration'
   }
 
   const { data, error } = await supabase
@@ -32,15 +62,18 @@ export async function queueEmail(payload: {
       template_key: payload.templateKey,
       template_data: payload.templateData,
       deduplication_key: payload.deduplicationKey || null,
-      status: 'pending',
-      next_attempt_at: new Date().toISOString()
+      status: status,
+      sender_email: senderEmail,
+      sender_name: senderName,
+      reply_to_email: replyToEmail,
+      next_attempt_at: new Date().toISOString(),
+      last_error: status === 'blocked_configuration' ? 'Blocked: No valid Brevo sender is configured.' : null
     })
     .select('*')
     .single()
 
   if (error) {
     if (error.code === '23505') {
-      // Catch unique violation just in case of parallel race
       const { data: existing } = await supabase
         .from('email_queue')
         .select('*')
@@ -51,8 +84,7 @@ export async function queueEmail(payload: {
     throw new Error(error.message)
   }
 
-  // Update daily stats: increment queued count
-  await supabase.rpc('increment_daily_stats_queued') // We will define this RPC/updater helper to keep track
+  await supabase.rpc('increment_daily_stats_queued')
 
   return data
 }
@@ -70,15 +102,56 @@ export async function getQueue(status?: string) {
 
 export async function retryEmail(queueId: string) {
   const supabase = await createClient()
+
+  const { data: job } = await supabase
+    .from('email_queue')
+    .select('email_type')
+    .eq('id', queueId)
+    .single()
+
+  if (!job) throw new Error('Email job not found')
+
+  const { data: assignment } = await supabase
+    .from('email_sender_assignments')
+    .select('*')
+    .eq('email_type', job.email_type)
+    .maybeSingle()
+
+  let status: 'pending' | 'blocked_configuration' = 'pending'
+  let senderEmail = null
+  let senderName = null
+  let replyToEmail = null
+
+  if (assignment && assignment.sender_email) {
+    const { data: sender } = await supabase
+      .from('brevo_senders')
+      .select('status')
+      .eq('email', assignment.sender_email)
+      .maybeSingle()
+
+    if (sender && sender.status === 'Active') {
+      senderEmail = assignment.sender_email
+      senderName = assignment.sender_name || null
+      replyToEmail = assignment.reply_to_email || null
+    } else {
+      status = 'blocked_configuration'
+    }
+  } else {
+    status = 'blocked_configuration'
+  }
+
   const { error } = await supabase
     .from('email_queue')
     .update({
-      status: 'pending',
+      status,
+      sender_email: senderEmail,
+      sender_name: senderName,
+      reply_to_email: replyToEmail,
       attempt_count: 0,
       next_attempt_at: new Date().toISOString(),
       failed_at: null,
       cancelled_at: null,
-      last_error: null
+      last_error: status === 'blocked_configuration' ? 'Blocked: No valid Brevo sender is configured.' : null
     })
     .eq('id', queueId)
 

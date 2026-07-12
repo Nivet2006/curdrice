@@ -55,6 +55,21 @@ serve(async (req) => {
         const subject = getSubject(item.template_key, item.template_data)
         const htmlContent = getHtmlContent(item.template_key, item.template_data)
 
+        if (!item.sender_email) {
+          throw new Error("No configured sender snapshot found for this email.")
+        }
+
+        const brevoPayload: any = {
+          sender: { name: item.sender_name || "Club Eve", email: item.sender_email },
+          to: [{ email: item.recipient_email }],
+          subject: subject,
+          htmlContent: htmlContent
+        }
+
+        if (item.reply_to_email) {
+          brevoPayload.replyTo = { email: item.reply_to_email }
+        }
+
         const response = await fetch("https://api.brevo.com/v3/smtp/email", {
           method: "POST",
           headers: {
@@ -62,12 +77,7 @@ serve(async (req) => {
             "api-key": brevoApiKey,
             "content-type": "application/json"
           },
-          body: JSON.stringify({
-            sender: { name: "Club Eve", email: "noreply@clubeve.com" },
-            to: [{ email: item.recipient_email }],
-            subject: subject,
-            htmlContent: htmlContent
-          })
+          body: JSON.stringify(brevoPayload)
         })
 
         const resData = await response.json()
