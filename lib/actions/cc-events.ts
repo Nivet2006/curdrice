@@ -4,15 +4,19 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { logMutation } from '@/lib/audit/log-mutation'
+import { assertCC, assertOwnershipOrRoles } from '@/lib/services/permission-service'
+import * as eventService from '@/lib/services/event-service'
 
 export async function createDraftEvent(formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Unauthorized' }
 
-  // Extract profiles to check for cc role
-  const { data: profile } = await supabase.from('profiles').select('role, full_name').eq('id', user.id).single()
-  if (profile?.role !== 'cc' && profile?.role !== 'admin' && profile?.role !== 'manager') {
+  let profile;
+  try {
+    const auth = await assertCC()
+    profile = auth.profile
+  } catch (error: any) {
     return { error: 'Unauthorized: Requires higher permissions.' }
   }
 
@@ -41,63 +45,8 @@ export async function createDraftEvent(formData: FormData) {
   const maxCapStr = formData.get('maxTeamMembers') as string
   const max_team_members = maxCapStr ? parseInt(maxCapStr) : 4
 
-  if (venueId) {
-    const { data: venue } = await supabase.from('venues').select('name').eq('id', venueId).single()
-    if (venue) location = venue.name
-  }
-
-  if (!feedback_config || feedback_config.length < 3) {
-    return { error: 'Policy: You must define at least 3 feedback questions for the event survey.' }
-  }
-
-  if (!title || !club_name || !description || !location || !event_date || !deadlineStr || !banner_url) {
-    return { error: 'Missing required fields.' }
-  }
-
   const eventDt = new Date(event_date)
-  const pregeneratedId = formData.get('id') as string | null
-
-  // VENUE CONFLICT CHECK
-  if (venueId && endTimeStr) {
-    const { getVenuesWithStatus } = await import('@/lib/actions/venue-actions')
-    const startIso = eventDt.toISOString()
-    const endIso = new Date(endTimeStr).toISOString()
-    
-    const statusRes = await getVenuesWithStatus(startIso, endIso, pregeneratedId)
-    if (statusRes.error) {
-      return { error: statusRes.error }
-    }
-    const currentVenueStatus = statusRes.venues?.find(v => v.id === venueId)
-    if (currentVenueStatus?.status === 'locked') {
-      return { error: currentVenueStatus.message }
-    }
-    if (currentVenueStatus?.status === 'unavailable') {
-      return { error: currentVenueStatus.message }
-    }
-  } else {
-    // Fallback conflict check
-    const fourHoursInMs = 4 * 60 * 60 * 1000
-    const startTime = new Date(eventDt.getTime() - fourHoursInMs).toISOString()
-    const endTime = new Date(eventDt.getTime() + fourHoursInMs).toISOString()
-
-    const { data: conflict } = await supabase
-      .from('events')
-      .select('title, event_date')
-      .eq('location', location)
-      .eq('approval_status', 'approved')
-      .gte('event_date', startTime)
-      .lte('event_date', endTime)
-      .maybeSingle()
-
-    if (conflict) {
-      return { 
-        error: `Venue Conflict: "${location}" is already booked for "${conflict.title}" at ${new Date(conflict.event_date).toLocaleTimeString()}. Please choose a different venue or time.` 
-      }
-    }
-  }
-
   const deadlineDt = new Date(deadlineStr)
-
   if (deadlineDt >= eventDt) return { error: 'Deadline must be before event date.' }
 
   const semStr = formData.get('semesters') as string
@@ -108,42 +57,38 @@ export async function createDraftEvent(formData: FormData) {
   const isSubmission = formData.get('submitForReview') === 'true'
   const approval_status = isSubmission ? 'pending_teacher' : 'draft'
 
-  const insertData: any = {
-    title, club_name, description, location,
-    event_date: eventDt.toISOString(),
-    end_time: endTimeStr ? new Date(endTimeStr).toISOString() : null,
-    venue_id: venueId,
-    registration_deadline: deadlineDt.toISOString(),
-    max_capacity, banner_url, waitlist_max,
-    custom_background,
-    created_by: user.id,
-    approval_status,
-    targeted_department,
-    feedback_config,
-    is_public,
-    status: 'upcoming',
-    event_type,
-    team_formation_enabled,
-    min_team_members,
-    max_team_members
+  let event;
+  try {
+    event = await eventService.createEvent({
+      title,
+      club_name,
+      description,
+      location,
+      event_date: eventDt.toISOString(),
+      end_time: endTimeStr ? new Date(endTimeStr).toISOString() : null,
+      venue_id: venueId,
+      registration_deadline: deadlineDt.toISOString(),
+      max_capacity,
+      waitlist_max,
+      banner_url,
+      custom_background,
+      approval_status,
+      targeted_department,
+      event_category: 'general',
+      is_public,
+      event_type,
+      team_formation_enabled,
+      min_team_members,
+      max_team_members,
+      constraints: {
+        allowed_semesters: sems.length ? sems : null,
+        allowed_years: years.length ? years : null,
+        allowed_departments: targeted_department ? [targeted_department] : null
+      }
+    }, user.id)
+  } catch (err: any) {
+    return { error: err.message }
   }
-
-  if (pregeneratedId) {
-    insertData.id = pregeneratedId
-  }
-
-  const { data: event, error } = await supabase.from('events').insert(insertData).select('id').single()
-
-  if (error || !event) return { error: error?.message || 'Failed to create event' }
-
-  const { error: constraintError } = await supabase.from('event_constraints').insert({
-    event_id: event.id,
-    allowed_semesters: sems.length ? sems : null,
-    allowed_years: years.length ? years : null,
-    allowed_departments: targeted_department ? [targeted_department] : null
-  })
-
-  if (constraintError) return { error: constraintError.message }
 
   // LOG MUTATION
   await logMutation({
@@ -228,19 +173,6 @@ export async function updateEventDraft(id: string, formData: FormData) {
   const maxCapStr = formData.get('maxTeamMembers') as string
   const max_team_members = maxCapStr ? parseInt(maxCapStr) : 4
 
-  if (venueId) {
-    const { data: venue } = await supabase.from('venues').select('name').eq('id', venueId).single()
-    if (venue) location = venue.name
-  }
-
-  if (!feedback_config || feedback_config.length < 3) {
-    return { error: 'Policy: You must define at least 3 feedback questions before submitting or saving.' }
-  }
-
-  if (!title || !club_name || !description || !location || !event_date || !deadlineStr || !banner_url) {
-    return { error: 'Missing required fields.' }
-  }
-
   const eventDt = new Date(event_date)
   const deadlineDt = new Date(deadlineStr)
   if (deadlineDt >= eventDt) return { error: 'Deadline must be before event date.' }
@@ -250,92 +182,42 @@ export async function updateEventDraft(id: string, formData: FormData) {
   const sems = JSON.parse(semStr || '[]')
   const years = JSON.parse(yearStr || '[]')
 
-  // VENUE CONFLICT CHECK
-  if (venueId && endTimeStr) {
-    const { getVenuesWithStatus } = await import('@/lib/actions/venue-actions')
-    const startIso = eventDt.toISOString()
-    const endIso = new Date(endTimeStr).toISOString()
-    
-    const statusRes = await getVenuesWithStatus(startIso, endIso, id)
-    if (statusRes.error) {
-      return { error: statusRes.error }
-    }
-    const currentVenueStatus = statusRes.venues?.find(v => v.id === venueId)
-    if (currentVenueStatus?.status === 'locked') {
-      return { error: currentVenueStatus.message }
-    }
-    if (currentVenueStatus?.status === 'unavailable') {
-      return { error: currentVenueStatus.message }
-    }
-  } else {
-    // Fallback conflict check (± 4 hours for a session)
-    const fourHoursInMs = 4 * 60 * 60 * 1000
-    const startTime = new Date(eventDt.getTime() - fourHoursInMs).toISOString()
-    const endTime = new Date(eventDt.getTime() + fourHoursInMs).toISOString()
-
-    const { data: conflict } = await supabase
-      .from('events')
-      .select('title, event_date')
-      .eq('location', location)
-      .eq('approval_status', 'approved')
-      .neq('id', id)
-      .gte('event_date', startTime)
-      .lte('event_date', endTime)
-      .maybeSingle()
-
-    if (conflict) {
-      return { 
-        error: `Venue Conflict: "${location}" is already booked for "${conflict.title}" at ${new Date(conflict.event_date).toLocaleTimeString()}. Please choose a different venue or time.` 
-      }
-    }
-  }
-
-  const { data: currentEvent, error: fetchError } = await supabase
-    .from('events')
-    .select('approval_status')
-    .eq('id', id)
-    .maybeSingle()
-
-  if (fetchError) {
-    return { error: `Database error: ${fetchError.message}` }
-  }
-  if (!currentEvent) {
-    return { error: 'Event not found or access denied.' }
-  }
-
-  const isAlreadyApproved = currentEvent.approval_status === 'approved'
+  // Check if it was already approved
+  const { data: currentEvent } = await supabase.from('events').select('approval_status').eq('id', id).single()
+  const isAlreadyApproved = currentEvent?.approval_status === 'approved'
   const isSubmission = formData.get('submitForReview') === 'true'
   const approval_status = isAlreadyApproved ? 'approved' : (isSubmission ? 'pending_teacher' : 'draft')
 
-  const { error: eventError } = await supabase.from('events').update({
-    title, club_name, description, location,
-    event_date: eventDt.toISOString(),
-    end_time: endTimeStr ? new Date(endTimeStr).toISOString() : null,
-    venue_id: venueId,
-    registration_deadline: deadlineDt.toISOString(),
-    max_capacity, banner_url, waitlist_max,
-    custom_background,
-    approval_status,
-    targeted_department,
-    feedback_config,
-    is_public,
-    rejection_data: [],
-    event_type,
-    team_formation_enabled,
-    min_team_members,
-    max_team_members
-  }).eq('id', id).eq('created_by', user.id)
-
-  if (eventError) return { error: eventError.message }
-
-  const { error: constraintError } = await supabase.from('event_constraints').upsert({
-    event_id: id,
-    allowed_semesters: sems.length ? sems : null,
-    allowed_years: years.length ? years : null,
-    allowed_departments: targeted_department ? [targeted_department] : null
-  }, { onConflict: 'event_id' })
-
-  if (constraintError) return { error: constraintError.message }
+  try {
+    await eventService.updateEventDraft(id, {
+      title,
+      club_name,
+      description,
+      location,
+      event_date: eventDt.toISOString(),
+      end_time: endTimeStr ? new Date(endTimeStr).toISOString() : null,
+      venue_id: venueId,
+      registration_deadline: deadlineDt.toISOString(),
+      max_capacity,
+      waitlist_max,
+      banner_url,
+      custom_background,
+      approval_status,
+      targeted_department,
+      is_public,
+      event_type,
+      team_formation_enabled,
+      min_team_members,
+      max_team_members,
+      constraints: {
+        allowed_semesters: sems.length ? sems : null,
+        allowed_years: years.length ? years : null,
+        allowed_departments: targeted_department ? [targeted_department] : null
+      }
+    }, user.id)
+  } catch (err: any) {
+    return { error: err.message }
+  }
 
   revalidatePath(`/cc/events/${id}`)
   return { success: true }
@@ -346,15 +228,13 @@ export async function toggleFeedback(eventId: string, isOpen: boolean) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Unauthorized' }
 
-  // Check ownership/role
   const { data: event } = await supabase.from('events').select('created_by, club_name').eq('id', eventId).single()
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  
-  const isOwner = event?.created_by === user.id
-  const isStaff = ['admin', 'teacher', 'hod', 'pr', 'cc', 'manager'].includes(profile?.role || '')
+  if (!event) return { error: 'Event not found' }
 
-  if (!isOwner && !isStaff) {
-    return { error: 'Unauthorized: You do not have permission to toggle feedback for this event.' }
+  try {
+    await assertOwnershipOrRoles(event.created_by, ['admin', 'teacher', 'hod', 'pr', 'cc', 'manager'])
+  } catch (error: any) {
+    return { error: error.message }
   }
 
   const { error, data } = await supabase

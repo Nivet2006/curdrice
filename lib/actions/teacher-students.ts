@@ -4,26 +4,11 @@ import { createClient } from '@/lib/supabase/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 
-async function assertTeacherOrAdmin(supabase: any) {
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthorized')
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role, department')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile || !['teacher', 'admin', 'hod'].includes(profile.role)) {
-    throw new Error('Unauthorized: Requires Teacher or Admin permissions.')
-  }
-
-  return { user, profile }
-}
+import { assertTeacherOrAdmin } from '@/lib/services/permission-service'
 
 export async function getDepartmentStudents(dept: string) {
   const supabase = await createClient()
-  await assertTeacherOrAdmin(supabase)
+  await assertTeacherOrAdmin()
 
   const adminClient = supabaseAdmin
 
@@ -45,7 +30,7 @@ export async function bulkPromoteStudents(
 ) {
   try {
     const supabase = await createClient()
-    await assertTeacherOrAdmin(supabase)
+    await assertTeacherOrAdmin()
 
     const adminClient = supabaseAdmin
 
@@ -77,7 +62,7 @@ export async function updateStudentByTeacher(
 ) {
   try {
     const supabase = await createClient()
-    await assertTeacherOrAdmin(supabase)
+    await assertTeacherOrAdmin()
 
     const adminClient = supabaseAdmin
 

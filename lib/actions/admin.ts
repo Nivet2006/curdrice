@@ -5,16 +5,7 @@ import { supabaseAdmin } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 import type { Role } from '@/lib/types'
 
-async function assertAdmin() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthorized')
-  
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (!profile || profile.role !== 'admin') throw new Error('Unauthorized')
-  
-  return supabase
-}
+import { assertAdmin } from '@/lib/services/permission-service'
 
 export async function createUserAdmin(formData: FormData) {
   try {

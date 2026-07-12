@@ -6,8 +6,17 @@ import { z } from 'zod'
 import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import { signTotpChallenge } from '@/lib/totp-challenge'
+import { checkRateLimit, getClientIp } from '@/lib/services/rate-limit-service'
 
 export async function login(identifier: string, pass: string) {
+  try {
+    const ip = await getClientIp()
+    await checkRateLimit(`login_${ip}`, 'login', { maxRequests: 5, windowMs: 60000 })
+    await checkRateLimit(`login_${identifier}`, 'login', { maxRequests: 5, windowMs: 60000 })
+  } catch (err: any) {
+    return { error: err.message || 'Too many login attempts. Please try again later.' }
+  }
+
   let email = identifier;
 
   // If the identifier doesn't look like an email, assume it's a USN
