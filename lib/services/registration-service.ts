@@ -85,6 +85,42 @@ export async function registerForEvent(input: RegisterForEventInput, actorId: st
       if (rpcRes.success === false) {
         throw new RegistrationError(rpcRes.error || 'Registration failed.')
       }
+
+      // Trigger Email Notification
+      try {
+        const { data: studentInfo } = await supabase
+          .from('profiles')
+          .select('full_name, email')
+          .eq('id', input.studentId)
+          .single()
+
+        const { data: eventInfo } = await supabase
+          .from('events')
+          .select('*, venues(name)')
+          .eq('id', input.eventId)
+          .single()
+
+        if (studentInfo && eventInfo) {
+          const { triggerRegistrationConfirmation } = await import('./notification-service')
+          await triggerRegistrationConfirmation(
+            studentInfo.email,
+            input.studentId,
+            input.eventId,
+            {
+              studentName: studentInfo.full_name,
+              eventName: eventInfo.title,
+              eventDate: eventInfo.date || 'TBD',
+              eventTime: eventInfo.start_time || 'TBD',
+              venueName: (eventInfo.venues as any)?.name || 'TBD',
+              registrationStatus: rpcRes.waitlisted ? 'Waitlisted' : 'Confirmed',
+              qrToken: rpcRes.qr_token
+            }
+          )
+        }
+      } catch (triggerErr) {
+        console.error('Failed to trigger registration email:', triggerErr)
+      }
+
       return {
         success: true,
         waitlisted: rpcRes.waitlisted,
@@ -164,6 +200,41 @@ export async function registerForEvent(input: RegisterForEventInput, actorId: st
       throw new RegistrationError('You are already registered for this event.')
     }
     throw new RegistrationError(insertError.message)
+  }
+
+  // Trigger Email Notification
+  try {
+    const { data: studentInfo } = await supabase
+      .from('profiles')
+      .select('full_name, email')
+      .eq('id', input.studentId)
+      .single()
+
+    const { data: eventInfo } = await supabase
+      .from('events')
+      .select('*, venues(name)')
+      .eq('id', input.eventId)
+      .single()
+
+    if (studentInfo && eventInfo) {
+      const { triggerRegistrationConfirmation } = await import('./notification-service')
+      await triggerRegistrationConfirmation(
+        studentInfo.email,
+        input.studentId,
+        input.eventId,
+        {
+          studentName: studentInfo.full_name,
+          eventName: eventInfo.title,
+          eventDate: eventInfo.date || 'TBD',
+          eventTime: eventInfo.start_time || 'TBD',
+          venueName: (eventInfo.venues as any)?.name || 'TBD',
+          registrationStatus: shouldWaitlist ? 'Waitlisted' : 'Confirmed',
+          qrToken: qrToken
+        }
+      )
+    }
+  } catch (triggerErr) {
+    console.error('Failed to trigger registration email:', triggerErr)
   }
 
   return { success: true, waitlisted: shouldWaitlist, qrToken }

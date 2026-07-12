@@ -142,9 +142,14 @@ export default function LoginPage() {
           </Button>
         </form>
 
-        <Link href="/register" className="text-xs font-mono text-[#555555] mt-6 hover:text-[#0a0a0a] transition-colors">
-          Don&apos;t have an account? Register →
-        </Link>
+        <div className="flex flex-col gap-2 items-center mt-6">
+          <Link href="/register" className="text-xs font-mono text-[#555555] hover:text-[#0a0a0a] transition-colors">
+            Don&apos;t have an account? Register →
+          </Link>
+          <Link href="/recovery" className="text-xs font-mono text-[#555555] hover:text-[#0a0a0a] transition-colors">
+            Forgot Password? Recover Account →
+          </Link>
+        </div>
       </Card>
 
 

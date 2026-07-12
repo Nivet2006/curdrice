@@ -2,28 +2,21 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import * as clubService from '@/lib/services/club-service'
 
 export async function getClubs() {
-  const supabase = await createClient()
-  const { data, error } = await supabase
-    .from('clubs')
-    .select('*')
-    .order('name')
-
-  if (error) return { error: error.message }
-  return { clubs: data || [] }
+  try {
+    const clubs = await clubService.getClubs()
+    return { clubs }
+  } catch (error: any) {
+    return { error: error.message }
+  }
 }
 
 export async function createClub(formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Unauthorized' }
-
-  // Verify role
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (!profile || !['admin', 'teacher', 'hod', 'manager'].includes(profile.role)) {
-    return { error: 'Unauthorized: Only faculty, HODs, or admins can create clubs.' }
-  }
 
   const name = (formData.get('name') as string)?.trim()
   const description = (formData.get('description') as string)?.trim() || null
@@ -33,46 +26,32 @@ export async function createClub(formData: FormData) {
     return { error: 'Club name is required.' }
   }
 
-  const { data, error } = await supabase.from('clubs').insert({
-    name,
-    description,
-    parent_id: parentId,
-    created_by: user.id
-  }).select('*').single()
-
-  if (error) {
-    if (error.code === '23505') {
-      return { error: 'A club with this name already exists.' }
-    }
+  try {
+    const club = await clubService.createClub(
+      { name, description, parentId },
+      user.id
+    )
+    revalidatePath('/teacher/dashboard')
+    revalidatePath('/hod/dashboard')
+    return { success: true, club }
+  } catch (error: any) {
     return { error: error.message }
   }
-
-  revalidatePath('/teacher/dashboard')
-  revalidatePath('/hod/dashboard')
-  return { success: true, club: data }
 }
 
 export async function getClubMembers(clubId: string) {
-  const supabase = await createClient()
-  const { data, error } = await supabase
-    .from('club_members')
-    .select('*, profiles(id, full_name, usn, department, semester, year, role)')
-    .eq('club_id', clubId)
-    .order('joined_at')
-
-  if (error) return { error: error.message }
-  return { members: data || [] }
+  try {
+    const members = await clubService.getClubMembers(clubId)
+    return { members }
+  } catch (error: any) {
+    return { error: error.message }
+  }
 }
 
 export async function addMemberToClub(formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Unauthorized' }
-
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (!profile || !['admin', 'teacher', 'hod', 'manager'].includes(profile.role)) {
-    return { error: 'Unauthorized: Only faculty, HODs, or admins can manage club members.' }
-  }
 
   const clubId = formData.get('clubId') as string
   const profileId = formData.get('profileId') as string
@@ -82,53 +61,14 @@ export async function addMemberToClub(formData: FormData) {
     return { error: 'Missing required parameters.' }
   }
 
-  // Insert membership
-  const { error: insertError } = await supabase.from('club_members').insert({
-    club_id: clubId,
-    profile_id: profileId,
-    role
-  })
-
-  if (insertError) {
-    if (insertError.code === '23505') {
-      return { error: 'This student is already a member of this club.' }
-    }
-    return { error: insertError.message }
+  try {
+    await clubService.addMemberToClub(clubId, profileId, role, user.id)
+    revalidatePath('/teacher/dashboard')
+    revalidatePath('/hod/dashboard')
+    return { success: true }
+  } catch (error: any) {
+    return { error: error.message }
   }
-
-  // Automatically ensure subclub members are added to the parent club too
-  const { data: clubDetails } = await supabase
-    .from('clubs')
-    .select('parent_id')
-    .eq('id', clubId)
-    .single()
-
-  if (clubDetails?.parent_id) {
-    const { data: parentMember } = await supabase
-      .from('club_members')
-      .select('id')
-      .eq('club_id', clubDetails.parent_id)
-      .eq('profile_id', profileId)
-      .maybeSingle()
-
-    if (!parentMember) {
-      await supabase.from('club_members').insert({
-        club_id: clubDetails.parent_id,
-        profile_id: profileId,
-        role: 'Member'
-      })
-    }
-  }
-
-  // Automatically promote student's profile role to 'cc'
-  await supabase
-    .from('profiles')
-    .update({ role: 'cc' })
-    .eq('id', profileId)
-
-  revalidatePath('/teacher/dashboard')
-  revalidatePath('/hod/dashboard')
-  return { success: true }
 }
 
 export async function removeMemberFromClub(memberId: string) {
@@ -136,59 +76,20 @@ export async function removeMemberFromClub(memberId: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Unauthorized' }
 
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (!profile || !['admin', 'teacher', 'hod', 'manager'].includes(profile.role)) {
-    return { error: 'Unauthorized: Only faculty, HODs, or admins can manage club members.' }
+  try {
+    await clubService.removeMemberFromClub(memberId, user.id)
+    revalidatePath('/teacher/dashboard')
+    revalidatePath('/hod/dashboard')
+    return { success: true }
+  } catch (error: any) {
+    return { error: error.message }
   }
-
-  // Get the profile ID of the member being removed
-  const { data: memberData, error: fetchError } = await supabase
-    .from('club_members')
-    .select('profile_id')
-    .eq('id', memberId)
-    .single()
-
-  if (fetchError || !memberData) {
-    return { error: 'Failed to retrieve membership data.' }
-  }
-
-  const profileId = memberData.profile_id
-
-  // Delete membership
-  const { error: deleteError } = await supabase
-    .from('club_members')
-    .delete()
-    .eq('id', memberId)
-
-  if (deleteError) return { error: deleteError.message }
-
-  // Check if they are in other clubs. If not, revert to 'student'
-  const { data: otherClubs } = await supabase
-    .from('club_members')
-    .select('id')
-    .eq('profile_id', profileId)
-
-  if (!otherClubs || otherClubs.length === 0) {
-    await supabase
-      .from('profiles')
-      .update({ role: 'student' })
-      .eq('id', profileId)
-  }
-
-  revalidatePath('/teacher/dashboard')
-  revalidatePath('/hod/dashboard')
-  return { success: true }
 }
 
 export async function updateMemberRole(formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Unauthorized' }
-
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (!profile || !['admin', 'teacher', 'hod', 'manager'].includes(profile.role)) {
-    return { error: 'Unauthorized: Only faculty, HODs, or admins can manage club roles.' }
-  }
 
   const memberId = formData.get('memberId') as string
   const role = (formData.get('role') as string)?.trim()
@@ -197,14 +98,12 @@ export async function updateMemberRole(formData: FormData) {
     return { error: 'Missing required parameters.' }
   }
 
-  const { error } = await supabase
-    .from('club_members')
-    .update({ role })
-    .eq('id', memberId)
-
-  if (error) return { error: error.message }
-
-  revalidatePath('/teacher/dashboard')
-  revalidatePath('/hod/dashboard')
-  return { success: true }
+  try {
+    await clubService.updateMemberRole(memberId, role, user.id)
+    revalidatePath('/teacher/dashboard')
+    revalidatePath('/hod/dashboard')
+    return { success: true }
+  } catch (error: any) {
+    return { error: error.message }
+  }
 }

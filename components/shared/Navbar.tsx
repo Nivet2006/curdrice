@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import Link from 'next/link'
-import { LogOut, Menu, X, LayoutDashboard, Calendar, Users, ScanLine, ClipboardList, Database, UserCircle, Bug, Award, Plus, Trophy } from 'lucide-react'
+import { LogOut, Menu, X, LayoutDashboard, Calendar, Users, ScanLine, ClipboardList, Database, UserCircle, Bug, Award, Plus, Trophy, Mail } from 'lucide-react'
 import { Badge } from '../ui/Badge'
 import { supabase } from '@/lib/supabase/client'
 import { useRouter, usePathname } from 'next/navigation'
@@ -69,6 +69,7 @@ export function Navbar({ role, name }: { role?: Role; name?: string }) {
       { href: '/admin/attendance', label: 'Attendance', icon: ClipboardList },
       { href: '/admin/backup', label: 'Backup', icon: Database },
       { href: '/admin/bugs', label: 'Bugs', icon: Bug },
+      { href: '/admin/email', label: 'Email', icon: Mail },
     ] : []),
     ...(role === 'manager' ? [
       { href: `/${role}/scanner`, label: 'Scanner', icon: ScanLine },
