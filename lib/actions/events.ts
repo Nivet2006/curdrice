@@ -3,6 +3,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { redirect } from 'next/navigation'
+import { logMutation } from '@/lib/audit/log-mutation'
+import { checkRateLimit, getClientIp } from '@/lib/services/rate-limit-service'
 
 export async function createEvent(formData: FormData) {
   const supabase = await createClient()
