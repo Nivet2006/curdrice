@@ -2,8 +2,8 @@ name: Supabase Keep Alive
 
 on:
   schedule:
-    # Runs automatically every 6 hours
-    - cron: "0 */6 * * *"
+    # Runs automatically every 4 hours
+    - cron: "0 */4 * * *"
 
   # Allows manual testing
   workflow_dispatch:
@@ -15,19 +15,28 @@ jobs:
     steps:
       - name: Ping Supabase Database
         env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
 
         run: |
+          set -e
+
           echo "================================"
           echo "Supabase Keep Alive Started"
-          echo "Time: $(date)"
+          echo "Time: $(date -u)"
           echo "================================"
 
-          RESPONSE=$(curl --silent --show-error --fail \
-            "${NEXT_PUBLIC_SUPABASE_URL}/rest/v1/keep_alive?select=id,last_ping&limit=1" \
-            -H "apikey: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}" \
-            -H "Authorization: Bearer ${NEXT_PUBLIC_SUPABASE_ANON_KEY}")
+          RESPONSE=$(curl \
+            --silent \
+            --show-error \
+            --fail-with-body \
+            --request PATCH \
+            "${SUPABASE_URL}/rest/v1/keep_alive?id=eq.1&select=id,last_ping" \
+            -H "apikey: ${SUPABASE_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_KEY}" \
+            -H "Content-Type: application/json" \
+            -H "Prefer: return=representation" \
+            --data '{"last_ping":"now()"}')
 
           echo "Supabase Response:"
           echo "$RESPONSE"
