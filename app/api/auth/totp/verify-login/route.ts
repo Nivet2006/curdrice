@@ -80,8 +80,11 @@ export async function POST(req: Request) {
         maxAge: 8 * 60 * 60, // 8 hours
       })
 
-      // Clear the short-lived pending challenge cookie
+      // Clear the short-lived pending challenge cookie and stale cached cookies
       cookieStore.delete('curdrice_totp_pending')
+      cookieStore.delete('curdrice_user_role')
+      cookieStore.delete('curdrice_user_name')
+      cookieStore.delete('curdrice_user_totp')
 
       return NextResponse.json({ success: true })
     } else {

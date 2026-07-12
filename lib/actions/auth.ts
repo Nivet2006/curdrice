@@ -50,6 +50,13 @@ export async function login(identifier: string, pass: string) {
     return { error: error.message }
   }
 
+  // Clear stale cached cookies from previous sessions
+  const cookieStore = await cookies()
+  cookieStore.delete('curdrice_user_role')
+  cookieStore.delete('curdrice_user_name')
+  cookieStore.delete('curdrice_user_totp')
+  cookieStore.delete('curdrice_totp_verified')
+
   // Determine role
   const { data: profile } = await supabase
     .from('profiles')
