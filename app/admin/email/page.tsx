@@ -12,7 +12,8 @@ import {
   cancelAllQueuedEmails,
   addVerifiedSender,
   removeVerifiedSender,
-  updateSenderAssignment
+  updateSenderAssignment,
+  syncSendersWithBrevo
 } from '@/lib/actions/email-admin-actions'
 import { toast } from 'sonner'
 import { RefreshCw, AlertTriangle, Play, Ban, Plus, Trash2, Save } from 'lucide-react'
@@ -95,11 +96,17 @@ export default function EmailAdminPage() {
   const [assignmentConfigs, setAssignmentConfigs] = useState<Record<string, { sender_email: string; sender_name: string; reply_to_email: string }>>({})
 
   // Local state for new sender
-  const [newSenderEmail, setNewSenderEmail] = useState('')
+  const [newSenderPrefix, setNewSenderPrefix] = useState('')
+  const [newSenderDomain, setNewSenderDomain] = useState('')
   const [newSenderName, setNewSenderName] = useState('')
 
   const loadData = async () => {
     setLoading(true)
+    const syncRes = await syncSendersWithBrevo()
+    if (syncRes.error) {
+      console.error('Failed to sync senders with Brevo:', syncRes.error)
+    }
+
     const res = await getEmailAdminData()
     if (res.error) {
       toast.error(res.error)
@@ -118,6 +125,11 @@ export default function EmailAdminPage() {
         }
       })
       setAssignmentConfigs(configs)
+
+      const domains = res.domains || []
+      if (domains.length > 0) {
+        setNewSenderDomain(domains[0])
+      }
     }
     setLoading(false)
   }
@@ -166,14 +178,18 @@ export default function EmailAdminPage() {
 
   const handleAddSender = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!newSenderEmail || !newSenderName) return
+    if (!newSenderPrefix || !newSenderDomain || !newSenderName) {
+      toast.error('All fields are required')
+      return
+    }
     setLoading(true)
-    const res = await addVerifiedSender(newSenderEmail, newSenderName)
+    const email = `${newSenderPrefix}@${newSenderDomain}`
+    const res = await addVerifiedSender(email, newSenderName)
     if (res.error) {
       toast.error(res.error)
     } else {
       toast.success('Verified sender added')
-      setNewSenderEmail('')
+      setNewSenderPrefix('')
       setNewSenderName('')
       loadData()
     }
@@ -450,7 +466,12 @@ export default function EmailAdminPage() {
         <div className="space-y-6">
           
           <Card className="p-6">
-            <h2 className="text-lg font-black tracking-tight mb-4">Brevo Senders</h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-black tracking-tight">Brevo Senders</h2>
+              <button onClick={loadData} disabled={loading} className="p-1 hover:bg-gray-100 dark:hover:bg-[#222] rounded transition-colors" title="Sync with Brevo">
+                <RefreshCw size={14} className={loading ? 'animate-spin text-zinc-500' : 'text-zinc-500'} />
+              </button>
+            </div>
             
             {/* List Senders */}
             <div className="space-y-3 mb-6">
@@ -475,17 +496,39 @@ export default function EmailAdminPage() {
               ))}
             </div>
 
-            {/* Add Verified Sender Form */}
+             {/* Add Verified Sender Form */}
             <form onSubmit={handleAddSender} className="space-y-3 pt-4 border-t border-[#e0e0e0] dark:border-[#333333]">
               <h3 className="text-xs font-bold font-mono uppercase text-[#555555] dark:text-[#999999]">Add Verified Sender</h3>
-              <Input
-                label="Sender Email Address"
-                placeholder="events@domain.com"
-                type="email"
-                required
-                value={newSenderEmail}
-                onChange={e => setNewSenderEmail(e.target.value)}
-              />
+              
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold font-mono text-[#555555] dark:text-[#999999] uppercase">Sender Email Address</label>
+                <div className="flex items-center gap-1">
+                  <input
+                    type="text"
+                    required
+                    placeholder="events"
+                    value={newSenderPrefix}
+                    onChange={e => setNewSenderPrefix(e.target.value)}
+                    className="flex-1 px-3 py-1.5 text-xs bg-white dark:bg-[#111111] border border-[#e0e0e0] dark:border-[#333333] rounded-lg focus:outline-none focus:border-black dark:focus:border-white transition-colors"
+                  />
+                  <span className="text-xs font-mono text-[#999999] px-0.5">@</span>
+                  <select
+                    value={newSenderDomain}
+                    onChange={e => setNewSenderDomain(e.target.value)}
+                    className="w-[140px] px-2 py-1.5 text-xs bg-white dark:bg-[#111111] border border-[#e0e0e0] dark:border-[#333333] rounded-lg focus:outline-none focus:border-black dark:focus:border-white transition-colors font-mono"
+                  >
+                    {(data?.domains || []).map((d: string) => (
+                      <option key={d} value={d}>
+                        {d}
+                      </option>
+                    ))}
+                    {(!data?.domains || data.domains.length === 0) && (
+                      <option value="">No domains</option>
+                    )}
+                  </select>
+                </div>
+              </div>
+
               <Input
                 label="Sender Name"
                 placeholder="Club Eve Events Team"

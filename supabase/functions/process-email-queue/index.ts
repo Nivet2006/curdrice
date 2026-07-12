@@ -8,6 +8,94 @@ serve(async (req) => {
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
+  const url = new URL(req.url)
+  const action = url.searchParams.get("action")
+
+  if (action === "get-senders") {
+    try {
+      const response = await fetch("https://api.brevo.com/v3/senders", {
+        headers: {
+          "accept": "application/json",
+          "api-key": brevoApiKey
+        }
+      })
+      const resData = await response.json()
+      return new Response(JSON.stringify(resData), {
+        headers: { "Content-Type": "application/json" }
+      })
+    } catch (err: any) {
+      return new Response(JSON.stringify({ error: err.message }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" }
+      })
+    }
+  }
+
+  if (action === "get-domains") {
+    try {
+      const response = await fetch("https://api.brevo.com/v3/senders/domains", {
+        headers: {
+          "accept": "application/json",
+          "api-key": brevoApiKey
+        }
+      })
+      const resData = await response.json()
+      return new Response(JSON.stringify(resData), {
+        headers: { "Content-Type": "application/json" }
+      })
+    } catch (err: any) {
+      return new Response(JSON.stringify({ error: err.message }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" }
+      })
+    }
+  }
+
+  if (action === "create-sender") {
+    try {
+      const body = await req.json()
+      const response = await fetch("https://api.brevo.com/v3/senders", {
+        method: "POST",
+        headers: {
+          "accept": "application/json",
+          "api-key": brevoApiKey,
+          "content-type": "application/json"
+        },
+        body: JSON.stringify(body)
+      })
+      const resData = await response.json()
+      return new Response(JSON.stringify(resData), {
+        headers: { "Content-Type": "application/json" },
+        status: response.status
+      })
+    } catch (err: any) {
+      return new Response(JSON.stringify({ error: err.message }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" }
+      })
+    }
+  }
+
+  if (action === "delete-sender") {
+    try {
+      const senderId = url.searchParams.get("id")
+      const response = await fetch(`https://api.brevo.com/v3/senders/${senderId}`, {
+        method: "DELETE",
+        headers: {
+          "accept": "application/json",
+          "api-key": brevoApiKey
+        }
+      })
+      return new Response(null, { status: response.status })
+    } catch (err: any) {
+      return new Response(JSON.stringify({ error: err.message }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" }
+      })
+    }
+  }
+
+  // Queue-processing logic
   try {
     const { data: queueItems, error: fetchError } = await supabase
       .from("email_queue")

@@ -41,12 +41,31 @@ export async function getEmailAdminData() {
       .from('email_sender_assignments')
       .select('*')
 
+    let domains: string[] = []
+    try {
+      const functionUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/process-email-queue?action=get-domains`
+      const response = await fetch(functionUrl, {
+        headers: {
+          'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`
+        }
+      })
+      if (response.ok) {
+        const domainData = await response.json()
+        domains = (domainData.domains || [])
+          .filter((d: any) => d.verified)
+          .map((d: any) => d.domain)
+      }
+    } catch (e) {
+      console.error('Failed to fetch domains from Brevo:', e)
+    }
+
     return {
       stats,
       settings: settings || [],
       queue: queue || [],
       senders: senders || [],
-      assignments: assignments || []
+      assignments: assignments || [],
+      domains: domains || []
     }
   } catch (error: any) {
     return { error: error.message }
@@ -101,6 +120,58 @@ export async function updateEmailSetting(emailType: string, enabled: boolean) {
   }
 }
 
+export async function syncSendersWithBrevo() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Unauthorized' }
+
+  try {
+    await assertGlobalRole(['admin'])
+
+    const functionUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/process-email-queue?action=get-senders`
+    const response = await fetch(functionUrl, {
+      headers: {
+        'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch senders from Brevo: ${response.statusText}`)
+    }
+
+    const data = await response.json()
+    const brevoSenders = data.senders || []
+
+    // Upsert each sender into database
+    const emailsInBrevo: string[] = []
+    for (const s of brevoSenders) {
+      emailsInBrevo.push(s.email)
+      await supabase
+        .from('brevo_senders')
+        .upsert({
+          email: s.email,
+          name: s.name,
+          status: s.active ? 'Active' : 'Inactive',
+          brevo_id: s.id,
+          created_by: user.id
+        })
+    }
+
+    // Optional: remove database senders no longer in Brevo (keeping it fully synced)
+    if (emailsInBrevo.length > 0) {
+      await supabase
+        .from('brevo_senders')
+        .delete()
+        .not('email', 'in', `(${emailsInBrevo.join(',')})`)
+    }
+
+    revalidatePath('/admin/email')
+    return { success: true }
+  } catch (error: any) {
+    return { error: error.message }
+  }
+}
+
 export async function addVerifiedSender(email: string, name: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -109,12 +180,32 @@ export async function addVerifiedSender(email: string, name: string) {
   try {
     const { profile } = await assertGlobalRole(['admin'])
 
+    // Create sender in Brevo first
+    const functionUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/process-email-queue?action=create-sender`
+    const brevoResponse = await fetch(functionUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`
+      },
+      body: JSON.stringify({ email, name })
+    })
+
+    if (!brevoResponse.ok) {
+      const errData = await brevoResponse.json().catch(() => ({}))
+      throw new Error(errData.message || errData.error || `Brevo creation failed: ${brevoResponse.statusText}`)
+    }
+
+    const brevoData = await brevoResponse.json()
+
+    // Insert into database
     const { error } = await supabase
       .from('brevo_senders')
       .insert({
         email,
         name,
-        status: 'Active',
+        status: brevoData.active ? 'Active' : 'Inactive',
+        brevo_id: brevoData.id,
         created_by: user.id
       })
 
@@ -131,7 +222,8 @@ export async function addVerifiedSender(email: string, name: string) {
       metadata: {
         action: 'verified_sender_added',
         sender_email: email,
-        sender_name: name
+        sender_name: name,
+        brevo_id: brevoData.id
       }
     })
 
@@ -149,6 +241,28 @@ export async function removeVerifiedSender(email: string) {
 
   try {
     const { profile } = await assertGlobalRole(['admin'])
+
+    // Load the brevo_id
+    const { data: sender } = await supabase
+      .from('brevo_senders')
+      .select('brevo_id')
+      .eq('email', email)
+      .single()
+
+    if (sender && sender.brevo_id) {
+      // Delete from Brevo
+      const functionUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/process-email-queue?action=delete-sender&id=${sender.brevo_id}`
+      const brevoResponse = await fetch(functionUrl, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`
+        }
+      })
+
+      if (!brevoResponse.ok) {
+        throw new Error(`Failed to delete sender from Brevo: ${brevoResponse.statusText}`)
+      }
+    }
 
     const { error } = await supabase
       .from('brevo_senders')
