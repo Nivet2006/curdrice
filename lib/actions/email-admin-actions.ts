@@ -53,7 +53,7 @@ export async function getEmailAdminData() {
         const domainData = await response.json()
         domains = (domainData.domains || [])
           .filter((d: any) => d.verified)
-          .map((d: any) => d.domain)
+          .map((d: any) => d.domain_name)
       }
     } catch (e) {
       console.error('Failed to fetch domains from Brevo:', e)
