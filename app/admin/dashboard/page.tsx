@@ -165,11 +165,7 @@ export default function AdminDashboard() {
             title: 'System Backup →',
             desc: 'Download a full ZIP snapshot of all platform data.',
           },
-          {
-            href: '/admin/logs',
-            title: 'Intelligence Portal →',
-            desc: 'Monitor site-wide session footprints and forensic audit logs.',
-          },
+
           {
             href: '/admin/security',
             title: 'Security Portal →',

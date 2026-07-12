@@ -2,46 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { verifyTotpChallenge } from '@/lib/totp-challenge'
 
-async function logNavigation(payload: {
-  session_id: string
-  user_id?: string
-  user_email?: string
-  user_name?: string
-  user_role?: string
-  ip_address: string
-  user_agent: string
-  resource_path: string
-}) {
-  try {
-    if (!process.env.LOGS_SUPABASE_URL || !process.env.LOGS_SUPABASE_SERVICE_KEY) {
-      return
-    }
-    await fetch(`${process.env.LOGS_SUPABASE_URL}/rest/v1/audit_logs`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': process.env.LOGS_SUPABASE_SERVICE_KEY,
-        'Authorization': `Bearer ${process.env.LOGS_SUPABASE_SERVICE_KEY}`,
-        'Prefer': 'return=minimal',
-      },
-      body: JSON.stringify({
-        session_id: payload.session_id,
-        user_id: payload.user_id || null,
-        user_email: payload.user_email || null,
-        user_name: payload.user_name || null,
-        user_role: payload.user_role || null,
-        ip_address: payload.ip_address,
-        user_agent: payload.user_agent,
-        action_type: 'NAVIGATION',
-        resource_path: payload.resource_path,
-        metadata: {},
-        created_at: new Date().toISOString(),
-      }),
-    })
-  } catch (e) {
-    console.error('[MIDDLEWARE LOG FAIL]', e)
-  }
-}
+
 
 export async function proxy(request: NextRequest) {
   const ip =
@@ -283,17 +244,7 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  // Log Navigation
-  void logNavigation({
-    session_id: sessionId!,
-    user_id: user?.id,
-    user_email: user?.email,
-    user_name: userProfile?.full_name,
-    user_role: role,
-    ip_address: ip,
-    user_agent: request.headers.get('user-agent') || 'unknown',
-    resource_path: path,
-  })
+
 
   // Apply security headers
   applySecurityHeaders(supabaseResponse, nonce, path)

@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import JSZip from 'jszip'
 import * as XLSX from 'xlsx'
-import { logsClient } from '@/lib/supabase/logs-client'
+
 
 export async function GET() {
   const supabase = await createClient()
@@ -46,39 +46,6 @@ export async function GET() {
     addToZip(data || [], table)
   }))
 
-  // 2. Fetch Audit Logs from Logs DB
-  const { data: auditLogs } = await logsClient.from('audit_logs').select('*')
-  addToZip(auditLogs || [], 'audit_logs')
-
-  // 3. Backup iic-reports bucket from Logs DB
-  const { data: rootItems } = await logsClient.storage.from('iic-reports').list()
-  if (rootItems && rootItems.length > 0) {
-    const bucketFolder = zip.folder('iic-reports')
-    await Promise.all(rootItems.map(async (rootItem) => {
-      if (rootItem.id === null) {
-        const { data: subItems } = await logsClient.storage.from('iic-reports').list(rootItem.name)
-        if (subItems) {
-          for (const subItem of subItems) {
-            if (subItem.id !== null) {
-              const filePath = `${rootItem.name}/${subItem.name}`
-              const { data: fileData } = await logsClient.storage.from('iic-reports').download(filePath)
-              if (fileData) {
-                const buffer = await fileData.arrayBuffer()
-                bucketFolder?.file(filePath, buffer)
-              }
-            }
-          }
-        }
-      } else {
-        const { data: fileData } = await logsClient.storage.from('iic-reports').download(rootItem.name)
-        if (fileData) {
-          const buffer = await fileData.arrayBuffer()
-          bucketFolder?.file(rootItem.name, buffer)
-        }
-      }
-    }))
-  }
-
   zip.file('backup_readme.txt', `Club-Eve Absolute Backup Database Snapshot\nGenerated: ${new Date().toISOString()}\nExported by Admin: ${user.id}`)
 
   const zipBuffer = await zip.generateAsync({ type: 'arraybuffer' })
@@ -89,7 +56,7 @@ export async function GET() {
     file_name: filename,
     backup_type: 'Absolute',
     is_purged: false,
-    selections: ['all_tables', 'audit_logs', 'bucket:iic-reports']
+    selections: ['all_tables']
   })
 
   return new NextResponse(zipBuffer, {

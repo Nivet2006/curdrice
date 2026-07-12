@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import JSZip from 'jszip'
 import * as XLSX from 'xlsx'
-import { logsClient } from '@/lib/supabase/logs-client'
+
 
 export async function POST(req: Request) {
   try {
@@ -59,76 +59,18 @@ export async function POST(req: Request) {
     const purgeQueue: Array<() => Promise<void>> = []
 
     for (const item of selections) {
-      if (item === 'audit_logs') {
-        const { data } = await logsClient.from('audit_logs').select('*')
-        if (data && data.length > 0) {
-          addToZip(data, 'audit_logs')
-          if (purge) {
-            purgeQueue.push(async () => {
-              const pk = data[0].id !== undefined ? 'id' : Object.keys(data[0])[0]
-              const allIds = data.map((d: any) => d[pk])
-              for (let i = 0; i < allIds.length; i += 100) {
-                const chunk = allIds.slice(i, i + 100)
-                await logsClient.from('audit_logs').delete().in(pk, chunk)
-              }
-            })
-          }
-        }
-      } else if (item === 'bucket:iic-reports') {
-        const { data: rootItems } = await logsClient.storage.from('iic-reports').list()
-        if (rootItems && rootItems.length > 0) {
-          const bucketFolder = zip.folder('iic-reports')
-          const filePathsToRemove: string[] = []
-          
-          for (const rootItem of rootItems) {
-            if (rootItem.id === null) {
-              const { data: subItems } = await logsClient.storage.from('iic-reports').list(rootItem.name)
-              if (subItems) {
-                for (const subItem of subItems) {
-                  if (subItem.id !== null) {
-                    const filePath = `${rootItem.name}/${subItem.name}`
-                    const { data: fileData } = await logsClient.storage.from('iic-reports').download(filePath)
-                    if (fileData) {
-                      const buffer = await fileData.arrayBuffer()
-                      bucketFolder?.file(filePath, buffer)
-                      filePathsToRemove.push(filePath)
-                    }
-                  }
-                }
-              }
-            } else {
-              const { data: fileData } = await logsClient.storage.from('iic-reports').download(rootItem.name)
-              if (fileData) {
-                const buffer = await fileData.arrayBuffer()
-                bucketFolder?.file(rootItem.name, buffer)
-                filePathsToRemove.push(rootItem.name)
-              }
+      const { data } = await supabaseAdmin.from(item).select('*')
+      if (data && data.length > 0) {
+        addToZip(data, item)
+        if (purge && item !== 'profiles') {
+          purgeQueue.push(async () => {
+            const pk = data[0].id !== undefined ? 'id' : Object.keys(data[0])[0]
+            const allIds = data.map((d: any) => d[pk])
+            for (let i = 0; i < allIds.length; i += 100) {
+              const chunk = allIds.slice(i, i + 100)
+              await supabaseAdmin.from(item).delete().in(pk, chunk)
             }
-          }
-
-          if (purge && filePathsToRemove.length > 0) {
-            purgeQueue.push(async () => {
-              for (let i = 0; i < filePathsToRemove.length; i += 100) {
-                const chunk = filePathsToRemove.slice(i, i + 100)
-                await logsClient.storage.from('iic-reports').remove(chunk)
-              }
-            })
-          }
-        }
-      } else {
-        const { data } = await supabaseAdmin.from(item).select('*')
-        if (data && data.length > 0) {
-          addToZip(data, item)
-          if (purge && item !== 'profiles') {
-            purgeQueue.push(async () => {
-              const pk = data[0].id !== undefined ? 'id' : Object.keys(data[0])[0]
-              const allIds = data.map((d: any) => d[pk])
-              for (let i = 0; i < allIds.length; i += 100) {
-                const chunk = allIds.slice(i, i + 100)
-                await supabaseAdmin.from(item).delete().in(pk, chunk)
-              }
-            })
-          }
+          })
         }
       }
     }

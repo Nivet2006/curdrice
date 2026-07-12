@@ -20,7 +20,7 @@ export function SelectiveBackupCard({ availableTables }: SelectiveBackupCardProp
   const [errorMsg, setErrorMsg] = useState('')
   const [actionType, setActionType] = useState<'backup' | 'purge'>('backup')
 
-  const allOptions = [...availableTables, 'audit_logs', 'bucket:iic-reports']
+  const allOptions = [...availableTables]
 
   const toggleSelect = (option: string) => {
     const next = new Set(selected)

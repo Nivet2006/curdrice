@@ -2,42 +2,24 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import * as attendanceService from '@/lib/services/attendance-service'
 
 export async function checkInAttendee(qrToken: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Unauthorized' }
 
-  const { data: registration, error: fetchError } = await supabase
-    .from('registrations')
-    .select('*, events(created_by, title), profiles(full_name, usn)')
-    .eq('qr_token', qrToken)
-    .single()
-
-  if (fetchError || !registration) return { error: 'Invalid or unknown ticket' }
-  if (registration.checked_in) return { error: 'Attendee is already checked in' }
-
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  const isAdmin = profile?.role === 'admin'
-  const isOwner = (registration.events as unknown as { created_by: string }).created_by === user.id
-
-  if (!isAdmin && !isOwner) {
-    return { error: 'You do not have permission to check in attendees for this event' }
-  }
-
-  const { error: updateError } = await supabase
-    .from('registrations')
-    .update({ checked_in: true, checked_in_at: new Date().toISOString() })
-    .eq('id', registration.id)
-
-  if (updateError) return { error: updateError.message }
-
-  revalidatePath('/manager/scanner')
-  return { 
-    success: true, 
-    studentName: (registration.profiles as unknown as { full_name: string }).full_name,
-    studentUsn: (registration.profiles as unknown as { usn: string }).usn,
-    eventTitle: (registration.events as unknown as { title: string }).title 
+  try {
+    const res = await attendanceService.markAttendanceByQR(qrToken, user.id)
+    revalidatePath('/manager/scanner')
+    return {
+      success: true,
+      studentName: res.studentName,
+      studentUsn: res.studentUsn,
+      eventTitle: res.eventTitle
+    }
+  } catch (error: any) {
+    return { error: error.message }
   }
 }
 
