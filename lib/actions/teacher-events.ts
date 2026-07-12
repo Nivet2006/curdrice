@@ -3,22 +3,19 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { logMutation } from '@/lib/audit/log-mutation'
+import { assertTeacherOrAdmin } from '@/lib/services/permission-service'
+import * as eventService from '@/lib/services/event-service'
 
 export async function createFacultyEvent(formData: FormData) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Unauthorized' }
-
-  // Only teacher or admin can create faculty events
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role, full_name, department')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile || !['teacher', 'admin'].includes(profile.role)) {
-    return { error: 'Unauthorized: Only Faculty (Teacher) can create faculty events.' }
+  let auth;
+  try {
+    auth = await assertTeacherOrAdmin()
+  } catch (error: any) {
+    return { error: error.message }
   }
+
+  const { profile } = auth;
 
   const title = (formData.get('title') as string)?.trim()
   const description = (formData.get('description') as string)?.trim()
@@ -71,7 +68,6 @@ export async function createFacultyEvent(formData: FormData) {
     }
   }
 
-  // club_name derived from event_category for faculty events
   const club_name = guest_name
     ? `Guest Lecture — ${guest_name}`
     : event_category === 'faculty'
@@ -91,112 +87,48 @@ export async function createFacultyEvent(formData: FormData) {
     return { error: 'Registration deadline must be before the event date.' }
   }
 
-  const pregeneratedId = formData.get('id') as string | null
-
-  // Venue conflict check (±4 hours) — skip for industrial visits (external location)
-  if (event_category !== 'industrial_visit') {
-    if (venueId && endTimeStr) {
-      const { getVenuesWithStatus } = await import('@/lib/actions/venue-actions')
-      const startIso = eventDt.toISOString()
-      const endIso = new Date(endTimeStr).toISOString()
-      
-      const statusRes = await getVenuesWithStatus(startIso, endIso, pregeneratedId)
-      if (statusRes.error) {
-        return { error: statusRes.error }
-      }
-      const currentVenueStatus = statusRes.venues?.find(v => v.id === venueId)
-      if (currentVenueStatus?.status === 'locked') {
-        return { error: currentVenueStatus.message }
-      }
-      if (currentVenueStatus?.status === 'unavailable') {
-        return { error: currentVenueStatus.message }
-      }
-    } else {
-      const fourHoursMs = 4 * 60 * 60 * 1000
-      const startTime = new Date(eventDt.getTime() - fourHoursMs).toISOString()
-      const endTime = new Date(eventDt.getTime() + fourHoursMs).toISOString()
-
-      const { data: conflict } = await supabase
-        .from('events')
-        .select('title, event_date')
-        .eq('location', location)
-        .eq('approval_status', 'approved')
-        .gte('event_date', startTime)
-        .lte('event_date', endTime)
-        .maybeSingle()
-
-      if (conflict) {
-        return {
-          error: `Venue Conflict: "${location}" is already booked for "${conflict.title}" at ${new Date(conflict.event_date).toLocaleTimeString()}. Please choose a different venue or time.`
-        }
-      }
-    }
-  }
-
-  // Faculty events skip teacher review — go straight to pending_hod
   const approval_status = 'pending_hod'
 
-  const insertPayload: any = {
-    title,
-    club_name,
-    description,
-    location,
-    event_date: eventDt.toISOString(),
-    end_time: endTimeStr ? new Date(endTimeStr).toISOString() : null,
-    venue_id: venueId,
-    registration_deadline: deadlineDt.toISOString(),
-    max_capacity,
-    waitlist_max,
-    banner_url,
-    custom_background,
-    created_by: user.id,
-    approval_status,
-    targeted_department,
-    feedback_config: [],
-    is_public,
-    status: 'upcoming',
-    event_category,
-    assigned_faculty_id: user.id,
-    is_compulsory,
-    ...(location_lat !== null && location_lng !== null ? { location_lat, location_lng } : {}),
-    event_type,
-    team_formation_enabled,
-    min_team_members,
-    max_team_members
-  }
-
-  if (pregeneratedId) {
-    insertPayload.id = pregeneratedId
-  }
-
-  const { data: event, error: insertError } = await supabase
-    .from('events')
-    .insert(insertPayload)
-    .select('id')
-    .single()
-
-  if (insertError || !event) {
-    return { error: insertError?.message || 'Failed to create event. Please check RLS policies.' }
-  }
-
-  // Insert constraints — include semesters/years for compulsory events
-  const { error: constraintError } = await supabase
-    .from('event_constraints')
-    .insert({
-      event_id: event.id,
-      allowed_semesters,
-      allowed_years,
-      allowed_departments: targeted_department ? [targeted_department] : null,
-    })
-
-  if (constraintError) {
-    return { error: constraintError.message }
+  let event;
+  try {
+    event = await eventService.createEvent({
+      title,
+      club_name,
+      description,
+      location,
+      event_date: eventDt.toISOString(),
+      end_time: endTimeStr ? new Date(endTimeStr).toISOString() : null,
+      venue_id: venueId,
+      registration_deadline: deadlineDt.toISOString(),
+      max_capacity,
+      waitlist_max,
+      banner_url,
+      custom_background,
+      approval_status,
+      targeted_department,
+      event_category,
+      is_public,
+      is_compulsory,
+      event_type,
+      team_formation_enabled,
+      min_team_members,
+      max_team_members,
+      location_lat,
+      location_lng,
+      constraints: {
+        allowed_semesters,
+        allowed_years,
+        allowed_departments: targeted_department ? [targeted_department] : null
+      }
+    }, auth.userId)
+  } catch (err: any) {
+    return { error: err.message }
   }
 
   // Audit log
   await logMutation({
-    userId: user.id,
-    userEmail: user.email,
+    userId: auth.userId,
+    userEmail: profile.email,
     userName: profile.full_name,
     userRole: profile.role,
     action: 'faculty_event.create',
@@ -216,6 +148,7 @@ export async function createFacultyEvent(formData: FormData) {
 
   return { success: true, eventId: event.id }
 }
+
 
 export async function saveTeacherEventDraft(formData: FormData) {
   const supabase = await createClient()

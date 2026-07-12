@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
+import * as attendanceService from '@/lib/services/attendance-service'
 
 // ============================================
 // Report Review Actions
@@ -183,32 +184,12 @@ export async function prConfirmCheckIn(registrationId: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Unauthorized' }
 
-  const adminClient = supabaseAdmin
-
-  // Get event_id from registration to validate assignment
-  const { data: reg } = await adminClient
-    .from('registrations')
-    .select('event_id')
-    .eq('id', registrationId)
-    .single()
-
-  if (!reg) return { error: 'Registration not found' }
-
-  const isAssigned = await validatePRAssignment(user.id, reg.event_id)
-  if (!isAssigned) {
-    return { error: 'Access denied: contact faculty. You are not assigned to this event.' }
+  try {
+    await attendanceService.markAttendanceById(registrationId, user.id)
+    return { success: true }
+  } catch (error: any) {
+    return { error: error.message }
   }
-
-  const { error } = await adminClient
-    .from('registrations')
-    .update({
-      checked_in: true,
-      checked_in_at: new Date().toISOString()
-    })
-    .eq('id', registrationId)
-
-  if (error) return { error: error.message }
-  return { success: true }
 }
 
 export async function prManualCheckInByUSN(usn: string, eventId: string) {
@@ -216,53 +197,16 @@ export async function prManualCheckInByUSN(usn: string, eventId: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Unauthorized' }
 
-  // Validate PR assignment
-  const isAssigned = await validatePRAssignment(user.id, eventId)
-  if (!isAssigned) {
-    return { error: 'Access denied: contact faculty. You are not assigned to this event.' }
-  }
-
-  const adminClient = supabaseAdmin
-
-  // Find student by USN
-  const { data: student } = await adminClient
-    .from('profiles')
-    .select('id, full_name, usn, department, semester, year')
-    .eq('usn', usn.toUpperCase().trim())
-    .single()
-
-  if (!student) return { error: `No student found with USN: ${usn}` }
-
-  // Find their registration for this event
-  const { data: registration } = await adminClient
-    .from('registrations')
-    .select('id, checked_in, checked_in_at')
-    .eq('student_id', student.id)
-    .eq('event_id', eventId)
-    .single()
-
-  if (!registration) return { error: `${student.full_name} (${usn}) is not registered for this event.` }
-  if (registration.checked_in) {
-    return { 
-      error: `${student.full_name} is already checked in at ${registration.checked_in_at ? new Date(registration.checked_in_at).toLocaleTimeString() : 'unknown time'}` 
+  try {
+    const res = await attendanceService.markAttendanceManual(eventId, usn, user.id)
+    return {
+      success: true,
+      studentName: res.studentName,
+      studentUsn: res.studentUsn,
+      department: res.department
     }
-  }
-
-  const { error } = await adminClient
-    .from('registrations')
-    .update({
-      checked_in: true,
-      checked_in_at: new Date().toISOString()
-    })
-    .eq('id', registration.id)
-
-  if (error) return { error: error.message }
-
-  return {
-    success: true,
-    studentName: student.full_name,
-    studentUsn: student.usn,
-    department: student.department
+  } catch (error: any) {
+    return { error: error.message }
   }
 }
 

@@ -1,5 +1,4 @@
 'use server'
-import { logsClient } from '@/lib/supabase/logs-client'
 import { headers } from 'next/headers'
 
 export interface AuditPayload {
@@ -27,14 +26,10 @@ export async function writeAuditLog(payload: AuditPayload) {
 
   const userAgent = headersList.get('user-agent') || 'unknown'
 
-  const { error } = await logsClient.from('audit_logs').insert({
+  console.log('[AUDIT LOG]', {
     ...payload,
     ip_address: ip,
     user_agent: userAgent,
     created_at: new Date().toISOString(),
   })
-
-  if (error) {
-    console.error('[AUDIT LOG ERROR]', error.message)
-  }
 }

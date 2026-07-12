@@ -5,6 +5,7 @@ import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { redirect } from 'next/navigation'
 import { logMutation } from '@/lib/audit/log-mutation'
 import { checkRateLimit, getClientIp } from '@/lib/services/rate-limit-service'
+import * as registrationService from '@/lib/services/registration-service'
 
 export async function createEvent(formData: FormData) {
   const supabase = await createClient()
@@ -352,105 +353,27 @@ export async function registerForEvent(eventId: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Unauthorized' }
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('semester, year, department')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile) return { error: 'Student profile not found.' }
-
-  const { data: constraint } = await supabase
-    .from('event_constraints')
-    .select('allowed_semesters, allowed_years, allowed_departments')
-    .eq('event_id', eventId)
-    .single()
-
-  if (constraint) {
-    if (
-      constraint.allowed_semesters?.length > 0 &&
-      !constraint.allowed_semesters.includes(profile.semester)
-    ) {
-      return { error: `Not permitted: This event is restricted to Semester ${constraint.allowed_semesters.join(', ')}. You are in Semester ${profile.semester}.` }
-    }
-    if (
-      constraint.allowed_years?.length > 0 &&
-      !constraint.allowed_years.includes(profile.year)
-    ) {
-      return { error: `Not permitted: This event is restricted to Year ${constraint.allowed_years.join(', ')}. You are in Year ${profile.year}.` }
-    }
-    if (
-      constraint.allowed_departments?.length > 0 &&
-      !constraint.allowed_departments.includes(profile.department)
-    ) {
-      return { error: `Not permitted: This event is for ${constraint.allowed_departments.join(', ')} students only. You are in ${profile.department}.` }
-    }
+  try {
+    const ip = await getClientIp()
+    await checkRateLimit(`join_${ip}`, 'join_event', { maxRequests: 5, windowMs: 60000 })
+  } catch (err: any) {
+    return { error: err.message || 'Rate limit exceeded. Please try again later.' }
   }
 
-  const { data: event } = await supabase
-    .from('events')
-    .select('registration_deadline, max_capacity, waitlist_max, is_compulsory, allow_open_registration, registration_stopped')
-    .eq('id', eventId)
-    .single()
-
-  if (event?.registration_stopped) {
-    return { error: 'Registration has been stopped by the organizer.' }
-  }
-
-  if (event?.is_compulsory && !event.allow_open_registration) {
-    return { error: 'Registration is closed for this selective compulsory event.' }
-  }
-
-  if (event?.registration_deadline) {
-    if (new Date() > new Date(event.registration_deadline)) {
-      return { error: 'Registration is closed. The deadline has passed.' }
-    }
-  }
-
-  // Count active registrations
-  const { count: activeCount } = await supabase
-    .from('registrations')
-    .select('id', { count: 'exact', head: true })
-    .eq('event_id', eventId)
-    .eq('is_waitlisted', false)
-
-  // Count waitlisted registrations
-  const { count: waitlistCount } = await supabase
-    .from('registrations')
-    .select('id', { count: 'exact', head: true })
-    .eq('event_id', eventId)
-    .eq('is_waitlisted', true)
-
-  const activeRegs = activeCount || 0
-  const waitlistRegs = waitlistCount || 0
-
-  let shouldWaitlist = false
-  if (event?.max_capacity && event.max_capacity > 0 && activeRegs >= event.max_capacity) {
-    const maxWaitlist = event.waitlist_max || 0
-    if (maxWaitlist > 0 && waitlistRegs < maxWaitlist) {
-      shouldWaitlist = true
-    } else {
-      return { error: 'This event is full. No seats remaining.' }
-    }
-  }
-
-  const qrToken = crypto.randomUUID()
-  const { error } = await supabase.from('registrations').insert({
-    event_id: eventId,
-    student_id: user.id,
-    qr_token: qrToken,
-    is_waitlisted: shouldWaitlist
-  })
-
-  if (error) {
-    if (error.code === '23505') return { error: 'You are already registered for this event.' }
-    return { error: error.message }
+  let result;
+  try {
+    result = await registrationService.registerForEvent({
+      eventId,
+      studentId: user.id
+    }, user.id)
+  } catch (err: any) {
+    return { error: err.message }
   }
 
   // Trigger notification only if NOT waitlisted
-  if (!shouldWaitlist) {
+  if (!result.waitlisted) {
     const { createEventNotification } = await import('@/lib/actions/messages')
-    await createEventNotification(user.id, eventId, qrToken)
+    await createEventNotification(user.id, eventId, result.qrToken)
 
     // Auto-join event discussion thread if enabled
     const { joinEventThread } = await import('@/lib/actions/event-threads')
@@ -458,7 +381,7 @@ export async function registerForEvent(eventId: string) {
   }
 
   revalidatePath(`/student/events/${eventId}`)
-  return { success: true, waitlisted: shouldWaitlist }
+  return { success: true, waitlisted: result.waitlisted }
 }
 
 export async function updateStudentProfile(data: {
@@ -526,48 +449,12 @@ export async function cancelRegistration(eventId: string) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return { error: 'Unauthorized' }
 
-    // Check if event is compulsory
-    const { data: event, error: eventError } = await supabase
-      .from('events')
-      .select('is_compulsory')
-      .eq('id', eventId)
-      .single()
-
-    if (eventError || !event) return { error: 'Event not found or database error' }
-    if (event.is_compulsory) {
-      return { error: 'You cannot cancel registration for a compulsory event.' }
-    }
-
-    // Delete registration
-    const { error: deleteError } = await supabase
-      .from('registrations')
-      .delete()
-      .eq('event_id', eventId)
-      .eq('student_id', user.id)
-
-    if (deleteError) return { error: deleteError.message }
-
-    // Remove from conversation if exists
-    const { data: conv } = await supabase
-      .from('conversations')
-      .select('id')
-      .eq('event_id', eventId)
-      .eq('type', 'group')
-      .maybeSingle()
-
-    if (conv) {
-      await supabase
-        .from('conversation_members')
-        .delete()
-        .eq('conversation_id', conv.id)
-        .eq('user_id', user.id)
-    }
+    await registrationService.cancelRegistration(eventId, user.id, user.id)
 
     revalidatePath(`/student/events/${eventId}`)
     return { success: true }
-  } catch (err: unknown) {
-    const errorMsg = err instanceof Error ? err.message : 'Unknown error'
-    return { error: errorMsg }
+  } catch (error: any) {
+    return { error: error.message }
   }
 }
 

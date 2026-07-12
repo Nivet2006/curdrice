@@ -5,7 +5,8 @@ import { supabaseAdmin } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 import type { Role } from '@/lib/types'
 
-import { assertAdmin } from '@/lib/services/permission-service'
+import { assertAdmin, getUserProfile } from '@/lib/services/permission-service'
+import * as attendanceService from '@/lib/services/attendance-service'
 
 export async function createUserAdmin(formData: FormData) {
   try {
@@ -110,37 +111,13 @@ export async function updateUserDetails(
 
 export async function manualCheckIn(usn: string, eventId: string) {
   try {
-    await assertAdmin()
-
-    const { data: student, error: studentError } = await supabaseAdmin
-      .from('profiles')
-      .select('id')
-      .eq('usn', usn.toUpperCase())
-      .single()
-      
-    if (studentError || !student) return { error: `Student with USN ${usn.toUpperCase()} not found in system.` }
-
-    const { data: registration, error: regError } = await supabaseAdmin
-      .from('registrations')
-      .select('id, checked_in')
-      .eq('student_id', student.id)
-      .eq('event_id', eventId)
-      .single()
-
-    if (regError || !registration) return { error: `Student ${usn.toUpperCase()} is not registered for this event.` }
-    if (registration.checked_in) return { error: `Student ${usn.toUpperCase()} is already checked in.` }
-
-    const { error: updateError } = await supabaseAdmin
-      .from('registrations')
-      .update({ checked_in: true, checked_in_at: new Date().toISOString() })
-      .eq('id', registration.id)
-
-    if (updateError) return { error: updateError.message }
+    const { user } = await getUserProfile()
+    await attendanceService.markAttendanceManual(eventId, usn, user.id)
 
     revalidatePath(`/admin/attendance/${eventId}`)
     return { success: true, message: `Successfully checked in ${usn.toUpperCase()}` }
-  } catch (err: unknown) {
-    return { error: (err as Error).message || 'Unauthorized Action' }
+  } catch (err: any) {
+    return { error: err.message || 'Unauthorized Action' }
   }
 }
 

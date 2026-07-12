@@ -74,7 +74,7 @@ export default async function BackupPage() {
           <div>
             <h3 className="text-lg font-bold">Generate Absolute Backup</h3>
             <p className="text-xs font-mono text-[#555555] max-w-[600px] mt-2 leading-relaxed">
-              Generates an instant ZIP containing standardized Excel (.xlsx) snapshots of all system tables, complete audit logs from the separate logging database, and all contents of the iic-reports bucket. The action is recorded in the immutable audit log below.
+              Generates an instant ZIP containing standardized Excel (.xlsx) snapshots of all system tables. The action is recorded in the immutable audit log below.
             </p>
           </div>
         </div>

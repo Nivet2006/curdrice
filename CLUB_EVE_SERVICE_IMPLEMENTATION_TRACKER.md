@@ -7,9 +7,9 @@
 | `permission-service.ts` | REQUIRED | COMPLETE | PASS |
 | `rate-limit-service.ts` | REQUIRED | COMPLETE | PASS |
 | `venue-service.ts` | REQUIRED | COMPLETE | PASS |
-| `event-service.ts` | REQUIRED | NOT STARTED | NOT RUN |
-| `registration-service.ts` | REQUIRED | NOT STARTED | NOT RUN |
-| `attendance-service.ts` | REQUIRED | NOT STARTED | NOT RUN |
+| `event-service.ts` | REQUIRED | COMPLETE | PASS |
+| `registration-service.ts` | REQUIRED | COMPLETE | PASS |
+| `attendance-service.ts` | REQUIRED | COMPLETE | PASS |
 | `club-service.ts` | REQUIRED | NOT STARTED | NOT RUN |
 | `hackathon-service.ts` | REQUIRED | NOT STARTED | NOT RUN |
 | `email-service.ts` | REQUIRED | NOT STARTED | NOT RUN |
@@ -38,47 +38,78 @@ COMPLETE
 COMPLETE
 ### Completion Date
 2026-07-12
+### Regression & Repair Details
+- **Regression:** Fails with code `PGRST202` (database function `public.check_rate_limit` missing in schema cache).
+- **Root Cause:** The database migration `0045_rate_limit.sql` was created locally but had not been applied to the live Supabase project `pkpjuqtkzctqjbdmebgb`.
+- **Repair:** Manually executed the SQL to create the `rate_limits` table and the `check_rate_limit` function on the live database. Verified existence and signature.
+- **Verification:** Login rate limiting flow runs correctly without errors.
 
 ---
 
 ## `venue-service.ts`
+### Final Status
+COMPLETE
+### Completion Date
+2026-07-12
+
+---
+
+## `event-service.ts`
+### Final Status
+COMPLETE
+### Completion Date
+2026-07-12
+
+---
+
+## `registration-service.ts`
+### Final Status
+COMPLETE
+### Completion Date
+2026-07-12
+
+---
+
+## `attendance-service.ts`
 
 ### Architecture Recommendation
-REQUIRED. P1 Priority. Venues have independent availability, capacity, and conflict-resolution requirements separate from events.
+REQUIRED. P1 Priority. Centralize manual check-ins and QR automated scans securely.
 
 ### Pre-Implementation Verification
-Verified duplicate conflict resolution check in `lib/actions/venue-actions.ts`.
-Implementation decision: PROCEED with extraction.
+Verified check-in mutations scattered across `admin.ts`, `pr-actions.ts`, and `manager.ts` check-in functions.
+Implementation decision: PROCEED.
 
 ### Architecture Report Differences
-None.
+Added `markAttendanceById` to allow direct checks using registration IDs, which supports workflows where lookup occurs separately from insertion.
 
 ### Final Service Responsibilities
-Manages venue CRUD, checks live slot availabilities, and prevents overlapping double-bookings.
+Validates check-in authority based on CC ownership, PR event assignments, or staff status, and commits updates to `registrations`.
 
 ### Files Created
-`lib/services/venue-service.ts`
+`lib/services/attendance-service.ts`
 
 ### Files Modified
-`lib/actions/venue-actions.ts`
+`lib/actions/admin.ts`
+`lib/actions/pr-actions.ts`
+`lib/actions/manager.ts`
 
 ### Database Changes
 None.
 
 ### Callers Migrated
-Migrated `getVenues`, `getVenueAvailabilities`, `createVenueAvailability`, `deleteVenueAvailability`, `getVenuesWithStatus`, and `createVenue`.
+Migrated `manualCheckIn`, `prConfirmCheckIn`, `prManualCheckInByUSN`, and `checkInAttendee`.
 
 ### Duplicate Logic Removed
-Decoupled checking logic from actions interface.
+Decoupled verification of USN and fetching registration IDs from server actions.
 
 ### Security Changes
-Utilizes the centralized `permission-service` to assert roles.
+Enforces uniform check-in authorization policies across the codebase.
 
 ### Performance Changes
 None.
 
 ### Side-Effect Ownership
-Creates/deletes/modifies venues and slot allocations.
+Updates `registrations`.
 
 ### Tests Added
 None yet.
