@@ -20,7 +20,7 @@
 | `gamification-service.ts` | REQUIRED | COMPLETE | PASS |
 | `analytics-service.ts` | RECOMMENDED | COMPLETE | PASS |
 | `export-service.ts` | REQUIRED | COMPLETE | PASS |
-| `qr-service.ts` | RECOMMENDED | NOT STARTED | NOT RUN |
+| `qr-service.ts` | RECOMMENDED | COMPLETE | PASS |
 | `calendar-service.ts` | RECOMMENDED | NOT STARTED | NOT RUN |
 
 ---
@@ -796,6 +796,73 @@ COMPLETE
 
 ### Completion Date
 2026-07-13
+
+---
+
+## `qr-service.ts`
+
+### Architecture Recommendation
+RECOMMENDED. P4 Priority. Decouple and centralize QR code token generation format rules and format validity validations.
+
+### Pre-Implementation Verification
+- Verified that registrations table holds `qr_token` (UUID v4 format string).
+- Verified that attendance-service and registration-service handle random generation and lookups independently.
+- Implementation decision: PROCEED.
+
+### Architecture Report Differences
+None.
+
+### Final Service Responsibilities
+- Centralized generation method for registration QR tokens.
+- central verification method checking QR token structure (UUID v4 check) before database calls.
+
+### Files Created
+- `lib/services/qr-service.ts`
+
+### Files Modified
+- `lib/services/registration-service.ts`
+- `lib/services/attendance-service.ts`
+
+### Database Changes
+None.
+
+### Callers Migrated
+- Registration service (generates tokens).
+- Attendance service (validates token format before checking in).
+
+### Duplicate Logic Removed
+Inlined UUID v4 generations are now centralized.
+
+### Security Changes
+Added format assertion to check-in routes to block malformed or unsafe SQL injection/spoof attempts early.
+
+### Performance Changes
+Format parsing is CPU bound and extremely fast.
+
+### Side-Effect Ownership
+Read-only format utility.
+
+### Tests Added
+None.
+
+### Verification Results
+Build: PASS
+Lint: PRE-EXISTING FAILURE
+Type Check: PASS
+Git Diff: PASS
+
+### Deferred Integrations
+None.
+
+### Known Risks
+None.
+
+### Final Status
+COMPLETE
+
+### Completion Date
+2026-07-13
+
 
 
 

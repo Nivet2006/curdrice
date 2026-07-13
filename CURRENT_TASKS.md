@@ -18,19 +18,19 @@ Last architecture verification:
 `Phase 1 - Core Domain Services`
 
 **Current Service:**
-`export-service.ts`
+`qr-service.ts`
 
 **Current Service Status:**
 `COMPLETE`
 
 **Current Task:**
-`Pre-implementation verification for qr-service.ts`
+`Pre-implementation verification for calendar-service.ts`
 
 **Next Immediate Task:**
-`Read architecture report section for qr-service.ts and inspect codebase`
+`Read architecture report section for calendar-service.ts and inspect codebase`
 
 **Last Completed Task:**
-`Implemented export-service.ts and migrated spreadsheet exports`
+`Implemented qr-service.ts and integrated QR code token format validation`
 
 **Execution Blocked:**
 `NO`
@@ -42,10 +42,10 @@ Last architecture verification:
 | Metric                  | Value |
 | ----------------------- | ----- |
 | Total Approved Services | 18    |
-| Completed               | 16    |
+| Completed               | 17    |
 | In Progress             | 0     |
 | Blocked                 | 0     |
-| Not Started             | 2     |
+| Not Started             | 1     |
 | Merged                  | 0     |
 | Skipped                 | 0     |
 
@@ -71,8 +71,8 @@ Last architecture verification:
 | 14    | `gamification-service.ts` | REQUIRED     | HIGH     | COMPLETE              | READY            |
 | 15    | `analytics-service.ts`    | RECOMMENDED  | MED      | COMPLETE              | READY            |
 | 16    | `export-service.ts`       | REQUIRED     | HIGH     | COMPLETE              | READY            |
-| 17    | `qr-service.ts`           | RECOMMENDED  | MED      | NOT STARTED           | READY            |
-| 18    | `calendar-service.ts`     | RECOMMENDED  | MED      | NOT STARTED           | WAITING          |
+| 17    | `qr-service.ts`           | RECOMMENDED  | MED      | COMPLETE              | READY            |
+| 18    | `calendar-service.ts`     | RECOMMENDED  | MED      | NOT STARTED           | READY            |
 
 ---
 
@@ -80,7 +80,7 @@ Last architecture verification:
 
 ### Service
 
-`qr-service.ts`
+`calendar-service.ts`
 
 ### Pre-Implementation
 

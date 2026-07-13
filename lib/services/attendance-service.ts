@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { getUserProfile } from '@/lib/services/permission-service'
+import { validateQRToken } from '@/lib/services/qr-service'
 
 /**
  * Validates whether the actor has authority to mark attendance for a specific event.
@@ -93,6 +94,10 @@ export async function markAttendanceByQR(qrToken: string, actorId: string) {
   let cleanToken = qrToken
   const tokenMatch = qrToken.match(/token=([a-zA-Z0-9-]+)/)
   if (tokenMatch) cleanToken = tokenMatch[1]
+
+  if (!validateQRToken(cleanToken)) {
+    throw new Error('Invalid QR code format.')
+  }
 
   const { data: registration } = await supabase
     .from('registrations')
