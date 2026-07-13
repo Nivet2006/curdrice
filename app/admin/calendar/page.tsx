@@ -1,23 +1,25 @@
-import { createClient } from '@/lib/supabase/server'
+import { getApprovedEvents } from '@/lib/services/calendar-service'
 import { RealtimeStaffCalendar } from '@/components/shared/RealtimeStaffCalendar'
 import type { Event } from '@/lib/types'
 
 export const dynamic = 'force-dynamic'
 
 export default async function AdminCalendarPage() {
-  const supabase = await createClient()
-
-  // Admin sees all approved events campus-wide
-  const { data: events } = await supabase
-    .from('events')
-    .select('id, title, club_name, event_date, location, status, banner_url, approval_status, max_capacity, registration_deadline')
-    .eq('approval_status', 'approved')
-    .order('event_date', { ascending: true })
-
-  return (
-    <RealtimeStaffCalendar
-      initialEvents={(events || []) as Event[]}
-      role="admin"
-    />
-  )
+  try {
+    const events = await getApprovedEvents()
+    return (
+      <RealtimeStaffCalendar
+        initialEvents={events}
+        role="admin"
+      />
+    )
+  } catch (error) {
+    console.error('Failed to load events for calendar:', error)
+    return (
+      <RealtimeStaffCalendar
+        initialEvents={[]}
+        role="admin"
+      />
+    )
+  }
 }
