@@ -18,19 +18,19 @@ Last architecture verification:
 `Phase 1 - Core Domain Services`
 
 **Current Service:**
-`analytics-service.ts`
+`export-service.ts`
 
 **Current Service Status:**
 `COMPLETE`
 
 **Current Task:**
-`Pre-implementation verification for export-service.ts`
+`Pre-implementation verification for qr-service.ts`
 
 **Next Immediate Task:**
-`Read architecture report section for export-service.ts and inspect codebase`
+`Read architecture report section for qr-service.ts and inspect codebase`
 
 **Last Completed Task:**
-`Implemented analytics-service.ts and migrated dashboard statistics queries`
+`Implemented export-service.ts and migrated spreadsheet exports`
 
 **Execution Blocked:**
 `NO`
@@ -42,10 +42,10 @@ Last architecture verification:
 | Metric                  | Value |
 | ----------------------- | ----- |
 | Total Approved Services | 18    |
-| Completed               | 15    |
+| Completed               | 16    |
 | In Progress             | 0     |
 | Blocked                 | 0     |
-| Not Started             | 3     |
+| Not Started             | 2     |
 | Merged                  | 0     |
 | Skipped                 | 0     |
 
@@ -70,8 +70,8 @@ Last architecture verification:
 | 13    | `certificate-service.ts`  | REQUIRED     | HIGH     | COMPLETE              | READY            |
 | 14    | `gamification-service.ts` | REQUIRED     | HIGH     | COMPLETE              | READY            |
 | 15    | `analytics-service.ts`    | RECOMMENDED  | MED      | COMPLETE              | READY            |
-| 16    | `export-service.ts`       | REQUIRED     | HIGH     | NOT STARTED           | READY            |
-| 17    | `qr-service.ts`           | RECOMMENDED  | MED      | NOT STARTED           | WAITING          |
+| 16    | `export-service.ts`       | REQUIRED     | HIGH     | COMPLETE              | READY            |
+| 17    | `qr-service.ts`           | RECOMMENDED  | MED      | NOT STARTED           | READY            |
 | 18    | `calendar-service.ts`     | RECOMMENDED  | MED      | NOT STARTED           | WAITING          |
 
 ---
@@ -80,7 +80,7 @@ Last architecture verification:
 
 ### Service
 
-`export-service.ts`
+`qr-service.ts`
 
 ### Pre-Implementation
 
