@@ -158,6 +158,11 @@ export default function AdminDashboard() {
             title: 'Security Portal →',
             desc: 'Manage Two-Factor Authentication and account hardening.',
           },
+          {
+            href: '/admin/diagnostics',
+            title: 'Service Diagnostics →',
+            desc: 'Run tests and sanity check service integrations.',
+          },
         ].map(action => (
           <Link key={action.href} href={action.href}>
             <Card className="p-5 hover:border-[#0a0a0a] transition-colors cursor-pointer group h-full">
