@@ -18,7 +18,7 @@
 | `feedback-service.ts` | REQUIRED | COMPLETE | PASS |
 | `certificate-service.ts` | REQUIRED | COMPLETE | PASS |
 | `gamification-service.ts` | REQUIRED | COMPLETE | PASS |
-| `analytics-service.ts` | RECOMMENDED | NOT STARTED | NOT RUN |
+| `analytics-service.ts` | RECOMMENDED | COMPLETE | PASS |
 | `export-service.ts` | REQUIRED | NOT STARTED | NOT RUN |
 | `qr-service.ts` | RECOMMENDED | NOT STARTED | NOT RUN |
 | `calendar-service.ts` | RECOMMENDED | NOT STARTED | NOT RUN |
@@ -664,6 +664,72 @@ COMPLETE
 
 ### Completion Date
 2026-07-13
+
+---
+
+## `analytics-service.ts`
+
+### Architecture Recommendation
+RECOMMENDED (Elevated to P3 in implementation roadmap). Centralize database aggregations, event stat counts, and global system metrics.
+
+### Pre-Implementation Verification
+- Verified dashboard components (`AdminDashboard`) make direct select-with-count calls on the client side.
+- Verified SQL `COUNT()` aggregations bypass fetching full arrays for better performance.
+- Implementation decision: PROCEED.
+
+### Architecture Report Differences
+Merged event registration stats with global admin dashboard metrics under a single analytics service wrapper.
+
+### Final Service Responsibilities
+- Provide aggregate counts for specific events (total registered, total checked-in, feedback count).
+- Retrieve global system metrics (total profiles, events, registrations, attendance rate, suspended count) for admin dashboard with role checks.
+
+### Files Created
+- `lib/services/analytics-service.ts`
+- `lib/actions/analytics-actions.ts`
+
+### Files Modified
+- `app/admin/dashboard/page.tsx`
+
+### Database Changes
+None.
+
+### Callers Migrated
+- Administrative dashboard metrics fetching.
+
+### Duplicate Logic Removed
+Decoupled direct supabase client count queries from client-side views.
+
+### Security Changes
+Enforces strict administrative role permissions on fetching global system metrics.
+
+### Performance Changes
+Replaces multiple independent client-side queries with a single centralized server action.
+
+### Side-Effect Ownership
+Read-only.
+
+### Tests Added
+None.
+
+### Verification Results
+Build: PASS
+Lint: PRE-EXISTING FAILURE
+Type Check: PASS
+Git Diff: PASS
+
+### Deferred Integrations
+None.
+
+### Known Risks
+None.
+
+### Final Status
+COMPLETE
+
+### Completion Date
+2026-07-13
+
 
 
 

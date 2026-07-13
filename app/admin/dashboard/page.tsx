@@ -7,6 +7,7 @@ import { Users, Calendar, CheckCircle, ClipboardList,
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import BroadcastModal from '@/components/messages/BroadcastModal'
+import { getGlobalSystemMetricsAction } from '@/lib/actions/analytics-actions'
 
 export default function AdminDashboard() {
   const supabase = createClient()
@@ -21,57 +22,43 @@ export default function AdminDashboard() {
       if (!u) return
       setUser(u)
 
-      const [
-        { count: totalProfiles },
-        { count: totalEvents },
-        { count: activeEvents },
-        { count: totalRegistrations },
-        { count: totalAttendance },
-        { count: suspendedUsers },
-      ] = await Promise.all([
-        supabase.from('profiles').select('*', { count: 'exact', head: true }),
-        supabase.from('events').select('*', { count: 'exact', head: true }),
-        supabase.from('events').select('*', { count: 'exact', head: true })
-          .in('status', ['upcoming', 'ongoing']),
-        supabase.from('registrations').select('*', { count: 'exact', head: true }),
-        supabase.from('registrations').select('*', { count: 'exact', head: true })
-          .eq('checked_in', true),
-        supabase.from('profiles').select('*', { count: 'exact', head: true })
-          .eq('role', 'deleted'),
-      ])
+      const result = await getGlobalSystemMetricsAction();
+      if (result.error) {
+        console.error('Failed to load metrics:', result.error);
+        setLoading(false);
+        return;
+      }
 
-      const attendanceRate = totalRegistrations
-        ? Math.round(((totalAttendance || 0) / totalRegistrations) * 100)
-        : 0
+      const metrics = result.data!;
 
       setStats([
         {
           label: 'Total Users',
-          value: totalProfiles || 0,
+          value: metrics.totalProfiles,
           icon: Users,
-          sub: `${suspendedUsers || 0} suspended`,
+          sub: `${metrics.suspendedUsers} suspended`,
         },
         {
           label: 'Total Events',
-          value: totalEvents || 0,
+          value: metrics.totalEvents,
           icon: Calendar,
-          sub: `${activeEvents || 0} active`,
+          sub: `${metrics.activeEvents} active`,
         },
         {
           label: 'Registrations',
-          value: totalRegistrations || 0,
+          value: metrics.totalRegistrations,
           icon: ClipboardList,
           sub: `across all events`,
         },
         {
           label: 'Attendance',
-          value: totalAttendance || 0,
+          value: metrics.totalAttendance,
           icon: UserCheck,
-          sub: `${attendanceRate}% check-in rate`,
+          sub: `${metrics.attendanceRate}% check-in rate`,
         },
         {
           label: 'Active Events',
-          value: activeEvents || 0,
+          value: metrics.activeEvents,
           icon: CheckCircle,
           sub: `upcoming + ongoing`,
         },
