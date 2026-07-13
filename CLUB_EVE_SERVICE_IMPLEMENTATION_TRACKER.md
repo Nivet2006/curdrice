@@ -14,8 +14,8 @@
 | `hackathon-service.ts` | REQUIRED | COMPLETE | PASS |
 | `email-service.ts` | REQUIRED | COMPLETE | PASS |
 | `notification-service.ts` | REQUIRED | COMPLETE | PASS |
-| `media-service.ts` | REQUIRED | NOT STARTED | NOT RUN |
-| `feedback-service.ts` | REQUIRED | NOT STARTED | NOT RUN |
+| `media-service.ts` | REQUIRED | COMPLETE | PASS |
+| `feedback-service.ts` | REQUIRED | COMPLETE | PASS |
 | `certificate-service.ts` | REQUIRED | NOT STARTED | NOT RUN |
 | `gamification-service.ts` | REQUIRED | NOT STARTED | NOT RUN |
 | `analytics-service.ts` | RECOMMENDED | NOT STARTED | NOT RUN |
@@ -394,6 +394,147 @@ COMPLETE
 
 ### Completion Date
 2026-07-12
+
+---
+
+## `media-service.ts`
+
+### Architecture Recommendation
+REQUIRED. P2 Priority. Centralize image validation, Backblaze B2 storage upload, proxy URL generation, and event gallery management.
+
+### Pre-Implementation Verification
+- Verified active storage provider is **Backblaze B2** via `@aws-sdk/client-s3` (rather than Supabase Storage).
+- Identified image uploads used in `/api/upload/image` (event banner) and `/api/events/[id]/photos` (event gallery).
+- Verified `event_photos` is the active DB table, and `face_scans` does not exist.
+- Implementation decision: PROCEED.
+
+### Architecture Report Differences
+Centralized Backblaze B2 S3 SDK calls inside the service (since the audited project uses B2 via `b2ImagesClient` instead of Supabase Storage buckets).
+
+### Final Service Responsibilities
+- Validate file type and size on image uploads.
+- Upload images to Backblaze B2 bucket and generate proxy URLs.
+- Delete old images from B2 on replacement (banners) or removal (gallery photos).
+- Perform database mutations on `event_photos` (create, list, delete).
+
+### Files Created
+- `lib/services/media-service.ts`
+
+### Files Modified
+- `app/api/upload/image/route.ts`
+- `app/api/events/[id]/photos/route.ts`
+
+### Database Changes
+None.
+
+### Callers Migrated
+- Image upload API route.
+- Event photos gallery API route (GET, POST, DELETE).
+
+### Duplicate Logic Removed
+Decoupled S3 SDK interactions, file type/size validation, and DB insertions from the API route files.
+
+### Security Changes
+Enforces strict file validation (JPG/PNG/WEBP/GIF format check and size limit check) inside the service layer before uploading to B2.
+
+### Performance Changes
+None.
+
+### Side-Effect Ownership
+Updates B2 storage objects, deletes obsolete objects, and writes to `event_photos`.
+
+### Tests Added
+None.
+
+### Verification Results
+Build: PASS
+Lint: PRE-EXISTING FAILURE
+Type Check: PASS
+Git Diff: PASS
+
+### Deferred Integrations
+None.
+
+### Known Risks
+None.
+
+### Final Status
+COMPLETE
+
+### Completion Date
+2026-07-13
+
+---
+
+## `feedback-service.ts`
+
+### Architecture Recommendation
+REQUIRED. P2 Priority. Centralize feedback submission, checked-in attendee validation, and feedback aggregation.
+
+### Pre-Implementation Verification
+- Verified active database tables: `feedbacks` stores submissions, `registrations` determines checked-in attendee status.
+- Verified that `feedback_responses` does not exist in the active tables but is referenced as a read-only table in PDF compilation.
+- Implementation decision: PROCEED.
+
+### Architecture Report Differences
+- Abstracted Postgres `23505` unique violation error into a clean error string inside the service.
+- Added validation to ensure only checked-in attendees can submit feedback.
+
+### Final Service Responsibilities
+- Validate that the student is checked-in for the event before allowing feedback submission.
+- Create new feedback submissions in `feedbacks` table.
+- Gracefully handle duplicate feedback errors.
+- Aggregate feedback metrics (total attendees, feedback submitted, completion status).
+
+### Files Created
+- `lib/services/feedback-service.ts`
+- `lib/actions/feedback-actions.ts`
+
+### Files Modified
+- `components/student/StudentFeedbackTerminal.tsx`
+- `app/api/reports/check-feedback-status/route.ts`
+
+### Database Changes
+None.
+
+### Callers Migrated
+- Student feedback terminal submission logic.
+- Report feedback status check API route.
+
+### Duplicate Logic Removed
+Decoupled client-side database calls, raw constraint violation handling, and attendee check-in lookups.
+
+### Security Changes
+Added server-side check-in validation to ensure only checked-in users can submit feedback.
+
+### Performance Changes
+None.
+
+### Side-Effect Ownership
+Updates `feedbacks`.
+
+### Tests Added
+None.
+
+### Verification Results
+Build: PASS
+Lint: PRE-EXISTING FAILURE
+Type Check: PASS
+Git Diff: PASS
+
+### Deferred Integrations
+None.
+
+### Known Risks
+None.
+
+### Final Status
+COMPLETE
+
+### Completion Date
+2026-07-13
+
+
 
 
 

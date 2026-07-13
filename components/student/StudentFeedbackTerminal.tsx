@@ -14,6 +14,7 @@ import {
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { submitFeedbackAction } from '@/lib/actions/feedback-actions'
 
 type FeedbackQuestion = {
     id?: string
@@ -108,18 +109,13 @@ export function StudentFeedbackTerminal({ event, studentId, hasSubmitted: initia
                 answer: responses[i]
             }))
 
-            const { error } = await supabase.from('feedbacks').insert({
-                event_id: event.id,
-                student_id: studentId,
-                responses: responseData
-            })
+            const result = await submitFeedbackAction(event.id, studentId, responseData)
 
-            if (error) {
-                if (error.code === '23505') {
-                    toast.error("You've already submitted feedback for this event.")
+            if (result?.error) {
+                toast.error(result.error)
+                // If they already submitted, sync state
+                if (result.error.includes("already submitted")) {
                     setHasSubmitted(true)
-                } else {
-                    toast.error(error.message)
                 }
             } else {
                 toast.success("Feedback submitted. Thank you for your input!")

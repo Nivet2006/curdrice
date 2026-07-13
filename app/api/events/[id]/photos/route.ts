@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
-import { PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
-import { v4 as uuidv4 } from 'uuid';
 import { createClient } from '@/lib/supabase/server';
-import { b2ImagesClient, B2_IMAGES_BUCKET_NAME } from '@/lib/b2';
+import {
+  getEventPhotos,
+  addEventPhoto,
+  deleteEventPhoto
+} from '@/lib/services/media-service';
 
 export const runtime = 'nodejs';
 
@@ -20,16 +22,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { data: photos, error } = await supabase
-      .from('event_photos')
-      .select('id, url, created_at, uploaded_by')
-      .eq('event_id', eventId)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
+    const photos = await getEventPhotos(eventId);
     return NextResponse.json({ photos });
   } catch (error: any) {
     console.error('[Event Gallery GET] ERROR:', error.message);
@@ -70,61 +63,16 @@ export async function POST(
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const extension = file.type === 'image/png' ? 'png' : 'jpg';
-    const filePath = `images/${uuidv4()}_gallery.${extension}`;
+    // Extract headers for self-healing proxy URL generation
+    const hostHeader = request.headers.get('host');
+    const protoHeader = request.headers.get('x-forwarded-proto');
 
-    // 1. Upload to Backblaze B2
-    await b2ImagesClient.send(
-      new PutObjectCommand({
-        Bucket: B2_IMAGES_BUCKET_NAME,
-        Key: filePath,
-        Body: buffer,
-        ContentType: file.type || 'image/jpeg',
-      })
+    const photoEntry = await addEventPhoto(
+      eventId,
+      file,
+      user.id,
+      { host: hostHeader, proto: protoHeader }
     );
-
-    // 2. Build URL
-    function buildProxyUrl(req: Request, filePath: string): string {
-      const getRawUrl = () => {
-        const envUrl = process.env.NEXT_PUBLIC_SITE_URL;
-        if (envUrl && (!envUrl.includes('localhost') || process.env.NODE_ENV !== 'production')) {
-          return `${envUrl.replace(/\/$/, '')}/api/assets/${filePath}`;
-        }
-        const host = req.headers.get('host') || '';
-        const proto = req.headers.get('x-forwarded-proto') || 'https';
-        if (host && (!host.includes('localhost') || process.env.NODE_ENV !== 'production')) {
-          return `${proto}://${host}/api/assets/${filePath}`;
-        }
-        if (process.env.NODE_ENV === 'production') {
-          return `https://cooking.nivet2006.in/api/assets/${filePath}`;
-        }
-        return `http://localhost:3000/api/assets/${filePath}`;
-      };
-
-      const rawUrl = getRawUrl();
-      if (!/^https?:\/\//i.test(rawUrl)) {
-        return `https://${rawUrl}`;
-      }
-      return rawUrl;
-    }
-
-    const imageUrl = buildProxyUrl(request, filePath);
-
-    // 3. Insert into event_photos table
-    const { data: photoEntry, error: insertError } = await supabase
-      .from('event_photos')
-      .insert({
-        event_id: eventId,
-        url: imageUrl,
-        uploaded_by: user.id
-      })
-      .select()
-      .single();
-
-    if (insertError) {
-      throw new Error(insertError.message);
-    }
 
     return NextResponse.json({ success: true, photo: photoEntry });
   } catch (error: any) {
@@ -154,57 +102,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Missing photoId' }, { status: 400 });
     }
 
-    // 1. Fetch photo details to verify ownership/existence
-    const { data: photo, error: fetchError } = await supabase
-      .from('event_photos')
-      .select('*')
-      .eq('id', photoId)
-      .eq('event_id', eventId)
-      .single();
-
-    if (fetchError || !photo) {
-      return NextResponse.json({ error: 'Photo not found' }, { status: 404 });
-    }
-
-    // Check permissions (creator of upload or admin)
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    const isAdmin = profile?.role === 'admin';
-    const isOwner = photo.uploaded_by === user.id;
-
-    if (!isOwner && !isAdmin) {
-      return NextResponse.json({ error: 'Unauthorized to delete this photo' }, { status: 403 });
-    }
-
-    // 2. Delete from Backblaze B2 if it's a B2 URL
-    try {
-      const match = photo.url.match(/\/api\/assets\/(images\/.+)$/);
-      if (match && match[1]) {
-        const key = match[1];
-        await b2ImagesClient.send(
-          new DeleteObjectCommand({
-            Bucket: B2_IMAGES_BUCKET_NAME,
-            Key: key,
-          })
-        );
-      }
-    } catch (b2Err: any) {
-      console.error('[Event Gallery DELETE] B2 Deletion warning:', b2Err.message);
-    }
-
-    // 3. Delete from database
-    const { error: deleteError } = await supabase
-      .from('event_photos')
-      .delete()
-      .eq('id', photoId);
-
-    if (deleteError) {
-      throw new Error(deleteError.message);
-    }
+    await deleteEventPhoto(eventId, photoId, user.id);
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
