@@ -19,7 +19,7 @@
 | `certificate-service.ts` | REQUIRED | COMPLETE | PASS |
 | `gamification-service.ts` | REQUIRED | COMPLETE | PASS |
 | `analytics-service.ts` | RECOMMENDED | COMPLETE | PASS |
-| `export-service.ts` | REQUIRED | NOT STARTED | NOT RUN |
+| `export-service.ts` | REQUIRED | COMPLETE | PASS |
 | `qr-service.ts` | RECOMMENDED | NOT STARTED | NOT RUN |
 | `calendar-service.ts` | RECOMMENDED | NOT STARTED | NOT RUN |
 
@@ -729,6 +729,74 @@ COMPLETE
 
 ### Completion Date
 2026-07-13
+
+---
+
+## `export-service.ts`
+
+### Architecture Recommendation
+REQUIRED. P4 Priority. Bounded service layer to format, generate, and stream CSV/XLSX report data.
+
+### Pre-Implementation Verification
+- Verified that registrations/attendance can be exported as CSV for individual events and as a combined XLSX workbook for all semesters.
+- Verified that ExcelJS is configured in the codebase for sheet structure.
+- Implementation decision: PROCEED.
+
+### Architecture Report Differences
+None.
+
+### Final Service Responsibilities
+- Standardized CSV formatting helper for event registrations list.
+- ExcelJS workbook assembler for multi-semester attendance tracking spreadsheet.
+
+### Files Created
+- `lib/services/export-service.ts`
+- `lib/actions/export-actions.ts`
+
+### Files Modified
+- `app/api/admin/combined-sheet/route.ts`
+- `components/admin/EventRegistrationStats.tsx`
+
+### Database Changes
+None.
+
+### Callers Migrated
+- Combined sheet XLSX API download endpoint.
+- Individual event registration stats CSV export component.
+
+### Duplicate Logic Removed
+Decoupled spreadsheet layout formatting and styling constraints from route handlers.
+
+### Security Changes
+Added strict global role authorization assertion checks on CSV export action.
+
+### Performance Changes
+Consolidated redundant data fetches.
+
+### Side-Effect Ownership
+Read-only.
+
+### Tests Added
+None.
+
+### Verification Results
+Build: PASS
+Lint: PRE-EXISTING FAILURE
+Type Check: PASS
+Git Diff: PASS
+
+### Deferred Integrations
+None.
+
+### Known Risks
+None.
+
+### Final Status
+COMPLETE
+
+### Completion Date
+2026-07-13
+
 
 
 

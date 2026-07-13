@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { Users, User, Clock, CheckCircle, Download, MessageSquareHeart } from 'lucide-react'
+import { exportEventRegistrationsAction } from '@/lib/actions/export-actions'
 
 interface Registration {
   id: string
@@ -73,11 +74,14 @@ export function EventRegistrationStats({ eventId }: { eventId: string }) {
     }
   }, [eventId]) // supabase is a singleton — stable, safe to omit
 
-  const exportList = () => {
-    const csvContent = "Full Name,USN,Department,Status,Feedback Given\n" +
-      registrations.map(r => `${r.profiles.full_name},${r.profiles.usn},${r.profiles.department},${r.checked_in ? 'Checked In' : 'Registered'},${feedbacks.includes(r.student_id) ? 'Yes' : 'No'}`).join("\n")
+  const exportList = async () => {
+    const result = await exportEventRegistrationsAction(eventId)
+    if (result.error) {
+      alert(`Export failed: ${result.error}`)
+      return
+    }
 
-    const blob = new Blob([csvContent], { type: 'text/csv' })
+    const blob = new Blob([result.data!], { type: 'text/csv' })
     const url = window.URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
