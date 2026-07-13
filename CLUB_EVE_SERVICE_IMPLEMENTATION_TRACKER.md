@@ -17,7 +17,7 @@
 | `media-service.ts` | REQUIRED | COMPLETE | PASS |
 | `feedback-service.ts` | REQUIRED | COMPLETE | PASS |
 | `certificate-service.ts` | REQUIRED | COMPLETE | PASS |
-| `gamification-service.ts` | REQUIRED | NOT STARTED | NOT RUN |
+| `gamification-service.ts` | REQUIRED | COMPLETE | PASS |
 | `analytics-service.ts` | RECOMMENDED | NOT STARTED | NOT RUN |
 | `export-service.ts` | REQUIRED | NOT STARTED | NOT RUN |
 | `qr-service.ts` | RECOMMENDED | NOT STARTED | NOT RUN |
@@ -600,6 +600,71 @@ COMPLETE
 
 ### Completion Date
 2026-07-13
+
+---
+
+## `gamification-service.ts`
+
+### Architecture Recommendation
+REQUIRED. P3 Priority. Centralize leaderboard ranking queries, badge evaluations, and student points history.
+
+### Pre-Implementation Verification
+- Verified active database tables: `profiles` (storing points), `points_history` (point logs), `user_badges` (earned badges).
+- Verified points are updated and badges are automatically awarded via PostgreSQL database triggers (`0032_gamification.sql`), making this service predominantly read-oriented.
+- Implementation decision: PROCEED.
+
+### Architecture Report Differences
+Merged leaderboard and badge services under the single `gamification-service.ts` to prevent domain fragmentation.
+
+### Final Service Responsibilities
+- Query global leaderboard sorted by points.
+- Retrieve point histories, user badges, and calculate dynamic ranks.
+
+### Files Created
+- `lib/services/gamification-service.ts`
+
+### Files Modified
+- `lib/actions/gamification-actions.ts`
+
+### Database Changes
+None.
+
+### Callers Migrated
+- Gamification actions module (leaderboard queries and user profiles queries).
+
+### Duplicate Logic Removed
+Decoupled raw database joins and dynamic ranking math from the client action handlers.
+
+### Security Changes
+Cleaned query properties returned to the client to avoid exposing PII.
+
+### Performance Changes
+None.
+
+### Side-Effect Ownership
+Read-only.
+
+### Tests Added
+None.
+
+### Verification Results
+Build: PASS
+Lint: PRE-EXISTING FAILURE
+Type Check: PASS
+Git Diff: PASS
+
+### Deferred Integrations
+None.
+
+### Known Risks
+None.
+
+### Final Status
+COMPLETE
+
+### Completion Date
+2026-07-13
+
 
 
 
