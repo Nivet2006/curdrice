@@ -21,7 +21,8 @@
 | `analytics-service.ts` | RECOMMENDED | COMPLETE | PASS |
 | `export-service.ts` | REQUIRED | COMPLETE | PASS |
 | `qr-service.ts` | RECOMMENDED | COMPLETE | PASS |
-| `calendar-service.ts` | RECOMMENDED | NOT STARTED | NOT RUN |
+| `calendar-service.ts` | RECOMMENDED | COMPLETE | PASS |
+
 
 ---
 
@@ -862,6 +863,72 @@ COMPLETE
 
 ### Completion Date
 2026-07-13
+
+---
+
+## `calendar-service.ts`
+
+### Architecture Recommendation
+RECOMMENDED. P4 Priority. Encapsulate calendar queries, time boundary offsets, and date range query size limitations to protect DB resources.
+
+### Pre-Implementation Verification
+- Verified that various roles load their respective event calendars.
+- Verified that database has no specific calendar function triggers or complex views.
+- Implementation decision: PROCEED.
+
+### Architecture Report Differences
+None.
+
+### Final Service Responsibilities
+- Standard query to retrieve approved events.
+- Range-bounded query method enforcing a maximum 90 days span to block resource exhaustion DoS.
+
+### Files Created
+- `lib/services/calendar-service.ts`
+- `lib/actions/calendar-actions.ts`
+
+### Files Modified
+- `app/admin/calendar/page.tsx`
+
+### Database Changes
+None.
+
+### Callers Migrated
+- Admin calendar page event retrieval.
+
+### Duplicate Logic Removed
+Decoupled raw SQL event queries from the page component.
+
+### Security Changes
+Added a strict 3-month range validation check to block malicious date span requests.
+
+### Performance Changes
+None.
+
+### Side-Effect Ownership
+Read-only.
+
+### Tests Added
+None.
+
+### Verification Results
+Build: PASS
+Lint: PRE-EXISTING FAILURE
+Type Check: PASS
+Git Diff: PASS
+
+### Deferred Integrations
+None.
+
+### Known Risks
+None.
+
+### Final Status
+COMPLETE
+
+### Completion Date
+2026-07-13
+
 
 
 
