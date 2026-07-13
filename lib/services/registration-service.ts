@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { generateQRToken } from '@/lib/services/qr-service'
 
 export class IneligibleStudentError extends Error {
   constructor(message: string) {
@@ -71,7 +72,7 @@ export async function registerForEvent(input: RegisterForEventInput, actorId: st
     }
   }
 
-  const qrToken = crypto.randomUUID()
+  const qrToken = generateQRToken()
 
   // 4. Try RPC for atomic insert
   try {
