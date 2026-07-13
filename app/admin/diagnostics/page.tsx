@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { Card } from '@/components/ui/Card'
-import { Check, Play, Settings, ShieldCheck, ShieldAlert, CheckCircle, HelpCircle } from 'lucide-react'
+import { Check, Play, Settings, ShieldCheck, ShieldAlert, CheckCircle, HelpCircle, Download } from 'lucide-react'
 import { runServiceTestsAction } from '@/lib/actions/tester-actions'
 
 interface TestResult {
@@ -94,6 +94,17 @@ export default function DiagnosticsPage() {
     }
   }
 
+  const exportResults = () => {
+    if (Object.keys(results).length === 0) return
+    const content = JSON.stringify(results, null, 2)
+    const blob = new Blob([content], { type: 'application/json' })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `diagnostic-results-${new Date().toISOString().split('T')[0]}.json`
+    a.click()
+  }
+
   return (
     <div className="w-full max-w-6xl mx-auto py-8 px-4">
       {/* Header Banner */}
@@ -120,6 +131,15 @@ export default function DiagnosticsPage() {
           >
             CLEAR
           </button>
+          {Object.keys(results).length > 0 && (
+            <button
+              onClick={exportResults}
+              className="flex items-center gap-2 px-4 py-2 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs font-mono font-semibold transition-all duration-300 hover:bg-zinc-50 dark:hover:bg-zinc-900 hover:scale-[1.02]"
+            >
+              <Download className="w-3.5 h-3.5" />
+              EXPORT JSON
+            </button>
+          )}
           <button
             onClick={handleRunTests}
             disabled={running || selectedServices.length === 0}
