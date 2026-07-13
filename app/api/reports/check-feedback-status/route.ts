@@ -1,5 +1,7 @@
-import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
+import { getFeedbackAggregation } from '@/lib/services/feedback-service';
+
+export const runtime = 'nodejs';
 
 export async function GET(request: Request) {
   try {
@@ -10,25 +12,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Event ID is required' }, { status: 400 });
     }
 
-    const supabase = await createClient();
-
-    // Fallback: Calculate dynamically from registrations and feedbacks tables
-    // 1. Get total checked-in attendees
-    const { count: totalAttendees, error: regError } = await supabase
-      .from('registrations')
-      .select('*', { count: 'exact', head: true })
-      .eq('event_id', eventId)
-      .eq('checked_in', true);
-
-    // 2. Get total feedback submitted
-    const { count: submittedFeedback, error: feedError } = await supabase
-      .from('feedbacks')
-      .select('*', { count: 'exact', head: true })
-      .eq('event_id', eventId);
-
-    const total = totalAttendees || 0;
-    const submitted = submittedFeedback || 0;
-    const isComplete = total > 0 && submitted >= total;
+    const { total, submitted, isComplete } = await getFeedbackAggregation(eventId);
 
     return NextResponse.json({
       total,

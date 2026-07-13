@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
-import { PutObjectCommand } from '@aws-sdk/client-s3';
-import { v4 as uuidv4 } from 'uuid';
 import { createClient } from '@/lib/supabase/server';
-import { b2ImagesClient, B2_IMAGES_BUCKET_NAME } from '@/lib/b2';
+import { uploadEventBanner } from '@/lib/services/media-service';
 
 if (!process.env.NEXT_PUBLIC_SITE_URL && process.env.NODE_ENV === 'production') {
   console.error('[FATAL] NEXT_PUBLIC_SITE_URL is not set. Image proxy URLs will be wrong.');
@@ -39,102 +37,25 @@ export async function POST(request: Request) {
     const file = formData.get('file') as File | null;
     const oldUrl = formData.get('oldUrl') as string | null;
 
-    if (oldUrl) {
-      try {
-        // Parse the key from the old proxy URL e.g., .../api/assets/images/...
-        const match = oldUrl.match(/\/api\/assets\/(images\/.+)$/);
-        if (match && match[1]) {
-          const oldKey = match[1];
-          console.log(`[Upload] Deleting old poster from B2: key=${oldKey}`);
-          const { DeleteObjectCommand } = await import('@aws-sdk/client-s3');
-          await b2ImagesClient.send(
-            new DeleteObjectCommand({
-              Bucket: B2_IMAGES_BUCKET_NAME,
-              Key: oldKey,
-            })
-          );
-        }
-      } catch (err: any) {
-        console.error('[Upload] Failed to delete old poster:', err.message);
-      }
-    }
-
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const extension = file.type === 'image/png' ? 'png' : 'jpg';
-    const filePath = `images/${uuidv4()}_image.${extension}`;
+    // Extract headers for self-healing proxy URL generation
+    const hostHeader = request.headers.get('host');
+    const protoHeader = request.headers.get('x-forwarded-proto');
 
-    console.log(`[Upload] Uploading to B2: bucket=${B2_IMAGES_BUCKET_NAME}, key=${filePath}`);
-
-    await b2ImagesClient.send(
-      new PutObjectCommand({
-        Bucket: B2_IMAGES_BUCKET_NAME,
-        Key: filePath,
-        Body: buffer,
-        ContentType: file.type || 'image/jpeg',
-      })
+    const imageUrl = await uploadEventBanner(
+      file,
+      { host: hostHeader, proto: protoHeader },
+      oldUrl
     );
 
-    // Bulletproof URL construction (self-healing, never uses localhost in production)
-    function buildProxyUrl(req: Request, filePath: string): string {
-      const getRawUrl = () => {
-        // 1. Prefer explicit env var (most reliable)
-        const envUrl = process.env.NEXT_PUBLIC_SITE_URL;
-        if (envUrl && (!envUrl.includes('localhost') || process.env.NODE_ENV !== 'production')) {
-          return `${envUrl.replace(/\/$/, '')}/api/assets/${filePath}`;
-        }
-
-        // 2. Derive from the incoming request's Host header (works on any host)
-        const host = req.headers.get('host') || '';
-        const proto = req.headers.get('x-forwarded-proto') || 'https';
-        if (host && (!host.includes('localhost') || process.env.NODE_ENV !== 'production')) {
-          return `${proto}://${host}/api/assets/${filePath}`;
-        }
-
-        // 3. Vercel auto-injects this — no scheme, so we add https
-        const vercelUrl = process.env.VERCEL_URL;
-        if (vercelUrl && (!vercelUrl.includes('localhost') || process.env.NODE_ENV !== 'production')) {
-          return `https://${vercelUrl}/api/assets/${filePath}`;
-        }
-
-        // 4. True last resort — only ever correct locally
-        if (process.env.NODE_ENV === 'production') {
-          return `https://cooking.nivet2006.in/api/assets/${filePath}`;
-        }
-        return `http://localhost:3000/api/assets/${filePath}`;
-      };
-
-      const rawUrl = getRawUrl();
-      if (!/^https?:\/\//i.test(rawUrl)) {
-        return `https://${rawUrl}`;
-      }
-      return rawUrl;
-    }
-
-    const imageUrl = buildProxyUrl(request, filePath);
-
-    // Validate constructed URL before returning
-    try {
-      new URL(imageUrl);
-    } catch {
-      console.error('[upload] Invalid imageUrl constructed:', imageUrl);
-      return NextResponse.json(
-        { error: `Server misconfiguration: could not build a valid image URL. Check NEXT_PUBLIC_SITE_URL env var. Got: "${imageUrl}"` },
-        { status: 500 }
-      );
-    }
-
     console.log(`[Upload] Success. Proxy URL: ${imageUrl}`);
-
     return NextResponse.json({ success: true, url: imageUrl });
 
   } catch (error: any) {
-    console.error('[Upload] ERROR:', error.message);
+    console.error('[Upload API] ERROR:', error.message);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
-
-
