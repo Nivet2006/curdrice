@@ -16,7 +16,7 @@
 | `notification-service.ts` | REQUIRED | COMPLETE | PASS |
 | `media-service.ts` | REQUIRED | COMPLETE | PASS |
 | `feedback-service.ts` | REQUIRED | COMPLETE | PASS |
-| `certificate-service.ts` | REQUIRED | NOT STARTED | NOT RUN |
+| `certificate-service.ts` | REQUIRED | COMPLETE | PASS |
 | `gamification-service.ts` | REQUIRED | NOT STARTED | NOT RUN |
 | `analytics-service.ts` | RECOMMENDED | NOT STARTED | NOT RUN |
 | `export-service.ts` | REQUIRED | NOT STARTED | NOT RUN |
@@ -533,6 +533,74 @@ COMPLETE
 
 ### Completion Date
 2026-07-13
+
+---
+
+## `certificate-service.ts`
+
+### Architecture Recommendation
+REQUIRED. P2 Priority. Bounded context for saving certificate configurations, retrieving student-earned certificates, and verifying certificate validity.
+
+### Pre-Implementation Verification
+- Verified active database tables: `event_certificates` stores config mapping, `cert_deliveries` stores student certificates, `cert_generation_runs` tracks runs.
+- Verified that these tables exist but were not previously queried/mutated by the application logic.
+- Verified that certificate generation (canvas/pdf-lib) is performed client-side and sent to `/api/cert/send` for email relay.
+- Implementation decision: PROCEED.
+
+### Architecture Report Differences
+Merged verification reads directly into this service to handle public QR code verify actions.
+
+### Final Service Responsibilities
+- Save/upsert certificate configurations for events with administrator authorization checks.
+- Retrieve certificate configuration details.
+- Query individual student certificates.
+- Verify public certificate UUIDs and return validation metadata.
+
+### Files Created
+- `lib/services/certificate-service.ts`
+
+### Files Modified
+- `lib/actions/cert-actions.ts`
+
+### Database Changes
+None.
+
+### Callers Migrated
+- Certificate actions module (to save configurations, list student certificates, and verify certificate validity).
+
+### Duplicate Logic Removed
+Decoupled direct Supabase queries for configurations and verification details from controllers and actions.
+
+### Security Changes
+Added administrative role enforcement on config updates, and secure UUID verification query boundaries.
+
+### Performance Changes
+None.
+
+### Side-Effect Ownership
+Updates `event_certificates`.
+
+### Tests Added
+None.
+
+### Verification Results
+Build: PASS
+Lint: PRE-EXISTING FAILURE
+Type Check: PASS
+Git Diff: PASS
+
+### Deferred Integrations
+None.
+
+### Known Risks
+None.
+
+### Final Status
+COMPLETE
+
+### Completion Date
+2026-07-13
+
 
 
 

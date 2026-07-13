@@ -166,3 +166,60 @@ export async function getEligibleEventsForCertificates(): Promise<{ error?: stri
 
   return { data: events || [] };
 }
+
+/**
+ * Server action to save certificate configuration for an event.
+ */
+export async function saveCertificateConfigAction(
+  eventId: string,
+  config: any,
+  actorId: string
+) {
+  try {
+    const { saveCertificateConfig } = await import('@/lib/services/certificate-service');
+    const data = await saveCertificateConfig(eventId, config, actorId);
+    return { data };
+  } catch (error: any) {
+    return { error: error.message };
+  }
+}
+
+/**
+ * Server action to retrieve certificate configuration for an event.
+ */
+export async function getCertificateConfigAction(eventId: string) {
+  try {
+    const { getCertificateConfig } = await import('@/lib/services/certificate-service');
+    const data = await getCertificateConfig(eventId);
+    return { data };
+  } catch (error: any) {
+    return { error: error.message };
+  }
+}
+
+/**
+ * Server action to fetch student certificates.
+ */
+export async function getStudentCertificatesAction(studentId: string) {
+  try {
+    const { getStudentCertificates } = await import('@/lib/services/certificate-service');
+    const data = await getStudentCertificates(studentId);
+    return { data };
+  } catch (error: any) {
+    return { error: error.message };
+  }
+}
+
+/**
+ * Server action to verify a certificate by UUID.
+ */
+export async function verifyCertificateAction(certificateId: string) {
+  try {
+    const { verifyCertificate } = await import('@/lib/services/certificate-service');
+    const data = await verifyCertificate(certificateId);
+    return { data };
+  } catch (error: any) {
+    return { error: error.message };
+  }
+}
+
