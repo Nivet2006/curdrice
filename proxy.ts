@@ -154,14 +154,16 @@ export async function proxy(request: NextRequest) {
 
   const isPublicEventPage = request.nextUrl.pathname.startsWith('/events/')
   const isRedirectPage = request.nextUrl.pathname.startsWith('/redirect/')
+  const isPublicClubShowcasePage = request.nextUrl.pathname.startsWith('/c/') || request.nextUrl.pathname === '/c'
 
-  // Redirect unauthenticated users to login, but bypass public event details and redirect pages
+  // Redirect unauthenticated users to login, but bypass public event details, public club showcase, and redirect pages
   if (
     !user &&
     !isAuthPage &&
     request.nextUrl.pathname !== '/' &&
     !isPublicEventPage &&
-    !isRedirectPage
+    !isRedirectPage &&
+    !isPublicClubShowcasePage
   ) {
     supabaseResponse.cookies.delete('curdrice_user_role')
     supabaseResponse.cookies.delete('curdrice_user_name')

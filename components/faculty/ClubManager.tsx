@@ -502,7 +502,7 @@ export function ClubManager() {
                       Subclub of {clubs.find(c => c.id === selectedClub.parent_id)?.name || 'Parent Club'}
                     </span>
                   )}
-                  <div className="flex items-center gap-3 mb-1">
+                  <div className="flex flex-wrap items-center gap-3 mb-1">
                     <h3 className="text-xl font-black uppercase text-zinc-900 dark:text-white">{selectedClub.name}</h3>
                     {!selectedClub.parent_id && (
                       <button
@@ -517,6 +517,12 @@ export function ClubManager() {
                         Create Subgroup
                       </button>
                     )}
+                    <a
+                      href="/dashboard/club-showcase"
+                      className="flex items-center gap-1 px-3 py-1 bg-amber-500 hover:bg-amber-400 text-black rounded-lg text-[10px] font-mono uppercase font-bold transition-all shadow-sm"
+                    >
+                      <Sparkles size={11} /> Customize Showcase Page
+                    </a>
                   </div>
                   <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed font-mono">
                     {selectedClub.description || 'No description provided.'}
