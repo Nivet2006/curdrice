@@ -107,3 +107,222 @@ export async function updateMemberRole(formData: FormData) {
     return { error: error.message }
   }
 }
+
+/* =========================================================================
+   PUBLIC SHOWCASE ACTIONS
+   ========================================================================= */
+
+export async function getClubShowcaseData(slugOrId: string) {
+  try {
+    const data = await clubService.getClubShowcaseData(slugOrId)
+    return { data }
+  } catch (error: any) {
+    return { error: error.message }
+  }
+}
+
+export async function updateClubSlugAction(clubId: string, newSlug: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Unauthorized' }
+
+  try {
+    const cleanSlug = await clubService.updateClubSlug(clubId, newSlug, user.id)
+    revalidatePath('/c/[slug]', 'page')
+    revalidatePath('/teacher/dashboard')
+    revalidatePath('/dashboard')
+    return { success: true, slug: cleanSlug }
+  } catch (error: any) {
+    return { error: error.message }
+  }
+}
+
+export async function assignClubAdminAction(clubId: string, profileId: string | null) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Unauthorized' }
+
+  try {
+    await clubService.assignClubAdmin(clubId, profileId, user.id)
+    revalidatePath('/teacher/dashboard')
+    return { success: true }
+  } catch (error: any) {
+    return { error: error.message }
+  }
+}
+
+export async function updateShowcaseConfigAction(clubId: string, configPayload: any) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Unauthorized' }
+
+  try {
+    const config = await clubService.updateClubShowcaseConfig(clubId, configPayload, user.id)
+    revalidatePath('/c/[slug]', 'page')
+    return { success: true, config }
+  } catch (error: any) {
+    return { error: error.message }
+  }
+}
+
+export async function addTestimonialAction(clubId: string, payload: any) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Unauthorized' }
+
+  try {
+    await clubService.addTestimonial(clubId, payload, user.id)
+    revalidatePath('/c/[slug]', 'page')
+    return { success: true }
+  } catch (error: any) {
+    return { error: error.message }
+  }
+}
+
+export async function deleteTestimonialAction(id: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Unauthorized' }
+
+  try {
+    await clubService.deleteTestimonial(id, user.id)
+    revalidatePath('/c/[slug]', 'page')
+    return { success: true }
+  } catch (error: any) {
+    return { error: error.message }
+  }
+}
+
+export async function addGalleryImageAction(clubId: string, payload: any) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Unauthorized' }
+
+  try {
+    await clubService.addGalleryImage(clubId, payload, user.id)
+    revalidatePath('/c/[slug]', 'page')
+    return { success: true }
+  } catch (error: any) {
+    return { error: error.message }
+  }
+}
+
+export async function deleteGalleryImageAction(id: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Unauthorized' }
+
+  try {
+    await clubService.deleteGalleryImage(id, user.id)
+    revalidatePath('/c/[slug]', 'page')
+    return { success: true }
+  } catch (error: any) {
+    return { error: error.message }
+  }
+}
+
+export async function addBlogArticleAction(clubId: string, payload: any) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Unauthorized' }
+
+  try {
+    await clubService.addBlogArticle(clubId, payload, user.id)
+    revalidatePath('/c/[slug]', 'page')
+    return { success: true }
+  } catch (error: any) {
+    return { error: error.message }
+  }
+}
+
+export async function deleteBlogArticleAction(id: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Unauthorized' }
+
+  try {
+    await clubService.deleteBlogArticle(id, user.id)
+    revalidatePath('/c/[slug]', 'page')
+    return { success: true }
+  } catch (error: any) {
+    return { error: error.message }
+  }
+}
+
+export async function addToolItemAction(clubId: string, payload: any) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Unauthorized' }
+
+  try {
+    await clubService.addToolItem(clubId, payload, user.id)
+    revalidatePath('/c/[slug]', 'page')
+    return { success: true }
+  } catch (error: any) {
+    return { error: error.message }
+  }
+}
+
+export async function deleteToolItemAction(id: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Unauthorized' }
+
+  try {
+    await clubService.deleteToolItem(id, user.id)
+    revalidatePath('/c/[slug]', 'page')
+    return { success: true }
+  } catch (error: any) {
+    return { error: error.message }
+  }
+}
+
+export async function addSurveyItemAction(clubId: string, payload: any) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Unauthorized' }
+
+  try {
+    await clubService.addSurveyItem(clubId, payload, user.id)
+    revalidatePath('/c/[slug]', 'page')
+    return { success: true }
+  } catch (error: any) {
+    return { error: error.message }
+  }
+}
+
+export async function deleteSurveyItemAction(id: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Unauthorized' }
+
+  try {
+    await clubService.deleteSurveyItem(id, user.id)
+    revalidatePath('/c/[slug]', 'page')
+    return { success: true }
+  } catch (error: any) {
+    return { error: error.message }
+  }
+}
+
+export async function submitClubInquiryAction(clubId: string, payload: { sender_name: string; sender_email: string; subject?: string; message: string }) {
+  try {
+    await clubService.submitClubInquiry(clubId, payload)
+    return { success: true }
+  } catch (error: any) {
+    return { error: error.message }
+  }
+}
+
+export async function getClubInquiriesAction(clubId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Unauthorized' }
+
+  try {
+    const inquiries = await clubService.getClubInquiries(clubId, user.id)
+    return { inquiries }
+  } catch (error: any) {
+    return { error: error.message }
+  }
+}
