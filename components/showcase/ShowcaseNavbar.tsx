@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Menu, X, Send, ChevronRight, GraduationCap } from 'lucide-react'
+import { Menu, X, Send, ChevronRight, GraduationCap, ShieldCheck } from 'lucide-react'
 import { ThemeToggle } from '@/components/shared/ThemeToggle'
 import PatternPicker from '@/components/shared/PatternPicker'
 
@@ -17,7 +17,7 @@ export function ShowcaseNavbar({
   clubName,
   clubSlug,
   logoUrl,
-  primaryColor = '#f59e0b',
+  primaryColor = '#003C5E',
   navbarConfig
 }: ShowcaseNavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -61,60 +61,58 @@ export function ShowcaseNavbar({
   ]
 
   return (
-    <header className="border-b border-zinc-200 dark:border-zinc-800 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-md sticky top-0 z-50 transition-all duration-200">
-      <nav className="h-[64px] flex items-center justify-between px-4 md:px-8 w-full max-w-[1340px] mx-auto">
-        {/* Left: Club Logo & Name + Gopalan Skill Academy Badge */}
+    <header className="border-b border-white/10 dark:border-white/10 bg-[#0D0D0F]/95 backdrop-blur-md sticky top-0 z-50 transition-all duration-200 text-[#F8F7F2]">
+      <nav className="h-[72px] flex items-center justify-between px-4 md:px-8 w-full max-w-[1340px] mx-auto">
+        {/* Left: Brand Mark + Club Logo & Title */}
         <div className="flex items-center gap-3">
           <a
             href="#home"
             onClick={(e) => handleNavClick(e, '#home')}
-            className="flex items-center gap-2.5 group min-w-0"
+            className="flex items-center gap-3 group min-w-0"
           >
             {logoUrl ? (
-              <img src={logoUrl} alt={clubName} className="w-8 h-8 object-contain rounded-lg shrink-0 shadow-sm" />
+              <img src={logoUrl} alt={clubName} className="w-9 h-9 object-contain rounded-xl shrink-0 shadow-md border border-white/10" />
             ) : (
               <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center font-black font-mono text-xs text-black shadow-sm uppercase shrink-0"
-                style={{ backgroundColor: primaryColor }}
+                className="w-9 h-9 rounded-xl flex items-center justify-center font-black font-mono text-sm text-white shadow-md uppercase shrink-0 bg-[#003C5E] border border-white/10"
               >
-                {clubName.charAt(0)}
+                1%
               </div>
             )}
             <div className="flex flex-col">
-              <span className="text-sm font-bold uppercase tracking-tight text-zinc-900 dark:text-white group-hover:text-amber-500 transition-colors truncate">
+              <span className="text-base font-black uppercase tracking-tight text-[#F8F7F2] group-hover:text-[#FFB703] transition-colors truncate">
                 {navbarConfig?.title || clubName}
               </span>
-              <span className="text-[10px] font-mono font-semibold text-zinc-500 dark:text-zinc-400 flex items-center gap-1">
-                <GraduationCap size={11} className="text-amber-500" /> Gopalan Skill Academy
+              <span className="text-[10px] font-mono font-semibold text-[#B8BEC6] flex items-center gap-1">
+                <GraduationCap size={11} className="text-[#FFB703]" /> Gopalan Skill Academy
               </span>
             </div>
           </a>
         </div>
 
-        {/* Center: Desktop Navigation Links */}
-        <div className="hidden lg:flex items-center gap-1 bg-zinc-100 dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800/80 rounded-full px-3 py-1">
+        {/* Center: Showcase Section Links */}
+        <div className="hidden lg:flex items-center gap-1 bg-[#15171A] border border-white/10 rounded-full px-3.5 py-1.5 shadow-inner">
           {navLinks.map(link => (
             <a
               key={link.label}
               href={link.href}
               onClick={(e) => handleNavClick(e, link.href)}
-              className="px-2.5 py-1 text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-white dark:hover:bg-zinc-800 rounded-full transition-all"
+              className="px-3 py-1 text-[11px] font-mono font-bold uppercase tracking-wider text-[#B8BEC6] hover:text-[#F8F7F2] hover:bg-[#003C5E] rounded-full transition-all"
             >
               {link.label}
             </a>
           ))}
         </div>
 
-        {/* Right: ThemeToggle + PatternPicker + Contact Action */}
-        <div className="flex items-center gap-2.5">
+        {/* Right: ThemeToggle + PatternPicker + Sunset Glow CTA */}
+        <div className="flex items-center gap-3">
           <ThemeToggle />
           <PatternPicker />
 
           <a
             href="#contact"
             onClick={(e) => handleNavClick(e, '#contact')}
-            className="hidden sm:flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-mono font-bold uppercase tracking-wider text-black shadow-sm transition-transform hover:scale-105 active:scale-95 shrink-0"
-            style={{ backgroundColor: primaryColor }}
+            className="hidden sm:flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-mono font-bold uppercase tracking-wider text-white bg-[#E85D04] hover:bg-[#d05303] shadow-lg shadow-[#E85D04]/20 transition-all hover:scale-105 active:scale-95 shrink-0"
           >
             <Send size={12} /> Contact
           </a>
@@ -122,7 +120,7 @@ export function ShowcaseNavbar({
           {/* Mobile Menu Trigger */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-2 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white rounded-lg border border-zinc-200 dark:border-zinc-800"
+            className="lg:hidden p-2 text-[#B8BEC6] hover:text-white rounded-xl border border-white/10 bg-[#15171A]"
           >
             {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
@@ -131,25 +129,24 @@ export function ShowcaseNavbar({
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl border-b border-zinc-200 dark:border-zinc-800 px-6 py-6 space-y-4 animate-in slide-in-from-top duration-200">
+        <div className="lg:hidden bg-[#0D0D0F] border-b border-white/10 px-6 py-6 space-y-4 animate-in slide-in-from-top duration-200">
           <div className="grid grid-cols-2 gap-2">
             {navLinks.map(link => (
               <a
                 key={link.label}
                 href={link.href}
                 onClick={(e) => handleNavClick(e, link.href)}
-                className="px-4 py-3 bg-zinc-100 dark:bg-zinc-900 rounded-xl text-xs font-mono font-bold uppercase tracking-wider text-zinc-800 dark:text-zinc-200 flex items-center justify-between"
+                className="px-4 py-3 bg-[#15171A] rounded-xl text-xs font-mono font-bold uppercase tracking-wider text-[#F8F7F2] flex items-center justify-between border border-white/5"
               >
                 <span>{link.label}</span>
-                <ChevronRight size={14} className="text-zinc-400" />
+                <ChevronRight size={14} className="text-[#FFB703]" />
               </a>
             ))}
           </div>
           <a
             href="#contact"
             onClick={(e) => handleNavClick(e, '#contact')}
-            className="w-full py-3 rounded-xl text-xs font-mono font-bold uppercase tracking-widest text-black text-center block shadow-md"
-            style={{ backgroundColor: primaryColor }}
+            className="w-full py-3.5 rounded-xl text-xs font-mono font-bold uppercase tracking-widest text-white text-center block shadow-lg bg-[#E85D04]"
           >
             Contact Club Admin
           </a>
