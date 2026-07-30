@@ -146,7 +146,7 @@ export function GalleryWallClient({ data }: GalleryWallClientProps) {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white font-mono selection:bg-amber-400 selection:text-black relative overflow-x-hidden">
+    <div className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white font-mono selection:bg-amber-400 selection:text-black relative overflow-x-hidden transition-colors duration-200">
       {/* Dynamic Background Glow ambient layer */}
       <div
         className="fixed top-0 left-1/2 -translate-x-1/2 w-[800px] h-[350px] opacity-15 blur-[140px] pointer-events-none rounded-full transition-colors duration-1000 z-0"
@@ -154,19 +154,19 @@ export function GalleryWallClient({ data }: GalleryWallClientProps) {
       />
 
       {/* Header Bar */}
-      <header className="sticky top-0 z-40 border-b border-zinc-800/80 bg-zinc-950/85 backdrop-blur-xl transition-all">
+      <header className="sticky top-0 z-40 border-b border-zinc-200 dark:border-zinc-800/80 bg-white/85 dark:bg-zinc-950/85 backdrop-blur-xl transition-all">
         <nav className="h-[64px] max-w-[1400px] mx-auto px-4 md:px-8 flex items-center justify-between gap-4">
           {/* Back button + Brand */}
           <div className="flex items-center gap-3">
             <Link
               href={`/c/${club.slug}`}
-              className="group flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-xs font-bold uppercase tracking-wider text-zinc-300 hover:text-white transition-all shadow-sm"
+              className="group flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white transition-all shadow-sm"
             >
               <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
               <span className="hidden sm:inline">Back to Showcase</span>
             </Link>
 
-            <div className="h-4 w-px bg-zinc-800 hidden sm:block" />
+            <div className="h-4 w-px bg-zinc-200 dark:bg-zinc-800 hidden sm:block" />
 
             <div className="flex items-center gap-2.5 min-w-0">
               {logoUrl ? (
@@ -179,8 +179,8 @@ export function GalleryWallClient({ data }: GalleryWallClientProps) {
                   {club.name.charAt(0)}
                 </div>
               )}
-              <span className="text-sm font-bold uppercase tracking-tight text-white truncate">
-                {club.name} <span className="text-zinc-500 font-normal">/ Gallery Wall</span>
+              <span className="text-sm font-bold uppercase tracking-tight text-zinc-900 dark:text-white truncate">
+                {club.name} <span className="text-zinc-400 dark:text-zinc-500 font-normal">/ Gallery Wall</span>
               </span>
             </div>
           </div>
@@ -199,7 +199,7 @@ export function GalleryWallClient({ data }: GalleryWallClientProps) {
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <span
-                className="text-[11px] font-bold uppercase tracking-widest px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 inline-flex items-center gap-1.5 shadow-sm"
+                className="text-[11px] font-bold uppercase tracking-widest px-3 py-1 rounded-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 inline-flex items-center gap-1.5 shadow-sm"
                 style={{ color: primaryColor }}
               >
                 <Sparkles size={12} />
@@ -209,28 +209,28 @@ export function GalleryWallClient({ data }: GalleryWallClientProps) {
                 • {filteredGallery.length} {filteredGallery.length === 1 ? 'Item' : 'Items'}
               </span>
             </div>
-            <h1 className="text-3xl sm:text-5xl font-black uppercase tracking-tight text-white">
+            <h1 className="text-3xl sm:text-5xl font-black uppercase tracking-tight text-zinc-900 dark:text-white">
               {club.name} Memories &amp; Visuals
             </h1>
-            <p className="text-xs sm:text-sm text-zinc-400 max-w-2xl">
+            <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 max-w-2xl">
               Explore high-resolution moments, videos, event highlights, and showcase media dynamically arranged.
             </p>
           </div>
 
           {/* Search Input */}
           <div className="relative w-full lg:w-72">
-            <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500" />
+            <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500" />
             <input
               type="text"
               placeholder="Search gallery..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="w-full bg-zinc-900/90 border border-zinc-800 rounded-xl pl-9 pr-4 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500/80 transition-colors"
+              className="w-full bg-zinc-100 dark:bg-zinc-900/90 border border-zinc-200 dark:border-zinc-800 rounded-xl pl-9 pr-4 py-2.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:border-amber-500/80 transition-colors"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white text-xs"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-white text-xs"
               >
                 ✕
               </button>
@@ -239,7 +239,7 @@ export function GalleryWallClient({ data }: GalleryWallClientProps) {
         </div>
 
         {/* Filters Bar: Media Type & Categories */}
-        <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-zinc-800/80">
+        <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-zinc-200 dark:border-zinc-800/80">
           {/* Category Filter Pills */}
           <div className="flex flex-wrap items-center gap-2">
             {categories.map(cat => (
@@ -248,8 +248,8 @@ export function GalleryWallClient({ data }: GalleryWallClientProps) {
                 onClick={() => setSelectedCategory(cat)}
                 className={`px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold uppercase tracking-wider transition-all duration-200 ${
                   selectedCategory === cat
-                    ? 'bg-white text-black shadow-lg scale-[1.02]'
-                    : 'bg-zinc-900/80 text-zinc-400 hover:text-white hover:bg-zinc-800 border border-zinc-800/80'
+                    ? 'bg-zinc-900 text-white dark:bg-white dark:text-black shadow-md scale-[1.02]'
+                    : 'bg-zinc-100 dark:bg-zinc-900/80 text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800/80'
                 }`}
               >
                 {cat}
@@ -258,13 +258,13 @@ export function GalleryWallClient({ data }: GalleryWallClientProps) {
           </div>
 
           {/* Media type toggle buttons */}
-          <div className="flex items-center gap-1 bg-zinc-900/90 border border-zinc-800/80 rounded-xl p-1">
+          <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-900/90 border border-zinc-200 dark:border-zinc-800/80 rounded-xl p-1">
             <button
               onClick={() => setMediaFilter('all')}
               className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all ${
                 mediaFilter === 'all'
-                  ? 'bg-zinc-800 text-white shadow-sm'
-                  : 'text-zinc-400 hover:text-white'
+                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm'
+                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
               }`}
             >
               <Layers size={13} />
@@ -274,8 +274,8 @@ export function GalleryWallClient({ data }: GalleryWallClientProps) {
               onClick={() => setMediaFilter('images')}
               className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all ${
                 mediaFilter === 'images'
-                  ? 'bg-zinc-800 text-white shadow-sm'
-                  : 'text-zinc-400 hover:text-white'
+                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm'
+                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
               }`}
             >
               <ImageIcon size={13} />
@@ -285,8 +285,8 @@ export function GalleryWallClient({ data }: GalleryWallClientProps) {
               onClick={() => setMediaFilter('videos')}
               className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all ${
                 mediaFilter === 'videos'
-                  ? 'bg-zinc-800 text-white shadow-sm'
-                  : 'text-zinc-400 hover:text-white'
+                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm'
+                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
               }`}
             >
               <Film size={13} />
@@ -307,7 +307,7 @@ export function GalleryWallClient({ data }: GalleryWallClientProps) {
                 <div
                   key={item.id || idx}
                   onClick={() => setActiveItemIndex(idx)}
-                  className="break-inside-avoid group relative bg-zinc-900 rounded-2xl overflow-hidden cursor-pointer border-2 border-zinc-800/80 transition-all duration-300 shadow-md"
+                  className="break-inside-avoid group relative bg-white dark:bg-zinc-900 rounded-2xl overflow-hidden cursor-pointer border-2 border-zinc-200 dark:border-zinc-800/80 transition-all duration-300 shadow-md"
                   style={
                     {
                       '--glow-color': primaryColor
@@ -361,7 +361,7 @@ export function GalleryWallClient({ data }: GalleryWallClientProps) {
                         <div className="space-y-1 min-w-0">
                           {item.category && (
                             <span
-                              className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md inline-block border border-white/20"
+                              className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md inline-block border border-white/20 text-white"
                               style={{ color: primaryColor }}
                             >
                               {item.category}
@@ -387,11 +387,11 @@ export function GalleryWallClient({ data }: GalleryWallClientProps) {
             })}
           </div>
         ) : (
-          <div className="py-24 text-center border-2 border-dashed border-zinc-800 rounded-3xl space-y-4 bg-zinc-900/40 backdrop-blur-sm max-w-xl mx-auto">
-            <ImageIcon size={44} className="mx-auto text-zinc-600" />
+          <div className="py-24 text-center border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-3xl space-y-4 bg-white/40 dark:bg-zinc-900/40 backdrop-blur-sm max-w-xl mx-auto">
+            <ImageIcon size={44} className="mx-auto text-zinc-400 dark:text-zinc-600" />
             <div className="space-y-1">
-              <h3 className="text-base font-bold uppercase text-zinc-300">No Gallery Items Found</h3>
-              <p className="text-xs text-zinc-500">
+              <h3 className="text-base font-bold uppercase text-zinc-800 dark:text-zinc-300">No Gallery Items Found</h3>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
                 {searchQuery
                   ? `No media items matching "${searchQuery}"`
                   : 'No photos or videos uploaded for this club yet.'}
@@ -404,7 +404,7 @@ export function GalleryWallClient({ data }: GalleryWallClientProps) {
                   setSelectedCategory('All')
                   setMediaFilter('all')
                 }}
-                className="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-xs font-bold uppercase text-white transition-colors"
+                className="px-4 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-xs font-bold uppercase text-zinc-900 dark:text-white transition-colors"
               >
                 Reset Filters
               </button>
@@ -431,18 +431,18 @@ export function GalleryWallClient({ data }: GalleryWallClientProps) {
               exit={{ opacity: 0, scale: 0.9, y: 15 }}
               transition={{ type: 'spring', stiffness: 350, damping: 28 }}
               onClick={e => e.stopPropagation()}
-              className="relative max-w-5xl w-full bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh]"
+              className="relative max-w-5xl w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh]"
             >
               {/* Modal Top Header */}
-              <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-800/80 bg-zinc-950/60">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-200 dark:border-zinc-800/80 bg-zinc-50 dark:bg-zinc-950/60">
                 <div className="flex items-center gap-3 min-w-0">
                   <span
-                    className="text-[10px] font-mono font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-zinc-800/80 border border-zinc-700"
+                    className="text-[10px] font-mono font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700"
                     style={{ color: primaryColor }}
                   >
                     {activeItem.category || 'General'}
                   </span>
-                  <h3 className="text-xs sm:text-sm font-bold uppercase tracking-tight text-white truncate">
+                  <h3 className="text-xs sm:text-sm font-bold uppercase tracking-tight text-zinc-900 dark:text-white truncate">
                     {activeItem.title || 'Gallery Media'}
                   </h3>
                 </div>
@@ -455,7 +455,7 @@ export function GalleryWallClient({ data }: GalleryWallClientProps) {
                   <button
                     onClick={() => handleShare(activeItem)}
                     title="Share link"
-                    className="p-2 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white transition-colors"
+                    className="p-2 rounded-full bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white transition-colors"
                   >
                     <Share2 size={16} />
                   </button>
@@ -466,14 +466,14 @@ export function GalleryWallClient({ data }: GalleryWallClientProps) {
                     rel="noreferrer"
                     download
                     title="Download original media"
-                    className="p-2 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white transition-colors"
+                    className="p-2 rounded-full bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white transition-colors"
                   >
                     <Download size={16} />
                   </a>
 
                   <button
                     onClick={() => setActiveItemIndex(null)}
-                    className="p-2 rounded-full bg-zinc-800 hover:bg-red-500/20 hover:text-red-400 text-zinc-300 transition-colors ml-1"
+                    className="p-2 rounded-full bg-zinc-100 dark:bg-zinc-800 hover:bg-red-100 dark:hover:bg-red-500/20 text-zinc-700 dark:text-zinc-300 hover:text-red-600 dark:hover:text-red-400 transition-colors ml-1"
                   >
                     <X size={18} />
                   </button>
@@ -519,14 +519,14 @@ export function GalleryWallClient({ data }: GalleryWallClientProps) {
 
               {/* Modal Bottom Metadata Bar */}
               {(activeItem.title || activeItem.caption) && (
-                <div className="px-6 py-4 bg-zinc-950/90 border-t border-zinc-800/80 space-y-1">
+                <div className="px-6 py-4 bg-zinc-50 dark:bg-zinc-950/90 border-t border-zinc-200 dark:border-zinc-800/80 space-y-1">
                   {copied && (
-                    <p className="text-[11px] font-mono text-emerald-400 font-bold mb-1">
+                    <p className="text-[11px] font-mono text-emerald-500 dark:text-emerald-400 font-bold mb-1">
                       ✓ Direct media link copied to clipboard!
                     </p>
                   )}
                   {activeItem.caption && (
-                    <p className="text-xs text-zinc-300 leading-relaxed font-sans">
+                    <p className="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed font-sans">
                       {activeItem.caption}
                     </p>
                   )}
