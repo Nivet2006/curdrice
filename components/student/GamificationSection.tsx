@@ -171,11 +171,11 @@ export function GamificationSection({
           return (
             <div className="border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden bg-white dark:bg-zinc-900">
               {/* Table Header */}
-              <div className="grid grid-cols-[60px_1fr_120px_100px_120px] gap-2 px-6 py-3.5 border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 items-center font-mono text-[10px] uppercase tracking-widest text-zinc-400 font-bold">
+              <div className="grid grid-cols-[40px_1fr_80px] sm:grid-cols-[60px_1fr_120px_100px_120px] gap-2 px-3 sm:px-6 py-3.5 border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 items-center font-mono text-[10px] uppercase tracking-widest text-zinc-400 font-bold">
                 <span className="text-center">Rank</span>
                 <span>Student / USN</span>
-                <span>Branch</span>
-                <span>Badges</span>
+                <span className="hidden sm:block">Branch</span>
+                <span className="hidden sm:block">Badges</span>
                 <span className="text-right">Score</span>
               </div>
 
@@ -193,9 +193,9 @@ export function GamificationSection({
                   return (
                     <div
                       key={entry.id}
-                      className={`grid grid-cols-[60px_1fr_120px_100px_120px] gap-2 px-6 py-4 items-center transition-colors ${
+                      className={`grid grid-cols-[40px_1fr_80px] sm:grid-cols-[60px_1fr_120px_100px_120px] gap-2 px-3 sm:px-6 py-4 items-center transition-colors ${
                         isSelf
-                          ? 'bg-amber-500/5 dark:bg-amber-500/10 font-bold border-l-4 border-amber-500 pl-5'
+                          ? 'bg-amber-500/5 dark:bg-amber-500/10 font-bold border-l-4 border-amber-500 pl-3 sm:pl-5'
                           : 'hover:bg-zinc-50 dark:hover:bg-zinc-850'
                       }`}
                     >
@@ -218,10 +218,10 @@ export function GamificationSection({
                       </div>
 
                       {/* Department */}
-                      <span className="font-mono text-xs text-zinc-500">{entry.department}</span>
+                      <span className="font-mono text-xs text-zinc-500 hidden sm:block">{entry.department}</span>
 
                       {/* Badges preview */}
-                      <div className="flex items-center gap-1.5 overflow-hidden">
+                      <div className="hidden sm:flex items-center gap-1.5 overflow-hidden">
                         {entry.user_badges?.slice(0, 3).map((b, bIdx) => (
                           <div key={bIdx} title={b.badge_name}>
                             {getBadgeIcon(b.badge_icon, 14)}
@@ -250,7 +250,7 @@ export function GamificationSection({
                       return (
                         <div
                           key={currentUserEntry.id}
-                          className="grid grid-cols-[60px_1fr_120px_100px_120px] gap-2 px-6 py-4 items-center transition-colors bg-amber-500/5 dark:bg-amber-500/10 font-bold border-l-4 border-amber-500 pl-5"
+                          className="grid grid-cols-[40px_1fr_80px] sm:grid-cols-[60px_1fr_120px_100px_120px] gap-2 px-3 sm:px-6 py-4 items-center transition-colors bg-amber-500/5 dark:bg-amber-500/10 font-bold border-l-4 border-amber-500 pl-3 sm:pl-5"
                         >
                           {/* Rank Column */}
                           <div className="font-mono text-center text-xs">
@@ -269,10 +269,10 @@ export function GamificationSection({
                           </div>
 
                           {/* Department */}
-                          <span className="font-mono text-xs text-zinc-500">{currentUserEntry.department}</span>
+                          <span className="font-mono text-xs text-zinc-500 hidden sm:block">{currentUserEntry.department}</span>
 
                           {/* Badges preview */}
-                          <div className="flex items-center gap-1.5 overflow-hidden">
+                          <div className="hidden sm:flex items-center gap-1.5 overflow-hidden">
                             {currentUserEntry.user_badges?.slice(0, 3).map((b, bIdx) => (
                               <div key={bIdx} title={b.badge_name}>
                                 {getBadgeIcon(b.badge_icon, 14)}

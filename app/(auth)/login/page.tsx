@@ -69,12 +69,14 @@ export default function LoginPage() {
 
   if (step === 'totp' && adminData) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4 relative">
+      <div className="min-h-screen flex flex-col items-center justify-center p-4">
         {loading && <ShieldLoader />}
-        <div className="absolute top-6 left-8 font-mono font-bold text-lg">{'>'} Club-Eve</div>
-        <div className="absolute top-6 right-8 flex items-center gap-3">
-          <ThemeToggle />
-          <BrandMark />
+        <div className="w-full max-w-sm flex items-center justify-between mb-4 sm:mb-6 px-1">
+          <div className="font-mono font-bold text-lg">{'>'} Club-Eve</div>
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <BrandMark />
+          </div>
         </div>
         <TotpLoginStep 
           onSuccess={handleTotpSuccess} 
@@ -84,19 +86,21 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 relative">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4">
 
       {loading && <ShieldLoader />}
 
-      <div className="absolute top-6 left-8 font-mono font-bold text-lg">
-        {'>'} Club-Eve
-      </div>
-      <div className="absolute top-6 right-8 flex items-center gap-3">
-        <ThemeToggle />
-        <BrandMark />
+      <div className="w-full max-w-sm flex items-center justify-between mb-4 sm:mb-6 px-1">
+        <div className="font-mono font-bold text-lg">
+          {'>'} Club-Eve
+        </div>
+        <div className="flex items-center gap-3">
+          <ThemeToggle />
+          <BrandMark />
+        </div>
       </div>
 
-      <Card className="max-w-sm w-full px-8 py-10 flex flex-col items-center">
+      <Card className="max-w-sm w-full px-5 py-8 sm:px-8 sm:py-10 flex flex-col items-center">
         <img src="/logo.png" alt="logo" className="w-20 h-20 object-contain mb-1" />
         <h1 className="text-2xl font-black tracking-tight mt-3">Club-Eve</h1>
 
@@ -156,7 +160,7 @@ export default function LoginPage() {
 
       {/* Test Credentials Helper */}
       <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
-        <div className={`mb-4 bg-white dark:bg-[#111111] border border-[#e0e0e0] dark:border-[#333333] shadow-lg rounded-xl p-4 transition-all duration-200 origin-bottom-right ${showTestCreds ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
+        <div className={`mb-4 w-full max-w-[280px] bg-white dark:bg-[#111111] border border-[#e0e0e0] dark:border-[#333333] shadow-lg rounded-xl p-4 transition-all duration-200 origin-bottom-right ${showTestCreds ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
           <h3 className="font-bold text-sm mb-3 text-[#0a0a0a] dark:text-[#f5f5f5] flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
             Test Accounts

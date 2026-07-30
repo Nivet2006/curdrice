@@ -38,15 +38,15 @@ export default async function StudentDashboard() {
 
   return (
     <div className="w-full">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 md:mb-12 gap-4">
         <div>
-          <h1 className="text-4xl font-black tracking-tighter mb-2 text-[#0a0a0a] uppercase">
+          <h1 className="text-3xl md:text-4xl font-black tracking-tighter mb-2 text-[#0a0a0a] uppercase">
             Welcome, {profile?.full_name}
           </h1>
-          <p className="font-mono text-sm text-[#555555] uppercase tracking-widest">{profile?.usn}</p>
+          <p className="font-mono text-xs md:text-sm text-[#555555] uppercase tracking-widest">{profile?.usn}</p>
         </div>
         <div className="flex items-center gap-4">
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <span className="bg-[#f5f5f5] px-3 py-1 font-mono text-xs text-[#999999] rounded-full border border-[#e0e0e0]">{profile?.department}</span>
             <span className="bg-[#f5f5f5] px-3 py-1 font-mono text-xs text-[#999999] rounded-full border border-[#e0e0e0]">Sem {profile?.semester}</span>
             <span className="bg-[#f5f5f5] px-3 py-1 font-mono text-xs text-[#999999] rounded-full border border-[#e0e0e0]">Year {profile?.year}</span>
@@ -54,8 +54,8 @@ export default async function StudentDashboard() {
         </div>
       </div>
 
-      <div className="mb-12">
-        <h2 className="flex items-center gap-3 text-xl font-black mb-6 text-[#0a0a0a] uppercase tracking-tight">
+      <div className="mb-6 md:mb-12">
+        <h2 className="flex items-center gap-3 text-lg md:text-xl font-black mb-4 sm:mb-6 text-[#0a0a0a] uppercase tracking-tight">
           You're Going
           <EasterEggBADGE>
             <span className="bg-[#0a0a0a] text-white font-mono text-xs px-2 py-0.5 rounded-full cursor-default">
@@ -67,12 +67,12 @@ export default async function StudentDashboard() {
         {registeredEvents.length === 0 ? (
           <p className="font-mono text-xs text-[#999999] p-8 border border-dashed border-[#e0e0e0] rounded-2xl text-center">No registered events yet.</p>
         ) : (
-          <div className="flex gap-6 overflow-x-auto pb-4">
+          <div className="flex gap-4 sm:gap-6 overflow-x-auto pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-none" style={{ WebkitOverflowScrolling: 'touch' }}>
             {registeredEvents.map((event) => {
               const reg = registrations?.find(r => r.event_id === event.id)
               if (!event || !reg) return null
               return (
-                <div key={event.id} className="min-w-[300px] w-[350px]">
+                <div key={event.id} className="min-w-[260px] sm:min-w-[300px] w-[260px] sm:w-[350px] shrink-0">
                   <EventCard
                     event={event}
                     isRegistered={true}

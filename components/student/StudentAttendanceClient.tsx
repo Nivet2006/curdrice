@@ -140,7 +140,46 @@ export function StudentAttendanceClient({ initialAttendance, userId }: Props) {
       </div>
 
       <Card className="overflow-hidden border border-[#e0e0e0] dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm">
-        <div className="overflow-x-auto">
+        {/* Mobile View (< md) */}
+        <div className="block md:hidden divide-y divide-[#e0e0e0] dark:divide-zinc-800 font-sans">
+          {attendedList.length === 0 ? (
+            <div className="p-8 text-center text-[#999999] dark:text-zinc-500 font-mono text-sm">
+              <ShieldAlert size={28} className="mx-auto mb-2 text-zinc-400" />
+              No attendance records found. Ensure you get scanned at the event venue.
+            </div>
+          ) : (
+            attendedList.map((reg) => (
+              <div key={reg.id} className="p-4 space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <h3 className="font-bold text-[#0a0a0a] dark:text-white text-base">
+                    {reg.event_title || 'Unknown Event'}
+                  </h3>
+                  <span className="shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 text-[10px] font-mono font-semibold uppercase">
+                    <CheckCircle size={10} /> Present
+                  </span>
+                </div>
+                <div className="flex flex-wrap items-center justify-between text-xs font-mono text-[#555555] dark:text-[#a0a0a0] gap-2 pt-1 border-t border-zinc-100 dark:border-zinc-800/60">
+                  <span className="border border-[#0a0a0a] dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/40 rounded-full px-2 py-0.5 text-[#0a0a0a] dark:text-white">
+                    {reg.club_name || 'N/A'}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <CalendarDays size={12} className="text-zinc-400" />
+                    {reg.event_date ? new Date(reg.event_date).toLocaleDateString(undefined, {
+                      month: 'short',
+                      day: 'numeric'
+                    }) : 'N/A'}
+                  </span>
+                </div>
+                <div className="text-[10px] font-mono text-[#999999] dark:text-zinc-500 text-right">
+                  Checked in: {reg.checked_in_at ? new Date(reg.checked_in_at).toLocaleString() : 'N/A'}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Desktop Table View (>= md) */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-[#f5f5f5] dark:bg-zinc-800/50 text-[#555555] dark:text-[#a0a0a0] text-xs uppercase tracking-wider font-mono">
