@@ -103,7 +103,7 @@ export function ShowcaseToolsSection({
   })
 
   return (
-    <section id="tools" className="py-24 relative overflow-hidden bg-[#0D0D0F] text-[#F8F7F2]">
+    <section id="tools" className="py-24 relative overflow-hidden bg-white dark:bg-[#0D0D0F] text-[#111827] dark:text-[#F8F7F2] transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 relative z-10">
         {/* Header */}
         <div className="text-center space-y-4 max-w-3xl mx-auto">
@@ -111,10 +111,10 @@ export function ShowcaseToolsSection({
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#15171A] border border-white/10 text-[#FFB703] shadow-sm"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F7F8FA] dark:bg-[#15171A] border border-[#E6E8EC] dark:border-white/10 text-[#003C5E] dark:text-[#FFB703] shadow-sm"
           >
             <Sparkles size={14} />
-            <span className="text-xs font-mono font-bold uppercase tracking-widest text-[#FFB703]">
+            <span className="text-xs font-mono font-bold uppercase tracking-widest text-[#003C5E] dark:text-[#FFB703]">
               STUDENT UTILITY HUB
             </span>
           </motion.div>
@@ -124,7 +124,7 @@ export function ShowcaseToolsSection({
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="text-3xl sm:text-5xl font-black uppercase text-[#F8F7F2] tracking-tight"
+            className="text-3xl sm:text-5xl font-black uppercase text-[#111827] dark:text-[#F8F7F2] tracking-tight"
           >
             Tools &amp; Learning Suite
           </motion.h2>
@@ -134,7 +134,7 @@ export function ShowcaseToolsSection({
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
-            className="text-xs sm:text-sm font-mono text-[#B8BEC6] leading-relaxed max-w-2xl mx-auto"
+            className="text-xs sm:text-sm font-mono text-[#6B7280] dark:text-[#B8BEC6] leading-relaxed max-w-2xl mx-auto"
           >
             Essential software toolkits, academic calculators, ATS checkers, and developer utilities curated by {clubName} at Gopalan Skill Academy.
           </motion.p>
@@ -152,23 +152,23 @@ export function ShowcaseToolsSection({
                 viewport={{ once: true }}
                 transition={{ delay: idx * 0.06 }}
                 whileHover={{ y: -5 }}
-                className="bg-[#15171A] border border-white/10 p-6 rounded-3xl space-y-4 hover:border-white/20 transition-all shadow-xl flex flex-col justify-between group"
+                className="bg-[#F7F8FA] dark:bg-[#15171A] border border-[#E6E8EC] dark:border-white/10 p-6 rounded-3xl space-y-4 hover:border-zinc-300 dark:hover:border-white/20 transition-all shadow-xl flex flex-col justify-between group"
               >
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <div className="w-11 h-11 rounded-2xl bg-[#0D0D0F] border border-white/10 flex items-center justify-center text-[#FFB703] font-mono font-bold group-hover:scale-110 transition-transform">
+                    <div className="w-11 h-11 rounded-2xl bg-white dark:bg-[#0D0D0F] border border-[#E6E8EC] dark:border-white/10 flex items-center justify-center text-[#003C5E] dark:text-[#FFB703] font-mono font-bold group-hover:scale-110 transition-transform">
                       <Icon size={22} />
                     </div>
-                    <span className="text-[9px] font-mono font-bold text-[#FFB703] uppercase bg-[#FFB703]/10 border border-[#FFB703]/20 px-2.5 py-0.5 rounded-full">
+                    <span className="text-[9px] font-mono font-bold text-[#003C5E] dark:text-[#FFB703] uppercase bg-[#003C5E]/10 dark:bg-[#FFB703]/10 border border-[#003C5E]/20 dark:border-[#FFB703]/20 px-2.5 py-0.5 rounded-full">
                       {tool.badge}
                     </span>
                   </div>
 
                   <div className="space-y-1">
-                    <h3 className="text-base font-bold font-mono text-[#F8F7F2] uppercase group-hover:text-[#FFB703] transition-colors">
+                    <h3 className="text-base font-bold font-mono text-[#111827] dark:text-[#F8F7F2] uppercase group-hover:text-[#003C5E] dark:group-hover:text-[#FFB703] transition-colors">
                       {tool.title}
                     </h3>
-                    <p className="text-xs font-mono text-[#B8BEC6] leading-relaxed line-clamp-3">
+                    <p className="text-xs font-mono text-[#6B7280] dark:text-[#B8BEC6] leading-relaxed line-clamp-3">
                       {tool.description}
                     </p>
                   </div>
