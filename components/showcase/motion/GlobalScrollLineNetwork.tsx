@@ -32,7 +32,7 @@ export function GlobalScrollLineNetwork() {
   const tipScale = useTransform(smoothProgress, [0, 0.5, 1], [1, 1.3, 1])
 
   return (
-    <div className="absolute inset-0 pointer-events-none z-20 overflow-hidden select-none">
+    <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden select-none">
       <svg
         className="w-full absolute top-0 left-0"
         style={{ height: `${docHeight}px` }}
@@ -121,14 +121,14 @@ export function GlobalScrollLineNetwork() {
         />
       </svg>
 
-      {/* Leading Tip Glowing Pulsing Spark (Tracks the tip of line live) */}
+      {/* Leading Tip Glowing Pulsing Spark (Positioned strictly in background behind components) */}
       <motion.div
         style={{
           top: useTransform(smoothProgress, [0, 1], ['0px', `${docHeight}px`]),
           opacity: tipOpacity,
           scale: tipScale
         }}
-        className="fixed left-6 lg:left-12 w-5 h-5 rounded-full bg-[#FFB703] border-2 border-white shadow-[0_0_20px_#FFB703,#0_0_40px_#E85D04] z-30 pointer-events-none -translate-x-1/2 -translate-y-1/2"
+        className="fixed left-6 lg:left-12 w-5 h-5 rounded-full bg-[#FFB703] border-2 border-white shadow-[0_0_20px_#FFB703,#0_0_40px_#E85D04] z-0 pointer-events-none -translate-x-1/2 -translate-y-1/2"
       />
 
       <motion.div
@@ -137,7 +137,7 @@ export function GlobalScrollLineNetwork() {
           opacity: tipOpacity,
           scale: tipScale
         }}
-        className="fixed right-6 lg:right-12 w-5 h-5 rounded-full bg-[#E85D04] border-2 border-white shadow-[0_0_20px_#E85D04,#0_0_40px_#FFB703] z-30 pointer-events-none translate-x-1/2 -translate-y-1/2"
+        className="fixed right-6 lg:right-12 w-5 h-5 rounded-full bg-[#E85D04] border-2 border-white shadow-[0_0_20px_#E85D04,#0_0_40px_#FFB703] z-0 pointer-events-none translate-x-1/2 -translate-y-1/2"
       />
     </div>
   )
