@@ -6,6 +6,7 @@ import { withDynamicEventStatus } from '@/lib/event-utils'
 import { Radio } from 'lucide-react'
 import Link from 'next/link'
 import { EasterEggBADGE } from '@/components/student/EasterEggBADGE'
+import { ClubShowcaseBar } from '@/components/shared/ClubShowcaseBar'
 
 export default async function StudentDashboard() {
   const supabase = await createClient()
@@ -38,7 +39,7 @@ export default async function StudentDashboard() {
 
   return (
     <div className="w-full">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 md:mb-12 gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 md:mb-8 gap-4">
         <div>
           <h1 className="text-3xl md:text-4xl font-black tracking-tighter mb-2 text-[#0a0a0a] uppercase">
             Welcome, {profile?.full_name}
@@ -53,6 +54,9 @@ export default async function StudentDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Campus Club Showcases Bar */}
+      <ClubShowcaseBar />
 
       <div className="mb-6 md:mb-12">
         <h2 className="flex items-center gap-3 text-lg md:text-xl font-black mb-4 sm:mb-6 text-[#0a0a0a] uppercase tracking-tight">
