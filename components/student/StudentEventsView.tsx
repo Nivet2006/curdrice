@@ -210,7 +210,7 @@ export function StudentEventsView({ initialEvents, registrations, profile }: Pro
             <div key={group.dateKey} className="flex gap-4 md:gap-8">
               
               {/* Date column (Left) */}
-              <div className="w-[80px] md:w-[120px] flex-shrink-0 pt-6">
+              <div className="w-[64px] sm:w-[80px] md:w-[120px] flex-shrink-0 pt-6">
                 <p className="font-black text-[#0a0a0a] text-lg leading-tight uppercase tracking-tight">
                   {group.dateLabel}
                 </p>

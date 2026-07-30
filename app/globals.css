@@ -625,3 +625,28 @@ img {
     linear-gradient(225deg, var(--grid-color) 25%, transparent 25%) !important;
   background-size: 8px 8px !important;
 }
+
+/* ── Mobile Utilities & Touch Optimizations ── */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (max-width: 767px) {
+  body {
+    overflow-x: hidden;
+  }
+
+  /* Prevent automatic viewport zoom on iOS when focusing inputs */
+  input[type="text"],
+  input[type="password"],
+  input[type="email"],
+  input[type="number"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="url"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+

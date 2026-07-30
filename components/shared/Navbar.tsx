@@ -135,16 +135,18 @@ export function Navbar({ role, name }: { role?: Role; name?: string }) {
           </div>
 
           {/* Right: Theme + user info + hamburger */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3">
             <ThemeToggle />
-            <PatternPicker />
+            <div className="hidden sm:block">
+              <PatternPicker />
+            </div>
 
             {role && (
               <>
-                <Badge variant={role}>{role}</Badge>
+                <Badge variant={role} className="hidden sm:inline-flex">{role}</Badge>
                 <button
                   onClick={() => setMessagesOpen(true)}
-                  className="relative flex items-center gap-2 px-3 py-1.5 rounded-lg border border-zinc-200 hover:border-black text-sm text-[#0a0a0a] transition-all bg-white shadow-sm"
+                  className="relative flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 rounded-lg border border-zinc-200 hover:border-black text-sm text-[#0a0a0a] transition-all bg-white shadow-sm"
                 >
                   {unreadCount > 0 && (
                     <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-black text-white text-[10px] rounded-full flex items-center justify-center border-2 border-white font-bold animate-bounce">
