@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { motion } from 'framer-motion'
-import { Code2, Laptop, Users, Sparkles } from 'lucide-react'
+import { Code2, Laptop, Users, Sparkles, Compass, Target, Award } from 'lucide-react'
 
 interface ShowcaseAboutProps {
   aboutData: any
@@ -11,19 +11,17 @@ interface ShowcaseAboutProps {
 }
 
 export function ShowcaseAboutSection({ aboutData, clubName, primaryColor = '#f59e0b' }: ShowcaseAboutProps) {
-  const story = aboutData?.story || `${clubName} is dedicated to cultivating technical excellence, creative design, and collaborative learning among students at Gopalan Skill Academy.`
-
   const pillars = [
+    {
+      title: 'Continuous Improvement',
+      description: 'The name "1% Club" is inspired by continuous improvement. Small improvements made consistently every day lead to remarkable growth.',
+      icon: Award,
+      accent: 'text-amber-500'
+    },
     {
       title: 'Build Real Skills',
       description: 'Work on real projects, join hackathons, attend deep-dive workshops, and learn how real software is built — not just theory.',
       icon: Code2,
-      accent: 'text-amber-500'
-    },
-    {
-      title: 'Learn From Real Experience',
-      description: 'Interact with developers through industry seminars, live builds, and practical sessions that show how technology works in the real world.',
-      icon: Laptop,
       accent: 'text-blue-500'
     },
     {
@@ -34,10 +32,18 @@ export function ShowcaseAboutSection({ aboutData, clubName, primaryColor = '#f59
     }
   ]
 
+  const missionList = [
+    'Promote continuous personal and professional development among students.',
+    'Enhance employability skills through experiential learning opportunities.',
+    'Foster leadership, communication, critical thinking, and problem-solving skills.',
+    'Bridge the gap between classroom learning and industry requirements.',
+    'Build a community of motivated learners committed to excellence.'
+  ]
+
   return (
     <section id="about" className="py-24 border-t border-b border-zinc-200 dark:border-zinc-800/80 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
-        {/* Section Header: What is [Club] */}
+        {/* Section Header: What is The 1% Club? */}
         <div className="text-center space-y-4 max-w-3xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -47,7 +53,7 @@ export function ShowcaseAboutSection({ aboutData, clubName, primaryColor = '#f59
           >
             <Sparkles size={12} style={{ color: primaryColor }} />
             <span className="text-xs font-mono font-bold uppercase tracking-widest text-zinc-700 dark:text-zinc-300">
-              HERE TO INNOVATE.
+              EARN YOUR EDGE
             </span>
           </motion.div>
 
@@ -58,7 +64,7 @@ export function ShowcaseAboutSection({ aboutData, clubName, primaryColor = '#f59
             transition={{ delay: 0.1 }}
             className="text-3xl sm:text-5xl font-black uppercase text-zinc-900 dark:text-white tracking-tight"
           >
-            What is {clubName}
+            What is {clubName}?
           </motion.h2>
 
           <motion.p
@@ -68,22 +74,41 @@ export function ShowcaseAboutSection({ aboutData, clubName, primaryColor = '#f59
             transition={{ delay: 0.2 }}
             className="text-xs sm:text-sm font-mono text-zinc-600 dark:text-zinc-400 leading-relaxed max-w-2xl mx-auto"
           >
-            A community of students passionate about technology and innovation at Gopalan Skill Academy. We build developer tools, conduct hackathons, and create opportunities for growth. Join us to collaborate on cutting-edge projects, learn from industry experts, and grow your technical skills in a supportive environment.
+            The 1% Club is a student-driven skill development and employability enhancement club established at Gopalan Skill Academy to bridge the gap between academic learning and industry expectations. Through workshops, competitions, industry interactions, and peer-learning, we empower students to achieve professional excellence.
           </motion.p>
         </div>
 
-        {/* Why Join Us Section Header */}
-        <div className="text-center space-y-2 pt-6">
-          <span className="text-xs font-mono font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
-            WHY JOIN US
-          </span>
-          <h3 className="text-2xl sm:text-3xl font-black uppercase text-zinc-900 dark:text-white font-mono">
-            Empowering Your Engineering Journey
-          </h3>
+        {/* Vision & Mission Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+          {/* Vision Card */}
+          <div className="bg-zinc-900 border border-zinc-800 p-8 rounded-3xl text-white space-y-4 shadow-xl">
+            <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500">
+              <Compass size={24} />
+            </div>
+            <h3 className="text-xl font-bold uppercase font-mono text-amber-400">VISION</h3>
+            <p className="text-sm font-mono text-zinc-300 leading-relaxed italic border-l-2 border-amber-500 pl-4">
+              "To create confident, competent, industry-ready professionals who embrace continuous improvement, leadership, and lifelong learning."
+            </p>
+          </div>
+
+          {/* Mission Card */}
+          <div className="bg-zinc-900 border border-zinc-800 p-8 rounded-3xl text-white space-y-4 shadow-xl">
+            <div className="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400">
+              <Target size={24} />
+            </div>
+            <h3 className="text-xl font-bold uppercase font-mono text-blue-400">MISSION</h3>
+            <ul className="space-y-2 text-xs font-mono text-zinc-300">
+              {missionList.map((m, i) => (
+                <li key={i} className="flex items-start gap-2">
+                  <span className="text-amber-500 shrink-0">✦</span> {m}
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
 
-        {/* Why Join Us 3-Pillar Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {/* Why 1% Club 3 Pillars */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-4">
           {pillars.map((pillar, idx) => {
             const Icon = pillar.icon
             return (
