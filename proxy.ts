@@ -154,7 +154,7 @@ export async function proxy(request: NextRequest) {
 
   const isPublicEventPage = request.nextUrl.pathname.startsWith('/events/')
   const isRedirectPage = request.nextUrl.pathname.startsWith('/redirect/')
-  const isPublicClubShowcasePage = request.nextUrl.pathname.startsWith('/c/') || request.nextUrl.pathname === '/c'
+  const isPublicClubShowcasePage = request.nextUrl.pathname.startsWith('/c/') || request.nextUrl.pathname === '/c' || request.nextUrl.pathname.startsWith('/clubs')
 
   // Redirect unauthenticated users to login, but bypass public event details, public club showcase, and redirect pages
   if (
