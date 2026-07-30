@@ -1,7 +1,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { Building2, Search, ArrowRight, ExternalLink, Sparkles } from 'lucide-react'
-import { createClient } from '@/lib/supabase/server'
+import { getClubs } from '@/lib/services/club-service'
 import { getClubPublicUrl } from '@/lib/utils/club-url'
 
 export const metadata = {
@@ -10,14 +10,12 @@ export const metadata = {
 }
 
 export default async function ClubsDirectoryPage() {
-  const supabase = await createClient()
-
-  const { data: clubs } = await supabase
-    .from('clubs')
-    .select('id, name, description, slug, logo_url, assigned_admin_id')
-    .order('name', { ascending: true })
-
-  const clubList = clubs || []
+  let clubList: any[] = []
+  try {
+    clubList = await getClubs()
+  } catch (err) {
+    console.error('Failed to fetch clubs:', err)
+  }
 
   return (
     <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 md:px-8 py-8 md:py-12 min-h-screen">
