@@ -1,7 +1,8 @@
 'use client'
 
 import React from 'react'
-import { Wrench, ExternalLink, FolderGit2 } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { Calculator, FileText, Code2, GraduationCap, ArrowRight, ExternalLink, Wrench } from 'lucide-react'
 
 interface ShowcaseToolsProps {
   tools: any[]
@@ -10,70 +11,110 @@ interface ShowcaseToolsProps {
 }
 
 export function ShowcaseToolsSection({ tools = [], clubName, primaryColor = '#f59e0b' }: ShowcaseToolsProps) {
+  const defaultTools = [
+    {
+      title: 'Scientific Calculator',
+      description: 'Advanced scientific computing toolkit for complex engineering calculations.',
+      category: 'Utilities',
+      icon: Calculator,
+      url: 'https://www.desmos.com/scientific'
+    },
+    {
+      title: 'PDF Compressor',
+      description: 'Compress and optimize lab reports, assignment submissions, and certificates.',
+      category: 'Document Tools',
+      icon: FileText,
+      url: 'https://www.ilovepdf.com/compress_pdf'
+    },
+    {
+      title: 'JSON Formatter',
+      description: 'Format, validate, and beautify JSON payloads and API responses.',
+      category: 'Developer Suite',
+      icon: Code2,
+      url: 'https://jsonformatter.org'
+    },
+    {
+      title: 'VTU CGPA Calculator',
+      description: 'Calculate VTU SGPA, CGPA, and percentage with standard grade points.',
+      category: 'Academic Tools',
+      icon: GraduationCap,
+      url: '/student/dashboard'
+    }
+  ]
+
+  const displayTools = tools.length > 0 ? tools : defaultTools
+
   return (
     <section id="tools" className="py-24 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         {/* Header */}
         <div className="text-center space-y-3">
           <span
-            className="text-xs font-mono font-bold uppercase tracking-widest px-3 py-1 rounded-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 inline-block shadow-sm"
+            className="text-xs font-mono font-bold uppercase tracking-widest px-3.5 py-1.5 rounded-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 inline-block shadow-sm"
             style={{ color: primaryColor }}
           >
-            RESOURCES &amp; REPOSITORIES
+            STUDENT REPOSITORIES &amp; TOOLS
           </span>
           <h2 className="text-3xl sm:text-5xl font-black uppercase text-zinc-900 dark:text-white tracking-tight">
-            Tools &amp; Learning Hub
+            Tools &amp; Learning Suite
           </h2>
-          <p className="text-xs font-mono text-zinc-600 dark:text-zinc-400 max-w-xl mx-auto">
-            Handpicked tools, software toolkits, and repositories curated by {clubName}.
+          <p className="text-xs sm:text-sm font-mono text-zinc-600 dark:text-zinc-400 max-w-xl mx-auto">
+            Essential software toolkits, academic calculators, and developer repositories curated by {clubName} at Gopalan Skill Academy.
           </p>
         </div>
 
         {/* Tools Grid */}
-        {tools.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {tools.map((tool, idx) => (
-              <div
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {displayTools.map((tool, idx) => {
+            const Icon = tool.icon || Wrench
+            return (
+              <motion.div
                 key={tool.id || idx}
+                initial={{ opacity: 0, y: 15 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.08 }}
+                whileHover={{ y: -5 }}
                 className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border border-zinc-200 dark:border-zinc-800 p-6 rounded-3xl space-y-4 hover:border-zinc-400 dark:hover:border-zinc-700 transition-all shadow-xl flex flex-col justify-between"
               >
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center text-amber-500 font-mono font-bold">
-                      <FolderGit2 size={20} />
+                      <Icon size={20} />
                     </div>
-                    {tool.category && (
-                      <span className="text-[10px] font-mono font-bold text-zinc-500 dark:text-zinc-400 uppercase bg-zinc-100 dark:bg-zinc-950 px-2.5 py-1 rounded-full border border-zinc-200 dark:border-zinc-800">
-                        {tool.category}
-                      </span>
-                    )}
+                    <span className="text-[10px] font-mono font-bold text-zinc-500 dark:text-zinc-400 uppercase bg-zinc-100 dark:bg-zinc-950 px-2.5 py-1 rounded-full border border-zinc-200 dark:border-zinc-800">
+                      {tool.category || 'Tool'}
+                    </span>
                   </div>
 
-                  <h3 className="text-lg font-bold font-mono text-zinc-900 dark:text-white uppercase">{tool.title}</h3>
+                  <h3 className="text-base font-bold font-mono text-zinc-900 dark:text-white uppercase">{tool.title}</h3>
                   <p className="text-xs font-mono text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                    {tool.description || 'Access resource link and tools.'}
+                    {tool.description || 'Access utility resource.'}
                   </p>
                 </div>
 
                 <a
                   href={tool.url}
-                  target="_blank"
+                  target={tool.url.startsWith('http') ? '_blank' : '_self'}
                   rel="noopener noreferrer"
                   className="w-full py-2.5 bg-zinc-100 dark:bg-zinc-950 hover:bg-zinc-200 dark:hover:bg-black border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs font-mono font-bold uppercase tracking-wider text-zinc-900 dark:text-white flex items-center justify-center gap-2 transition-all"
                 >
-                  Access Resource <ExternalLink size={13} />
+                  Launch Tool <ExternalLink size={12} />
                 </a>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="py-16 text-center border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-3xl bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm">
-            <Wrench size={32} className="mx-auto text-zinc-400 dark:text-zinc-600 mb-2" />
-            <p className="text-xs font-mono text-zinc-600 dark:text-zinc-400 uppercase tracking-widest font-bold">
-              No public tools or resources listed yet
-            </p>
-          </div>
-        )}
+              </motion.div>
+            )
+          })}
+        </div>
+
+        {/* Explore More Banner */}
+        <div className="text-center pt-4">
+          <a
+            href="#contact"
+            className="inline-flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-widest text-amber-500 hover:underline"
+          >
+            <span>Explore More Tools &amp; Resources</span> <ArrowRight size={14} />
+          </a>
+        </div>
       </div>
     </section>
   )
