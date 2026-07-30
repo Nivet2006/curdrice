@@ -62,7 +62,7 @@ export function ShowcaseCollectiveSection({
   ]
 
   return (
-    <section className="py-24 border-t border-[#E6E8EC] dark:border-white/10 bg-white dark:bg-[#0D0D0F] text-[#111827] dark:text-[#F8F7F2] relative overflow-hidden transition-colors duration-200">
+    <section className="py-24 border-t border-[#E6E8EC] dark:border-white/10 bg-transparent text-[#111827] dark:text-[#F8F7F2] relative overflow-hidden transition-colors duration-200">
       {/* Scroll-Drawn Illuminated Circuit Line Path */}
       <ScrollPathConnector />
 
@@ -76,7 +76,7 @@ export function ShowcaseCollectiveSection({
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-xs font-mono font-bold uppercase tracking-widest px-3.5 py-1.5 rounded-full bg-[#F7F8FA] dark:bg-[#15171A] border border-[#E6E8EC] dark:border-white/10 text-[#003C5E] dark:text-[#FFB703] inline-block shadow-sm"
+            className="text-xs font-mono font-bold uppercase tracking-widest px-3.5 py-1.5 rounded-full bg-[#F7F8FA]/90 dark:bg-[#15171A]/90 border border-[#E6E8EC] dark:border-white/10 text-[#003C5E] dark:text-[#FFB703] inline-block shadow-sm"
           >
             THE COLLECTIVE
           </motion.span>
@@ -107,7 +107,7 @@ export function ShowcaseCollectiveSection({
             const IconComponent = item.icon
             return (
               <TiltCard key={item.number} tiltAmount={10}>
-                <div className="bg-[#F7F8FA] dark:bg-[#15171A] border border-[#E6E8EC] dark:border-white/10 p-8 rounded-3xl space-y-6 hover:border-zinc-300 dark:hover:border-white/20 transition-all shadow-xl flex flex-col justify-between group relative overflow-hidden h-full">
+                <div className="bg-[#F7F8FA]/90 dark:bg-[#15171A]/90 border border-[#E6E8EC] dark:border-white/10 p-8 rounded-3xl space-y-6 hover:border-zinc-300 dark:hover:border-white/20 transition-all shadow-xl backdrop-blur-md flex flex-col justify-between group relative overflow-hidden h-full">
                   <div className="space-y-4">
                     {/* Top Bar: Number + Icon */}
                     <div className="flex items-center justify-between">
