@@ -211,7 +211,7 @@ export function PublicShowcaseClient({ data }: PublicShowcaseClientProps) {
               </p>
 
               <div className="flex items-center gap-1.5 text-xs text-[#003C5E] dark:text-[#FFB703] font-bold uppercase">
-                <GraduationCap size={16} /> Gopalan Skill Academy Matrix
+                <GraduationCap size={16} /> Gopalan Skill Academy Initiative
               </div>
             </div>
 
