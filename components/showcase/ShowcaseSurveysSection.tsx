@@ -19,12 +19,12 @@ export function ShowcaseSurveysSection({ surveys = [], clubName, primaryColor = 
   }
 
   return (
-    <section id="surveys" className="py-24 border-t border-b border-[#E6E8EC] dark:border-white/10 bg-white dark:bg-[#0D0D0F] text-[#111827] dark:text-[#F8F7F2] relative overflow-hidden transition-colors duration-200">
+    <section id="surveys" className="py-24 border-t border-b border-[#E6E8EC] dark:border-white/10 bg-transparent text-[#111827] dark:text-[#F8F7F2] relative overflow-hidden transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         {/* Header */}
         <div className="text-center space-y-3">
           <span
-            className="text-xs font-mono font-bold uppercase tracking-widest px-3.5 py-1.5 rounded-full bg-[#F7F8FA] dark:bg-[#15171A] border border-[#E6E8EC] dark:border-white/10 text-[#003C5E] dark:text-[#FFB703] inline-block shadow-sm"
+            className="text-xs font-mono font-bold uppercase tracking-widest px-3.5 py-1.5 rounded-full bg-[#F7F8FA]/90 dark:bg-[#15171A]/90 border border-[#E6E8EC] dark:border-white/10 text-[#003C5E] dark:text-[#FFB703] inline-block shadow-sm"
           >
             COMMUNITY FEEDBACK &amp; SURVEYS
           </span>
@@ -38,7 +38,7 @@ export function ShowcaseSurveysSection({ surveys = [], clubName, primaryColor = 
           initial={{ opacity: 0, scale: 0.98 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          className="max-w-4xl mx-auto bg-gradient-to-br from-[#003C5E] via-[#002f4a] to-[#001f33] border border-white/10 rounded-3xl p-8 sm:p-12 text-white relative shadow-2xl overflow-hidden"
+          className="max-w-4xl mx-auto bg-gradient-to-br from-[#003C5E] via-[#002f4a] to-[#001f33] border border-white/10 rounded-3xl p-8 sm:p-12 text-white relative shadow-2xl overflow-hidden backdrop-blur-md"
         >
           {/* Ambient Glow */}
           <div
@@ -86,7 +86,7 @@ export function ShowcaseSurveysSection({ surveys = [], clubName, primaryColor = 
             {surveys.slice(1).map((survey, idx) => (
               <div
                 key={survey.id || idx}
-                className="bg-[#F7F8FA] dark:bg-[#15171A] border border-[#E6E8EC] dark:border-white/10 p-6 rounded-3xl space-y-4 flex flex-col justify-between shadow-xl"
+                className="bg-[#F7F8FA]/90 dark:bg-[#15171A]/90 border border-[#E6E8EC] dark:border-white/10 p-6 rounded-3xl space-y-4 flex flex-col justify-between shadow-xl backdrop-blur-md"
               >
                 <div className="space-y-2">
                   <span className="text-[10px] font-mono font-bold uppercase text-[#003C5E] dark:text-[#FFB703]">Active Poll</span>

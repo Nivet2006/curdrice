@@ -43,7 +43,7 @@ export function ShowcaseAboutSection({ aboutData, clubName, primaryColor = '#003
   ]
 
   return (
-    <section id="about" className="py-24 border-t border-b border-[#E6E8EC] dark:border-white/10 bg-white dark:bg-[#0D0D0F] text-[#111827] dark:text-[#F8F7F2] relative transition-colors duration-200">
+    <section id="about" className="py-24 border-t border-b border-[#E6E8EC] dark:border-white/10 bg-transparent text-[#111827] dark:text-[#F8F7F2] relative transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
         {/* Section Header: What is The 1% Club? */}
         <div className="text-center space-y-4 max-w-3xl mx-auto">
@@ -51,7 +51,7 @@ export function ShowcaseAboutSection({ aboutData, clubName, primaryColor = '#003
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F7F8FA] dark:bg-[#15171A] border border-[#E6E8EC] dark:border-white/10 shadow-sm"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F7F8FA]/90 dark:bg-[#15171A]/90 border border-[#E6E8EC] dark:border-white/10 shadow-sm"
           >
             <Sparkles size={13} className="text-[#003C5E] dark:text-[#FFB703]" />
             <span className="text-xs font-mono font-bold uppercase tracking-widest text-[#003C5E] dark:text-[#FFB703]">
@@ -78,7 +78,7 @@ export function ShowcaseAboutSection({ aboutData, clubName, primaryColor = '#003
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
           {/* Vision Card */}
           <TiltCard tiltAmount={10}>
-            <div className="bg-[#F7F8FA] dark:bg-[#15171A] border border-[#E6E8EC] dark:border-white/10 p-8 rounded-3xl text-[#111827] dark:text-[#F8F7F2] space-y-4 shadow-xl relative overflow-hidden h-full">
+            <div className="bg-[#F7F8FA]/90 dark:bg-[#15171A]/90 border border-[#E6E8EC] dark:border-white/10 p-8 rounded-3xl text-[#111827] dark:text-[#F8F7F2] space-y-4 shadow-xl relative overflow-hidden backdrop-blur-md h-full">
               <div className="w-12 h-12 rounded-2xl bg-[#003C5E]/10 dark:bg-[#003C5E]/40 border border-[#003C5E] flex items-center justify-center text-[#003C5E] dark:text-[#FFB703]">
                 <Compass size={24} />
               </div>
@@ -91,7 +91,7 @@ export function ShowcaseAboutSection({ aboutData, clubName, primaryColor = '#003
 
           {/* Mission Card */}
           <TiltCard tiltAmount={10}>
-            <div className="bg-[#F7F8FA] dark:bg-[#15171A] border border-[#E6E8EC] dark:border-white/10 p-8 rounded-3xl text-[#111827] dark:text-[#F8F7F2] space-y-4 shadow-xl h-full">
+            <div className="bg-[#F7F8FA]/90 dark:bg-[#15171A]/90 border border-[#E6E8EC] dark:border-white/10 p-8 rounded-3xl text-[#111827] dark:text-[#F8F7F2] space-y-4 shadow-xl backdrop-blur-md h-full">
               <div className="w-12 h-12 rounded-2xl bg-[#007F6E]/10 dark:bg-[#007F6E]/30 border border-[#007F6E] flex items-center justify-center text-[#007F6E]">
                 <Target size={24} />
               </div>
@@ -113,7 +113,7 @@ export function ShowcaseAboutSection({ aboutData, clubName, primaryColor = '#003
             const Icon = pillar.icon
             return (
               <TiltCard key={idx} tiltAmount={12}>
-                <div className="bg-[#F7F8FA] dark:bg-[#15171A] border border-[#E6E8EC] dark:border-white/10 p-8 rounded-3xl space-y-4 hover:border-zinc-300 dark:hover:border-white/20 transition-all shadow-xl flex flex-col justify-between h-full">
+                <div className="bg-[#F7F8FA]/90 dark:bg-[#15171A]/90 border border-[#E6E8EC] dark:border-white/10 p-8 rounded-3xl space-y-4 hover:border-zinc-300 dark:hover:border-white/20 transition-all shadow-xl backdrop-blur-md flex flex-col justify-between h-full">
                   <div className="space-y-4">
                     <div className="w-12 h-12 rounded-2xl bg-white dark:bg-[#0D0D0F] border border-[#E6E8EC] dark:border-white/10 flex items-center justify-center">
                       <Icon size={24} className={pillar.accent} />
