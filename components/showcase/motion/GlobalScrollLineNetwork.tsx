@@ -8,31 +8,35 @@ export function GlobalScrollLineNetwork() {
   const [docHeight, setDocHeight] = useState(6000)
 
   useEffect(() => {
-    const updateDocHeight = () => {
-      setDocHeight(document.documentElement.scrollHeight || 6000)
+    // Efficient ResizeObserver instead of high-frequency scroll listeners
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setDocHeight(entry.target.scrollHeight || 6000)
+      }
+    })
+
+    if (document.body) {
+      observer.observe(document.body)
+      setDocHeight(document.body.scrollHeight || 6000)
     }
-    updateDocHeight()
-    window.addEventListener('resize', updateDocHeight)
-    window.addEventListener('scroll', updateDocHeight)
-    return () => {
-      window.removeEventListener('resize', updateDocHeight)
-      window.removeEventListener('scroll', updateDocHeight)
-    }
+
+    return () => observer.disconnect()
   }, [])
 
-  // Spring physics for ultra-smooth draw (scrolling down) & erase (scrolling up)
+  // Optimized spring physics for buttery-smooth liquid scroll inertia (down & up)
   const smoothProgress = useSpring(scrollYProgress, {
-    stiffness: 120,
-    damping: 30,
+    stiffness: 45,
+    damping: 18,
+    mass: 0.2,
     restDelta: 0.0001
   })
 
   // Dynamic opacity & scale for the leading tip glowing spark
   const tipOpacity = useTransform(smoothProgress, [0, 0.02, 0.98, 1], [0, 1, 1, 0.5])
-  const tipScale = useTransform(smoothProgress, [0, 0.5, 1], [1, 1.3, 1])
+  const tipScale = useTransform(smoothProgress, [0, 0.5, 1], [1, 1.2, 1])
 
   return (
-    <div className="absolute inset-0 pointer-events-none z-10 overflow-hidden select-none">
+    <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden select-none transform-gpu">
       <svg
         className="w-full absolute top-0 left-0"
         style={{ height: `${docHeight}px` }}
@@ -51,7 +55,7 @@ export function GlobalScrollLineNetwork() {
 
           {/* Neon Glow Drop Shadow Filter */}
           <filter id="scroll-neon-glow" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="5" result="blur" />
+            <feGaussianBlur stdDeviation="4" result="blur" />
             <feMerge>
               <feMergeNode in="blur" />
               <feMergeNode in="SourceGraphic" />
@@ -59,82 +63,87 @@ export function GlobalScrollLineNetwork() {
           </filter>
         </defs>
 
-        {/* Background Subtle Guide Path (Faint line indicating the full track) */}
+        {/* Background Guide Path */}
         <path
           d={`
             M 60,0
-            L 60,${docHeight * 0.12}
-            C 60,${docHeight * 0.15} 1140,${docHeight * 0.15} 1140,${docHeight * 0.22}
-            C 1140,${docHeight * 0.28} 60,${docHeight * 0.28} 60,${docHeight * 0.38}
-            C 60,${docHeight * 0.44} 1140,${docHeight * 0.44} 1140,${docHeight * 0.54}
-            C 1140,${docHeight * 0.60} 60,${docHeight * 0.60} 60,${docHeight * 0.72}
-            C 60,${docHeight * 0.78} 1140,${docHeight * 0.78} 1140,${docHeight * 0.88}
-            L 1140,${docHeight}
+            L 60,${docHeight * 0.08}
+            C 60,${docHeight * 0.14} 1140,${docHeight * 0.14} 1140,${docHeight * 0.20}
+            C 1140,${docHeight * 0.26} 60,${docHeight * 0.26} 60,${docHeight * 0.35}
+            C 60,${docHeight * 0.40} 1140,${docHeight * 0.40} 1140,${docHeight * 0.48}
+            C 1140,${docHeight * 0.55} 60,${docHeight * 0.55} 60,${docHeight * 0.64}
+            C 60,${docHeight * 0.70} 1140,${docHeight * 0.70} 1140,${docHeight * 0.78}
+            C 1140,${docHeight * 0.84} 60,${docHeight * 0.84} 60,${docHeight * 0.92}
+            C 60,${docHeight * 0.96} 1140,${docHeight * 0.96} 1140,${docHeight}
           `}
           fill="none"
           stroke="url(#live-scroll-line-gradient)"
           strokeWidth="1.5"
           strokeDasharray="4 4"
-          className="opacity-15 dark:opacity-25"
+          className="opacity-20 dark:opacity-30"
         />
 
-        {/* Primary Animated Live Line (Draws down when scrolling down, erases up when scrolling up) */}
+        {/* Primary Animated Live Line (GPU Accelerated Smooth Draw & Erase) */}
         <motion.path
           d={`
             M 60,0
-            L 60,${docHeight * 0.12}
-            C 60,${docHeight * 0.15} 1140,${docHeight * 0.15} 1140,${docHeight * 0.22}
-            C 1140,${docHeight * 0.28} 60,${docHeight * 0.28} 60,${docHeight * 0.38}
-            C 60,${docHeight * 0.44} 1140,${docHeight * 0.44} 1140,${docHeight * 0.54}
-            C 1140,${docHeight * 0.60} 60,${docHeight * 0.60} 60,${docHeight * 0.72}
-            C 60,${docHeight * 0.78} 1140,${docHeight * 0.78} 1140,${docHeight * 0.88}
-            L 1140,${docHeight}
+            L 60,${docHeight * 0.08}
+            C 60,${docHeight * 0.14} 1140,${docHeight * 0.14} 1140,${docHeight * 0.20}
+            C 1140,${docHeight * 0.26} 60,${docHeight * 0.26} 60,${docHeight * 0.35}
+            C 60,${docHeight * 0.40} 1140,${docHeight * 0.40} 1140,${docHeight * 0.48}
+            C 1140,${docHeight * 0.55} 60,${docHeight * 0.55} 60,${docHeight * 0.64}
+            C 60,${docHeight * 0.70} 1140,${docHeight * 0.70} 1140,${docHeight * 0.78}
+            C 1140,${docHeight * 0.84} 60,${docHeight * 0.84} 60,${docHeight * 0.92}
+            C 60,${docHeight * 0.96} 1140,${docHeight * 0.96} 1140,${docHeight}
           `}
           fill="none"
           stroke="url(#live-scroll-line-gradient)"
           strokeWidth="4"
           filter="url(#scroll-neon-glow)"
-          style={{ pathLength: smoothProgress }}
+          style={{ pathLength: smoothProgress, willChange: 'stroke-dashoffset' }}
         />
 
-        {/* Secondary Mirror Left Track for Mobile & Desktop Symmetry */}
+        {/* Secondary Mirror Left Track */}
         <motion.path
           d={`
             M 1140,0
-            L 1140,${docHeight * 0.12}
-            C 1140,${docHeight * 0.15} 60,${docHeight * 0.15} 60,${docHeight * 0.22}
-            C 60,${docHeight * 0.28} 1140,${docHeight * 0.28} 1140,${docHeight * 0.38}
-            C 1140,${docHeight * 0.44} 60,${docHeight * 0.44} 60,${docHeight * 0.54}
-            C 60,${docHeight * 0.60} 1140,${docHeight * 0.60} 1140,${docHeight * 0.72}
-            C 1140,${docHeight * 0.78} 60,${docHeight * 0.78} 60,${docHeight * 0.88}
-            L 60,${docHeight}
+            L 1140,${docHeight * 0.08}
+            C 1140,${docHeight * 0.14} 60,${docHeight * 0.14} 60,${docHeight * 0.20}
+            C 60,${docHeight * 0.26} 1140,${docHeight * 0.26} 1140,${docHeight * 0.35}
+            C 1140,${docHeight * 0.40} 60,${docHeight * 0.40} 60,${docHeight * 0.48}
+            C 60,${docHeight * 0.55} 1140,${docHeight * 0.55} 1140,${docHeight * 0.64}
+            C 1140,${docHeight * 0.70} 60,${docHeight * 0.70} 60,${docHeight * 0.78}
+            C 60,${docHeight * 0.84} 1140,${docHeight * 0.84} 1140,${docHeight * 0.92}
+            C 1140,${docHeight * 0.96} 60,${docHeight * 0.96} 60,${docHeight}
           `}
           fill="none"
           stroke="url(#live-scroll-line-gradient)"
           strokeWidth="2.5"
           strokeDasharray="6 6"
           className="opacity-40 dark:opacity-50"
-          style={{ pathLength: smoothProgress }}
+          style={{ pathLength: smoothProgress, willChange: 'stroke-dashoffset' }}
         />
       </svg>
 
-      {/* Leading Tip Glowing Pulsing Spark (Tracks the tip of line live) */}
+      {/* Smooth Leading Tip Glowing Pulsing Sparks */}
       <motion.div
         style={{
           top: useTransform(smoothProgress, [0, 1], ['0px', `${docHeight}px`]),
           opacity: tipOpacity,
-          scale: tipScale
+          scale: tipScale,
+          willChange: 'transform, top'
         }}
-        className="fixed left-6 lg:left-12 w-5 h-5 rounded-full bg-[#FFB703] border-2 border-white shadow-[0_0_20px_#FFB703,#0_0_40px_#E85D04] z-20 pointer-events-none -translate-x-1/2 -translate-y-1/2"
+        className="fixed left-6 lg:left-12 w-5 h-5 rounded-full bg-[#FFB703] border-2 border-white shadow-[0_0_20px_#FFB703,#0_0_40px_#E85D04] z-0 pointer-events-none -translate-x-1/2 -translate-y-1/2"
       />
 
       <motion.div
         style={{
           top: useTransform(smoothProgress, [0, 1], ['0px', `${docHeight}px`]),
           opacity: tipOpacity,
-          scale: tipScale
+          scale: tipScale,
+          willChange: 'transform, top'
         }}
-        className="fixed right-6 lg:right-12 w-5 h-5 rounded-full bg-[#E85D04] border-2 border-white shadow-[0_0_20px_#E85D04,#0_0_40px_#FFB703] z-20 pointer-events-none translate-x-1/2 -translate-y-1/2"
+        className="fixed right-6 lg:right-12 w-5 h-5 rounded-full bg-[#E85D04] border-2 border-white shadow-[0_0_20px_#E85D04,#0_0_40px_#FFB703] z-0 pointer-events-none translate-x-1/2 -translate-y-1/2"
       />
     </div>
   )
