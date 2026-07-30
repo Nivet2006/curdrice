@@ -19,7 +19,7 @@ export function ShowcaseCollectiveSection({
       title: 'Real-Time Hackathons',
       description: 'Participating in high-stakes technical competitions to solve complex architectural challenges.',
       icon: Terminal,
-      accent: 'text-[#FFB703]'
+      accent: 'text-[#003C5E] dark:text-[#FFB703]'
     },
     {
       number: '02',
@@ -40,7 +40,7 @@ export function ShowcaseCollectiveSection({
       title: 'Live Builds',
       description: 'Collaborative real-time coding sessions focusing on scalable system design.',
       icon: Code2,
-      accent: 'text-[#FFB703]'
+      accent: 'text-[#003C5E] dark:text-[#FFB703]'
     },
     {
       number: '05',
@@ -59,9 +59,9 @@ export function ShowcaseCollectiveSection({
   ]
 
   return (
-    <section className="py-24 border-t border-white/10 bg-[#0D0D0F] text-[#F8F7F2] relative overflow-hidden">
+    <section className="py-24 border-t border-[#E6E8EC] dark:border-white/10 bg-white dark:bg-[#0D0D0F] text-[#111827] dark:text-[#F8F7F2] relative overflow-hidden transition-colors duration-200">
       {/* Background Grid */}
-      <div className="absolute inset-0 opacity-[0.04] pointer-events-none bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]" />
+      <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.04] pointer-events-none bg-[radial-gradient(#000_1px,transparent_1px)] dark:bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16 relative z-10">
         {/* Section Header */}
@@ -70,7 +70,7 @@ export function ShowcaseCollectiveSection({
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-xs font-mono font-bold uppercase tracking-widest px-3.5 py-1.5 rounded-full bg-[#15171A] border border-white/10 text-[#FFB703] inline-block shadow-sm"
+            className="text-xs font-mono font-bold uppercase tracking-widest px-3.5 py-1.5 rounded-full bg-[#F7F8FA] dark:bg-[#15171A] border border-[#E6E8EC] dark:border-white/10 text-[#003C5E] dark:text-[#FFB703] inline-block shadow-sm"
           >
             THE COLLECTIVE
           </motion.span>
@@ -80,7 +80,7 @@ export function ShowcaseCollectiveSection({
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="text-3xl sm:text-5xl font-black uppercase tracking-tight text-[#F8F7F2]"
+            className="text-3xl sm:text-5xl font-black uppercase tracking-tight text-[#111827] dark:text-[#F8F7F2]"
           >
             The Heartbeat of Our Technical Community at Gopalan Skill Academy
           </motion.h2>
@@ -92,10 +92,10 @@ export function ShowcaseCollectiveSection({
             transition={{ delay: 0.2 }}
             className="space-y-2"
           >
-            <h3 className="text-lg font-mono font-bold text-[#FFB703] uppercase">
+            <h3 className="text-lg font-mono font-bold text-[#003C5E] dark:text-[#FFB703] uppercase">
               What Makes Our Collective Different
             </h3>
-            <p className="text-xs sm:text-sm font-mono text-[#B8BEC6] leading-relaxed max-w-2xl mx-auto">
+            <p className="text-xs sm:text-sm font-mono text-[#6B7280] dark:text-[#B8BEC6] leading-relaxed max-w-2xl mx-auto">
               From automation to innovation, our cutting-edge technical infrastructure helps {clubName} members build smarter and move faster at Gopalan Skill Academy.
             </p>
           </motion.div>
@@ -113,31 +113,31 @@ export function ShowcaseCollectiveSection({
                 viewport={{ once: true }}
                 transition={{ delay: idx * 0.08 }}
                 whileHover={{ y: -6, transition: { duration: 0.2 } }}
-                className="bg-[#15171A] border border-white/10 p-8 rounded-3xl space-y-6 hover:border-white/20 transition-all shadow-xl flex flex-col justify-between group relative overflow-hidden"
+                className="bg-[#F7F8FA] dark:bg-[#15171A] border border-[#E6E8EC] dark:border-white/10 p-8 rounded-3xl space-y-6 hover:border-zinc-300 dark:hover:border-white/20 transition-all shadow-xl flex flex-col justify-between group relative overflow-hidden"
               >
                 <div className="space-y-4">
                   {/* Top Bar: Number + Icon */}
                   <div className="flex items-center justify-between">
-                    <span className="text-3xl font-black font-mono tracking-tighter text-[#5C6470] group-hover:text-[#FFB703] transition-colors">
+                    <span className="text-3xl font-black font-mono tracking-tighter text-[#6B7280] dark:text-[#5C6470] group-hover:text-[#003C5E] dark:group-hover:text-[#FFB703] transition-colors">
                       {item.number}
                     </span>
-                    <div className="w-12 h-12 rounded-2xl bg-[#0D0D0F] border border-white/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <div className="w-12 h-12 rounded-2xl bg-white dark:bg-[#0D0D0F] border border-[#E6E8EC] dark:border-white/10 flex items-center justify-center group-hover:scale-110 transition-transform">
                       <IconComponent size={22} className={item.accent} />
                     </div>
                   </div>
 
                   {/* Title & Description */}
-                  <h4 className="text-xl font-bold font-mono uppercase text-[#F8F7F2] group-hover:text-[#FFB703] transition-colors">
+                  <h4 className="text-xl font-bold font-mono uppercase text-[#111827] dark:text-[#F8F7F2] group-hover:text-[#003C5E] dark:group-hover:text-[#FFB703] transition-colors">
                     {item.title}
                   </h4>
-                  <p className="text-xs font-mono text-[#B8BEC6] leading-relaxed">
+                  <p className="text-xs font-mono text-[#6B7280] dark:text-[#B8BEC6] leading-relaxed">
                     {item.description}
                   </p>
                 </div>
 
-                <div className="pt-4 border-t border-white/5 flex items-center justify-between text-[10px] font-mono font-bold uppercase tracking-widest text-[#B8BEC6]">
+                <div className="pt-4 border-t border-[#E6E8EC] dark:border-white/5 flex items-center justify-between text-[10px] font-mono font-bold uppercase tracking-widest text-[#6B7280] dark:text-[#B8BEC6]">
                   <span>Pillar</span>
-                  <span className="text-[#FFB703] group-hover:translate-x-1 transition-transform">→</span>
+                  <span className="text-[#003C5E] dark:text-[#FFB703] group-hover:translate-x-1 transition-transform">→</span>
                 </div>
               </motion.div>
             )

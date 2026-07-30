@@ -38,9 +38,9 @@ export function ShowcaseHeroSection({
   }
 
   return (
-    <section id="home" className="relative min-h-[90vh] flex flex-col justify-center pt-16 pb-20 overflow-hidden bg-[#0D0D0F] text-[#F8F7F2]">
-      {/* Ambient Radial Background Glows (Peacock Blue & Golden Crown) */}
-      <div className="absolute inset-0 z-0 opacity-30 pointer-events-none">
+    <section id="home" className="relative min-h-[90vh] flex flex-col justify-center pt-16 pb-20 overflow-hidden bg-white dark:bg-[#0D0D0F] text-[#111827] dark:text-[#F8F7F2] transition-colors duration-200">
+      {/* Ambient Radial Background Glows */}
+      <div className="absolute inset-0 z-0 opacity-20 dark:opacity-30 pointer-events-none">
         <div
           className="absolute -top-40 -left-40 w-[36rem] h-[36rem] rounded-full blur-[160px]"
           style={{ backgroundColor: '#003C5E' }}
@@ -61,10 +61,10 @@ export function ShowcaseHeroSection({
           initial={{ opacity: 0, y: -15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#15171A] border border-white/10 backdrop-blur-md shadow-xl max-w-full overflow-hidden"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#F7F8FA] dark:bg-[#15171A] border border-[#E6E8EC] dark:border-white/10 backdrop-blur-md shadow-lg max-w-full overflow-hidden"
         >
-          <span className="text-[#FFB703] font-bold font-mono">›</span>
-          <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#F8F7F2] truncate">
+          <span className="text-[#003C5E] dark:text-[#FFB703] font-bold font-mono">›</span>
+          <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#111827] dark:text-[#F8F7F2] truncate">
             {clubName} - {clubName} at Gopalan Skill Academy
           </span>
           <ShieldCheck size={14} className="text-[#007F6E] shrink-0" />
@@ -76,7 +76,7 @@ export function ShowcaseHeroSection({
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#FFB703]/10 border border-[#FFB703]/30 text-xs font-mono font-bold uppercase tracking-widest text-[#FFB703]"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#003C5E]/10 dark:bg-[#FFB703]/10 border border-[#003C5E]/20 dark:border-[#FFB703]/30 text-xs font-mono font-bold uppercase tracking-widest text-[#003C5E] dark:text-[#FFB703]"
           >
             <Sparkles size={13} /> {tagline}
           </motion.div>
@@ -85,7 +85,7 @@ export function ShowcaseHeroSection({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-4xl sm:text-6xl md:text-7xl font-black uppercase tracking-tight text-[#F8F7F2] leading-tight font-sans"
+            className="text-4xl sm:text-6xl md:text-7xl font-black uppercase tracking-tight text-[#111827] dark:text-[#F8F7F2] leading-tight font-sans"
           >
             {title}
           </motion.h1>
@@ -94,7 +94,7 @@ export function ShowcaseHeroSection({
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="text-lg sm:text-2xl font-mono font-bold italic text-[#FFB703]"
+            className="text-lg sm:text-2xl font-mono font-bold italic text-[#003C5E] dark:text-[#FFB703]"
           >
             {quote}
           </motion.p>
@@ -105,7 +105,7 @@ export function ShowcaseHeroSection({
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="max-w-3xl mx-auto text-xs sm:text-sm text-[#B8BEC6] font-mono leading-relaxed"
+          className="max-w-3xl mx-auto text-xs sm:text-sm text-[#6B7280] dark:text-[#B8BEC6] font-mono leading-relaxed"
         >
           {subtitle}
         </motion.p>
@@ -126,7 +126,7 @@ export function ShowcaseHeroSection({
           </a>
           <a
             href="#events"
-            className="w-full sm:w-auto px-8 py-4 rounded-2xl font-mono font-bold uppercase tracking-widest text-[#F8F7F2] bg-[#003C5E] hover:bg-[#002f4a] border border-white/10 transition-all hover:scale-105 active:scale-95 shadow-lg flex items-center justify-center gap-2 text-xs sm:text-sm"
+            className="w-full sm:w-auto px-8 py-4 rounded-2xl font-mono font-bold uppercase tracking-widest text-white bg-[#003C5E] hover:bg-[#002f4a] border border-[#003C5E] transition-all hover:scale-105 active:scale-95 shadow-lg flex items-center justify-center gap-2 text-xs sm:text-sm"
           >
             <Calendar size={16} />
             Explore Events
@@ -145,15 +145,15 @@ export function ShowcaseHeroSection({
             return (
               <div
                 key={idx}
-                className="bg-[#15171A] border border-white/10 p-4 rounded-2xl text-center space-y-1 backdrop-blur-md shadow-lg hover:border-[#FFB703]/50 transition-colors"
+                className="bg-[#F7F8FA] dark:bg-[#15171A] border border-[#E6E8EC] dark:border-white/10 p-4 rounded-2xl text-center space-y-1 backdrop-blur-md shadow-md hover:border-[#003C5E]/40 dark:hover:border-[#FFB703]/50 transition-colors"
               >
-                <div className="flex items-center justify-center gap-1.5 text-[#FFB703]">
+                <div className="flex items-center justify-center gap-1.5 text-[#003C5E] dark:text-[#FFB703]">
                   <Icon size={16} />
-                  <span className="text-xl sm:text-2xl font-black font-mono tracking-tight text-[#F8F7F2]">
+                  <span className="text-xl sm:text-2xl font-black font-mono tracking-tight text-[#111827] dark:text-[#F8F7F2]">
                     {stat.value}
                   </span>
                 </div>
-                <p className="text-[10px] font-mono uppercase tracking-wider font-bold text-[#B8BEC6]">
+                <p className="text-[10px] font-mono uppercase tracking-wider font-bold text-[#6B7280] dark:text-[#B8BEC6]">
                   {stat.label}
                 </p>
               </div>
@@ -170,10 +170,10 @@ export function ShowcaseHeroSection({
         >
           <button
             onClick={handleScrollDown}
-            className="flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-widest text-[#B8BEC6] hover:text-white transition-colors group"
+            className="flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-widest text-[#6B7280] dark:text-[#B8BEC6] hover:text-[#111827] dark:hover:text-white transition-colors group"
           >
             <span>Scroll Down</span>
-            <ChevronDown size={14} className="animate-bounce text-[#FFB703] group-hover:translate-y-1 transition-transform" />
+            <ChevronDown size={14} className="animate-bounce text-[#003C5E] dark:text-[#FFB703] group-hover:translate-y-1 transition-transform" />
           </button>
         </motion.div>
       </div>
