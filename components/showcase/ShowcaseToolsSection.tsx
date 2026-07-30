@@ -7,6 +7,9 @@ import {
   Search, Sparkles, ExternalLink
 } from 'lucide-react'
 import { InteractiveToolModal } from './tools/InteractiveToolModal'
+import { KineticText } from './motion/KineticText'
+import { TiltCard } from './motion/TiltCard'
+import { MagneticButton } from './motion/MagneticButton'
 
 interface ShowcaseToolsProps {
   tools?: any[]
@@ -119,15 +122,9 @@ export function ShowcaseToolsSection({
             </span>
           </motion.div>
 
-          <motion.h2
-            initial={{ opacity: 0, y: 15 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-            className="text-3xl sm:text-5xl font-black uppercase text-[#111827] dark:text-[#F8F7F2] tracking-tight"
-          >
-            Tools &amp; Learning Suite
-          </motion.h2>
+          <h2 className="text-3xl sm:text-5xl font-black uppercase text-[#111827] dark:text-[#F8F7F2] tracking-tight">
+            <KineticText text="Tools & Learning Suite" />
+          </h2>
 
           <motion.p
             initial={{ opacity: 0, y: 15 }}
@@ -145,42 +142,35 @@ export function ShowcaseToolsSection({
           {filteredTools.map((tool, idx) => {
             const Icon = tool.icon
             return (
-              <motion.div
-                key={tool.id || idx}
-                initial={{ opacity: 0, y: 15 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.06 }}
-                whileHover={{ y: -5 }}
-                className="bg-[#F7F8FA] dark:bg-[#15171A] border border-[#E6E8EC] dark:border-white/10 p-6 rounded-3xl space-y-4 hover:border-zinc-300 dark:hover:border-white/20 transition-all shadow-xl flex flex-col justify-between group"
-              >
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="w-11 h-11 rounded-2xl bg-white dark:bg-[#0D0D0F] border border-[#E6E8EC] dark:border-white/10 flex items-center justify-center text-[#003C5E] dark:text-[#FFB703] font-mono font-bold group-hover:scale-110 transition-transform">
-                      <Icon size={22} />
+              <TiltCard key={tool.id || idx} tiltAmount={10}>
+                <div className="bg-[#F7F8FA] dark:bg-[#15171A] border border-[#E6E8EC] dark:border-white/10 p-6 rounded-3xl space-y-4 hover:border-zinc-300 dark:hover:border-white/20 transition-all shadow-xl flex flex-col justify-between group h-full">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="w-11 h-11 rounded-2xl bg-white dark:bg-[#0D0D0F] border border-[#E6E8EC] dark:border-white/10 flex items-center justify-center text-[#003C5E] dark:text-[#FFB703] font-mono font-bold group-hover:scale-110 transition-transform">
+                        <Icon size={22} />
+                      </div>
+                      <span className="text-[9px] font-mono font-bold text-[#003C5E] dark:text-[#FFB703] uppercase bg-[#003C5E]/10 dark:bg-[#FFB703]/10 border border-[#003C5E]/20 dark:border-[#FFB703]/20 px-2.5 py-0.5 rounded-full">
+                        {tool.badge}
+                      </span>
                     </div>
-                    <span className="text-[9px] font-mono font-bold text-[#003C5E] dark:text-[#FFB703] uppercase bg-[#003C5E]/10 dark:bg-[#FFB703]/10 border border-[#003C5E]/20 dark:border-[#FFB703]/20 px-2.5 py-0.5 rounded-full">
-                      {tool.badge}
+
+                    <div className="space-y-1">
+                      <h3 className="text-base font-bold font-mono text-[#111827] dark:text-[#F8F7F2] uppercase group-hover:text-[#003C5E] dark:group-hover:text-[#FFB703] transition-colors">
+                        {tool.title}
+                      </h3>
+                      <p className="text-xs font-mono text-[#6B7280] dark:text-[#B8BEC6] leading-relaxed line-clamp-3">
+                        {tool.description}
+                      </p>
+                    </div>
+                  </div>
+
+                  <MagneticButton onClick={() => handleLaunchTool(tool.id, tool.title)}>
+                    <span className="w-full py-2.5 bg-[#E85D04] hover:bg-[#d05303] text-white font-bold uppercase tracking-wider text-xs rounded-xl flex items-center justify-center gap-2 shadow-md">
+                      Launch Tool <ExternalLink size={12} />
                     </span>
-                  </div>
-
-                  <div className="space-y-1">
-                    <h3 className="text-base font-bold font-mono text-[#111827] dark:text-[#F8F7F2] uppercase group-hover:text-[#003C5E] dark:group-hover:text-[#FFB703] transition-colors">
-                      {tool.title}
-                    </h3>
-                    <p className="text-xs font-mono text-[#6B7280] dark:text-[#B8BEC6] leading-relaxed line-clamp-3">
-                      {tool.description}
-                    </p>
-                  </div>
+                  </MagneticButton>
                 </div>
-
-                <button
-                  onClick={() => handleLaunchTool(tool.id, tool.title)}
-                  className="w-full py-2.5 bg-[#E85D04] hover:bg-[#d05303] text-white font-bold uppercase tracking-wider text-xs rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-95"
-                >
-                  Launch Tool <ExternalLink size={12} />
-                </button>
-              </motion.div>
+              </TiltCard>
             )
           })}
         </div>

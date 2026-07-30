@@ -3,6 +3,9 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import { Sparkles, Calendar, ChevronDown, Award, Users, Code, Building2, Eye, ShieldCheck } from 'lucide-react'
+import { KineticText } from './motion/KineticText'
+import { MagneticButton } from './motion/MagneticButton'
+import { TiltCard } from './motion/TiltCard'
 
 interface ShowcaseHeroProps {
   heroData: any
@@ -39,22 +42,6 @@ export function ShowcaseHeroSection({
 
   return (
     <section id="home" className="relative min-h-[90vh] flex flex-col justify-center pt-16 pb-20 overflow-hidden bg-white dark:bg-[#0D0D0F] text-[#111827] dark:text-[#F8F7F2] transition-colors duration-200">
-      {/* Ambient Radial Background Glows */}
-      <div className="absolute inset-0 z-0 opacity-20 dark:opacity-30 pointer-events-none">
-        <div
-          className="absolute -top-40 -left-40 w-[36rem] h-[36rem] rounded-full blur-[160px]"
-          style={{ backgroundColor: '#003C5E' }}
-        />
-        <div
-          className="absolute top-1/2 -right-40 w-[36rem] h-[36rem] rounded-full blur-[160px]"
-          style={{ backgroundColor: '#007F6E' }}
-        />
-        <div
-          className="absolute bottom-10 left-1/3 w-[24rem] h-[24rem] rounded-full blur-[140px]"
-          style={{ backgroundColor: '#FFB703', opacity: 0.15 }}
-        />
-      </div>
-
       <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8">
         {/* Top Breadcrumb Banner */}
         <motion.div
@@ -70,7 +57,7 @@ export function ShowcaseHeroSection({
           <ShieldCheck size={14} className="text-[#007F6E] shrink-0" />
         </motion.div>
 
-        {/* Headline & Quote */}
+        {/* Headline & Quote with Kinetic Typography */}
         <div className="space-y-4 max-w-4xl mx-auto">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -81,14 +68,11 @@ export function ShowcaseHeroSection({
             <Sparkles size={13} /> {tagline}
           </motion.div>
 
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-4xl sm:text-6xl md:text-7xl font-black uppercase tracking-tight text-[#111827] dark:text-[#F8F7F2] leading-tight font-sans"
-          >
-            {title}
-          </motion.h1>
+          <div className="pt-2">
+            <h1 className="text-4xl sm:text-6xl md:text-7xl font-black uppercase tracking-tight text-[#111827] dark:text-[#F8F7F2] leading-tight font-sans">
+              <KineticText text={title} />
+            </h1>
+          </div>
 
           <motion.p
             initial={{ opacity: 0, y: 15 }}
@@ -110,30 +94,27 @@ export function ShowcaseHeroSection({
           {subtitle}
         </motion.p>
 
-        {/* CTA Buttons (Sunset Glow Primary & Peacock Blue Secondary) */}
+        {/* Magnetic CTA Buttons */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.5 }}
           className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2"
         >
-          <a
-            href="#surveys"
-            className="w-full sm:w-auto px-8 py-4 rounded-2xl font-mono font-bold uppercase tracking-widest text-white bg-[#E85D04] hover:bg-[#d05303] shadow-xl shadow-[#E85D04]/25 transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-3 text-xs sm:text-sm"
-          >
-            <Sparkles size={16} />
-            Take the Survey
-          </a>
-          <a
-            href="#events"
-            className="w-full sm:w-auto px-8 py-4 rounded-2xl font-mono font-bold uppercase tracking-widest text-white bg-[#003C5E] hover:bg-[#002f4a] border border-[#003C5E] transition-all hover:scale-105 active:scale-95 shadow-lg flex items-center justify-center gap-2 text-xs sm:text-sm"
-          >
-            <Calendar size={16} />
-            Explore Events
-          </a>
+          <MagneticButton href="#surveys">
+            <span className="w-full sm:w-auto px-8 py-4 rounded-2xl font-mono font-bold uppercase tracking-widest text-white bg-[#E85D04] hover:bg-[#d05303] shadow-xl shadow-[#E85D04]/25 flex items-center justify-center gap-3 text-xs sm:text-sm">
+              <Sparkles size={16} /> Take the Survey
+            </span>
+          </MagneticButton>
+
+          <MagneticButton href="#events">
+            <span className="w-full sm:w-auto px-8 py-4 rounded-2xl font-mono font-bold uppercase tracking-widest text-white bg-[#003C5E] hover:bg-[#002f4a] border border-[#003C5E] shadow-lg flex items-center justify-center gap-2 text-xs sm:text-sm">
+              <Calendar size={16} /> Explore Events
+            </span>
+          </MagneticButton>
         </motion.div>
 
-        {/* Hero Stat Counter Bar */}
+        {/* Hero 3D Tilt Stat Counters */}
         <motion.div
           initial={{ opacity: 0, y: 25 }}
           animate={{ opacity: 1, y: 0 }}
@@ -143,20 +124,19 @@ export function ShowcaseHeroSection({
           {stats.map((stat, idx) => {
             const Icon = stat.icon
             return (
-              <div
-                key={idx}
-                className="bg-[#F7F8FA] dark:bg-[#15171A] border border-[#E6E8EC] dark:border-white/10 p-4 rounded-2xl text-center space-y-1 backdrop-blur-md shadow-md hover:border-[#003C5E]/40 dark:hover:border-[#FFB703]/50 transition-colors"
-              >
-                <div className="flex items-center justify-center gap-1.5 text-[#003C5E] dark:text-[#FFB703]">
-                  <Icon size={16} />
-                  <span className="text-xl sm:text-2xl font-black font-mono tracking-tight text-[#111827] dark:text-[#F8F7F2]">
-                    {stat.value}
-                  </span>
+              <TiltCard key={idx} tiltAmount={14}>
+                <div className="bg-[#F7F8FA] dark:bg-[#15171A] border border-[#E6E8EC] dark:border-white/10 p-4 rounded-2xl text-center space-y-1 backdrop-blur-md shadow-md hover:border-[#003C5E]/40 dark:hover:border-[#FFB703]/50 transition-colors">
+                  <div className="flex items-center justify-center gap-1.5 text-[#003C5E] dark:text-[#FFB703]">
+                    <Icon size={16} />
+                    <span className="text-xl sm:text-2xl font-black font-mono tracking-tight text-[#111827] dark:text-[#F8F7F2]">
+                      {stat.value}
+                    </span>
+                  </div>
+                  <p className="text-[10px] font-mono uppercase tracking-wider font-bold text-[#6B7280] dark:text-[#B8BEC6]">
+                    {stat.label}
+                  </p>
                 </div>
-                <p className="text-[10px] font-mono uppercase tracking-wider font-bold text-[#6B7280] dark:text-[#B8BEC6]">
-                  {stat.label}
-                </p>
-              </div>
+              </TiltCard>
             )
           })}
         </motion.div>

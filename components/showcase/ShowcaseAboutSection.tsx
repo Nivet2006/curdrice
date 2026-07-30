@@ -3,6 +3,8 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import { Code2, Laptop, Users, Sparkles, Compass, Target, Award } from 'lucide-react'
+import { KineticText } from './motion/KineticText'
+import { TiltCard } from './motion/TiltCard'
 
 interface ShowcaseAboutProps {
   aboutData: any
@@ -57,15 +59,9 @@ export function ShowcaseAboutSection({ aboutData, clubName, primaryColor = '#003
             </span>
           </motion.div>
 
-          <motion.h2
-            initial={{ opacity: 0, y: 15 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-            className="text-3xl sm:text-5xl font-black uppercase text-[#111827] dark:text-[#F8F7F2] tracking-tight"
-          >
-            What is {clubName}?
-          </motion.h2>
+          <h2 className="text-3xl sm:text-5xl font-black uppercase text-[#111827] dark:text-[#F8F7F2] tracking-tight">
+            <KineticText text={`What is ${clubName}?`} />
+          </h2>
 
           <motion.p
             initial={{ opacity: 0, y: 15 }}
@@ -78,33 +74,37 @@ export function ShowcaseAboutSection({ aboutData, clubName, primaryColor = '#003
           </motion.p>
         </div>
 
-        {/* Vision & Mission Grid */}
+        {/* Vision & Mission Grid with 3D Tilt */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
           {/* Vision Card */}
-          <div className="bg-[#F7F8FA] dark:bg-[#15171A] border border-[#E6E8EC] dark:border-white/10 p-8 rounded-3xl text-[#111827] dark:text-[#F8F7F2] space-y-4 shadow-xl relative overflow-hidden">
-            <div className="w-12 h-12 rounded-2xl bg-[#003C5E]/10 dark:bg-[#003C5E]/40 border border-[#003C5E] flex items-center justify-center text-[#003C5E] dark:text-[#FFB703]">
-              <Compass size={24} />
+          <TiltCard tiltAmount={10}>
+            <div className="bg-[#F7F8FA] dark:bg-[#15171A] border border-[#E6E8EC] dark:border-white/10 p-8 rounded-3xl text-[#111827] dark:text-[#F8F7F2] space-y-4 shadow-xl relative overflow-hidden h-full">
+              <div className="w-12 h-12 rounded-2xl bg-[#003C5E]/10 dark:bg-[#003C5E]/40 border border-[#003C5E] flex items-center justify-center text-[#003C5E] dark:text-[#FFB703]">
+                <Compass size={24} />
+              </div>
+              <h3 className="text-xl font-bold uppercase font-mono text-[#003C5E] dark:text-[#FFB703]">VISION</h3>
+              <p className="text-sm font-mono text-[#111827] dark:text-[#F8F7F2] leading-relaxed italic border-l-2 border-[#003C5E] dark:border-[#FFB703] pl-4">
+                "To create confident, competent, industry-ready professionals who embrace continuous improvement, leadership, and lifelong learning."
+              </p>
             </div>
-            <h3 className="text-xl font-bold uppercase font-mono text-[#003C5E] dark:text-[#FFB703]">VISION</h3>
-            <p className="text-sm font-mono text-[#111827] dark:text-[#F8F7F2] leading-relaxed italic border-l-2 border-[#003C5E] dark:border-[#FFB703] pl-4">
-              "To create confident, competent, industry-ready professionals who embrace continuous improvement, leadership, and lifelong learning."
-            </p>
-          </div>
+          </TiltCard>
 
           {/* Mission Card */}
-          <div className="bg-[#F7F8FA] dark:bg-[#15171A] border border-[#E6E8EC] dark:border-white/10 p-8 rounded-3xl text-[#111827] dark:text-[#F8F7F2] space-y-4 shadow-xl">
-            <div className="w-12 h-12 rounded-2xl bg-[#007F6E]/10 dark:bg-[#007F6E]/30 border border-[#007F6E] flex items-center justify-center text-[#007F6E]">
-              <Target size={24} />
+          <TiltCard tiltAmount={10}>
+            <div className="bg-[#F7F8FA] dark:bg-[#15171A] border border-[#E6E8EC] dark:border-white/10 p-8 rounded-3xl text-[#111827] dark:text-[#F8F7F2] space-y-4 shadow-xl h-full">
+              <div className="w-12 h-12 rounded-2xl bg-[#007F6E]/10 dark:bg-[#007F6E]/30 border border-[#007F6E] flex items-center justify-center text-[#007F6E]">
+                <Target size={24} />
+              </div>
+              <h3 className="text-xl font-bold uppercase font-mono text-[#007F6E]">MISSION</h3>
+              <ul className="space-y-2 text-xs font-mono text-[#6B7280] dark:text-[#B8BEC6]">
+                {missionList.map((m, i) => (
+                  <li key={i} className="flex items-start gap-2">
+                    <span className="text-[#003C5E] dark:text-[#FFB703] shrink-0">✦</span> {m}
+                  </li>
+                ))}
+              </ul>
             </div>
-            <h3 className="text-xl font-bold uppercase font-mono text-[#007F6E]">MISSION</h3>
-            <ul className="space-y-2 text-xs font-mono text-[#6B7280] dark:text-[#B8BEC6]">
-              {missionList.map((m, i) => (
-                <li key={i} className="flex items-start gap-2">
-                  <span className="text-[#003C5E] dark:text-[#FFB703] shrink-0">✦</span> {m}
-                </li>
-              ))}
-            </ul>
-          </div>
+          </TiltCard>
         </div>
 
         {/* Why 1% Club 3 Pillars */}
@@ -112,31 +112,25 @@ export function ShowcaseAboutSection({ aboutData, clubName, primaryColor = '#003
           {pillars.map((pillar, idx) => {
             const Icon = pillar.icon
             return (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
-                whileHover={{ y: -5 }}
-                className="bg-[#F7F8FA] dark:bg-[#15171A] border border-[#E6E8EC] dark:border-white/10 p-8 rounded-3xl space-y-4 hover:border-zinc-300 dark:hover:border-white/20 transition-all shadow-xl flex flex-col justify-between"
-              >
-                <div className="space-y-4">
-                  <div className="w-12 h-12 rounded-2xl bg-white dark:bg-[#0D0D0F] border border-[#E6E8EC] dark:border-white/10 flex items-center justify-center">
-                    <Icon size={24} className={pillar.accent} />
+              <TiltCard key={idx} tiltAmount={12}>
+                <div className="bg-[#F7F8FA] dark:bg-[#15171A] border border-[#E6E8EC] dark:border-white/10 p-8 rounded-3xl space-y-4 hover:border-zinc-300 dark:hover:border-white/20 transition-all shadow-xl flex flex-col justify-between h-full">
+                  <div className="space-y-4">
+                    <div className="w-12 h-12 rounded-2xl bg-white dark:bg-[#0D0D0F] border border-[#E6E8EC] dark:border-white/10 flex items-center justify-center">
+                      <Icon size={24} className={pillar.accent} />
+                    </div>
+                    <h4 className="text-xl font-bold uppercase text-[#111827] dark:text-[#F8F7F2] font-mono">
+                      {pillar.title}
+                    </h4>
+                    <p className="text-xs font-mono text-[#6B7280] dark:text-[#B8BEC6] leading-relaxed">
+                      {pillar.description}
+                    </p>
                   </div>
-                  <h4 className="text-xl font-bold uppercase text-[#111827] dark:text-[#F8F7F2] font-mono">
-                    {pillar.title}
-                  </h4>
-                  <p className="text-xs font-mono text-[#6B7280] dark:text-[#B8BEC6] leading-relaxed">
-                    {pillar.description}
-                  </p>
-                </div>
 
-                <div className="pt-4 border-t border-[#E6E8EC] dark:border-white/5 text-[10px] font-mono font-bold uppercase tracking-widest text-[#003C5E] dark:text-[#FFB703]">
-                  ✦ {clubName} Pillar
+                  <div className="pt-4 border-t border-[#E6E8EC] dark:border-white/5 text-[10px] font-mono font-bold uppercase tracking-widest text-[#003C5E] dark:text-[#FFB703]">
+                    ✦ {clubName} Pillar
+                  </div>
                 </div>
-              </motion.div>
+              </TiltCard>
             )
           })}
         </div>
