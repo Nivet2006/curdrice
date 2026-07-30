@@ -260,9 +260,17 @@ export function PublicShowcaseClient({ data }: PublicShowcaseClientProps) {
             </div>
           </div>
 
-          {/* Bottom Bar: Copyright & Back To Top */}
+          {/* Bottom Bar: Copyright, Center Logo, & Back To Top */}
           <div className="pt-8 border-t border-[#E6E8EC] dark:border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
             <p>© {new Date().getFullYear()} Club Eve • Gopalan Skill Academy</p>
+
+            <div className="flex items-center justify-center">
+              <img
+                src="/logo.png"
+                alt="Gopalan Skill Academy Logo"
+                className="h-6 sm:h-7 w-auto object-contain hover:scale-105 transition-transform"
+              />
+            </div>
 
             <button
               onClick={scrollToTop}
