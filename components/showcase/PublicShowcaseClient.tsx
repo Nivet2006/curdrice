@@ -268,7 +268,7 @@ export function PublicShowcaseClient({ data }: PublicShowcaseClientProps) {
               <img
                 src="/logo.png"
                 alt="Gopalan Skill Academy Logo"
-                className="h-6 sm:h-7 w-auto object-contain hover:scale-105 transition-transform"
+                className="h-10 sm:h-12 w-auto object-contain hover:scale-105 transition-transform drop-shadow-md"
               />
             </div>
 
