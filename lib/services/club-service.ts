@@ -341,10 +341,12 @@ async function assertCanManageClubShowcase(clubId: string, actorId: string) {
   const supabase = await createClient()
   const authContext = await getUserProfile()
   
+  // Full staff roles (admin, teacher, hod, manager) can manage any club showcase
   if (['admin', 'teacher', 'hod', 'manager'].includes(authContext.profile?.role)) {
     return true
   }
 
+  // Check if assigned admin of this specific club
   const { data: club } = await supabase
     .from('clubs')
     .select('assigned_admin_id')
@@ -352,6 +354,18 @@ async function assertCanManageClubShowcase(clubId: string, actorId: string) {
     .single()
 
   if (club?.assigned_admin_id === actorId) {
+    return true
+  }
+
+  // Check if CC / member of this specific club
+  const { data: membership } = await supabase
+    .from('club_members')
+    .select('id')
+    .eq('club_id', clubId)
+    .eq('profile_id', actorId)
+    .maybeSingle()
+
+  if (membership) {
     return true
   }
 
