@@ -45,7 +45,7 @@ export function KineticText({ text, className = '', delay = 0 }: KineticTextProp
 
   return (
     <motion.span
-      className={`inline-flex flex-wrap gap-x-3 gap-y-1 perspective-1000 ${className}`}
+      className={`inline-flex flex-wrap justify-center items-center gap-x-3 gap-y-1 text-center perspective-1000 ${className}`}
       variants={containerVariants}
       initial="hidden"
       whileInView="visible"
