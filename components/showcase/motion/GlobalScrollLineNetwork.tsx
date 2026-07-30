@@ -32,7 +32,7 @@ export function GlobalScrollLineNetwork() {
   const tipScale = useTransform(smoothProgress, [0, 0.5, 1], [1, 1.3, 1])
 
   return (
-    <div className="absolute inset-0 pointer-events-none z-10 overflow-hidden select-none">
+    <div className="absolute inset-0 pointer-events-none z-20 overflow-hidden select-none">
       <svg
         className="w-full absolute top-0 left-0"
         style={{ height: `${docHeight}px` }}
@@ -59,36 +59,38 @@ export function GlobalScrollLineNetwork() {
           </filter>
         </defs>
 
-        {/* Background Subtle Guide Path (Faint line indicating the full track) */}
+        {/* Background Subtle Guide Path (Faint line indicating the full track across ALL 13 sections) */}
         <path
           d={`
             M 60,0
-            L 60,${docHeight * 0.12}
-            C 60,${docHeight * 0.15} 1140,${docHeight * 0.15} 1140,${docHeight * 0.22}
-            C 1140,${docHeight * 0.28} 60,${docHeight * 0.28} 60,${docHeight * 0.38}
-            C 60,${docHeight * 0.44} 1140,${docHeight * 0.44} 1140,${docHeight * 0.54}
-            C 1140,${docHeight * 0.60} 60,${docHeight * 0.60} 60,${docHeight * 0.72}
-            C 60,${docHeight * 0.78} 1140,${docHeight * 0.78} 1140,${docHeight * 0.88}
-            L 1140,${docHeight}
+            L 60,${docHeight * 0.08}
+            C 60,${docHeight * 0.14} 1140,${docHeight * 0.14} 1140,${docHeight * 0.20}
+            C 1140,${docHeight * 0.26} 60,${docHeight * 0.26} 60,${docHeight * 0.35}
+            C 60,${docHeight * 0.40} 1140,${docHeight * 0.40} 1140,${docHeight * 0.48}
+            C 1140,${docHeight * 0.55} 60,${docHeight * 0.55} 60,${docHeight * 0.64}
+            C 60,${docHeight * 0.70} 1140,${docHeight * 0.70} 1140,${docHeight * 0.78}
+            C 1140,${docHeight * 0.84} 60,${docHeight * 0.84} 60,${docHeight * 0.92}
+            C 60,${docHeight * 0.96} 1140,${docHeight * 0.96} 1140,${docHeight}
           `}
           fill="none"
           stroke="url(#live-scroll-line-gradient)"
           strokeWidth="1.5"
           strokeDasharray="4 4"
-          className="opacity-15 dark:opacity-25"
+          className="opacity-20 dark:opacity-30"
         />
 
         {/* Primary Animated Live Line (Draws down when scrolling down, erases up when scrolling up) */}
         <motion.path
           d={`
             M 60,0
-            L 60,${docHeight * 0.12}
-            C 60,${docHeight * 0.15} 1140,${docHeight * 0.15} 1140,${docHeight * 0.22}
-            C 1140,${docHeight * 0.28} 60,${docHeight * 0.28} 60,${docHeight * 0.38}
-            C 60,${docHeight * 0.44} 1140,${docHeight * 0.44} 1140,${docHeight * 0.54}
-            C 1140,${docHeight * 0.60} 60,${docHeight * 0.60} 60,${docHeight * 0.72}
-            C 60,${docHeight * 0.78} 1140,${docHeight * 0.78} 1140,${docHeight * 0.88}
-            L 1140,${docHeight}
+            L 60,${docHeight * 0.08}
+            C 60,${docHeight * 0.14} 1140,${docHeight * 0.14} 1140,${docHeight * 0.20}
+            C 1140,${docHeight * 0.26} 60,${docHeight * 0.26} 60,${docHeight * 0.35}
+            C 60,${docHeight * 0.40} 1140,${docHeight * 0.40} 1140,${docHeight * 0.48}
+            C 1140,${docHeight * 0.55} 60,${docHeight * 0.55} 60,${docHeight * 0.64}
+            C 60,${docHeight * 0.70} 1140,${docHeight * 0.70} 1140,${docHeight * 0.78}
+            C 1140,${docHeight * 0.84} 60,${docHeight * 0.84} 60,${docHeight * 0.92}
+            C 60,${docHeight * 0.96} 1140,${docHeight * 0.96} 1140,${docHeight}
           `}
           fill="none"
           stroke="url(#live-scroll-line-gradient)"
@@ -101,13 +103,14 @@ export function GlobalScrollLineNetwork() {
         <motion.path
           d={`
             M 1140,0
-            L 1140,${docHeight * 0.12}
-            C 1140,${docHeight * 0.15} 60,${docHeight * 0.15} 60,${docHeight * 0.22}
-            C 60,${docHeight * 0.28} 1140,${docHeight * 0.28} 1140,${docHeight * 0.38}
-            C 1140,${docHeight * 0.44} 60,${docHeight * 0.44} 60,${docHeight * 0.54}
-            C 60,${docHeight * 0.60} 1140,${docHeight * 0.60} 1140,${docHeight * 0.72}
-            C 1140,${docHeight * 0.78} 60,${docHeight * 0.78} 60,${docHeight * 0.88}
-            L 60,${docHeight}
+            L 1140,${docHeight * 0.08}
+            C 1140,${docHeight * 0.14} 60,${docHeight * 0.14} 60,${docHeight * 0.20}
+            C 60,${docHeight * 0.26} 1140,${docHeight * 0.26} 1140,${docHeight * 0.35}
+            C 1140,${docHeight * 0.40} 60,${docHeight * 0.40} 60,${docHeight * 0.48}
+            C 60,${docHeight * 0.55} 1140,${docHeight * 0.55} 1140,${docHeight * 0.64}
+            C 1140,${docHeight * 0.70} 60,${docHeight * 0.70} 60,${docHeight * 0.78}
+            C 60,${docHeight * 0.84} 1140,${docHeight * 0.84} 1140,${docHeight * 0.92}
+            C 1140,${docHeight * 0.96} 60,${docHeight * 0.96} 60,${docHeight}
           `}
           fill="none"
           stroke="url(#live-scroll-line-gradient)"
@@ -125,7 +128,7 @@ export function GlobalScrollLineNetwork() {
           opacity: tipOpacity,
           scale: tipScale
         }}
-        className="fixed left-6 lg:left-12 w-5 h-5 rounded-full bg-[#FFB703] border-2 border-white shadow-[0_0_20px_#FFB703,#0_0_40px_#E85D04] z-20 pointer-events-none -translate-x-1/2 -translate-y-1/2"
+        className="fixed left-6 lg:left-12 w-5 h-5 rounded-full bg-[#FFB703] border-2 border-white shadow-[0_0_20px_#FFB703,#0_0_40px_#E85D04] z-30 pointer-events-none -translate-x-1/2 -translate-y-1/2"
       />
 
       <motion.div
@@ -134,7 +137,7 @@ export function GlobalScrollLineNetwork() {
           opacity: tipOpacity,
           scale: tipScale
         }}
-        className="fixed right-6 lg:right-12 w-5 h-5 rounded-full bg-[#E85D04] border-2 border-white shadow-[0_0_20px_#E85D04,#0_0_40px_#FFB703] z-20 pointer-events-none translate-x-1/2 -translate-y-1/2"
+        className="fixed right-6 lg:right-12 w-5 h-5 rounded-full bg-[#E85D04] border-2 border-white shadow-[0_0_20px_#E85D04,#0_0_40px_#FFB703] z-30 pointer-events-none translate-x-1/2 -translate-y-1/2"
       />
     </div>
   )
