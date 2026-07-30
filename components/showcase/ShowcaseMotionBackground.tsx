@@ -1,9 +1,24 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 
 export function ShowcaseMotionBackground() {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const staticParticles = [
+    { id: 0, top: '15%', left: '10%', duration: 12, delay: 0 },
+    { id: 1, top: '30%', left: '25%', duration: 15, delay: 1.5 },
+    { id: 2, top: '45%', left: '40%', duration: 18, delay: 3 },
+    { id: 3, top: '60%', left: '55%', duration: 21, delay: 4.5 },
+    { id: 4, top: '75%', left: '70%', duration: 24, delay: 6 },
+    { id: 5, top: '90%', left: '85%', duration: 27, delay: 7.5 }
+  ]
+
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden select-none">
       {/* 1. Animated Peacock Blue Radial Glow Orb */}
@@ -71,31 +86,29 @@ export function ShowcaseMotionBackground() {
         className="absolute -bottom-20 right-1/4 w-[30rem] h-[30rem] rounded-full blur-[160px] bg-[#E85D04]"
       />
 
-      {/* 5. Subtle Floating Geometry / Golden Crown Particles */}
-      {[...Array(6)].map((_, i) => (
+      {/* 5. Deterministic Floating Golden Crown Particles */}
+      {mounted && staticParticles.map((p) => (
         <motion.div
-          key={i}
+          key={p.id}
           initial={{
-            x: Math.random() * 1000,
-            y: Math.random() * 800,
             opacity: 0.2
           }}
           animate={{
             y: [0, -40, 0],
-            x: [0, i % 2 === 0 ? 25 : -25, 0],
+            x: [0, p.id % 2 === 0 ? 25 : -25, 0],
             opacity: [0.1, 0.35, 0.1],
             rotate: [0, 180, 360]
           }}
           transition={{
-            duration: 12 + i * 3,
+            duration: p.duration,
             repeat: Infinity,
             ease: 'easeInOut',
-            delay: i * 1.5
+            delay: p.delay
           }}
           className="absolute w-2 h-2 rounded-full bg-[#FFB703]/40 backdrop-blur-sm"
           style={{
-            top: `${(i + 1) * 15}%`,
-            left: `${10 + i * 15}%`
+            top: p.top,
+            left: p.left
           }}
         />
       ))}
