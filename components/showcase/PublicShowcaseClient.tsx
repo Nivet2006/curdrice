@@ -16,6 +16,7 @@ import { ShowcaseSurveysSection } from './ShowcaseSurveysSection'
 import { ShowcaseToolsSection } from './ShowcaseToolsSection'
 import { ShowcaseHistorySection } from './ShowcaseHistorySection'
 import { ShowcaseContactSection } from './ShowcaseContactSection'
+import { ShowcaseMotionBackground } from './ShowcaseMotionBackground'
 
 interface PublicShowcaseClientProps {
   data: {
@@ -56,7 +57,10 @@ export function PublicShowcaseClient({ data }: PublicShowcaseClientProps) {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#0D0D0F] text-[#111827] dark:text-[#F8F7F2] font-mono selection:bg-[#FFB703] selection:text-[#0D0D0F] transition-colors duration-200">
+    <div className="min-h-screen bg-white dark:bg-[#0D0D0F] text-[#111827] dark:text-[#F8F7F2] font-mono selection:bg-[#FFB703] selection:text-[#0D0D0F] transition-colors duration-200 relative">
+      {/* Dynamic Framer Motion Background Effects */}
+      <ShowcaseMotionBackground />
+
       {/* Sticky Navigation Bar */}
       <ShowcaseNavbar
         clubName={club.name}
