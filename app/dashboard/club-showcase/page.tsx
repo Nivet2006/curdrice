@@ -23,7 +23,20 @@ export default async function ClubShowcaseDashboardPage() {
     .eq('id', user.id)
     .single()
 
-  const clubs = await getClubs()
+  let clubs = await getClubs()
+
+  // Staff roles (admin, teacher, hod, manager) can manage any club.
+  // For CCs and assigned admins, filter to only the specific club(s) they are assigned to or belong to.
+  if (!['admin', 'teacher', 'hod', 'manager'].includes(profile?.role || '')) {
+    const { data: memberRecords } = await supabase
+      .from('club_members')
+      .select('club_id')
+      .eq('profile_id', user.id)
+
+    const memberClubIds = new Set((memberRecords || []).map((m: any) => m.club_id))
+
+    clubs = clubs.filter(c => c.assigned_admin_id === user.id || memberClubIds.has(c.id))
+  }
 
   return (
     <div className="max-w-7xl mx-auto py-8">
