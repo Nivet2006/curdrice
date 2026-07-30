@@ -1,8 +1,7 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { Menu, X, Sparkles, Send, ChevronRight } from 'lucide-react'
+import React, { useState } from 'react'
+import { Menu, X, Send, ChevronRight, GraduationCap } from 'lucide-react'
 import { ThemeToggle } from '@/components/shared/ThemeToggle'
 import PatternPicker from '@/components/shared/PatternPicker'
 
@@ -14,17 +13,14 @@ interface ShowcaseNavbarProps {
   navbarConfig?: any
 }
 
-export function ShowcaseNavbar({ clubName, clubSlug, logoUrl, primaryColor = '#f59e0b', navbarConfig }: ShowcaseNavbarProps) {
-  const [scrolled, setScrolled] = useState(false)
+export function ShowcaseNavbar({
+  clubName,
+  clubSlug,
+  logoUrl,
+  primaryColor = '#f59e0b',
+  navbarConfig
+}: ShowcaseNavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 30)
-    }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     if (href.startsWith('#')) {
@@ -60,40 +56,42 @@ export function ShowcaseNavbar({ clubName, clubSlug, logoUrl, primaryColor = '#f
     { label: 'GALLERY', href: galleryHref },
     { label: 'BLOGS', href: '#blogs' },
     { label: 'SURVEY', href: '#surveys' },
-    { label: 'TOOLS', href: '#tools' }
+    { label: 'TOOLS', href: '#tools' },
+    { label: 'LOGIN', href: '/student/dashboard' }
   ]
 
   return (
-    <header className="border-b border-[#e0e0e0] dark:border-zinc-800 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-md sticky top-0 z-50 transition-all duration-200">
-      <nav className="h-[60px] flex items-center justify-between px-4 md:px-8 w-full max-w-[1280px] mx-auto">
-        {/* Left: Brand Mark + Club Logo & Title */}
-        <div className="flex items-center gap-4">
-          <Link href="/" className="font-mono font-bold text-[#0a0a0a] dark:text-white flex items-center gap-1">
-            <span className="text-amber-500 font-bold">{'>'}</span> Club-Eve
-          </Link>
-          <div className="h-4 w-px bg-zinc-200 dark:bg-zinc-800 hidden sm:block" />
+    <header className="border-b border-zinc-200 dark:border-zinc-800 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-md sticky top-0 z-50 transition-all duration-200">
+      <nav className="h-[64px] flex items-center justify-between px-4 md:px-8 w-full max-w-[1340px] mx-auto">
+        {/* Left: Club Logo & Name + Gopalan Skill Academy Badge */}
+        <div className="flex items-center gap-3">
           <a
             href="#home"
             onClick={(e) => handleNavClick(e, '#home')}
             className="flex items-center gap-2.5 group min-w-0"
           >
             {logoUrl ? (
-              <img src={logoUrl} alt={clubName} className="w-7 h-7 object-contain rounded-lg shrink-0" />
+              <img src={logoUrl} alt={clubName} className="w-8 h-8 object-contain rounded-lg shrink-0 shadow-sm" />
             ) : (
               <div
-                className="w-7 h-7 rounded-lg flex items-center justify-center font-black font-mono text-xs text-black shadow-sm uppercase shrink-0"
+                className="w-8 h-8 rounded-lg flex items-center justify-center font-black font-mono text-xs text-black shadow-sm uppercase shrink-0"
                 style={{ backgroundColor: primaryColor }}
               >
                 {clubName.charAt(0)}
               </div>
             )}
-            <span className="text-sm font-bold uppercase tracking-tight text-zinc-900 dark:text-white group-hover:text-amber-500 transition-colors truncate">
-              {navbarConfig?.title || clubName}
-            </span>
+            <div className="flex flex-col">
+              <span className="text-sm font-bold uppercase tracking-tight text-zinc-900 dark:text-white group-hover:text-amber-500 transition-colors truncate">
+                {navbarConfig?.title || clubName}
+              </span>
+              <span className="text-[10px] font-mono font-semibold text-zinc-500 dark:text-zinc-400 flex items-center gap-1">
+                <GraduationCap size={11} className="text-amber-500" /> Gopalan Skill Academy
+              </span>
+            </div>
           </a>
         </div>
 
-        {/* Center: Showcase Section Links */}
+        {/* Center: Desktop Navigation Links */}
         <div className="hidden lg:flex items-center gap-1 bg-zinc-100 dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800/80 rounded-full px-3 py-1">
           {navLinks.map(link => (
             <a
@@ -107,15 +105,15 @@ export function ShowcaseNavbar({ clubName, clubSlug, logoUrl, primaryColor = '#f
           ))}
         </div>
 
-        {/* Right: ThemeToggle + PatternPicker + Contact CTA */}
-        <div className="flex items-center gap-3">
+        {/* Right: ThemeToggle + PatternPicker + Contact Action */}
+        <div className="flex items-center gap-2.5">
           <ThemeToggle />
           <PatternPicker />
 
           <a
             href="#contact"
             onClick={(e) => handleNavClick(e, '#contact')}
-            className="hidden sm:flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-mono font-bold uppercase tracking-wider text-black shadow-sm transition-transform hover:scale-105 active:scale-95"
+            className="hidden sm:flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-mono font-bold uppercase tracking-wider text-black shadow-sm transition-transform hover:scale-105 active:scale-95 shrink-0"
             style={{ backgroundColor: primaryColor }}
           >
             <Send size={12} /> Contact
