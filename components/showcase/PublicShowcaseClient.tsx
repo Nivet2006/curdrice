@@ -34,18 +34,17 @@ export function PublicShowcaseClient({ data }: PublicShowcaseClientProps) {
   const primaryColor = themeConfig?.primaryColor || '#f59e0b'
   const accentColor = themeConfig?.accentColor || '#3b82f6'
 
-  const sectionsOrder: string[] = config?.sections_order || [
+  const sectionsOrder: string[] = (config?.sections_order || [
     'hero',
     'about',
     'events',
     'team',
-    'gallery',
     'testimonials',
     'blogs',
     'surveys',
     'tools',
     'contact'
-  ]
+  ]).filter((s: string) => s !== 'gallery')
 
   const sectionsEnabled = config?.sections_enabled || {
     hero: true,
@@ -176,6 +175,7 @@ export function PublicShowcaseClient({ data }: PublicShowcaseClientProps) {
       {/* Sticky Dashboard-Style Header with ThemeToggle and PatternPicker */}
       <ShowcaseNavbar
         clubName={club.name}
+        clubSlug={club.slug}
         logoUrl={config?.navbar_config?.logoUrl}
         primaryColor={primaryColor}
         navbarConfig={config?.navbar_config}

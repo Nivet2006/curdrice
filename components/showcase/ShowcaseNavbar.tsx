@@ -8,12 +8,13 @@ import PatternPicker from '@/components/shared/PatternPicker'
 
 interface ShowcaseNavbarProps {
   clubName: string
+  clubSlug?: string
   logoUrl?: string | null
   primaryColor?: string
   navbarConfig?: any
 }
 
-export function ShowcaseNavbar({ clubName, logoUrl, primaryColor = '#f59e0b', navbarConfig }: ShowcaseNavbarProps) {
+export function ShowcaseNavbar({ clubName, clubSlug, logoUrl, primaryColor = '#f59e0b', navbarConfig }: ShowcaseNavbarProps) {
   const [scrolled, setScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
@@ -25,12 +26,14 @@ export function ShowcaseNavbar({ clubName, logoUrl, primaryColor = '#f59e0b', na
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  const galleryHref = clubSlug ? `/c/${clubSlug}/gallerywall` : '#gallery'
+
   const navLinks = [
     { label: 'HOME', href: '#home' },
     { label: 'ABOUT', href: '#about' },
     { label: 'EVENTS', href: '#events' },
     { label: 'TEAM', href: '#team' },
-    { label: 'GALLERY', href: '#gallery' },
+    { label: 'GALLERY', href: galleryHref },
     { label: 'BLOGS', href: '#blogs' },
     { label: 'SURVEY', href: '#surveys' },
     { label: 'TOOLS', href: '#tools' }
