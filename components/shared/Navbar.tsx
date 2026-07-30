@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import Link from 'next/link'
-import { LogOut, Menu, X, LayoutDashboard, Calendar, Users, ScanLine, ClipboardList, Database, UserCircle, Bug, Award, Plus, Trophy, Mail } from 'lucide-react'
+import { LogOut, Menu, X, LayoutDashboard, Calendar, Users, ScanLine, ClipboardList, Database, UserCircle, Bug, Award, Plus, Trophy, Mail, Building2 } from 'lucide-react'
 import { Badge } from '../ui/Badge'
 import { supabase } from '@/lib/supabase/client'
 import { useRouter, usePathname } from 'next/navigation'
@@ -55,6 +55,7 @@ export function Navbar({ role, name }: { role?: Role; name?: string }) {
 
   const navLinks = role ? [
     { href: `/${role}/dashboard`, label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/clubs', label: 'Clubs', icon: Building2 },
     ...(!['pr', 'teacher', 'hod', 'cc'].includes(role) ? [
       { href: `/${role}/events`, label: 'Events', icon: Calendar },
     ] : []),
