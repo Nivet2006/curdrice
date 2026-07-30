@@ -2,6 +2,35 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── The 1% Club Design System Variables ── */
+:root {
+  --primary-peacock: #003C5E;
+  --secondary-emerald: #007F6E;
+  --accent-golden: #FFB703;
+  --cta-sunset: #E85D04;
+  --bg-midnight: #0D0D0F;
+  --surface-dark: #15171A;
+  --card-dark: #1A1D22;
+  --text-ivory: #F8F7F2;
+}
+
+/* 1% Club Gradient Utilities */
+.bg-gradient-ocean-depth {
+  background: linear-gradient(135deg, #003C5E 0%, #007F6E 100%);
+}
+
+.bg-gradient-luxury-gold {
+  background: linear-gradient(135deg, #8A5A00 0%, #FFB703 100%);
+}
+
+.bg-gradient-twilight-horizon {
+  background: linear-gradient(135deg, #003C5E 0%, #E85D04 100%);
+}
+
+.bg-gradient-subtle-glow {
+  background: linear-gradient(180deg, #007F6E 0%, #0D0D0F 100%);
+}
+
 @media print {
   body * {
     visibility: hidden;
@@ -40,17 +69,17 @@ html {
 }
 
 [data-theme="dark"] {
-  --bg: #0a0a0a;
-  --bg-subtle: #1a1a1a;
-  --bg-card: #141414;
-  --bg-hover: #222222;
-  --fg: #f5f5f5;
-  --fg-muted: #a0a0a0;
-  --fg-faint: #666666;
-  --border: #2a2a2a;
-  --border-strong: #444444;
-  --accent: #f5f5f5;
-  --accent-fg: #0a0a0a;
+  --bg: #0D0D0F;
+  --bg-subtle: #15171A;
+  --bg-card: #1A1D22;
+  --bg-hover: #22252A;
+  --fg: #F8F7F2;
+  --fg-muted: #B8BEC6;
+  --fg-faint: #6B7280;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --accent: #FFB703;
+  --accent-fg: #0D0D0F;
 }
 
 * {
@@ -64,295 +93,21 @@ body {
   transition: opacity 1.2s cubic-bezier(0.19, 1, 0.22, 1), filter 1.2s cubic-bezier(0.19, 1, 0.22, 1), background-color 0.2s ease;
 }
 
-@keyframes violent-shake {
-  0% { transform: translate(0, 0) rotate(0deg); }
-  10% { transform: translate(-15px, -15px) rotate(-10deg); }
-  20% { transform: translate(20px, 10px) rotate(7deg); }
-  30% { transform: translate(-25px, 15px) rotate(-12deg); }
-  40% { transform: translate(30px, -20px) rotate(8deg); }
-  50% { transform: translate(-20px, 25px) rotate(-5deg); }
-  60% { transform: translate(15px, -15px) rotate(12deg); }
-  70% { transform: translate(-30px, 20px) rotate(-8deg); }
-  80% { transform: translate(25px, -10px) rotate(5deg); }
-  90% { transform: translate(-15px, 15px) rotate(-3deg); }
-  100% { transform: translate(0, 0) rotate(0deg); }
-}
-
-.access-denied-shake {
-  animation: violent-shake 0.15s cubic-bezier(.36,.07,.19,.97) infinite !important;
-  overflow: hidden !important;
-}
-
-.access-denied-fade {
-  opacity: 0.02 !important;
-  filter: blur(60px) grayscale(1) invert(1) brightness(0.5) !important;
-  transition: all 1.2s cubic-bezier(0.19, 1, 0.22, 1) !important;
-  pointer-events: none !important;
-}
-
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-sans);
   font-weight: 900;
-  letter-spacing: -0.05em;
+  letter-spacing: -0.04em;
   text-transform: uppercase;
-  line-height: 0.9;
+  line-height: 0.95;
 }
 
-/* ── Never filter images ── */
+/* Never filter images */
 img {
   filter: none !important;
   -webkit-filter: none !important;
 }
 
-/* ── Override hardcoded Tailwind hex values in dark mode ── */
-
-[data-theme="dark"] .bg-white,
-[data-theme="dark"] [class*="bg-[#ffffff]"],
-[data-theme="dark"] [class*="bg-[#fcfcfc]"],
-[data-theme="dark"] [class*="bg-[#fafafa]"] {
-  background-color: var(--bg-card) !important;
-  color: var(--fg) !important;
-}
-
-[data-theme="dark"] .bg-white *,
-[data-theme="dark"] [class*="bg-[#ffffff]"] *,
-[data-theme="dark"] [class*="bg-[#fcfcfc]"] *,
-[data-theme="dark"] [class*="bg-[#fafafa]"] * {
-  color: var(--fg) !important;
-}
-
-[data-theme="dark"] [class*="bg-[#f5f5f5]"],
-[data-theme="dark"] [class*="bg-[#f2f2f2]"],
-[data-theme="dark"] [class*="bg-[#f9f9f9]"] {
-  background-color: var(--bg-subtle) !important;
-}
-
-[data-theme="dark"] [class*="bg-[#0a0a0a]"],
-[data-theme="dark"] [class*="bg-[#222222]"] {
-  background-color: var(--accent) !important;
-  color: var(--accent-fg) !important;
-}
-
-[data-theme="dark"] [class*="bg-[#0a0a0a]"] *,
-[data-theme="dark"] [class*="bg-[#222222]"] * {
-  color: var(--accent-fg) !important;
-}
-
-[data-theme="dark"] [class*="text-[#0a0a0a]"] {
-  color: var(--fg) !important;
-}
-
-[data-theme="dark"] [class*="text-[#555555]"] {
-  color: var(--fg-muted) !important;
-}
-
-[data-theme="dark"] [class*="text-[#999999]"],
-[data-theme="dark"] [class*="text-[#999]"] {
-  color: var(--fg-faint) !important;
-}
-
-[data-theme="dark"] [class*="border-[#e0e0e0]"],
-[data-theme="dark"] [class*="border-[#e5e5e5]"] {
-  border-color: var(--border) !important;
-}
-
-[data-theme="dark"] [class*="border-[#0a0a0a]"] {
-  border-color: var(--accent) !important;
-}
-
-[data-theme="dark"] .divide-\[#e0e0e0\]>*+* {
-  border-color: var(--border) !important;
-}
-
-[data-theme="dark"] thead,
-[data-theme="dark"] [class*="bg-[#f5f5f5]"] th {
-  background-color: var(--bg-subtle) !important;
-}
-
-[data-theme="dark"] tr:hover,
-[data-theme="dark"] [class*="hover:bg-[#fcfcfc]"]:hover,
-[data-theme="dark"] [class*="hover:bg-[#fafafa]"]:hover {
-  background-color: var(--bg-hover) !important;
-}
-
-[data-theme="dark"] input,
-[data-theme="dark"] select,
-[data-theme="dark"] textarea {
-  background-color: var(--bg-subtle) !important;
-  color: var(--fg) !important;
-  border-color: var(--border) !important;
-}
-
-/* ── Red/Green semantic colors ── */
-[data-theme="dark"] .bg-green-50 {
-  background-color: #052e16 !important;
-}
-
-[data-theme="dark"] .bg-red-50 {
-  background-color: #2d0a0a !important;
-}
-
-[data-theme="dark"] .bg-amber-50 {
-  background-color: #2d1a00 !important;
-}
-
-[data-theme="dark"] .text-green-900 {
-  color: #86efac !important;
-}
-
-[data-theme="dark"] .text-red-900 {
-  color: #fca5a5 !important;
-}
-
-[data-theme="dark"] .text-green-700 {
-  color: #4ade80 !important;
-}
-
-[data-theme="dark"] [class*="text-[#166534]"] {
-  color: #4ade80 !important;
-}
-
-[data-theme="dark"] .border-green-200 {
-  border-color: #166534 !important;
-}
-
-[data-theme="dark"] .border-red-200 {
-  border-color: #7f1d1d !important;
-}
-
-[data-theme="dark"] button.bg-transparent,
-[data-theme="dark"] button:not([class*="bg-"]) {
-  color: var(--fg) !important;
-}
-
-[data-theme="dark"] button[class*="border"][class*="bg-white"]:not([class*="border-[#eb4b4b]"]),
-[data-theme="dark"] button[class*="border-[#e0e0e0]"] {
-  background-color: var(--bg-subtle) !important;
-  color: var(--fg) !important;
-  border-color: var(--border) !important;
-}
-
-[data-theme="dark"] .bg-\[\#ffeded\] {
-  background-color: #3d0a0a !important;
-  color: #ff6b6b !important;
-  border-color: #7f1d1d !important;
-}
-
-[data-theme="dark"] .text-\[\#eb4b4b\] {
-  color: #ff6b6b !important;
-}
-
-[data-theme="dark"] .border-\[\#eb4b4b\] {
-  border-color: #7f1d1d !important;
-}
-
-/* ── Semantic colors dark mode ── */
-[data-theme="dark"] .text-green-600,
-[data-theme="dark"] .text-green-500 {
-  color: #4ade80 !important;
-}
-
-[data-theme="dark"] .border-green-300,
-[data-theme="dark"] .border-green-200 {
-  border-color: #166534 !important;
-}
-
-[data-theme="dark"] .text-green-700 {
-  color: #86efac !important;
-}
-
-[data-theme="dark"] .bg-green-100 {
-  background-color: #052e16 !important;
-}
-
-[data-theme="dark"] .text-green-800 {
-  color: #86efac !important;
-}
-
-[data-theme="dark"] .border-green-300 {
-  border-color: #166534 !important;
-}
-
-/* ── Mute Tailwind named colors in dark mode (never applied to images) ── */
-[data-theme="dark"] [class*="text-blue-"]:not(img) {
-  filter: brightness(0.75) !important;
-}
-
-[data-theme="dark"] [class*="text-yellow-"]:not(img) {
-  filter: brightness(0.7) !important;
-}
-
-[data-theme="dark"] [class*="text-orange-"]:not(img) {
-  filter: brightness(0.7) !important;
-}
-
-[data-theme="dark"] [class*="text-purple-"]:not(img) {
-  filter: brightness(0.75) !important;
-}
-
-[data-theme="dark"] [class*="text-pink-"]:not(img) {
-  filter: brightness(0.75) !important;
-}
-
-[data-theme="dark"] [class*="text-indigo-"]:not(img) {
-  filter: brightness(0.75) !important;
-}
-
-[data-theme="dark"] [class*="bg-blue-"]:not(img) {
-  filter: brightness(0.3) !important;
-}
-
-[data-theme="dark"] [class*="bg-yellow-"]:not(img) {
-  filter: brightness(0.25) !important;
-}
-
-[data-theme="dark"] [class*="bg-orange-"]:not(img) {
-  filter: brightness(0.25) !important;
-}
-
-[data-theme="dark"] [class*="bg-purple-"]:not(img) {
-  filter: brightness(0.3) !important;
-}
-
-[data-theme="dark"] [class*="bg-pink-"]:not(img) {
-  filter: brightness(0.3) !important;
-}
-
-[data-theme="dark"] [class*="bg-indigo-"]:not(img) {
-  filter: brightness(0.3) !important;
-}
-
-/* ── Present badge dark mode ── */
-[data-theme="dark"] .bg-\[\#f0fdf4\] {
-  background-color: #052e16 !important;
-}
-
-[data-theme="dark"] .text-\[\#166534\] {
-  color: #4ade80 !important;
-}
-
-[data-theme="dark"] .border-\[\#bbf7d0\] {
-  border-color: #166534 !important;
-}
-
-/* ── Pending badge dark mode ── */
-[data-theme="dark"] .bg-\[\#fefce8\] {
-  background-color: #1c1500 !important;
-}
-
-[data-theme="dark"] .text-\[\#854d0e\] {
-  color: #fbbf24 !important;
-}
-
-[data-theme="dark"] .border-\[\#fef08a\] {
-  border-color: #854d0e !important;
-}
-
-/* ============================================================
-   BACKGROUND PATTERNS — append this block to globals.css
-   ============================================================ */
-
-/* ── Pattern color tokens ── */
+/* Background Patterns */
 :root {
   --grid-color: rgba(0, 0, 0, 0.12);
   --grid-color-2: rgba(0, 0, 0, 0.05);
@@ -363,15 +118,11 @@ img {
   --grid-color-2: rgba(255, 255, 255, 0.03);
 }
 
-/* ── Apply the active pattern to the root layout ── */
-
-/* Default: no pattern */
 [data-pattern="none"] html,
 [data-pattern="none"] body {
   background-image: none;
 }
 
-/* GRID — fine graph paper (matches the reference image) */
 [data-pattern="grid"] html,
 [data-pattern="grid"] body {
   background-image:
@@ -384,253 +135,7 @@ img {
   background-attachment: fixed;
 }
 
-/* DOTS */
-[data-pattern="dots"] html,
-[data-pattern="dots"] body {
-  background-image: radial-gradient(circle,
-      var(--grid-color) 1.2px,
-      transparent 1.2px);
-  background-size: 22px 22px;
-  background-attachment: fixed;
-}
-
-/* CROSS / PLUS */
-[data-pattern="cross"] html,
-[data-pattern="cross"] body {
-  background-image:
-    linear-gradient(var(--grid-color) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
-  background-size: 28px 28px;
-  background-position: 14px 14px;
-  background-attachment: fixed;
-}
-
-/* DIAGONAL LINES */
-[data-pattern="diagonal"] html,
-[data-pattern="diagonal"] body {
-  background-image: repeating-linear-gradient(45deg,
-      var(--grid-color) 0,
-      var(--grid-color) 1px,
-      transparent 0,
-      transparent 50%);
-  background-size: 14px 14px;
-  background-attachment: fixed;
-}
-
-/* WAVES */
-[data-pattern="waves"] html,
-[data-pattern="waves"] body {
-  background-image: repeating-radial-gradient(ellipse at 50% 50%,
-      transparent 0,
-      transparent 8px,
-      var(--grid-color) 8px,
-      var(--grid-color) 9px);
-  background-size: 32px 32px;
-  background-attachment: fixed;
-}
-
-/* HEXAGON */
-[data-pattern="hexagon"] html,
-[data-pattern="hexagon"] body {
-  background-color: var(--bg);
-  background-image:
-    linear-gradient(30deg,
-      var(--grid-color) 12%,
-      transparent 12.5%,
-      transparent 87%,
-      var(--grid-color) 87.5%,
-      var(--grid-color)),
-    linear-gradient(150deg,
-      var(--grid-color) 12%,
-      transparent 12.5%,
-      transparent 87%,
-      var(--grid-color) 87.5%,
-      var(--grid-color)),
-    linear-gradient(30deg,
-      var(--grid-color) 12%,
-      transparent 12.5%,
-      transparent 87%,
-      var(--grid-color) 87.5%,
-      var(--grid-color)),
-    linear-gradient(150deg,
-      var(--grid-color) 12%,
-      transparent 12.5%,
-      transparent 87%,
-      var(--grid-color) 87.5%,
-      var(--grid-color)),
-    linear-gradient(60deg,
-      var(--grid-color-2) 25%,
-      transparent 25.5%,
-      transparent 75%,
-      var(--grid-color-2) 75%,
-      var(--grid-color-2)),
-    linear-gradient(60deg,
-      var(--grid-color-2) 25%,
-      transparent 25.5%,
-      transparent 75%,
-      var(--grid-color-2) 75%,
-      var(--grid-color-2));
-  background-size: 40px 70px;
-  background-position: 0 0, 0 0, 20px 35px, 20px 35px, 0 0, 20px 35px;
-  background-attachment: fixed;
-}
-
-/* DIAMONDS */
-[data-pattern="diamonds"] html,
-[data-pattern="diamonds"] body {
-  background-image:
-    linear-gradient(45deg, var(--grid-color) 25%, transparent 25%),
-    linear-gradient(-45deg, var(--grid-color) 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, var(--grid-color) 75%),
-    linear-gradient(-45deg, transparent 75%, var(--grid-color) 75%);
-  background-size: 20px 20px;
-  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
-  background-attachment: fixed;
-}
-
-/* CIRCUIT */
-[data-pattern="circuit"] html,
-[data-pattern="circuit"] body {
-  background-image:
-    linear-gradient(var(--grid-color) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px),
-    radial-gradient(circle, var(--grid-color-2) 1.5px, transparent 1.5px);
-  background-size: 24px 24px, 24px 24px, 24px 24px;
-  background-position: 0 0, 0 0, 12px 12px;
-  background-attachment: fixed;
-}
-
-/* POLKA */
-[data-pattern="polka"] html,
-[data-pattern="polka"] body {
-  background-image: radial-gradient(circle, var(--grid-color) 2px, transparent 2px);
-  background-size: 18px 18px;
-  background-attachment: fixed;
-}
-
-/* SCALES */
-[data-pattern="scales"] html,
-[data-pattern="scales"] body {
-  background-image: radial-gradient(circle at 50% 0%, transparent 60%, var(--grid-color) 60%);
-  background-size: 20px 12px;
-  background-attachment: fixed;
-}
-
-/* ZIGZAG */
-[data-pattern="zigzag"] html,
-[data-pattern="zigzag"] body {
-  background-image:
-    linear-gradient(135deg, var(--grid-color) 25%, transparent 25%),
-    linear-gradient(225deg, var(--grid-color) 25%, transparent 25%),
-    linear-gradient(315deg, var(--grid-color) 25%, transparent 25%),
-    linear-gradient(45deg, var(--grid-color) 25%, transparent 25%);
-  background-size: 16px 16px;
-  background-position: 0 0, 8px 0, 8px -8px, 0 8px;
-  background-attachment: fixed;
-}
-
-/* ── Pattern swatch previews in the picker dropdown ── */
-
-.pattern-swatch-none {
-  background-image: none !important;
-  background-color: var(--bg) !important;
-}
-
-.pattern-swatch-none::after {
-  content: "—";
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  color: var(--border);
-}
-
-.pattern-swatch-grid {
-  background-image:
-    linear-gradient(var(--grid-color) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px),
-    linear-gradient(var(--grid-color-2) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-color-2) 1px, transparent 1px) !important;
-  background-size: 22px 22px, 22px 22px, 6px 6px, 6px 6px !important;
-}
-
-.pattern-swatch-dots {
-  background-image: radial-gradient(circle,
-      var(--grid-color) 1.2px,
-      transparent 1.2px) !important;
-  background-size: 7px 7px !important;
-}
-
-.pattern-swatch-cross {
-  background-image:
-    linear-gradient(var(--grid-color) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px) !important;
-  background-size: 8px 8px !important;
-  background-position: 4px 4px !important;
-}
-
-.pattern-swatch-diagonal {
-  background-image: repeating-linear-gradient(45deg,
-      var(--grid-color) 0,
-      var(--grid-color) 1px,
-      transparent 0,
-      transparent 50%) !important;
-  background-size: 6px 6px !important;
-}
-
-.pattern-swatch-waves {
-  background-image: repeating-radial-gradient(ellipse at 50% 50%,
-      transparent 0,
-      transparent 4px,
-      var(--grid-color) 4px,
-      var(--grid-color) 5px) !important;
-  background-size: 14px 14px !important;
-}
-
-.pattern-swatch-hexagon {
-  background-image:
-    linear-gradient(30deg, var(--grid-color) 12%, transparent 12.5%, transparent 87%, var(--grid-color) 87.5%, var(--grid-color)),
-    linear-gradient(150deg, var(--grid-color) 12%, transparent 12.5%, transparent 87%, var(--grid-color) 87.5%, var(--grid-color)),
-    linear-gradient(60deg, var(--grid-color-2) 25%, transparent 25.5%, transparent 75%, var(--grid-color-2) 75%, var(--grid-color-2)) !important;
-  background-size: 12px 20px !important;
-  background-position: 0 0, 0 0, 6px 10px !important;
-}
-.pattern-swatch-diamonds {
-  background-image:
-    linear-gradient(45deg, var(--grid-color) 25%, transparent 25%),
-    linear-gradient(-45deg, var(--grid-color) 25%, transparent 25%) !important;
-  background-size: 10px 10px !important;
-}
-
-.pattern-swatch-circuit {
-  background-image:
-    linear-gradient(var(--grid-color) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px),
-    radial-gradient(circle, var(--grid-color-2) 1px, transparent 1px) !important;
-  background-size: 10px 10px, 10px 10px, 10px 10px !important;
-  background-position: 0 0, 0 0, 5px 5px !important;
-}
-
-.pattern-swatch-polka {
-  background-image: radial-gradient(circle, var(--grid-color) 1.5px, transparent 1.5px) !important;
-  background-size: 6px 6px !important;
-}
-
-.pattern-swatch-scales {
-  background-image: radial-gradient(circle at 50% 0%, transparent 60%, var(--grid-color) 60%) !important;
-  background-size: 10px 6px !important;
-}
-
-.pattern-swatch-zigzag {
-  background-image:
-    linear-gradient(135deg, var(--grid-color) 25%, transparent 25%),
-    linear-gradient(225deg, var(--grid-color) 25%, transparent 25%) !important;
-  background-size: 8px 8px !important;
-}
-
-/* ── Mobile Utilities & Touch Optimizations ── */
+/* Mobile Touch Optimizations */
 * {
   -webkit-tap-highlight-color: transparent;
 }
@@ -640,7 +145,6 @@ img {
     overflow-x: hidden;
   }
 
-  /* Prevent automatic viewport zoom on iOS when focusing inputs */
   input[type="text"],
   input[type="password"],
   input[type="email"],
@@ -653,4 +157,3 @@ img {
     font-size: 16px !important;
   }
 }
-

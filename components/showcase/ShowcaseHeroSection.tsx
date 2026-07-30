@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { motion } from 'framer-motion'
-import { Sparkles, Calendar, ChevronDown, Award, Users, Code, Building2, Eye } from 'lucide-react'
+import { Sparkles, Calendar, ChevronDown, Award, Users, Code, Building2, Eye, ShieldCheck } from 'lucide-react'
 
 interface ShowcaseHeroProps {
   heroData: any
@@ -14,13 +14,13 @@ interface ShowcaseHeroProps {
 export function ShowcaseHeroSection({
   heroData,
   clubName,
-  primaryColor = '#f59e0b',
-  accentColor = '#3b82f6'
+  primaryColor = '#003C5E',
+  accentColor = '#FFB703'
 }: ShowcaseHeroProps) {
   const title = heroData?.title || clubName
   const quote = heroData?.quote || '"One Percent Better, Every Day."'
   const tagline = heroData?.tagline || `EARN YOUR EDGE • GOPALAN SKILL ACADEMY`
-  const subtitle = heroData?.subtitle || `${clubName} is a student-driven skill development and employability enhancement club at Gopalan Skill Academy established to bridge the gap between academic learning and industry expectations. Through workshops, competitions, industry interactions, and practical activities, we empower students to achieve excellence.`
+  const subtitle = heroData?.subtitle || `${clubName} is a student-driven skill development and employability enhancement club at Gopalan Skill Academy established to bridge the gap between academic learning and industry expectations. Through workshops, competitions, industry interactions, and peer-learning, we empower students to achieve excellence.`
 
   const stats = [
     { label: 'Active Members', value: '500+', icon: Users },
@@ -38,16 +38,20 @@ export function ShowcaseHeroSection({
   }
 
   return (
-    <section id="home" className="relative min-h-[90vh] flex flex-col justify-center pt-16 pb-20 overflow-hidden">
-      {/* Ambient Radial Background Glows */}
-      <div className="absolute inset-0 z-0 opacity-25 dark:opacity-35 pointer-events-none">
+    <section id="home" className="relative min-h-[90vh] flex flex-col justify-center pt-16 pb-20 overflow-hidden bg-[#0D0D0F] text-[#F8F7F2]">
+      {/* Ambient Radial Background Glows (Peacock Blue & Golden Crown) */}
+      <div className="absolute inset-0 z-0 opacity-30 pointer-events-none">
         <div
-          className="absolute -top-32 -left-32 w-[30rem] h-[30rem] rounded-full blur-[140px]"
-          style={{ backgroundColor: primaryColor }}
+          className="absolute -top-40 -left-40 w-[36rem] h-[36rem] rounded-full blur-[160px]"
+          style={{ backgroundColor: '#003C5E' }}
         />
         <div
-          className="absolute top-1/2 -right-32 w-[30rem] h-[30rem] rounded-full blur-[140px]"
-          style={{ backgroundColor: accentColor }}
+          className="absolute top-1/2 -right-40 w-[36rem] h-[36rem] rounded-full blur-[160px]"
+          style={{ backgroundColor: '#007F6E' }}
+        />
+        <div
+          className="absolute bottom-10 left-1/3 w-[24rem] h-[24rem] rounded-full blur-[140px]"
+          style={{ backgroundColor: '#FFB703', opacity: 0.15 }}
         />
       </div>
 
@@ -57,12 +61,13 @@ export function ShowcaseHeroSection({
           initial={{ opacity: 0, y: -15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-100 dark:bg-zinc-900/90 border border-zinc-200 dark:border-zinc-800 backdrop-blur-md shadow-lg max-w-full overflow-hidden"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#15171A] border border-white/10 backdrop-blur-md shadow-xl max-w-full overflow-hidden"
         >
-          <span className="text-amber-500 font-bold font-mono">›</span>
-          <span className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-800 dark:text-zinc-200 truncate">
+          <span className="text-[#FFB703] font-bold font-mono">›</span>
+          <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#F8F7F2] truncate">
             {clubName} - {clubName} at Gopalan Skill Academy
           </span>
+          <ShieldCheck size={14} className="text-[#007F6E] shrink-0" />
         </motion.div>
 
         {/* Headline & Quote */}
@@ -71,7 +76,7 @@ export function ShowcaseHeroSection({
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-amber-500/10 border border-amber-500/20 text-xs font-mono font-bold uppercase tracking-widest text-amber-600 dark:text-amber-400"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#FFB703]/10 border border-[#FFB703]/30 text-xs font-mono font-bold uppercase tracking-widest text-[#FFB703]"
           >
             <Sparkles size={13} /> {tagline}
           </motion.div>
@@ -80,7 +85,7 @@ export function ShowcaseHeroSection({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-4xl sm:text-6xl md:text-7xl font-black uppercase tracking-tight text-zinc-900 dark:text-white leading-tight"
+            className="text-4xl sm:text-6xl md:text-7xl font-black uppercase tracking-tight text-[#F8F7F2] leading-tight font-sans"
           >
             {title}
           </motion.h1>
@@ -89,7 +94,7 @@ export function ShowcaseHeroSection({
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="text-lg sm:text-xl font-mono font-semibold italic text-amber-500 dark:text-amber-400"
+            className="text-lg sm:text-2xl font-mono font-bold italic text-[#FFB703]"
           >
             {quote}
           </motion.p>
@@ -100,12 +105,12 @@ export function ShowcaseHeroSection({
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="max-w-3xl mx-auto text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 font-mono leading-relaxed"
+          className="max-w-3xl mx-auto text-xs sm:text-sm text-[#B8BEC6] font-mono leading-relaxed"
         >
           {subtitle}
         </motion.p>
 
-        {/* CTA Buttons */}
+        {/* CTA Buttons (Sunset Glow Primary & Peacock Blue Secondary) */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -114,15 +119,14 @@ export function ShowcaseHeroSection({
         >
           <a
             href="#surveys"
-            className="w-full sm:w-auto px-8 py-4 rounded-2xl font-mono font-bold uppercase tracking-widest text-black transition-all hover:scale-105 active:scale-95 shadow-xl flex items-center justify-center gap-3 text-xs sm:text-sm"
-            style={{ backgroundColor: primaryColor }}
+            className="w-full sm:w-auto px-8 py-4 rounded-2xl font-mono font-bold uppercase tracking-widest text-white bg-[#E85D04] hover:bg-[#d05303] shadow-xl shadow-[#E85D04]/25 transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-3 text-xs sm:text-sm"
           >
             <Sparkles size={16} />
             Take the Survey
           </a>
           <a
             href="#events"
-            className="w-full sm:w-auto px-8 py-4 rounded-2xl font-mono font-bold uppercase tracking-widest text-zinc-900 dark:text-white bg-white/90 dark:bg-zinc-900/90 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 transition-all hover:scale-105 active:scale-95 shadow-lg flex items-center justify-center gap-2 text-xs sm:text-sm"
+            className="w-full sm:w-auto px-8 py-4 rounded-2xl font-mono font-bold uppercase tracking-widest text-[#F8F7F2] bg-[#003C5E] hover:bg-[#002f4a] border border-white/10 transition-all hover:scale-105 active:scale-95 shadow-lg flex items-center justify-center gap-2 text-xs sm:text-sm"
           >
             <Calendar size={16} />
             Explore Events
@@ -141,15 +145,15 @@ export function ShowcaseHeroSection({
             return (
               <div
                 key={idx}
-                className="bg-white/80 dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800 p-4 rounded-2xl text-center space-y-1 backdrop-blur-md shadow-md hover:border-amber-500/50 transition-colors"
+                className="bg-[#15171A] border border-white/10 p-4 rounded-2xl text-center space-y-1 backdrop-blur-md shadow-lg hover:border-[#FFB703]/50 transition-colors"
               >
-                <div className="flex items-center justify-center gap-1.5 text-amber-500">
+                <div className="flex items-center justify-center gap-1.5 text-[#FFB703]">
                   <Icon size={16} />
-                  <span className="text-xl sm:text-2xl font-black font-mono tracking-tight text-zinc-900 dark:text-white">
+                  <span className="text-xl sm:text-2xl font-black font-mono tracking-tight text-[#F8F7F2]">
                     {stat.value}
                   </span>
                 </div>
-                <p className="text-[10px] font-mono uppercase tracking-wider font-bold text-zinc-500 dark:text-zinc-400">
+                <p className="text-[10px] font-mono uppercase tracking-wider font-bold text-[#B8BEC6]">
                   {stat.label}
                 </p>
               </div>
@@ -166,10 +170,10 @@ export function ShowcaseHeroSection({
         >
           <button
             onClick={handleScrollDown}
-            className="flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-widest text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors group"
+            className="flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-widest text-[#B8BEC6] hover:text-white transition-colors group"
           >
             <span>Scroll Down</span>
-            <ChevronDown size={14} className="animate-bounce group-hover:translate-y-1 transition-transform" />
+            <ChevronDown size={14} className="animate-bounce text-[#FFB703] group-hover:translate-y-1 transition-transform" />
           </button>
         </motion.div>
       </div>

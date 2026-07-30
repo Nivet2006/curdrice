@@ -10,8 +10,7 @@ interface ShowcaseSurveysProps {
   primaryColor?: string
 }
 
-export function ShowcaseSurveysSection({ surveys = [], clubName, primaryColor = '#f59e0b' }: ShowcaseSurveysProps) {
-  // Primary featured survey or fallback placement survey
+export function ShowcaseSurveysSection({ surveys = [], clubName, primaryColor = '#003C5E' }: ShowcaseSurveysProps) {
   const primarySurvey = surveys[0] || {
     id: 'default-placement-survey',
     title: 'Placement & Technical Development Survey',
@@ -20,17 +19,16 @@ export function ShowcaseSurveysSection({ surveys = [], clubName, primaryColor = 
   }
 
   return (
-    <section id="surveys" className="py-24 border-t border-b border-zinc-200 dark:border-zinc-800/80 relative overflow-hidden">
+    <section id="surveys" className="py-24 border-t border-b border-white/10 bg-[#0D0D0F] text-[#F8F7F2] relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         {/* Header */}
         <div className="text-center space-y-3">
           <span
-            className="text-xs font-mono font-bold uppercase tracking-widest px-3.5 py-1.5 rounded-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 inline-block shadow-sm"
-            style={{ color: primaryColor }}
+            className="text-xs font-mono font-bold uppercase tracking-widest px-3.5 py-1.5 rounded-full bg-[#15171A] border border-white/10 text-[#FFB703] inline-block shadow-sm"
           >
             COMMUNITY FEEDBACK &amp; SURVEYS
           </span>
-          <h2 className="text-3xl sm:text-5xl font-black uppercase text-zinc-900 dark:text-white tracking-tight">
+          <h2 className="text-3xl sm:text-5xl font-black uppercase text-[#F8F7F2] tracking-tight">
             Surveys &amp; Feedback Hub
           </h2>
         </div>
@@ -40,29 +38,28 @@ export function ShowcaseSurveysSection({ surveys = [], clubName, primaryColor = 
           initial={{ opacity: 0, scale: 0.98 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          className="max-w-4xl mx-auto bg-gradient-to-br from-zinc-900 via-zinc-950 to-zinc-900 border border-zinc-800 rounded-3xl p-8 sm:p-12 text-white relative shadow-2xl overflow-hidden"
+          className="max-w-4xl mx-auto bg-gradient-to-br from-[#003C5E] via-[#15171A] to-[#0D0D0F] border border-white/10 rounded-3xl p-8 sm:p-12 text-[#F8F7F2] relative shadow-2xl overflow-hidden"
         >
-          {/* Accent Glow */}
+          {/* Ambient Glow */}
           <div
-            className="absolute -top-20 -right-20 w-80 h-80 rounded-full blur-[120px] opacity-20 pointer-events-none"
-            style={{ backgroundColor: primaryColor }}
+            className="absolute -top-20 -right-20 w-80 h-80 rounded-full blur-[120px] opacity-20 pointer-events-none bg-[#FFB703]"
           />
 
           <div className="relative z-10 space-y-6">
             <div className="flex items-center justify-between flex-wrap gap-3">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-mono font-bold uppercase tracking-widest">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FFB703]/10 border border-[#FFB703]/30 text-[#FFB703] text-xs font-mono font-bold uppercase tracking-widest">
                 <Sparkles size={13} /> LIVE SURVEY
               </div>
-              <div className="flex items-center gap-1 text-[11px] font-mono text-zinc-400">
-                <Clock size={13} className="text-amber-500" /> Takes only 2 minutes
+              <div className="flex items-center gap-1 text-[11px] font-mono text-[#B8BEC6]">
+                <Clock size={13} className="text-[#FFB703]" /> Takes only 2 minutes
               </div>
             </div>
 
             <div className="space-y-3">
-              <h3 className="text-2xl sm:text-4xl font-black font-mono uppercase tracking-tight text-white">
+              <h3 className="text-2xl sm:text-4xl font-black font-mono uppercase tracking-tight text-[#F8F7F2]">
                 Help Us Shape the Future of {clubName}
               </h3>
-              <p className="text-xs sm:text-sm font-mono text-zinc-400 leading-relaxed max-w-2xl">
+              <p className="text-xs sm:text-sm font-mono text-[#B8BEC6] leading-relaxed max-w-2xl">
                 {primarySurvey.description}
               </p>
             </div>
@@ -72,13 +69,12 @@ export function ShowcaseSurveysSection({ surveys = [], clubName, primaryColor = 
                 href={primarySurvey.form_url}
                 target={primarySurvey.form_url.startsWith('http') ? '_blank' : '_self'}
                 rel="noopener noreferrer"
-                className="w-full sm:w-auto px-8 py-4 rounded-2xl font-mono font-bold uppercase tracking-widest text-black transition-all hover:scale-105 active:scale-95 shadow-xl flex items-center justify-center gap-3 text-xs sm:text-sm"
-                style={{ backgroundColor: primaryColor }}
+                className="w-full sm:w-auto px-8 py-4 rounded-2xl font-mono font-bold uppercase tracking-widest text-white bg-[#E85D04] hover:bg-[#d05303] shadow-xl shadow-[#E85D04]/25 transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-3 text-xs sm:text-sm"
               >
                 <FileSpreadsheet size={16} /> Take the Survey
               </a>
-              <span className="text-[11px] font-mono text-zinc-500 flex items-center gap-1">
-                <CheckCircle2 size={13} className="text-emerald-500" /> 100% Anonymous Feedback
+              <span className="text-[11px] font-mono text-[#B8BEC6] flex items-center gap-1">
+                <CheckCircle2 size={13} className="text-[#007F6E]" /> 100% Anonymous Feedback
               </span>
             </div>
           </div>
@@ -90,18 +86,18 @@ export function ShowcaseSurveysSection({ surveys = [], clubName, primaryColor = 
             {surveys.slice(1).map((survey, idx) => (
               <div
                 key={survey.id || idx}
-                className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border border-zinc-200 dark:border-zinc-800 p-6 rounded-3xl space-y-4 flex flex-col justify-between shadow-xl"
+                className="bg-[#15171A] border border-white/10 p-6 rounded-3xl space-y-4 flex flex-col justify-between shadow-xl"
               >
                 <div className="space-y-2">
-                  <span className="text-[10px] font-mono font-bold uppercase text-amber-500">Active Poll</span>
-                  <h4 className="text-lg font-bold font-mono uppercase text-zinc-900 dark:text-white">{survey.title}</h4>
-                  <p className="text-xs font-mono text-zinc-600 dark:text-zinc-400">{survey.description}</p>
+                  <span className="text-[10px] font-mono font-bold uppercase text-[#FFB703]">Active Poll</span>
+                  <h4 className="text-lg font-bold font-mono uppercase text-[#F8F7F2]">{survey.title}</h4>
+                  <p className="text-xs font-mono text-[#B8BEC6]">{survey.description}</p>
                 </div>
                 <a
                   href={survey.form_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full py-2.5 bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs font-mono font-bold uppercase text-zinc-900 dark:text-white flex items-center justify-center gap-2 hover:bg-zinc-200 dark:hover:bg-black transition-all"
+                  className="w-full py-2.5 bg-[#003C5E] hover:bg-[#002f4a] border border-white/10 rounded-xl text-xs font-mono font-bold uppercase text-white flex items-center justify-center gap-2 transition-all"
                 >
                   Participate <ExternalLink size={12} />
                 </a>
