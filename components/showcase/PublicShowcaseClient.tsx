@@ -250,7 +250,7 @@ export function PublicShowcaseClient({ data }: PublicShowcaseClientProps) {
 
           {/* Bottom Bar: Copyright & Back To Top */}
           <div className="pt-8 border-t border-[#E6E8EC] dark:border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
-            <p>© {new Date().getFullYear()} {club.name} Systems Matrix • Gopalan Skill Academy</p>
+            <p>© {new Date().getFullYear()} Club Eve • Gopalan Skill Academy</p>
 
             <button
               onClick={scrollToTop}
