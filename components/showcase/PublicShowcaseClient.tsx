@@ -56,7 +56,7 @@ export function PublicShowcaseClient({ data }: PublicShowcaseClientProps) {
   }
 
   return (
-    <div className="min-h-screen bg-[#0D0D0F] text-[#F8F7F2] font-mono selection:bg-[#FFB703] selection:text-[#0D0D0F]">
+    <div className="min-h-screen bg-white dark:bg-[#0D0D0F] text-[#111827] dark:text-[#F8F7F2] font-mono selection:bg-[#FFB703] selection:text-[#0D0D0F] transition-colors duration-200">
       {/* Sticky Navigation Bar */}
       <ShowcaseNavbar
         clubName={club.name}
@@ -176,14 +176,14 @@ export function PublicShowcaseClient({ data }: PublicShowcaseClientProps) {
       </main>
 
       {/* Comprehensive 1% Club & Gopalan Skill Academy Footer */}
-      <footer className="border-t border-white/10 bg-[#15171A] pt-16 pb-12 text-[#B8BEC6] font-mono relative">
+      <footer className="border-t border-[#E6E8EC] dark:border-white/10 bg-[#F7F8FA] dark:bg-[#15171A] pt-16 pb-12 text-[#6B7280] dark:text-[#B8BEC6] font-mono relative transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {/* Col 1: Club & Gopalan Skill Academy Branding */}
             <div className="space-y-4 md:col-span-1">
               <div className="flex items-center gap-2">
                 {club.logo_url ? (
-                  <img src={club.logo_url} alt={club.name} className="w-8 h-8 object-contain rounded-lg border border-white/10" />
+                  <img src={club.logo_url} alt={club.name} className="w-8 h-8 object-contain rounded-lg border border-zinc-200 dark:border-white/10" />
                 ) : (
                   <div
                     className="w-8 h-8 rounded-lg flex items-center justify-center font-black font-mono text-xs text-white uppercase bg-[#003C5E]"
@@ -191,57 +191,57 @@ export function PublicShowcaseClient({ data }: PublicShowcaseClientProps) {
                     1%
                   </div>
                 )}
-                <span className="text-base font-black uppercase text-[#F8F7F2]">{club.name}</span>
+                <span className="text-base font-black uppercase text-[#111827] dark:text-[#F8F7F2]">{club.name}</span>
               </div>
 
-              <p className="text-xs text-[#B8BEC6] leading-relaxed">
+              <p className="text-xs text-[#6B7280] dark:text-[#B8BEC6] leading-relaxed">
                 {club.name} at Gopalan Skill Academy. Building high-performance software and fostering engineering excellence.
               </p>
 
-              <div className="flex items-center gap-1.5 text-xs text-[#FFB703] font-bold uppercase">
+              <div className="flex items-center gap-1.5 text-xs text-[#003C5E] dark:text-[#FFB703] font-bold uppercase">
                 <GraduationCap size={16} /> Gopalan Skill Academy Matrix
               </div>
             </div>
 
             {/* Col 2: Quick Links */}
             <div className="space-y-3">
-              <h4 className="text-xs font-bold uppercase text-[#F8F7F2] tracking-widest">Explore</h4>
+              <h4 className="text-xs font-bold uppercase text-[#111827] dark:text-[#F8F7F2] tracking-widest">Explore</h4>
               <ul className="space-y-2 text-xs">
-                <li><a href="#about" className="hover:text-white transition-colors">About Us</a></li>
-                <li><a href="#events" className="hover:text-white transition-colors">Events &amp; Workshops</a></li>
-                <li><a href="#team" className="hover:text-white transition-colors">Executive Team</a></li>
-                <li><a href="#surveys" className="hover:text-white transition-colors">Surveys &amp; Feedback</a></li>
-                <li><a href="#contact" className="hover:text-white transition-colors">Contact Admin</a></li>
+                <li><a href="#about" className="hover:text-[#003C5E] dark:hover:text-white transition-colors">About Us</a></li>
+                <li><a href="#events" className="hover:text-[#003C5E] dark:hover:text-white transition-colors">Events &amp; Workshops</a></li>
+                <li><a href="#team" className="hover:text-[#003C5E] dark:hover:text-white transition-colors">Executive Team</a></li>
+                <li><a href="#surveys" className="hover:text-[#003C5E] dark:hover:text-white transition-colors">Surveys &amp; Feedback</a></li>
+                <li><a href="#contact" className="hover:text-[#003C5E] dark:hover:text-white transition-colors">Contact Admin</a></li>
               </ul>
             </div>
 
             {/* Col 3: Tools Suite */}
             <div className="space-y-3">
-              <h4 className="text-xs font-bold uppercase text-[#F8F7F2] tracking-widest">Tools Suite</h4>
+              <h4 className="text-xs font-bold uppercase text-[#111827] dark:text-[#F8F7F2] tracking-widest">Tools Suite</h4>
               <ul className="space-y-2 text-xs">
-                <li><a href="#tools" className="hover:text-white transition-colors">ATS Resume Checker</a></li>
-                <li><a href="#tools" className="hover:text-white transition-colors">VTU CGPA Calculator</a></li>
-                <li><a href="#tools" className="hover:text-white transition-colors">GitHub Profile Analyzer</a></li>
-                <li><a href="#tools" className="hover:text-white transition-colors">Career Roadmap Generator</a></li>
+                <li><a href="#tools" className="hover:text-[#003C5E] dark:hover:text-white transition-colors">ATS Resume Checker</a></li>
+                <li><a href="#tools" className="hover:text-[#003C5E] dark:hover:text-white transition-colors">VTU CGPA Calculator</a></li>
+                <li><a href="#tools" className="hover:text-[#003C5E] dark:hover:text-white transition-colors">GitHub Profile Analyzer</a></li>
+                <li><a href="#tools" className="hover:text-[#003C5E] dark:hover:text-white transition-colors">Career Roadmap Generator</a></li>
               </ul>
             </div>
 
             {/* Col 4: Campus Contact & Details */}
             <div className="space-y-3">
-              <h4 className="text-xs font-bold uppercase text-[#F8F7F2] tracking-widest">Contact</h4>
+              <h4 className="text-xs font-bold uppercase text-[#111827] dark:text-[#F8F7F2] tracking-widest">Contact</h4>
               <div className="space-y-2 text-xs">
                 <p className="flex items-start gap-2">
-                  <MapPin size={14} className="text-[#FFB703] shrink-0 mt-0.5" />
+                  <MapPin size={14} className="text-[#003C5E] dark:text-[#FFB703] shrink-0 mt-0.5" />
                   <span>Whitefield, Hoodi, Bangalore - 560048</span>
                 </p>
                 <p className="flex items-center gap-2">
-                  <Globe size={14} className="text-[#FFB703] shrink-0" />
+                  <Globe size={14} className="text-[#003C5E] dark:text-[#FFB703] shrink-0" />
                   <a href="https://gopalan.ac.in" target="_blank" rel="noopener noreferrer" className="hover:underline">
                     Gopalan Skill Academy Official Website
                   </a>
                 </p>
                 <p className="flex items-center gap-2">
-                  <Mail size={14} className="text-[#FFB703] shrink-0" />
+                  <Mail size={14} className="text-[#003C5E] dark:text-[#FFB703] shrink-0" />
                   <span>{club.name.toLowerCase().replace(/[^a-z0-9]+/g, '')}@gopalan.edu</span>
                 </p>
               </div>
@@ -249,7 +249,7 @@ export function PublicShowcaseClient({ data }: PublicShowcaseClientProps) {
           </div>
 
           {/* Bottom Bar: Copyright & Back To Top */}
-          <div className="pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+          <div className="pt-8 border-t border-[#E6E8EC] dark:border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
             <p>© {new Date().getFullYear()} {club.name} Systems Matrix • Gopalan Skill Academy</p>
 
             <button
