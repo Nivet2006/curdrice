@@ -26,6 +26,30 @@ export function ShowcaseNavbar({ clubName, clubSlug, logoUrl, primaryColor = '#f
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (href.startsWith('#')) {
+      const targetId = href.replace('#', '')
+      const element = document.getElementById(targetId)
+
+      if (element) {
+        e.preventDefault()
+        const headerOffset = 70
+        const elementPosition = element.getBoundingClientRect().top
+        const offsetPosition = elementPosition + window.scrollY - headerOffset
+
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth'
+        })
+        window.history.pushState(null, '', href)
+      } else if (clubSlug) {
+        e.preventDefault()
+        window.location.href = `/c/${clubSlug}${href}`
+      }
+    }
+    setMobileMenuOpen(false)
+  }
+
   const galleryHref = clubSlug ? `/c/${clubSlug}/gallerywall` : '#gallery'
 
   const navLinks = [
@@ -48,7 +72,11 @@ export function ShowcaseNavbar({ clubName, clubSlug, logoUrl, primaryColor = '#f
             <span className="text-amber-500 font-bold">{'>'}</span> Club-Eve
           </Link>
           <div className="h-4 w-px bg-zinc-200 dark:bg-zinc-800 hidden sm:block" />
-          <a href="#home" className="flex items-center gap-2.5 group min-w-0">
+          <a
+            href="#home"
+            onClick={(e) => handleNavClick(e, '#home')}
+            className="flex items-center gap-2.5 group min-w-0"
+          >
             {logoUrl ? (
               <img src={logoUrl} alt={clubName} className="w-7 h-7 object-contain rounded-lg shrink-0" />
             ) : (
@@ -71,6 +99,7 @@ export function ShowcaseNavbar({ clubName, clubSlug, logoUrl, primaryColor = '#f
             <a
               key={link.label}
               href={link.href}
+              onClick={(e) => handleNavClick(e, link.href)}
               className="px-2.5 py-1 text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-white dark:hover:bg-zinc-800 rounded-full transition-all"
             >
               {link.label}
@@ -85,6 +114,7 @@ export function ShowcaseNavbar({ clubName, clubSlug, logoUrl, primaryColor = '#f
 
           <a
             href="#contact"
+            onClick={(e) => handleNavClick(e, '#contact')}
             className="hidden sm:flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-mono font-bold uppercase tracking-wider text-black shadow-sm transition-transform hover:scale-105 active:scale-95"
             style={{ backgroundColor: primaryColor }}
           >
@@ -109,7 +139,7 @@ export function ShowcaseNavbar({ clubName, clubSlug, logoUrl, primaryColor = '#f
               <a
                 key={link.label}
                 href={link.href}
-                onClick={() => setMobileMenuOpen(false)}
+                onClick={(e) => handleNavClick(e, link.href)}
                 className="px-4 py-3 bg-zinc-100 dark:bg-zinc-900 rounded-xl text-xs font-mono font-bold uppercase tracking-wider text-zinc-800 dark:text-zinc-200 flex items-center justify-between"
               >
                 <span>{link.label}</span>
@@ -119,7 +149,7 @@ export function ShowcaseNavbar({ clubName, clubSlug, logoUrl, primaryColor = '#f
           </div>
           <a
             href="#contact"
-            onClick={() => setMobileMenuOpen(false)}
+            onClick={(e) => handleNavClick(e, '#contact')}
             className="w-full py-3 rounded-xl text-xs font-mono font-bold uppercase tracking-widest text-black text-center block shadow-md"
             style={{ backgroundColor: primaryColor }}
           >
