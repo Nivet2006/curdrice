@@ -18,9 +18,9 @@ export function ShowcaseHeroSection({
   accentColor = '#3b82f6'
 }: ShowcaseHeroProps) {
   const title = heroData?.title || clubName
-  const quote = heroData?.quote || '"Inspired by code, elevated beyond."'
-  const tagline = heroData?.tagline || `OFFICIAL SHOWCASE • GOPALAN SKILL ACADEMY`
-  const subtitle = heroData?.subtitle || `${clubName} is a student organization at Gopalan Skill Academy focusing on providing innovation, teamwork, and technical quality. The club offers a platform where students passionate about technology unite to exchange knowledge and develop real-world solutions.`
+  const quote = heroData?.quote || '"One Percent Better, Every Day."'
+  const tagline = heroData?.tagline || `EARN YOUR EDGE • GOPALAN SKILL ACADEMY`
+  const subtitle = heroData?.subtitle || `${clubName} is a student-driven skill development and employability enhancement club at Gopalan Skill Academy established to bridge the gap between academic learning and industry expectations. Through workshops, competitions, industry interactions, and practical activities, we empower students to achieve excellence.`
 
   const stats = [
     { label: 'Active Members', value: '500+', icon: Users },
@@ -52,7 +52,7 @@ export function ShowcaseHeroSection({
       </div>
 
       <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8">
-        {/* Top Breadcrumb Banner: Club Logo / Gopalan Skill Academy Header */}
+        {/* Top Breadcrumb Banner */}
         <motion.div
           initial={{ opacity: 0, y: -15 }}
           animate={{ opacity: 1, y: 0 }}
