@@ -164,11 +164,16 @@ export function ShowcaseToolsSection({
                     </div>
                   </div>
 
-                  <MagneticButton onClick={() => handleLaunchTool(tool.id, tool.title)}>
-                    <span className="w-full py-2.5 bg-[#E85D04] hover:bg-[#d05303] text-white font-bold uppercase tracking-wider text-xs rounded-xl flex items-center justify-center gap-2 shadow-md">
-                      Launch <ExternalLink size={12} />
-                    </span>
-                  </MagneticButton>
+                  <div className="flex items-center justify-end pt-2">
+                    <MagneticButton onClick={() => handleLaunchTool(tool.id, tool.title)}>
+                      <span
+                        aria-label={`Launch ${tool.title}`}
+                        className="p-2 rounded-xl text-[#E85D04] hover:text-[#d05303] hover:bg-[#E85D04]/10 transition-colors flex items-center justify-center cursor-pointer"
+                      >
+                        <ExternalLink size={20} />
+                      </span>
+                    </MagneticButton>
+                  </div>
                 </div>
               </TiltCard>
             )
