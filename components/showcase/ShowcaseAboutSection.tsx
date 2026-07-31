@@ -45,7 +45,7 @@ export function ShowcaseAboutSection({ aboutData, clubName, primaryColor = '#003
   return (
     <section id="about" className="py-24 bg-transparent text-[#111827] dark:text-[#F8F7F2] relative transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
-        {/* Section Header: What is The 1% Club? */}
+        {/* Section Header: What is The One Percent Club? */}
         <div className="text-center space-y-4 max-w-3xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -107,7 +107,7 @@ export function ShowcaseAboutSection({ aboutData, clubName, primaryColor = '#003
           </TiltCard>
         </div>
 
-        {/* Why 1% Club 3 Pillars */}
+        {/* Why The One Percent Club 3 Pillars */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-4">
           {pillars.map((pillar, idx) => {
             const Icon = pillar.icon
