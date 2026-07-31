@@ -54,6 +54,13 @@ export function PublicShowcaseClient({ data }: PublicShowcaseClientProps) {
     contact: true
   }
 
+  React.useEffect(() => {
+    const saved = localStorage.getItem('theme')
+    if (!saved) {
+      document.documentElement.setAttribute('data-theme', 'light')
+    }
+  }, [])
+
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
