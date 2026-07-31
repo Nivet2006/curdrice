@@ -16,5 +16,5 @@ INSERT INTO public.clubs (name, description) VALUES
 ('Techeon Club', 'Main technical and innovation club'),
 ('Grafix club', 'Design, animation, UI/UX, and illustration club'),
 ('winfinity', 'Entrepreneurship, finance, and start-up ecosystem club'),
-('1% club', 'Self-improvement, high performance, and career excellence club')
+('The One Percent Club', 'Self-improvement, high performance, and career excellence club')
 ON CONFLICT (name) DO NOTHING;

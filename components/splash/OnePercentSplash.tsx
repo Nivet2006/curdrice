@@ -154,7 +154,7 @@ export function OnePercentSplash() {
           }`}
         >
           <span className="font-mono text-[10px] sm:text-xs tracking-widest uppercase text-[var(--fg-muted)] font-bold">
-            EST. 2026 • EARN YOUR EDGE
+            "One Percent Better, Every Day."
           </span>
         </div>
       </div>

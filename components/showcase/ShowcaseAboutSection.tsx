@@ -16,7 +16,7 @@ export function ShowcaseAboutSection({ aboutData, clubName, primaryColor = '#003
   const pillars = [
     {
       title: 'Continuous Improvement',
-      description: 'The name "1% Club" is inspired by the philosophy of continuous improvement. Small improvements made consistently every day lead to remarkable personal and professional growth over time. The club aims to create a culture where students strive to become 1% better each day through learning, practice, reflection, and application.',
+      description: 'The name "The One Percent Club" is inspired by the philosophy of continuous improvement. Small improvements made consistently every day lead to remarkable personal and professional growth over time. The club aims to create a culture where students strive to become 1% better each day through learning, practice, reflection, and application.',
       icon: Award,
       accent: 'text-[#003C5E] dark:text-[#FFB703]'
     },
@@ -70,7 +70,7 @@ export function ShowcaseAboutSection({ aboutData, clubName, primaryColor = '#003
             transition={{ delay: 0.2 }}
             className="text-xs sm:text-sm font-mono text-[#6B7280] dark:text-[#B8BEC6] leading-relaxed max-w-2xl mx-auto"
           >
-            The 1% Club is a student-driven skill development and employability enhancement club established to bridge the gap between academic learning and industry expectations. The club focuses on nurturing essential professional competencies such as communication, leadership, teamwork, critical thinking, problem-solving, career readiness, and personal effectiveness. Through workshops, competitions, industry interactions, peer-learning sessions, and practical activities, the club provides students with opportunities to develop skills that contribute to academic success, employability, and leadership excellence.
+            The One Percent Club is a student-driven skill development and employability enhancement club established to bridge the gap between academic learning and industry expectations. The club focuses on nurturing essential professional competencies such as communication, leadership, teamwork, critical thinking, problem-solving, career readiness, and personal effectiveness. Through workshops, competitions, industry interactions, peer-learning sessions, and practical activities, the club provides students with opportunities to develop skills that contribute to academic success, employability, and leadership excellence.
           </motion.p>
         </div>
 
