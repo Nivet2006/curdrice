@@ -43,7 +43,7 @@ export function ShowcaseAboutSection({ aboutData, clubName, primaryColor = '#003
   ]
 
   return (
-    <section id="about" className="py-24 border-t border-[#E6E8EC] dark:border-white/10 bg-transparent text-[#111827] dark:text-[#F8F7F2] relative transition-colors duration-200">
+    <section id="about" className="py-24 bg-transparent text-[#111827] dark:text-[#F8F7F2] relative transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
         {/* Section Header: What is The 1% Club? */}
         <div className="text-center space-y-4 max-w-3xl mx-auto">
