@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { motion } from 'framer-motion'
-import { Sparkles, Calendar, ChevronDown, ShieldCheck } from 'lucide-react'
+import { Sparkles, Calendar, ChevronDown } from 'lucide-react'
 import { KineticText } from './motion/KineticText'
 import { MagneticButton } from './motion/MagneticButton'
 import { TiltCard } from './motion/TiltCard'
@@ -35,31 +35,9 @@ export function ShowcaseHeroSection({
   return (
     <section id="home" className="relative min-h-[90vh] flex flex-col justify-center pt-16 pb-20 overflow-hidden bg-transparent text-[#111827] dark:text-[#F8F7F2] transition-colors duration-200">
       <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8">
-        {/* Top Breadcrumb Banner */}
-        <motion.div
-          initial={{ opacity: 0, y: -15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#F7F8FA]/90 dark:bg-[#15171A]/90 border border-[#E6E8EC] dark:border-white/10 backdrop-blur-md shadow-lg max-w-full overflow-hidden"
-        >
-          <span className="text-[#003C5E] dark:text-[#FFB703] font-bold font-mono">›</span>
-          <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#111827] dark:text-[#F8F7F2] truncate">
-            {clubName} - {clubName} at Gopalan Skill Academy
-          </span>
-          <ShieldCheck size={14} className="text-[#007F6E] shrink-0" />
-        </motion.div>
 
         {/* Headline & Quote with Kinetic Typography */}
         <div className="space-y-4 max-w-4xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#003C5E]/10 dark:bg-[#FFB703]/10 border border-[#003C5E]/20 dark:border-[#FFB703]/30 text-xs font-mono font-bold uppercase tracking-widest text-[#003C5E] dark:text-[#FFB703]"
-          >
-            <Sparkles size={13} /> {tagline}
-          </motion.div>
-
           <div className="pt-2">
             <h1 className="text-4xl sm:text-6xl md:text-7xl font-black uppercase tracking-tight text-[#111827] dark:text-[#F8F7F2] leading-tight font-sans">
               <KineticText text={title} />
