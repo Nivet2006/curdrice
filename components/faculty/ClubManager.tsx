@@ -96,8 +96,8 @@ export function ClubManager() {
   const parentClubs = useMemo(() => {
     const filtered = clubs.filter(c => !c.parent_id)
     return [...filtered].sort((a, b) => {
-      const a1 = a.name.toLowerCase().includes('1%')
-      const b1 = b.name.toLowerCase().includes('1%')
+      const a1 = a.name.toLowerCase().includes('1%') || a.name.toLowerCase().includes('one percent')
+      const b1 = b.name.toLowerCase().includes('1%') || b.name.toLowerCase().includes('one percent')
       if (a1 && !b1) return 1
       if (!a1 && b1) return -1
       return a.name.localeCompare(b.name)
@@ -107,8 +107,8 @@ export function ClubManager() {
   const clubTree = useMemo(() => {
     const rootClubs = clubs.filter(c => !c.parent_id)
     const sortedRoots = [...rootClubs].sort((a, b) => {
-      const a1 = a.name.toLowerCase().includes('1%')
-      const b1 = b.name.toLowerCase().includes('1%')
+      const a1 = a.name.toLowerCase().includes('1%') || a.name.toLowerCase().includes('one percent')
+      const b1 = b.name.toLowerCase().includes('1%') || b.name.toLowerCase().includes('one percent')
       if (a1 && !b1) return 1
       if (!a1 && b1) return -1
       return a.name.localeCompare(b.name)
