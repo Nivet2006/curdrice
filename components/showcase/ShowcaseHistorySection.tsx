@@ -26,7 +26,7 @@ export function ShowcaseHistorySection({ clubName, primaryColor = '#f59e0b' }: S
   ]
 
   return (
-    <section className="py-20 border-t border-zinc-200 dark:border-zinc-800/80 relative">
+    <section className="py-20 border-t border-[#E6E8EC] dark:border-white/10 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-gradient-to-r from-zinc-900 via-zinc-950 to-zinc-900 border border-zinc-800 rounded-3xl p-8 sm:p-12 text-white relative overflow-hidden shadow-2xl">
           {/* Subtle Ambient Background Accent */}
