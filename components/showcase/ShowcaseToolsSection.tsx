@@ -106,7 +106,7 @@ export function ShowcaseToolsSection({
   })
 
   return (
-    <section id="tools" className="py-24 border-t border-[#E6E8EC] dark:border-white/10 relative overflow-hidden bg-transparent text-[#111827] dark:text-[#F8F7F2] transition-colors duration-200">
+    <section id="tools" className="py-24 relative overflow-hidden bg-transparent text-[#111827] dark:text-[#F8F7F2] transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 relative z-10">
         {/* Header */}
         <div className="text-center space-y-4 max-w-3xl mx-auto">
