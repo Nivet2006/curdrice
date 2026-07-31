@@ -143,7 +143,10 @@ export function ShowcaseToolsSection({
             const Icon = tool.icon
             return (
               <TiltCard key={tool.id || idx} tiltAmount={10}>
-                <div className="bg-[#F7F8FA]/90 dark:bg-[#15171A]/90 border border-[#E6E8EC] dark:border-white/10 p-6 rounded-3xl space-y-4 hover:border-zinc-300 dark:hover:border-white/20 transition-all shadow-xl backdrop-blur-md flex flex-col justify-between group h-full">
+                <div
+                  onClick={() => handleLaunchTool(tool.id, tool.title)}
+                  className="bg-[#F7F8FA]/90 dark:bg-[#15171A]/90 border border-[#E6E8EC] dark:border-white/10 p-6 rounded-3xl space-y-4 hover:border-[#E85D04]/40 dark:hover:border-[#E85D04]/40 transition-all shadow-xl backdrop-blur-md flex flex-col justify-between group h-full cursor-pointer"
+                >
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="w-11 h-11 rounded-2xl bg-white dark:bg-[#0D0D0F] border border-[#E6E8EC] dark:border-white/10 flex items-center justify-center text-[#003C5E] dark:text-[#FFB703] font-mono font-bold group-hover:scale-110 transition-transform">
@@ -164,15 +167,13 @@ export function ShowcaseToolsSection({
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-end pt-2">
-                    <MagneticButton onClick={() => handleLaunchTool(tool.id, tool.title)}>
-                      <span
-                        aria-label={`Launch ${tool.title}`}
-                        className="p-2 rounded-xl text-[#E85D04] hover:text-[#d05303] hover:bg-[#E85D04]/10 transition-colors flex items-center justify-center cursor-pointer"
-                      >
-                        <ExternalLink size={20} />
-                      </span>
-                    </MagneticButton>
+                  <div className="pt-3 border-t border-[#E6E8EC]/60 dark:border-white/5 flex items-center justify-between">
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-[#6B7280] dark:text-[#B8BEC6]">
+                      Interactive Tool
+                    </span>
+                    <span className="p-2 rounded-xl text-[#E85D04] group-hover:bg-[#E85D04]/10 transition-all group-hover:scale-110">
+                      <ExternalLink size={18} className="text-[#E85D04]" />
+                    </span>
                   </div>
                 </div>
               </TiltCard>
