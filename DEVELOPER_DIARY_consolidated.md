@@ -207,11 +207,18 @@ This consolidated developer diary records every git push, commit hash, date, tim
 - **Title**: `style: standardize single top border across showcase sections to eliminate double line dividers`
 - **Changes**: Standardized section dividers to single `border-t border-[#E6E8EC] dark:border-white/10` across all showcase sections.
 
-#### `Current` | 2026-07-31
-- **Title**: `style: complete section border removal & developer diary update`
+#### `8c65034d` | 2026-07-31
+- **Title**: `feat: implement route-gated one-time splash screen for 1% Club`
 - **Changes**:
-  - Removed all section divider borders (`border-t`, `border-b`, `border-y`) across all 12 showcase section components for clean borderless flow.
-  - Updated developer diary documentation up to current state.
+  - Built SVG stroke-draw wordmark animation in [OnePercentSplash.tsx](file:///c:/codingprojects/Curdrice/components/splash/OnePercentSplash.tsx).
+  - Configured route-gated layouts in [app/c/[slug]/layout.tsx](file:///c:/codingprojects/Curdrice/app/c/[slug]/layout.tsx) and [app/c/1percent/layout.tsx](file:///c:/codingprojects/Curdrice/app/c/1percent/layout.tsx).
+  - Added session-gating (`opc-splash-seen`), `prefers-reduced-motion` compliance, and unmounting upon completion.
+
+#### `Current` | 2026-07-31
+- **Title**: `style: splash screen motto refinement & branding copy consistency`
+- **Changes**:
+  - Updated splash screen tagline to official motto: `"One Percent Better, Every Day."`.
+  - Refined club name references to `"The One Percent Club"` in [ShowcaseAboutSection.tsx](file:///c:/codingprojects/Curdrice/components/showcase/ShowcaseAboutSection.tsx) and [0031_subclubs.sql](file:///c:/codingprojects/Curdrice/supabase/migrations/0031_subclubs.sql).
 
 ---
 
