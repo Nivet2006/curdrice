@@ -11,7 +11,7 @@ interface ShowcaseTeamProps {
 
 export function ShowcaseTeamSection({ members = [], clubName, primaryColor = '#f59e0b' }: ShowcaseTeamProps) {
   return (
-    <section id="team" className="py-24 border-t border-b border-zinc-200 dark:border-zinc-800/80 relative">
+    <section id="team" className="py-24 border-t border-[#E6E8EC] dark:border-white/10 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         {/* Header */}
         <div className="text-center space-y-3">
