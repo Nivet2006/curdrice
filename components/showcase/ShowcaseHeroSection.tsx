@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { motion } from 'framer-motion'
-import { Sparkles, Calendar, ChevronDown, Award, Users, Code, Building2, Eye, ShieldCheck } from 'lucide-react'
+import { Sparkles, Calendar, ChevronDown, ShieldCheck } from 'lucide-react'
 import { KineticText } from './motion/KineticText'
 import { MagneticButton } from './motion/MagneticButton'
 import { TiltCard } from './motion/TiltCard'
@@ -24,14 +24,6 @@ export function ShowcaseHeroSection({
   const quote = heroData?.quote || '"One Percent Better, Every Day."'
   const tagline = heroData?.tagline || `EARN YOUR EDGE • GOPALAN SKILL ACADEMY`
   const subtitle = heroData?.subtitle || `${clubName} is a student-driven skill development and employability enhancement club at Gopalan Skill Academy established to bridge the gap between academic learning and industry expectations. Through workshops, competitions, industry interactions, and peer-learning, we empower students to achieve excellence.`
-
-  const stats = [
-    { label: 'Active Members', value: '500+', icon: Users },
-    { label: 'Workshops Conducted', value: '50+', icon: Award },
-    { label: 'Projects Built', value: '100+', icon: Code },
-    { label: 'Industry Mentors', value: '30+', icon: Building2 },
-    { label: 'Website Visitors', value: '10,000+', icon: Eye }
-  ]
 
   const handleScrollDown = () => {
     const aboutElem = document.getElementById('about')
@@ -112,33 +104,6 @@ export function ShowcaseHeroSection({
               <Calendar size={16} /> Explore Events
             </span>
           </MagneticButton>
-        </motion.div>
-
-        {/* Hero 3D Tilt Stat Counters */}
-        <motion.div
-          initial={{ opacity: 0, y: 25 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.6 }}
-          className="pt-8 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 max-w-5xl mx-auto"
-        >
-          {stats.map((stat, idx) => {
-            const Icon = stat.icon
-            return (
-              <TiltCard key={idx} tiltAmount={14}>
-                <div className="bg-[#F7F8FA]/90 dark:bg-[#15171A]/90 border border-[#E6E8EC] dark:border-white/10 p-4 rounded-2xl text-center space-y-1 backdrop-blur-md shadow-md hover:border-[#003C5E]/40 dark:hover:border-[#FFB703]/50 transition-colors">
-                  <div className="flex items-center justify-center gap-1.5 text-[#003C5E] dark:text-[#FFB703]">
-                    <Icon size={16} />
-                    <span className="text-xl sm:text-2xl font-black font-mono tracking-tight text-[#111827] dark:text-[#F8F7F2]">
-                      {stat.value}
-                    </span>
-                  </div>
-                  <p className="text-[10px] font-mono uppercase tracking-wider font-bold text-[#6B7280] dark:text-[#B8BEC6]">
-                    {stat.label}
-                  </p>
-                </div>
-              </TiltCard>
-            )
-          })}
         </motion.div>
 
         {/* Scroll Down Indicator */}
