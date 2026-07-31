@@ -61,7 +61,7 @@ export function ShowcaseCollectiveSection({
   ]
 
   return (
-    <section className="py-24 border-t border-[#E6E8EC] dark:border-white/10 bg-transparent text-[#111827] dark:text-[#F8F7F2] relative overflow-hidden transition-colors duration-200">
+    <section className="py-24 bg-transparent text-[#111827] dark:text-[#F8F7F2] relative overflow-hidden transition-colors duration-200">
       {/* Background Grid */}
       <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.04] pointer-events-none bg-[radial-gradient(#000_1px,transparent_1px)] dark:bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]" />
 

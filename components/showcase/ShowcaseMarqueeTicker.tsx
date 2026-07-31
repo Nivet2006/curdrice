@@ -29,7 +29,7 @@ export function ShowcaseMarqueeTicker({
   const marqueeItems = [...items, ...items, ...items, ...items]
 
   return (
-    <div className="relative w-full py-8 overflow-hidden bg-transparent text-[#111827] dark:text-[#F8F7F2] border-t border-[#E6E8EC] dark:border-white/10 shadow-2xl select-none">
+    <div className="relative w-full py-8 overflow-hidden bg-transparent text-[#111827] dark:text-[#F8F7F2] shadow-2xl select-none">
       {/* Background Glows */}
       <div
         className="absolute top-1/2 left-1/4 -translate-y-1/2 w-64 h-64 rounded-full blur-[100px] opacity-15 pointer-events-none bg-[#003C5E]"

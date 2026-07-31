@@ -57,7 +57,7 @@ export function ShowcaseContactSection({
   }
 
   return (
-    <section id="contact" className="py-24 border-t border-[#E6E8EC] dark:border-white/10 relative">
+    <section id="contact" className="py-24 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         {/* Header */}
         <div className="text-center space-y-3">
