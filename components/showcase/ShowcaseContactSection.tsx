@@ -68,7 +68,7 @@ export function ShowcaseContactSection({
             GET IN TOUCH
           </span>
           <h2 className="text-3xl sm:text-5xl font-black uppercase text-zinc-900 dark:text-white tracking-tight">
-            Contact {clubName}
+            Contact us
           </h2>
           <p className="text-xs font-mono text-zinc-600 dark:text-zinc-400 max-w-xl mx-auto">
             Have questions about upcoming events, memberships, or collaborations? Send us a direct inquiry.
