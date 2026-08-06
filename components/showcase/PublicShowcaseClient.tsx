@@ -177,11 +177,11 @@ export function PublicShowcaseClient({ data }: PublicShowcaseClientProps) {
           />
         )}
 
-        {/* 11. Website Contributor History */}
-        <ShowcaseHistorySection
+        {/* 11. Website Contributor History - Hidden */}
+        {/* <ShowcaseHistorySection
           clubName={club.name}
           primaryColor={primaryColor}
-        />
+        /> */}
 
         {/* 12. Contact Section */}
         {sectionsEnabled.contact && (
