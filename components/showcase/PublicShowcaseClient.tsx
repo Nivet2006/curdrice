@@ -194,7 +194,7 @@ export function PublicShowcaseClient({ data }: PublicShowcaseClientProps) {
         )}
       </main>
 
-      {/* Comprehensive 1% Club & Gopalan Skill Academy Footer */}
+      {/* Comprehensive The One Percent Club & Gopalan Skill Academy Footer */}
       <footer className="border-t border-[#E6E8EC] dark:border-white/10 bg-[#F7F8FA] dark:bg-[#15171A] pt-16 pb-12 text-[#6B7280] dark:text-[#B8BEC6] font-mono relative transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -205,9 +205,9 @@ export function PublicShowcaseClient({ data }: PublicShowcaseClientProps) {
                   <img src={club.logo_url} alt={club.name} className="w-8 h-8 object-contain rounded-lg border border-zinc-200 dark:border-white/10" />
                 ) : (
                   <div
-                    className="w-8 h-8 rounded-lg flex items-center justify-center font-black font-mono text-xs text-white uppercase bg-[#003C5E]"
+                    className="w-8 h-8 rounded-lg flex items-center justify-center font-black font-mono text-[8px] leading-tight text-white uppercase bg-[#003C5E] text-center p-0.5"
                   >
-                    1%
+                    The One Percent
                   </div>
                 )}
                 <span className="text-base font-black uppercase text-[#111827] dark:text-[#F8F7F2]">{club.name}</span>
@@ -255,13 +255,11 @@ export function PublicShowcaseClient({ data }: PublicShowcaseClientProps) {
                 </p>
                 <p className="flex items-center gap-2">
                   <Globe size={14} className="text-[#003C5E] dark:text-[#FFB703] shrink-0" />
-                  <a href="https://gopalan.ac.in" target="_blank" rel="noopener noreferrer" className="hover:underline">
-                    Gopalan Skill Academy Official Website
-                  </a>
+                  <span>TBD</span>
                 </p>
                 <p className="flex items-center gap-2">
                   <Mail size={14} className="text-[#003C5E] dark:text-[#FFB703] shrink-0" />
-                  <span>{club.name.toLowerCase().replace(/[^a-z0-9]+/g, '')}@gopalan.edu</span>
+                  <span>{config?.contact_config?.recipientEmail || 'TBD'}</span>
                 </p>
               </div>
             </div>

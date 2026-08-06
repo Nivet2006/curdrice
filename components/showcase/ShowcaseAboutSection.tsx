@@ -16,7 +16,7 @@ export function ShowcaseAboutSection({ aboutData, clubName, primaryColor = '#003
   const pillars = [
     {
       title: 'Continuous Improvement',
-      description: 'The name "The One Percent Club" is inspired by the philosophy of continuous improvement. Small improvements made consistently every day lead to remarkable personal and professional growth over time. The club aims to create a culture where students strive to become 1% better each day through learning, practice, reflection, and application.',
+      description: 'The name "The One Percent Club" is inspired by the philosophy of continuous improvement. Small improvements made consistently every day lead to remarkable personal and professional growth over time. The club aims to create a culture where students strive to become The One Percent better each day through learning, practice, reflection, and application.',
       icon: Award,
       accent: 'text-[#003C5E] dark:text-[#FFB703]'
     },
@@ -51,7 +51,7 @@ export function ShowcaseAboutSection({ aboutData, clubName, primaryColor = '#003
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F7F8FA]/90 dark:bg-[#15171A]/90 border border-[#E6E8EC] dark:border-white/10 shadow-sm"
+            className="hidden items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F7F8FA]/90 dark:bg-[#15171A]/90 border border-[#E6E8EC] dark:border-white/10 shadow-sm"
           >
             <Sparkles size={13} className="text-[#003C5E] dark:text-[#FFB703]" />
             <span className="text-xs font-mono font-bold uppercase tracking-widest text-[#003C5E] dark:text-[#FFB703]">

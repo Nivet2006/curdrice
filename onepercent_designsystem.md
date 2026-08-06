@@ -1,4 +1,4 @@
-# The 1% Club Design System
+# The One Percent Club Design System
 
 > Version 1.0
 

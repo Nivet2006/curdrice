@@ -63,7 +63,7 @@ CREATE TABLE IF NOT EXISTS public.club_showcase_configs (
     }'::jsonb,
     contact_config jsonb DEFAULT '{
         "recipientEmail": "",
-        "locationText": "Campus Main Block, Room 304",
+        "locationText": "TBD",
         "socialLinks": {
             "instagram": "",
             "linkedin": "",

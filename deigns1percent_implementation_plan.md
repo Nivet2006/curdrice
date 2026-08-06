@@ -1,13 +1,13 @@
-# Comprehensive Advanced Motion & VFX Implementation Plan for The 1% Club Showcase
+# Comprehensive Advanced Motion & VFX Implementation Plan for The One Percent Club Showcase
 
-This plan outlines high-impact, state-of-the-art UI/UX animations and visual effects using **Framer Motion 12**, **React Spring physics**, and **Canvas/SVG micro-interactions** tailored to **The 1% Club Design System** (`#003C5E` Peacock Blue, `#007F6E` Emerald Plume, `#FFB703` Golden Crown, `#E85D04` Sunset Glow).
+This plan outlines high-impact, state-of-the-art UI/UX animations and visual effects using **Framer Motion 12**, **React Spring physics**, and **Canvas/SVG micro-interactions** tailored to **The One Percent Club Design System** (`#003C5E` Peacock Blue, `#007F6E` Emerald Plume, `#FFB703` Golden Crown, `#E85D04` Sunset Glow).
 
 ---
 
 ## 1. Onscreen & Hero Animations
 
 ### 1.1 Kinetic Staggered Typography & Split-Text Reveal
-- **Concept**: Letters and words in titles (*"What is The 1% Club"*, *"Earn Your Edge"*) reveal character-by-character using 3D perspective rotation (`rotateX: -90deg → 0deg`) and spring physics.
+- **Concept**: Letters and words in titles (*"What is The One Percent Club"*, *"Earn Your Edge"*) reveal character-by-character using 3D perspective rotation (`rotateX: -90deg → 0deg`) and spring physics.
 - **Implementation**: Split string into `motion.span` elements with staggered delays (`staggerChildren: 0.03s`).
 
 ### 1.2 Magnetic Hover Buttons & Follow-Cursor Light Ring
