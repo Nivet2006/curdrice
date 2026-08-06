@@ -10,7 +10,7 @@ interface LayoutProps {
 
 export default async function ShowcaseLayout({ children, params }: LayoutProps) {
   const { slug } = await params
-  const isOnePercent = slug === '1percent'
+  const isOnePercent = slug === 'onepercent' || slug === '1percent'
 
   return (
     <>
