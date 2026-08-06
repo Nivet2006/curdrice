@@ -25,7 +25,7 @@ export function ShowcaseContactSection({
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
 
-  const locationText = contactConfig?.locationText || 'Campus Main Block, Room 304'
+  const locationText = contactConfig?.locationText || 'TBD'
   const socialLinks = contactConfig?.socialLinks || {}
 
   async function handleSubmit(e: React.FormEvent) {

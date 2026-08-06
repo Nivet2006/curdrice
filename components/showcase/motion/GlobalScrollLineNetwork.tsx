@@ -44,7 +44,7 @@ export function GlobalScrollLineNetwork() {
         viewBox={`0 0 1200 ${docHeight}`}
       >
         <defs>
-          {/* Continuous 1% Club Brand Gradient */}
+          {/* Continuous The One Percent Club Brand Gradient */}
           <linearGradient id="live-scroll-line-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
             <stop offset="0%" stopColor="#003C5E" />
             <stop offset="25%" stopColor="#007F6E" />

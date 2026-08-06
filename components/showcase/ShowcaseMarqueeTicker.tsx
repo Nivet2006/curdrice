@@ -9,14 +9,20 @@ interface ShowcaseMarqueeTickerProps {
 }
 
 const DEFAULT_KEYWORDS = [
-  'CODE',
-  'ENGINEER',
-  'DEVELOP',
-  'CREATE',
-  'ARCHITECT',
-  'DESIGN',
-  'DEBUG',
-  'EXECUTE'
+  'TBD',
+  'TBD',
+  'TBD',
+  'TBD',
+  'TBD',
+  'TBD',
+  'TBD',
+  'TBD',
+  'TBD',
+  'TBD',
+  'TBD',
+  'TBD',
+  'TBD',
+  'TBD'
 ]
 
 export function ShowcaseMarqueeTicker({

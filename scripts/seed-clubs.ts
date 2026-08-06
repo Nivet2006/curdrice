@@ -33,7 +33,7 @@ const defaultClubs = [
     category: 'Entrepreneurship'
   },
   {
-    name: '1% Coding Club',
+    name: 'The One Percent Club',
     slug: '1percent',
     description: 'Competitive programming, web development, cloud computing, and software engineering practice community.',
     category: 'Coding & Tech'
