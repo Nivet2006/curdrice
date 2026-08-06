@@ -21,7 +21,7 @@ export function ShowcaseHeroSection({
   accentColor = '#FFB703'
 }: ShowcaseHeroProps) {
   const rawTitle = heroData?.title || clubName
-  const title = (rawTitle === '1percent' || rawTitle === '1% club' || rawTitle?.toLowerCase() === 'the one percent club') ? 'THE ONE PERCENT CLUB' : rawTitle
+  const title = (rawTitle === 'onepercent' || rawTitle === '1percent' || rawTitle === '1% club' || rawTitle?.toLowerCase() === 'the one percent club') ? 'THE ONE PERCENT CLUB' : rawTitle
   const quote = heroData?.quote || '"One Percent Better, Every Day."'
   const tagline = heroData?.tagline || `EARN YOUR EDGE • GOPALAN SKILL ACADEMY`
   const subtitle = heroData?.subtitle || `${clubName} is a student-driven skill development and employability enhancement club at Gopalan Skill Academy established to bridge the gap between academic learning and industry expectations. Through workshops, competitions, industry interactions, and peer-learning, we empower students to achieve excellence.`
