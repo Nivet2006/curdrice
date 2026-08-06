@@ -42,6 +42,9 @@ next-env.d.ts
 /NATIVE APP
 /NATIVE APP/OUTPUT APK/
 
+# ignore all markdown files
+*.md
+
 # playwright
 /TEST/Playwright/test-results/
 /TEST/Playwright/playwright-report/
