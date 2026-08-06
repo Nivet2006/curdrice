@@ -71,7 +71,7 @@ export function ShowcaseContactSection({
             Contact us
           </h2>
           <p className="text-xs font-mono text-zinc-600 dark:text-zinc-400 max-w-xl mx-auto">
-            Have questions about upcoming events, memberships, or collaborations? Send us a direct inquiry.
+            Have questions about upcoming events or collaborations? Send us a direct inquiry.
           </p>
         </div>
 
