@@ -97,14 +97,14 @@ export function PublicShowcaseClient({ data }: PublicShowcaseClientProps) {
           />
         )}
 
-        {/* 2. Live Survey Promo Banner */}
-        {sectionsEnabled.surveys && (
+        {/* 2. Live Survey Promo Banner - Hidden */}
+        {/* {sectionsEnabled.surveys && (
           <ShowcaseSurveysSection
             surveys={surveys}
             clubName={club.name}
             primaryColor={primaryColor}
           />
-        )}
+        )} */}
 
         {/* 3. What is [Club] & Why Join Us */}
         {sectionsEnabled.about && (
