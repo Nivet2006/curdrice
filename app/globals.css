@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── The 1% Club Design System Variables ── */
+/* ── The One Percent Club Design System Variables ── */
 :root {
   --primary-peacock: #003C5E;
   --secondary-emerald: #007F6E;
@@ -14,7 +14,7 @@
   --text-ivory: #F8F7F2;
 }
 
-/* 1% Club Gradient Utilities */
+/* The One Percent Club Gradient Utilities */
 .bg-gradient-ocean-depth {
   background: linear-gradient(135deg, #003C5E 0%, #007F6E 100%);
 }

@@ -74,9 +74,9 @@ export function ShowcaseNavbar({
               <img src={logoUrl} alt={clubName} className="w-9 h-9 object-contain rounded-xl shrink-0 shadow-md border border-zinc-200 dark:border-white/10" />
             ) : (
               <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center font-black font-mono text-sm text-white shadow-md uppercase shrink-0 bg-[#003C5E]"
+                className="w-9 h-9 rounded-xl flex items-center justify-center font-black font-mono text-[9px] leading-tight text-white shadow-md uppercase shrink-0 bg-[#003C5E] text-center p-0.5"
               >
-                1%
+                The One Percent
               </div>
             )}
             <div className="flex flex-col">
