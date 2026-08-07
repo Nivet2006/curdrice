@@ -1,0 +1,71 @@
+frontend:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "app/**"
+          - "components/**"
+          - "hooks/**"
+          - "styles/**"
+          - "public/**"
+
+backend:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "lib/**"
+          - "server/**"
+          - "api/**"
+
+database:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "supabase/**"
+          - "**/*.sql"
+
+authentication:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "**/auth/**"
+          - "**/middleware.ts"
+
+email:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "**/email/**"
+          - "**/emails/**"
+
+security:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "**/middleware.ts"
+          - "**/rate-limit/**"
+          - "**/security/**"
+
+documentation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "**/*.md"
+          - "docs/**"
+
+github:
+  - changed-files:
+      - any-glob-to-any-file:
+          - ".github/**"
+
+ci:
+  - changed-files:
+      - any-glob-to-any-file:
+          - ".github/workflows/**"
+
+tests:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "**/*.test.*"
+          - "**/*.spec.*"
+
+dependencies:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "package.json"
+          - "package-lock.json"
+          - "pnpm-lock.yaml"
+          - "yarn.lock"
+          - "bun.lockb"
