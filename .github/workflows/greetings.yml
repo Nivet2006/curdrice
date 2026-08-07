@@ -1,0 +1,48 @@
+name: Greetings
+
+on:
+  pull_request_target:
+  issues:
+
+jobs:
+  greeting:
+    runs-on: ubuntu-latest
+
+    permissions:
+      issues: write
+      pull-requests: write
+
+    steps:
+      - uses: actions/first-interaction@v1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+          issue-message: |
+            👋 Welcome to **Club Eve**!
+
+            Thank you for opening your first issue.
+
+            Before submitting:
+            - 📖 Please check existing issues to avoid duplicates.
+            - 📝 Include clear steps to reproduce the problem (if applicable).
+            - 📷 Add screenshots or logs whenever possible.
+
+            A maintainer will review your issue as soon as possible.
+
+            Thank you for helping improve Club Eve! 🚀
+
+          pr-message: |
+            🎉 Welcome to **Club Eve**!
+
+            Thank you for your first pull request.
+
+            Before requesting a review, please ensure:
+            - ✅ The project builds successfully.
+            - ✅ All CI checks pass.
+            - ✅ Your code follows the project's style and conventions.
+            - ✅ You've tested your changes locally.
+            - 📝 The pull request includes a clear description of what changed.
+
+            A maintainer will review your contribution shortly.
+
+            Thanks for contributing to Club Eve! 💙
