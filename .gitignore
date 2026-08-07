@@ -45,7 +45,8 @@ next-env.d.ts
 
 # ignore all markdown files
 *.md
-IMPLEMETATION CERT GEN.MD
+/IMPLEMETATION CERT GEN.md
+
 # playwright
 /TEST/Playwright/test-results/
 /TEST/Playwright/playwright-report/
