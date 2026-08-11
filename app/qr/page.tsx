@@ -1,13 +1,12 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import {
   QrCode,
   Download,
   Copy,
   Check,
-  Sparkles,
   Sun,
   Moon,
   Palette,
@@ -15,21 +14,26 @@ import {
   ExternalLink,
   ShieldCheck,
   RefreshCw,
-  Sliders,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Sparkles
 } from 'lucide-react'
 import { renderQRToCanvas, downloadCanvasAsImage } from '@/lib/utils/qr-canvas'
 import { toast } from 'sonner'
+import { Navbar } from '@/components/shared/Navbar'
+import { supabase } from '@/lib/supabase/client'
 
 export default function CustomQRCreatorPage() {
+  const [role, setRole] = useState<any>(null)
+  const [name, setName] = useState<string>('')
+
   const [url, setUrl] = useState('https://clubeve.nivet2006.in')
   const [customCode, setCustomCode] = useState('')
   const [title, setTitle] = useState('')
   const [themeMode, setThemeMode] = useState<'light' | 'dark' | 'custom'>('light')
 
   // Color Pickers
-  const [fgColor, setFgColor] = useState('#000000')
-  const [bgColor, setBgColor] = useState('#FFFFFF')
+  const [fgColor, setFgColor] = useState('#0a0a0a')
+  const [bgColor, setBgColor] = useState('#ffffff')
 
   // Logo settings
   const [includeLogo, setIncludeLogo] = useState(true)
@@ -43,19 +47,39 @@ export default function CustomQRCreatorPage() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const transparentCanvasRef = useRef<HTMLCanvasElement | null>(null)
 
+  // Check user role on load for Navbar compatibility
+  useEffect(() => {
+    async function loadUser() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role, full_name')
+          .eq('id', user.id)
+          .single()
+
+        if (profile) {
+          setRole(profile.role)
+          setName(profile.full_name)
+        }
+      }
+    }
+    loadUser()
+  }, [])
+
   // Handle Preset Theme Changes
   const handleThemeChange = (mode: 'light' | 'dark' | 'custom') => {
     setThemeMode(mode)
     if (mode === 'light') {
-      setFgColor('#000000') // Black QR
-      setBgColor('#FFFFFF')
+      setFgColor('#0a0a0a') // Black QR
+      setBgColor('#ffffff')
     } else if (mode === 'dark') {
-      setFgColor('#FFFFFF') // White QR
-      setBgColor('#0F172A') // Dark navy canvas
+      setFgColor('#ffffff') // White QR
+      setBgColor('#141414') // Dark card canvas
     }
   }
 
-  // Active target for QR code rendering (uses shortUrl if generated, otherwise direct URL)
+  // Active target for QR code rendering
   const qrTargetText = shortUrl || (url.trim() ? url.trim() : 'https://clubeve.nivet2006.in')
 
   // Re-render canvas whenever options change
@@ -63,8 +87,8 @@ export default function CustomQRCreatorPage() {
     if (canvasRef.current) {
       renderQRToCanvas(canvasRef.current, {
         text: qrTargetText,
-        fgColor: themeMode === 'light' ? '#000000' : themeMode === 'dark' ? '#FFFFFF' : fgColor,
-        bgColor: themeMode === 'light' ? '#FFFFFF' : themeMode === 'dark' ? '#0F172A' : bgColor,
+        fgColor: themeMode === 'light' ? '#0a0a0a' : themeMode === 'dark' ? '#ffffff' : fgColor,
+        bgColor: themeMode === 'light' ? '#ffffff' : themeMode === 'dark' ? '#141414' : bgColor,
         transparentBg: false,
         logoSrc: includeLogo ? '/logo.png' : '',
         logoRatio,
@@ -75,8 +99,8 @@ export default function CustomQRCreatorPage() {
     if (transparentCanvasRef.current) {
       renderQRToCanvas(transparentCanvasRef.current, {
         text: qrTargetText,
-        fgColor: themeMode === 'light' ? '#000000' : themeMode === 'dark' ? '#FFFFFF' : fgColor,
-        bgColor: themeMode === 'light' ? '#FFFFFF' : themeMode === 'dark' ? '#0F172A' : bgColor,
+        fgColor: themeMode === 'light' ? '#0a0a0a' : themeMode === 'dark' ? '#ffffff' : fgColor,
+        bgColor: themeMode === 'light' ? '#ffffff' : themeMode === 'dark' ? '#141414' : bgColor,
         transparentBg: true,
         logoSrc: includeLogo ? '/logo.png' : '',
         logoRatio,
@@ -138,25 +162,19 @@ export default function CustomQRCreatorPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8F9FC] dark:bg-[#0B0F19] text-[#1E293B] dark:text-[#F1F5F9] font-sans antialiased transition-colors duration-300">
-      {/* Background Decorator */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#003C5E]/5 via-transparent to-[#FFB703]/5 pointer-events-none" />
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)] transition-colors duration-200">
+      {/* Platform Standard Navigation Bar */}
+      <Navbar role={role} name={name} />
 
-      {/* Header Banner */}
-      <header className="border-b border-[#E2E8F0] dark:border-white/10 bg-white/80 dark:bg-[#111827]/80 backdrop-blur-md sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="ClubEve Logo" className="w-9 h-9 object-contain" />
-            <div>
-              <h1 className="font-bold text-lg leading-tight flex items-center gap-2">
-                ClubEve QR Studio
-                <span className="text-[10px] font-mono uppercase bg-[#003C5E] text-white px-2 py-0.5 rounded-full">
-                  Public
-                </span>
+      {/* Main Content Area */}
+      <main className="max-w-[1280px] mx-auto px-4 md:px-8 py-10 space-y-8">
+        {/* Page Header */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-[var(--border)] pb-6">
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <h1 className="text-3xl font-black tracking-tight text-[var(--fg)]">
+                QR Studio
               </h1>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Custom branded QR generator with background removal
-              </p>
             </div>
           </div>
 
@@ -165,34 +183,32 @@ export default function CustomQRCreatorPage() {
               href="https://clubeve.nivet2006.in"
               target="_blank"
               rel="noreferrer"
-              className="text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-[#003C5E] flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5 transition-all"
+              className="text-xs font-mono font-bold uppercase tracking-wider px-4 py-2 rounded-xl border border-[var(--border)] hover:border-[var(--fg)] transition-all flex items-center gap-2 bg-[var(--bg-card)]"
             >
-              Main Site <ExternalLink size={13} />
+              Main Site <ExternalLink size={14} />
             </a>
           </div>
         </div>
-      </header>
 
-      {/* Main Container */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        {/* Studio Workspace */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Controls Panel (Left - 7 cols) */}
+          {/* Controls Column (Left - 7 Cols) */}
           <div className="lg:col-span-7 space-y-6">
-            {/* Step 1: Destination URL & Redirect Setup */}
-            <section className="bg-white dark:bg-[#151C2C] p-6 rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-3">
-                <h2 className="font-semibold text-base flex items-center gap-2">
-                  <Link2 className="text-[#003C5E] dark:text-[#FFB703]" size={18} />
+            {/* Card 1: Target Link & Redirector */}
+            <section className="bg-[var(--bg-card)] border border-[var(--border)] rounded-[2rem] p-6 shadow-sm space-y-5">
+              <div className="flex items-center justify-between border-b border-[var(--border)] pb-4">
+                <h2 className="text-lg font-bold tracking-tight flex items-center gap-2">
+                  <Link2 size={20} className="text-[var(--fg)]" />
                   1. Target Link & Redirector
                 </h2>
-                <span className="text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-md font-medium flex items-center gap-1">
-                  <ShieldCheck size={12} /> Public Access
+                <span className="font-mono text-[10px] uppercase tracking-widest px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-bold flex items-center gap-1">
+                  <ShieldCheck size={12} /> Public
                 </span>
               </div>
 
               <form onSubmit={handleCreateRedirect} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">
+                  <label className="block font-mono text-xs uppercase tracking-wider text-[var(--fg-muted)] mb-1.5 font-semibold">
                     Destination URL *
                   </label>
                   <input
@@ -204,39 +220,39 @@ export default function CustomQRCreatorPage() {
                       setShortUrl('')
                     }}
                     placeholder="https://clubeve.nivet2006.in/events/my-event"
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#0B0F19] text-sm focus:outline-none focus:ring-2 focus:ring-[#003C5E] transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] text-sm font-sans focus:outline-none focus:border-[var(--fg)] transition-all"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">
+                    <label className="block font-mono text-xs uppercase tracking-wider text-[var(--fg-muted)] mb-1.5 font-semibold">
                       Custom Short Slug (Optional)
                     </label>
                     <div className="flex items-center">
-                      <span className="text-xs font-mono bg-slate-100 dark:bg-slate-800 text-slate-500 px-2.5 py-2.5 rounded-l-xl border border-r-0 border-slate-200 dark:border-white/10">
+                      <span className="font-mono text-xs bg-[var(--bg-subtle)] text-[var(--fg-muted)] px-3 py-3 rounded-l-xl border border-r-0 border-[var(--border)] font-semibold">
                         /r/
                       </span>
                       <input
                         type="text"
                         value={customCode}
                         onChange={(e) => setCustomCode(e.target.value.replace(/\s+/g, '-'))}
-                        placeholder="annual-fest"
-                        className="w-full px-3 py-2.5 rounded-r-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#0B0F19] text-sm focus:outline-none focus:ring-2 focus:ring-[#003C5E]"
+                        placeholder="fest-2026"
+                        className="w-full px-3 py-3 rounded-r-xl border border-[var(--border)] bg-[var(--bg-subtle)] text-sm focus:outline-none focus:border-[var(--fg)]"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">
-                      Campaign Title (Optional)
+                    <label className="block font-mono text-xs uppercase tracking-wider text-[var(--fg-muted)] mb-1.5 font-semibold">
+                      Title / Label (Optional)
                     </label>
                     <input
                       type="text"
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
-                      placeholder="e.g., Spring Fest Poster QR"
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#0B0F19] text-sm focus:outline-none focus:ring-2 focus:ring-[#003C5E]"
+                      placeholder="e.g. Hackathon Poster QR"
+                      className="w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] text-sm focus:outline-none focus:border-[var(--fg)]"
                     />
                   </div>
                 </div>
@@ -244,114 +260,113 @@ export default function CustomQRCreatorPage() {
                 <button
                   type="submit"
                   disabled={isCreatingRedirect}
-                  className="w-full py-2.5 px-4 rounded-xl bg-[#003C5E] hover:bg-[#002B45] text-white text-sm font-semibold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                  className="w-full py-3 px-4 rounded-xl bg-[var(--fg)] text-[var(--bg)] text-sm font-bold tracking-tight hover:opacity-90 transition-all flex items-center justify-center gap-2 shadow-sm"
                 >
                   {isCreatingRedirect ? (
                     <RefreshCw className="animate-spin" size={16} />
                   ) : (
                     <Sparkles size={16} />
                   )}
-                  {shortUrl ? 'Update Redirect Short Link' : 'Generate Custom Redirector Link (/r/...)'}
+                  {shortUrl ? 'Update Redirect Link' : 'Generate Short Redirect Link (/r/...)'}
                 </button>
               </form>
 
-              {/* Display Generated Short URL */}
+              {/* Display Short Redirect URL if generated */}
               {shortUrl && (
                 <motion.div
                   initial={{ opacity: 0, y: 5 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between gap-3"
+                  className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between gap-3"
                 >
                   <div className="truncate">
-                    <p className="text-[11px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                    <p className="font-mono text-[10px] uppercase tracking-widest font-bold text-emerald-600 dark:text-emerald-400">
                       Redirect Link Active
                     </p>
-                    <p className="text-sm font-mono font-bold text-slate-900 dark:text-white truncate">
+                    <p className="text-sm font-mono font-bold text-[var(--fg)] truncate">
                       {shortUrl}
                     </p>
                   </div>
                   <button
                     onClick={handleCopyLink}
-                    className="flex-shrink-0 px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-medium flex items-center gap-1.5 hover:bg-emerald-700 transition-colors"
+                    className="flex-shrink-0 px-3.5 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-bold font-mono flex items-center gap-1.5 hover:bg-emerald-700 transition-colors"
                   >
                     {copied ? <Check size={14} /> : <Copy size={14} />}
-                    {copied ? 'Copied' : 'Copy'}
+                    {copied ? 'COPIED' : 'COPY'}
                   </button>
                 </motion.div>
               )}
             </section>
 
-            {/* Step 2: Theme Presets & Custom Styling */}
-            <section className="bg-white dark:bg-[#151C2C] p-6 rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm space-y-6">
-              <div className="border-b border-slate-100 dark:border-white/5 pb-3">
-                <h2 className="font-semibold text-base flex items-center gap-2">
-                  <Palette className="text-[#003C5E] dark:text-[#FFB703]" size={18} />
-                  2. Theme & Color Styling
+            {/* Card 2: Theme Presets & Custom Palette */}
+            <section className="bg-[var(--bg-card)] border border-[var(--border)] rounded-[2rem] p-6 shadow-sm space-y-6">
+              <div className="border-b border-[var(--border)] pb-4">
+                <h2 className="text-lg font-bold tracking-tight flex items-center gap-2">
+                  <Palette size={20} className="text-[var(--fg)]" />
+                  2. Theme Presets & Styling
                 </h2>
               </div>
 
-              {/* Theme Mode Selector Buttons */}
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-2">
+                <label className="block font-mono text-xs uppercase tracking-wider text-[var(--fg-muted)] mb-3 font-semibold">
                   Theme Presets
                 </label>
                 <div className="grid grid-cols-3 gap-3">
-                  {/* Light Theme (Black QR) */}
+                  {/* Light Theme */}
                   <button
                     type="button"
                     onClick={() => handleThemeChange('light')}
-                    className={`p-3 rounded-xl border flex flex-col items-center gap-2 transition-all ${
+                    className={`p-4 rounded-2xl border flex flex-col items-center gap-2 transition-all ${
                       themeMode === 'light'
-                        ? 'border-[#003C5E] bg-[#003C5E]/5 ring-2 ring-[#003C5E]/20 font-bold'
-                        : 'border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-900/50 hover:bg-slate-100'
+                        ? 'border-[var(--fg)] bg-[var(--bg-subtle)] font-bold shadow-sm'
+                        : 'border-[var(--border)] hover:border-[var(--fg-muted)]'
                     }`}
                   >
-                    <Sun size={20} className="text-slate-900 dark:text-white" />
-                    <span className="text-xs">Light Theme</span>
-                    <span className="text-[10px] text-slate-500 font-mono">(Black QR)</span>
+                    <Sun size={20} />
+                    <span className="text-xs font-semibold">Light Theme</span>
+                    <span className="font-mono text-[10px] text-[var(--fg-muted)]">(BLACK QR)</span>
                   </button>
 
-                  {/* Dark Theme (White QR) */}
+                  {/* Dark Theme */}
                   <button
                     type="button"
                     onClick={() => handleThemeChange('dark')}
-                    className={`p-3 rounded-xl border flex flex-col items-center gap-2 transition-all ${
+                    className={`p-4 rounded-2xl border flex flex-col items-center gap-2 transition-all ${
                       themeMode === 'dark'
-                        ? 'border-[#FFB703] bg-[#FFB703]/10 ring-2 ring-[#FFB703]/30 font-bold'
-                        : 'border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-900/50 hover:bg-slate-100'
+                        ? 'border-[var(--fg)] bg-[var(--bg-subtle)] font-bold shadow-sm'
+                        : 'border-[var(--border)] hover:border-[var(--fg-muted)]'
                     }`}
                   >
-                    <Moon size={20} className="text-[#FFB703]" />
-                    <span className="text-xs">Dark Theme</span>
-                    <span className="text-[10px] text-slate-500 font-mono">(White QR)</span>
+                    <Moon size={20} />
+                    <span className="text-xs font-semibold">Dark Theme</span>
+                    <span className="font-mono text-[10px] text-[var(--fg-muted)]">(WHITE QR)</span>
                   </button>
 
-                  {/* Custom Colors */}
+                  {/* Custom Palette */}
                   <button
                     type="button"
                     onClick={() => handleThemeChange('custom')}
-                    className={`p-3 rounded-xl border flex flex-col items-center gap-2 transition-all ${
+                    className={`p-4 rounded-2xl border flex flex-col items-center gap-2 transition-all ${
                       themeMode === 'custom'
-                        ? 'border-[#007F6E] bg-[#007F6E]/10 ring-2 ring-[#007F6E]/30 font-bold'
-                        : 'border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-900/50 hover:bg-slate-100'
+                        ? 'border-[var(--fg)] bg-[var(--bg-subtle)] font-bold shadow-sm'
+                        : 'border-[var(--border)] hover:border-[var(--fg-muted)]'
                     }`}
                   >
-                    <Palette size={20} className="text-[#007F6E]" />
-                    <span className="text-xs">Custom Palette</span>
-                    <span className="text-[10px] text-slate-500 font-mono">(Pick Colors)</span>
+                    <Palette size={20} />
+                    <span className="text-xs font-semibold">Custom</span>
+                    <span className="font-mono text-[10px] text-[var(--fg-muted)]">(Pick Colors)</span>
                   </button>
                 </div>
               </div>
 
-              {/* Custom Color Pickers (Visible when custom mode active) */}
+              {/* Custom Color Pickers */}
               {themeMode === 'custom' && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
-                  className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-white/10"
+                  className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-[var(--bg-subtle)] border border-[var(--border)]"
                 >
                   <div>
-                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                    <label className="block font-mono text-xs uppercase tracking-wider text-[var(--fg-muted)] mb-1.5 font-semibold">
                       QR Foreground Color
                     </label>
                     <div className="flex items-center gap-2">
@@ -359,19 +374,19 @@ export default function CustomQRCreatorPage() {
                         type="color"
                         value={fgColor}
                         onChange={(e) => setFgColor(e.target.value)}
-                        className="w-8 h-8 rounded-lg cursor-pointer border-0 bg-transparent"
+                        className="w-9 h-9 rounded-lg cursor-pointer border-0 bg-transparent"
                       />
                       <input
                         type="text"
                         value={fgColor}
                         onChange={(e) => setFgColor(e.target.value)}
-                        className="w-full text-xs font-mono px-2 py-1 rounded border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900"
+                        className="w-full font-mono text-xs px-2.5 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--bg-card)]"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                    <label className="block font-mono text-xs uppercase tracking-wider text-[var(--fg-muted)] mb-1.5 font-semibold">
                       Canvas Background Color
                     </label>
                     <div className="flex items-center gap-2">
@@ -379,24 +394,25 @@ export default function CustomQRCreatorPage() {
                         type="color"
                         value={bgColor}
                         onChange={(e) => setBgColor(e.target.value)}
-                        className="w-8 h-8 rounded-lg cursor-pointer border-0 bg-transparent"
+                        className="w-9 h-9 rounded-lg cursor-pointer border-0 bg-transparent"
                       />
                       <input
                         type="text"
                         value={bgColor}
                         onChange={(e) => setBgColor(e.target.value)}
-                        className="w-full text-xs font-mono px-2 py-1 rounded border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900"
+                        className="w-full font-mono text-xs px-2.5 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--bg-card)]"
                       />
                     </div>
                   </div>
                 </motion.div>
               )}
 
-              {/* Logo Overlay Settings */}
-              <div className="pt-2 space-y-4">
+              {/* Logo Overlay Toggle & Scaling */}
+              <div className="space-y-4 pt-2 border-t border-[var(--border)]">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-semibold flex items-center gap-2">
-                    <ImageIcon size={16} className="text-slate-500" /> ClubEve Logo Overlay
+                    <ImageIcon size={18} className="text-[var(--fg-muted)]" />
+                    ClubEve Branding Logo Overlay
                   </span>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
@@ -405,15 +421,15 @@ export default function CustomQRCreatorPage() {
                       onChange={(e) => setIncludeLogo(e.target.checked)}
                       className="sr-only peer"
                     />
-                    <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:peer-checked:after:border-slate-600 peer-checked:bg-[#003C5E]"></div>
+                    <div className="w-11 h-6 bg-zinc-200 peer-focus:outline-none rounded-full peer dark:bg-zinc-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--fg)]"></div>
                   </label>
                 </div>
 
                 {includeLogo && (
-                  <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/30 border border-slate-200 dark:border-white/10 space-y-2">
-                    <div className="flex justify-between text-xs">
-                      <span className="text-slate-600 dark:text-slate-400">Logo Scale Size</span>
-                      <span className="font-mono">{Math.round(logoRatio * 100)}%</span>
+                  <div className="p-4 rounded-xl bg-[var(--bg-subtle)] border border-[var(--border)] space-y-2">
+                    <div className="flex justify-between font-mono text-xs">
+                      <span className="text-[var(--fg-muted)]">Logo Scale Ratio</span>
+                      <span className="font-bold">{Math.round(logoRatio * 100)}%</span>
                     </div>
                     <input
                       type="range"
@@ -422,7 +438,7 @@ export default function CustomQRCreatorPage() {
                       step="0.01"
                       value={logoRatio}
                       onChange={(e) => setLogoRatio(parseFloat(e.target.value))}
-                      className="w-full accent-[#003C5E]"
+                      className="w-full accent-[var(--fg)]"
                     />
                   </div>
                 )}
@@ -430,61 +446,57 @@ export default function CustomQRCreatorPage() {
             </section>
           </div>
 
-          {/* Live Preview & Export Panel (Right - 5 cols) */}
+          {/* Live Canvas Preview & Export Column (Right - 5 Cols) */}
           <div className="lg:col-span-5 sticky top-24 space-y-6">
-            <section className="bg-white dark:bg-[#151C2C] p-6 rounded-2xl border border-slate-200 dark:border-white/10 shadow-lg space-y-6 flex flex-col items-center">
-              <div className="w-full flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-3">
-                <h3 className="font-semibold text-base flex items-center gap-2">
-                  <QrCode className="text-[#003C5E] dark:text-[#FFB703]" size={18} />
+            <section className="bg-[var(--bg-card)] border border-[var(--border)] rounded-[2rem] p-6 shadow-sm space-y-6 flex flex-col items-center">
+              <div className="w-full flex items-center justify-between border-b border-[var(--border)] pb-3">
+                <h3 className="text-base font-bold tracking-tight flex items-center gap-2">
+                  <QrCode size={18} />
                   Live Preview
                 </h3>
-                <span className="text-xs font-mono bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded">
+                <span className="font-mono text-[10px] uppercase tracking-widest bg-[var(--bg-subtle)] border border-[var(--border)] px-2.5 py-0.5 rounded-full font-bold">
                   {themeMode.toUpperCase()}
                 </span>
               </div>
 
-              {/* Rendered Visible Canvas Container */}
+              {/* Visible Render Canvas */}
               <div
-                className={`p-6 rounded-2xl border shadow-inner flex items-center justify-center transition-all ${
-                  themeMode === 'dark'
-                    ? 'bg-[#0F172A] border-slate-800'
-                    : 'bg-white border-slate-200'
+                className={`p-6 rounded-2xl border border-[var(--border)] shadow-sm flex items-center justify-center ${
+                  themeMode === 'dark' ? 'bg-[#141414]' : 'bg-white'
                 }`}
               >
                 <canvas
                   ref={canvasRef}
-                  className="w-64 h-64 sm:w-72 sm:h-72 object-contain rounded-lg shadow-sm"
+                  className="w-64 h-64 sm:w-72 sm:h-72 object-contain rounded-lg"
                 />
               </div>
 
-              {/* Hidden Canvas for Transparent Export */}
+              {/* Offscreen Canvas for Transparent Output */}
               <canvas ref={transparentCanvasRef} className="hidden" />
 
-              <p className="text-center text-xs text-slate-500 dark:text-slate-400 max-w-xs">
-                Scanning this QR redirects directly to:{' '}
-                <span className="font-mono text-slate-700 dark:text-slate-300 break-all block mt-0.5">
+              <p className="text-center font-mono text-xs text-[var(--fg-muted)] max-w-xs break-all">
+                Destination Target:{' '}
+                <span className="text-[var(--fg)] font-bold block mt-0.5">
                   {qrTargetText}
                 </span>
               </p>
 
-              {/* Download Action Buttons */}
+              {/* Action Buttons */}
               <div className="w-full space-y-3 pt-2">
-                {/* 1. Download Standard PNG with Background */}
                 <button
                   onClick={() => handleDownload(true)}
-                  className="w-full py-3 px-4 rounded-xl bg-[#003C5E] hover:bg-[#002A43] text-white text-sm font-semibold shadow-md flex items-center justify-center gap-2 transition-all"
+                  className="w-full py-3 px-4 rounded-xl bg-[var(--fg)] text-[var(--bg)] text-xs font-mono uppercase tracking-wider font-bold shadow-sm hover:opacity-90 transition-all flex items-center justify-center gap-2"
                 >
                   <Download size={16} />
-                  Download Standard QR (With Background)
+                  Download With Background
                 </button>
 
-                {/* 2. Download Transparent Background PNG */}
                 <button
                   onClick={() => handleDownload(false)}
-                  className="w-full py-3 px-4 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100 text-sm font-semibold shadow-md flex items-center justify-center gap-2 transition-all"
+                  className="w-full py-3 px-4 rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] hover:border-[var(--fg)] text-[var(--fg)] text-xs font-mono uppercase tracking-wider font-bold transition-all flex items-center justify-center gap-2"
                 >
                   <Download size={16} />
-                  Download QR Without Background (Transparent PNG)
+                  Download Without Background (Transparent)
                 </button>
               </div>
             </section>
