@@ -153,16 +153,18 @@ export async function proxy(request: NextRequest) {
     request.nextUrl.pathname.startsWith('/register')
 
   const isPublicEventPage = request.nextUrl.pathname.startsWith('/events/')
-  const isRedirectPage = request.nextUrl.pathname.startsWith('/redirect/')
+  const isRedirectPage = request.nextUrl.pathname.startsWith('/redirect/') || request.nextUrl.pathname.startsWith('/r/')
+  const isPublicQrPage = request.nextUrl.pathname.startsWith('/qr') || request.nextUrl.pathname.startsWith('/api/qr')
   const isPublicClubShowcasePage = request.nextUrl.pathname.startsWith('/c/') || request.nextUrl.pathname === '/c' || request.nextUrl.pathname.startsWith('/clubs')
 
-  // Redirect unauthenticated users to login, but bypass public event details, public club showcase, and redirect pages
+  // Redirect unauthenticated users to login, but bypass public event details, public club showcase, QR creator, and redirect pages
   if (
     !user &&
     !isAuthPage &&
     request.nextUrl.pathname !== '/' &&
     !isPublicEventPage &&
     !isRedirectPage &&
+    !isPublicQrPage &&
     !isPublicClubShowcasePage
   ) {
     supabaseResponse.cookies.delete('curdrice_user_role')
