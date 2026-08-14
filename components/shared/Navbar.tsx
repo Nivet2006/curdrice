@@ -110,14 +110,48 @@ export function Navbar({ role, name }: { role?: Role; name?: string }) {
         />
       )}
       {/* ── Top Navbar ── */}
-      <div className="border-b border-[#e0e0e0] bg-white sticky top-0 z-50">
+      <div className="border-b border-[#e0e0e0] dark:border-[#2a2a2a] bg-white dark:bg-[#0a0a0a] sticky top-0 z-50 transition-colors">
         <nav className="h-[60px] flex items-center justify-between px-4 md:px-8 w-full max-w-[1280px] mx-auto">
-          {/* Left: Logo & BrandMark only */}
+          {/* Left: Logo & BrandMark */}
           <div className="flex items-center gap-2">
-            <Link href="/" className="font-mono font-bold text-[#0a0a0a]">
+            <Link href="/" className="font-mono font-bold text-[#0a0a0a] dark:text-white">
               {'>'} Club-Eve
             </Link>
             <BrandMark role={role} />
+          </div>
+
+          {/* Right Controls: Theme Toggle, Pattern Picker, Role Indicator, Logout */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            <ThemeToggle />
+            <PatternPicker />
+
+            {role && (
+              <Badge 
+                variant={role} 
+                className="hidden sm:inline-flex font-mono text-[11px] font-bold uppercase tracking-wider px-2.5 py-1"
+              >
+                {role}
+              </Badge>
+            )}
+
+            <button
+              onClick={handleLogout}
+              disabled={loading}
+              title="Logout"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-mono text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 border border-red-200 dark:border-red-900/40 transition-colors disabled:opacity-50"
+            >
+              <LogOut size={14} />
+              <span>Logout</span>
+            </button>
+
+            {/* Mobile Menu Trigger */}
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="md:hidden p-2 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-lg border border-zinc-200 dark:border-zinc-800"
+              aria-label="Toggle navigation menu"
+            >
+              {sidebarOpen ? <X size={18} /> : <Menu size={18} />}
+            </button>
           </div>
         </nav>
       </div>
@@ -139,20 +173,31 @@ export function Navbar({ role, name }: { role?: Role; name?: string }) {
         style={{ background: 'var(--bg)' }}
       >
         {/* Sidebar Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#e0e0e0]">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[#e0e0e0] dark:border-zinc-800">
           <div>
             <p className="font-bold text-sm" style={{ color: 'var(--fg)' }}>{name}</p>
-            <p className="font-mono text-xs" style={{ color: 'var(--fg-muted)' }}>
-              {role}
-            </p>
+            <div className="flex items-center gap-2 mt-1">
+              <p className="font-mono text-xs uppercase font-semibold" style={{ color: 'var(--fg-muted)' }}>
+                {role}
+              </p>
+              {role && (
+                <Badge variant={role} className="font-mono text-[9px] uppercase tracking-wider px-1.5 py-0.5">
+                  {role}
+                </Badge>
+              )}
+            </div>
           </div>
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="w-8 h-8 rounded-full border border-[#e0e0e0] flex items-center justify-center hover:bg-[#f2f2f2] transition-colors"
-            style={{ color: 'var(--fg-muted)' }}
-          >
-            <X size={16} />
-          </button>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <PatternPicker />
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="w-8 h-8 rounded-full border border-[#e0e0e0] dark:border-zinc-800 flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-zinc-800 transition-colors"
+              style={{ color: 'var(--fg-muted)' }}
+            >
+              <X size={16} />
+            </button>
+          </div>
         </div>
 
         {/* Nav Links */}
