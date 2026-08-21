@@ -13,6 +13,8 @@ export function TotpLoginStep({ onSuccess }: TotpLoginStepProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const [keepMeLoggedIn, setKeepMeLoggedIn] = useState(false)
+
   const handleVerify = async (code: string) => {
     setIsLoading(true)
     setError(null)
@@ -23,7 +25,7 @@ export function TotpLoginStep({ onSuccess }: TotpLoginStepProps) {
       const res = await fetch('/api/auth/totp/verify-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code })
+        body: JSON.stringify({ code, keepMeLoggedIn })
       })
       
       const data = await res.json()
@@ -63,6 +65,21 @@ export function TotpLoginStep({ onSuccess }: TotpLoginStepProps) {
           error={error}
           onReset={() => setError(null)}
         />
+
+        <label 
+          htmlFor="keep-me-logged-in"
+          className="flex items-center gap-3 text-xs font-mono font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white transition-colors cursor-pointer select-none mt-6"
+        >
+          <input
+            id="keep-me-logged-in"
+            type="checkbox"
+            checked={keepMeLoggedIn}
+            onChange={(e) => setKeepMeLoggedIn(e.target.checked)}
+            disabled={isLoading}
+            className="w-4 h-4 rounded border-2 border-black dark:border-white accent-black dark:accent-white cursor-pointer disabled:opacity-50"
+          />
+          <span>Keep me logged in</span>
+        </label>
 
         <div className="mt-12 w-full pt-10 border-t-2 border-zinc-100 dark:border-zinc-800 flex flex-col items-center gap-6">
           <p className="text-[10px] font-mono text-zinc-400 uppercase font-bold text-center leading-relaxed">

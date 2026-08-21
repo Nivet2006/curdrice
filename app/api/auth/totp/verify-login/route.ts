@@ -6,7 +6,7 @@ import { verifyTotpChallenge, signTotpChallenge } from '@/lib/totp-challenge'
 
 export async function POST(req: Request) {
   try {
-    const { code } = await req.json()
+    const { code, keepMeLoggedIn } = await req.json()
 
     if (!code) {
       return NextResponse.json({ message: 'Missing code' }, { status: 400 })
@@ -71,14 +71,29 @@ export async function POST(req: Request) {
       }).eq('id', userId)
 
       // ── Security fix M4: verified cookie is user-bound (signed token), not a plain boolean ──
-      const verifiedToken = await signTotpChallenge(userId, 8 * 60 * 60) // 8-hour session
-      cookieStore.set('curdrice_totp_verified', verifiedToken, {
+      // If keepMeLoggedIn is true, persist token for 30 days.
+      // If false, set session cookie (no maxAge) so closing browser clears verification.
+      const sessionTtl = keepMeLoggedIn ? 30 * 24 * 60 * 60 : 8 * 60 * 60
+      const verifiedToken = await signTotpChallenge(userId, sessionTtl)
+      
+      const cookieOptions: {
+        httpOnly: boolean
+        secure: boolean
+        sameSite: 'strict'
+        path: string
+        maxAge?: number
+      } = {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
         path: '/',
-        maxAge: 8 * 60 * 60, // 8 hours
-      })
+      }
+
+      if (keepMeLoggedIn) {
+        cookieOptions.maxAge = 30 * 24 * 60 * 60 // 30 days
+      }
+
+      cookieStore.set('curdrice_totp_verified', verifiedToken, cookieOptions)
 
       // Clear the short-lived pending challenge cookie and stale cached cookies
       cookieStore.delete('curdrice_totp_pending')

@@ -207,62 +207,85 @@ export default function AdminQRAnalyticsPage() {
     }
   }
 
+  const handleScanResultRef = React.useRef(handleScanResult)
+  useEffect(() => {
+    handleScanResultRef.current = handleScanResult
+  }, [handleScanResult])
+
   useEffect(() => {
     if (!showScanner) return
 
     let isSubscribed = true
-    console.log('[QR] scanner initialization started')
-    const timer = setTimeout(async () => {
+
+    const startScanner = async () => {
       try {
-        const { Html5QrcodeScanner } = await import('html5-qrcode')
+        let attempts = 0
+        while (isSubscribed && !document.getElementById('admin-qr-reader') && attempts < 20) {
+          await new Promise((res) => setTimeout(res, 50))
+          attempts++
+        }
+
+        if (!isSubscribed || !document.getElementById('admin-qr-reader')) return
+
+        if (scannerRef.current) {
+          console.log('[QR] scanner instance already exists')
+          return
+        }
+
+        console.log('[QR] creating direct Html5Qrcode scanner')
+        const { Html5Qrcode } = await import('html5-qrcode')
         if (!isSubscribed) return
-        console.log('[QR] Html5QrcodeScanner loaded')
-        const scanner = new Html5QrcodeScanner(
-          'admin-qr-reader',
+
+        const html5QrCode = new Html5Qrcode('admin-qr-reader')
+        scannerRef.current = html5QrCode
+
+        console.log('[QR] starting live scanner')
+        await html5QrCode.start(
+          { facingMode: 'environment' },
           {
-            fps: 20,
-            qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
-              const minEdge = Math.min(viewfinderWidth, viewfinderHeight)
-              const size = Math.floor(minEdge * 0.8)
-              return { width: Math.max(size, 180), height: Math.max(size, 180) }
-            },
-            videoConstraints: {
-              width: { ideal: 1280 },
-              height: { ideal: 720 },
-              facingMode: 'environment',
-            },
-            experimentalFeatures: {
-              useBarCodeDetectorIfSupported: true,
-            },
+            fps: 10,
+            qrbox: { width: 250, height: 250 },
           },
-          false
-        )
-        scannerRef.current = scanner
-        console.log('[QR] scanner instance created:', scanner)
-        scanner.render(
           (decodedText: string, decodedResult: any) => {
-            console.log('[QR DETECTED]', decodedText, decodedResult)
-            handleScanResult(decodedText)
+            console.log('[QR DETECTED]', decodedText)
+            if (handleScanResultRef.current) {
+              handleScanResultRef.current(decodedText)
+            }
           },
           (_scanError: string) => {
-            // Frame scan failure (normal when no QR code is in frame)
+            // Normal frame scan failure (no QR code in frame)
           }
         )
-        console.log('[QR] scanner started')
-      } catch (err) {
+        console.log('[QR] live scanner started')
+      } catch (err: any) {
         console.error('[QR ANALYTICS CAMERA] scanner init error:', err)
+        scannerRef.current = null
       }
-    }, 100)
+    }
+
+    startScanner()
 
     return () => {
       isSubscribed = false
-      clearTimeout(timer)
       if (scannerRef.current) {
-        try {
-          console.log('[QR] stopping scanner')
-          scannerRef.current.clear().catch(console.error)
-        } catch (_) {}
+        console.log('[QR] stopping live scanner')
+        const instance = scannerRef.current
         scannerRef.current = null
+        instance
+          .stop()
+          .then(() => {
+            try {
+              instance.clear()
+            } catch (_) {}
+            console.log('[QR] live scanner stopped')
+          })
+          .catch((err: any) => {
+            console.error('[QR] Error stopping live scanner:', err)
+            try {
+              instance.clear()
+            } catch (_) {}
+            console.log('[QR] live scanner stopped')
+          })
       }
     }
   }, [showScanner])
