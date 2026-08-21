@@ -17,7 +17,8 @@ import {
   Pencil,
   X,
   ScanLine,
-  Download
+  Download,
+  Image as ImageIcon
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase/client'
@@ -164,18 +165,22 @@ export default function AdminQRAnalyticsPage() {
   }
 
   const handleScanResult = (decodedText: string) => {
+    if (!decodedText) return
+    const raw = decodedText.trim()
     let extractedCode = ''
-    const match = decodedText.match(/\/r\/([a-zA-Z0-9_-]+)/)
+    const match = raw.match(/\/r\/([a-zA-Z0-9_-]+)/i)
     if (match) {
       extractedCode = match[1].toLowerCase()
     } else {
-      extractedCode = decodedText.trim().toLowerCase()
+      extractedCode = raw.toLowerCase()
     }
 
     const matched = redirects.find(
       (r) =>
         r.code.toLowerCase() === extractedCode ||
-        r.destination_url.toLowerCase() === decodedText.toLowerCase()
+        r.destination_url.toLowerCase() === raw.toLowerCase() ||
+        raw.toLowerCase().includes(`/r/${r.code.toLowerCase()}`) ||
+        (r.destination_url && raw.toLowerCase().includes(r.destination_url.toLowerCase()))
     )
 
     if (matched) {
@@ -184,7 +189,21 @@ export default function AdminQRAnalyticsPage() {
       setSearchTerm(matched.code)
       handleStartEdit(matched)
     } else {
-      toast.error(`No matching redirect entry found for: "${decodedText}"`)
+      toast.error(`No matching QR redirect found for: "${raw}"`)
+    }
+  }
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    try {
+      const { Html5Qrcode } = await import('html5-qrcode')
+      const html5QrCode = new Html5Qrcode('admin-qr-file-reader-hidden')
+      const decodedText = await html5QrCode.scanFile(file, true)
+      html5QrCode.clear()
+      handleScanResult(decodedText)
+    } catch (err: any) {
+      toast.error('Could not decode QR code from file. Please ensure the image is clear.')
     }
   }
 
@@ -192,27 +211,39 @@ export default function AdminQRAnalyticsPage() {
     if (!showScanner) return
 
     let isSubscribed = true
+    let timeoutId: any = null
 
-    import('html5-qrcode').then(({ Html5QrcodeScanner }) => {
+    timeoutId = setTimeout(() => {
       if (!isSubscribed) return
+      const targetElement = document.getElementById('admin-qr-reader')
+      if (!targetElement) return
 
-      const scanner = new Html5QrcodeScanner(
-        'admin-qr-reader',
-        { fps: 10, qrbox: { width: 250, height: 250 } },
-        false
-      )
-      scannerInstanceRef.current = scanner
+      import('html5-qrcode').then(({ Html5QrcodeScanner }) => {
+        if (!isSubscribed) return
 
-      scanner.render(
-        (decodedText: string) => {
-          handleScanResult(decodedText)
-        },
-        () => {}
-      )
-    })
+        try {
+          const scanner = new Html5QrcodeScanner(
+            'admin-qr-reader',
+            { fps: 10, qrbox: { width: 250, height: 250 } },
+            false
+          )
+          scannerInstanceRef.current = scanner
+
+          scanner.render(
+            (decodedText: string) => {
+              handleScanResult(decodedText)
+            },
+            () => {}
+          )
+        } catch (err) {
+          console.error('[Scanner Init Error]', err)
+        }
+      })
+    }, 150)
 
     return () => {
       isSubscribed = false
+      if (timeoutId) clearTimeout(timeoutId)
       if (scannerInstanceRef.current) {
         scannerInstanceRef.current.clear().catch(() => {})
         scannerInstanceRef.current = null
@@ -564,13 +595,28 @@ export default function AdminQRAnalyticsPage() {
             </div>
 
             <div className="space-y-3">
+              <div id="admin-qr-file-reader-hidden" className="hidden" />
+
               <div
                 id="admin-qr-reader"
                 className="w-full bg-[var(--bg-subtle)] rounded-2xl overflow-hidden border border-[var(--border)] min-h-[260px] flex items-center justify-center"
               />
-              <p className="text-center font-mono text-[11px] text-[var(--fg-muted)]">
-                Hold your camera steady over the QR code image
-              </p>
+
+              <div className="flex flex-col gap-2 pt-2 border-t border-[var(--border)]">
+                <label className="w-full py-2.5 px-4 rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] hover:bg-[var(--bg-card)] cursor-pointer text-xs font-bold font-mono flex items-center justify-center gap-2 transition-all text-[var(--fg)]">
+                  <ImageIcon size={16} />
+                  <span>Upload QR Image File...</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
+                </label>
+                <p className="text-center font-mono text-[10px] text-[var(--fg-muted)]">
+                  Scan via live camera or pick an image screenshot
+                </p>
+              </div>
             </div>
 
             <div className="flex justify-end pt-2">
