@@ -231,33 +231,35 @@ export default function AdminQRAnalyticsPage() {
   }
 
   const startLiveCameraStream = async () => {
-    console.log('[QR Scanner] isSecureContext:', typeof window !== 'undefined' ? window.isSecureContext : false)
-    console.log('[QR Scanner] protocol:', typeof window !== 'undefined' ? window.location.protocol : '')
-    console.log('[QR Scanner] hostname:', typeof window !== 'undefined' ? window.location.hostname : '')
-    console.log('[QR Scanner] mediaDevices:', typeof navigator !== 'undefined' ? navigator.mediaDevices : null)
-    console.log('[QR Scanner] getUserMedia:', typeof navigator !== 'undefined' ? navigator.mediaDevices?.getUserMedia : null)
-    console.log('[QR Scanner] Retry Camera Request clicked / starting camera stream...')
+    console.log('Origin:', typeof window !== 'undefined' ? window.location.origin : '')
+    console.log('Protocol:', typeof window !== 'undefined' ? window.location.protocol : '')
+    console.log('Hostname:', typeof window !== 'undefined' ? window.location.hostname : '')
+    console.log('Port:', typeof window !== 'undefined' ? window.location.port : '')
+    console.log('Secure context:', typeof window !== 'undefined' ? window.isSecureContext : false)
+    console.log('Media devices:', typeof navigator !== 'undefined' ? navigator.mediaDevices : null)
+    console.log('getUserMedia:', typeof navigator !== 'undefined' ? navigator.mediaDevices?.getUserMedia : null)
+    console.log('Retry Camera Request clicked')
 
     setCameraError(null)
     await stopCurrentCamera()
 
     if (typeof window === 'undefined' || !navigator?.mediaDevices?.getUserMedia) {
-      console.warn('[QR Scanner] getUserMedia API unavailable or non-secure context')
+      console.warn('getUserMedia API unavailable or non-secure context')
       setCameraError('UNSUPPORTED')
       return
     }
 
     let tempStream: MediaStream | null = null
-    console.log('[QR Scanner] Calling getUserMedia...')
+    console.log('REQUESTING CAMERA NOW')
     try {
       // Direct call to getUserMedia in response to user gesture
       tempStream = await navigator.mediaDevices.getUserMedia({
         video: true,
         audio: false,
       })
-      console.log('[QR Scanner] getUserMedia succeeded:', tempStream)
+      console.log('CAMERA STREAM RECEIVED', tempStream)
     } catch (err: any) {
-      console.error('[QR Scanner] getUserMedia failed:', {
+      console.error('CAMERA REQUEST FAILED', {
         name: err?.name,
         message: err?.message,
         error: err,
