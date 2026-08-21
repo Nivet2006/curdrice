@@ -218,25 +218,47 @@ export default function AdminQRAnalyticsPage() {
       const targetElement = document.getElementById('admin-qr-reader')
       if (!targetElement) return
 
-      import('html5-qrcode').then(({ Html5QrcodeScanner }) => {
+      import('html5-qrcode').then(({ Html5Qrcode }) => {
         if (!isSubscribed) return
 
         try {
-          const scanner = new Html5QrcodeScanner(
-            'admin-qr-reader',
-            { fps: 10, qrbox: { width: 250, height: 250 } },
-            false
-          )
-          scannerInstanceRef.current = scanner
+          const html5QrCode = new Html5Qrcode('admin-qr-reader')
+          scannerInstanceRef.current = html5QrCode
 
-          scanner.render(
-            (decodedText: string) => {
-              handleScanResult(decodedText)
-            },
-            () => {}
-          )
+          const config = { fps: 10, qrbox: { width: 250, height: 250 } }
+
+          const startCamera = async () => {
+            try {
+              await html5QrCode.start(
+                { facingMode: 'environment' },
+                config,
+                (decodedText: string) => {
+                  handleScanResult(decodedText)
+                },
+                () => {}
+              )
+            } catch (err) {
+              console.warn('[Rear camera failed, trying user camera fallback]', err)
+              if (!isSubscribed) return
+              try {
+                await html5QrCode.start(
+                  { facingMode: 'user' },
+                  config,
+                  (decodedText: string) => {
+                    handleScanResult(decodedText)
+                  },
+                  () => {}
+                )
+              } catch (err2) {
+                console.error('[Camera initialization failed]', err2)
+                toast.error('Unable to start live camera. Please check camera permissions or upload a QR image.')
+              }
+            }
+          }
+
+          startCamera()
         } catch (err) {
-          console.error('[Scanner Init Error]', err)
+          console.error('[Scanner Init Exception]', err)
         }
       })
     }, 150)
@@ -245,8 +267,13 @@ export default function AdminQRAnalyticsPage() {
       isSubscribed = false
       if (timeoutId) clearTimeout(timeoutId)
       if (scannerInstanceRef.current) {
-        scannerInstanceRef.current.clear().catch(() => {})
+        const scanner = scannerInstanceRef.current
         scannerInstanceRef.current = null
+        if (scanner.isScanning) {
+          scanner.stop().then(() => scanner.clear()).catch(() => {})
+        } else {
+          scanner.clear().catch(() => {})
+        }
       }
     }
   }, [showScanner, redirects])
