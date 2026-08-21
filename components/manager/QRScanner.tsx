@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useEffect, useState, useRef } from 'react'
-import { Html5QrcodeScanner } from 'html5-qrcode'
 import { lookupQRToken, confirmCheckIn } from '@/lib/actions/manager'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
@@ -36,16 +35,35 @@ export function QRScanner() {
   const [isProcessing, setIsProcessing] = useState(false)
   const [isConfirming, setIsConfirming] = useState(false)
   const [toast, setToast] = useState<ToastState>(null)
-  const scannerRef = useRef<Html5QrcodeScanner | null>(null)
+  const scannerRef = useRef<any>(null)
 
   useEffect(() => {
-    scannerRef.current = new Html5QrcodeScanner(
-      "qr-reader",
-      { fps: 10, qrbox: { width: 250, height: 250 } },
-      false
-    )
-    scannerRef.current.render(onScanSuccess, () => {})
-    return () => { scannerRef.current?.clear().catch(console.error) }
+    let isSubscribed = true
+    const timer = setTimeout(async () => {
+      try {
+        const { Html5QrcodeScanner } = await import('html5-qrcode')
+        if (!isSubscribed) return
+        scannerRef.current = new Html5QrcodeScanner(
+          "qr-reader",
+          { fps: 10, qrbox: { width: 250, height: 250 } },
+          false
+        )
+        scannerRef.current.render(onScanSuccess, () => {})
+      } catch (err) {
+        console.error('Failed to initialize Html5QrcodeScanner:', err)
+      }
+    }, 100)
+
+    return () => {
+      isSubscribed = false
+      clearTimeout(timer)
+      if (scannerRef.current) {
+        try {
+          scannerRef.current.clear().catch(console.error)
+        } catch (_) {}
+        scannerRef.current = null
+      }
+    }
   }, [])
 
   async function onScanSuccess(decodedText: string) {

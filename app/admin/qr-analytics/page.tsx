@@ -62,9 +62,7 @@ export default function AdminQRAnalyticsPage() {
   const [savingEdit, setSavingEdit] = useState(false)
 
   const [showScanner, setShowScanner] = useState(false)
-  const [cameraError, setCameraError] = useState<'PERMISSION_DENIED' | 'NOT_FOUND' | 'BUSY' | 'UNSUPPORTED' | null>(null)
-  const scannerInstanceRef = React.useRef<any>(null)
-  const activeStreamRef = React.useRef<MediaStream | null>(null)
+  const scannerRef = React.useRef<any>(null)
 
   useEffect(() => {
     async function loadUser() {
@@ -209,147 +207,42 @@ export default function AdminQRAnalyticsPage() {
     }
   }
 
-  const stopCurrentCamera = async () => {
-    if (activeStreamRef.current) {
-      try {
-        activeStreamRef.current.getTracks().forEach((track) => track.stop())
-      } catch (_) {}
-      activeStreamRef.current = null
-    }
-    if (scannerInstanceRef.current) {
-      const scanner = scannerInstanceRef.current
-      scannerInstanceRef.current = null
-      try {
-        await scanner.stop()
-        scanner.clear()
-      } catch (_) {
-        try {
-          scanner.clear()
-        } catch (__) {}
-      }
-    }
-  }
-
-  const startLiveCameraStream = async () => {
-    console.log('Origin:', typeof window !== 'undefined' ? window.location.origin : '')
-    console.log('Protocol:', typeof window !== 'undefined' ? window.location.protocol : '')
-    console.log('Hostname:', typeof window !== 'undefined' ? window.location.hostname : '')
-    console.log('Port:', typeof window !== 'undefined' ? window.location.port : '')
-    console.log('Secure context:', typeof window !== 'undefined' ? window.isSecureContext : false)
-    console.log('Media devices:', typeof navigator !== 'undefined' ? navigator.mediaDevices : null)
-    console.log('getUserMedia:', typeof navigator !== 'undefined' ? navigator.mediaDevices?.getUserMedia : null)
-    console.log('Retry Camera Request clicked')
-
-    setCameraError(null)
-    await stopCurrentCamera()
-
-    if (typeof window === 'undefined' || !navigator?.mediaDevices?.getUserMedia) {
-      console.warn('getUserMedia API unavailable or non-secure context')
-      setCameraError('UNSUPPORTED')
-      return
-    }
-
-    let tempStream: MediaStream | null = null
-    console.log('REQUESTING CAMERA NOW')
-    try {
-      // Direct call to getUserMedia in response to user gesture
-      tempStream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: false,
-      })
-      console.log('CAMERA STREAM RECEIVED', tempStream)
-    } catch (err: any) {
-      console.error('CAMERA REQUEST FAILED', {
-        name: err?.name,
-        message: err?.message,
-        error: err,
-      })
-
-      const errName = err?.name || ''
-      const errStr = err?.toString ? err.toString() : ''
-
-      if (
-        errName === 'NotAllowedError' ||
-        errName === 'PermissionDeniedError' ||
-        errStr.includes('Permission denied') ||
-        errStr.includes('NotAllowedError')
-      ) {
-        setCameraError('PERMISSION_DENIED')
-      } else if (errName === 'NotFoundError' || errStr.includes('NotFoundError')) {
-        setCameraError('NOT_FOUND')
-      } else if (errName === 'NotReadableError' || errStr.includes('NotReadableError') || errStr.includes('Could not start video source')) {
-        setCameraError('BUSY')
-      } else {
-        setCameraError('UNSUPPORTED')
-      }
-      return
-    }
-
-    if (tempStream) {
-      tempStream.getTracks().forEach((t) => t.stop())
-    }
-
-    const targetElement = document.getElementById('admin-qr-reader')
-    if (!targetElement) return
-
-    try {
-      const { Html5Qrcode } = await import('html5-qrcode')
-      const html5QrCode = new Html5Qrcode('admin-qr-reader')
-      scannerInstanceRef.current = html5QrCode
-
-      const config = { fps: 10, qrbox: { width: 240, height: 240 } }
-
-      let devices: any[] = []
-      try {
-        devices = await Html5Qrcode.getCameras()
-      } catch (_) {}
-
-      if (devices && devices.length > 0) {
-        const backCam = devices.find(
-          (d) =>
-            d.label.toLowerCase().includes('back') ||
-            d.label.toLowerCase().includes('rear') ||
-            d.label.toLowerCase().includes('environment')
-        )
-        const selectedId = backCam ? backCam.id : devices[0].id
-        await html5QrCode.start(
-          selectedId,
-          config,
-          (text: string) => handleScanResult(text),
-          () => {}
-        )
-      } else {
-        await html5QrCode.start(
-          { facingMode: 'environment' },
-          config,
-          (text: string) => handleScanResult(text),
-          () => {}
-        )
-      }
-    } catch (startErr: any) {
-      console.warn('[Camera Start Exception]', startErr)
-    }
-  }
-
   useEffect(() => {
-    if (!showScanner) {
-      stopCurrentCamera()
-      return
-    }
+    if (!showScanner) return
 
     let isSubscribed = true
-    const timeoutId = setTimeout(() => {
-      if (isSubscribed) {
-        startLiveCameraStream()
+    const timer = setTimeout(async () => {
+      try {
+        const { Html5QrcodeScanner } = await import('html5-qrcode')
+        if (!isSubscribed) return
+        const scanner = new Html5QrcodeScanner(
+          'admin-qr-reader',
+          { fps: 10, qrbox: { width: 240, height: 240 } },
+          false
+        )
+        scannerRef.current = scanner
+        scanner.render(
+          (decodedText: string) => {
+            handleScanResult(decodedText)
+          },
+          () => {}
+        )
+      } catch (err) {
+        console.error('[QR ANALYTICS CAMERA] scanner init error:', err)
       }
-    }, 150)
+    }, 100)
 
     return () => {
       isSubscribed = false
-      clearTimeout(timeoutId)
-      stopCurrentCamera()
+      clearTimeout(timer)
+      if (scannerRef.current) {
+        try {
+          scannerRef.current.clear().catch(console.error)
+        } catch (_) {}
+        scannerRef.current = null
+      }
     }
-  }, [showScanner, redirects])
+  }, [showScanner])
 
   const copyShortLink = (code: string, id: string) => {
     const shortUrl = `https://cooking.nivet2006.in/r/${code}`
@@ -697,33 +590,9 @@ export default function AdminQRAnalyticsPage() {
             <div className="space-y-3">
               <div id="admin-qr-file-reader-hidden" className="hidden" />
 
-              {cameraError && (
-                <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-center space-y-2.5">
-                  <p className="text-xs font-bold text-amber-600 dark:text-amber-400">
-                    {cameraError === 'PERMISSION_DENIED' && 'Camera Permission Blocked'}
-                    {cameraError === 'NOT_FOUND' && 'No Camera Hardware Found'}
-                    {cameraError === 'BUSY' && 'Camera Currently In Use'}
-                    {cameraError === 'UNSUPPORTED' && 'Camera API Unavailable'}
-                  </p>
-                  <p className="font-mono text-[11px] text-[var(--fg-muted)] leading-relaxed">
-                    {cameraError === 'PERMISSION_DENIED' && 'Camera permission was denied in your browser site settings. Click Retry below to trigger the browser prompt, allow camera in site settings, or upload an image file.'}
-                    {cameraError === 'NOT_FOUND' && 'No camera hardware device was detected on your system. Please connect a webcam or upload a QR image file below.'}
-                    {cameraError === 'BUSY' && 'Camera is currently being used by another application or browser tab. Please close other camera apps and click retry.'}
-                    {cameraError === 'UNSUPPORTED' && 'Camera access is not supported by your current browser environment or context.'}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={startLiveCameraStream}
-                    className="px-4 py-2 rounded-xl bg-[var(--fg)] text-[var(--bg)] font-mono text-xs font-bold transition-all shadow-sm hover:opacity-90 active:scale-95"
-                  >
-                    Retry Camera Request
-                  </button>
-                </div>
-              )}
-
               <div
                 id="admin-qr-reader"
-                className="w-full bg-[var(--bg-subtle)] rounded-2xl overflow-hidden border border-[var(--border)] min-h-[260px] flex items-center justify-center block"
+                className="w-full bg-[var(--bg-subtle)] rounded-2xl overflow-hidden border border-[var(--border)] min-h-[260px] flex items-center justify-center block text-xs"
               />
 
               <div className="flex flex-col gap-2 pt-2 border-t border-[var(--border)]">

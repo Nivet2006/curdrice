@@ -265,7 +265,7 @@ function applySecurityHeaders(response: NextResponse, nonce: string, path: strin
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
   response.headers.set(
     'Permissions-Policy',
-    'camera=(), microphone=(), geolocation=(), payment=()'
+    'camera=(self), microphone=(), geolocation=(), payment=()'
   )
   response.headers.set('Cross-Origin-Opener-Policy', 'same-origin')
 
