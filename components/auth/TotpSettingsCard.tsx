@@ -19,8 +19,7 @@ export function TotpSettingsCard() {
   }, [])
 
   const fetchStatus = async () => {
-    const { data: { session } } = await supabase.auth.getSession()
-    const user = session?.user
+    const { data: { user } } = await supabase.auth.getUser()
     if (user) {
       const { data } = await supabase.from('profiles').select('totp_enabled').eq('id', user.id).single()
       setEnabled(!!data?.totp_enabled)

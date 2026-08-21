@@ -30,8 +30,7 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     async function loadData() {
-      const { data: { session } } = await supabase.auth.getSession()
-      const u = session?.user
+      const { data: { user: u } } = await supabase.auth.getUser()
       if (!u) return
       setUser(u)
 
