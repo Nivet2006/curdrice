@@ -128,14 +128,19 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {[
           {
+            href: '/qr',
+            title: 'QR Studio →',
+            desc: 'Generate custom branded QR codes with custom logos & glow effects.',
+          },
+          {
+            href: '/admin/qr-analytics',
+            title: 'QR Analytics & Redirects →',
+            desc: 'Track scan metrics, edit destination URLs & scan to identify QRs.',
+          },
+          {
             href: '/admin/users',
             title: 'Manage Users →',
             desc: 'Promote, demote, or suspend platform accounts.',
-          },
-          {
-            href: '/admin/attendance',
-            title: 'Attendance Portal →',
-            desc: 'View attendee list and issue manual check-in overrides.',
           },
           {
             href: '/admin/events',
@@ -143,16 +148,40 @@ export default function AdminDashboard() {
             desc: 'Browse and manage every event on the platform.',
           },
           {
+            href: '/admin/attendance',
+            title: 'Attendance Portal →',
+            desc: 'View attendee list and issue manual check-in overrides.',
+          },
+          {
             href: '/admin/scanner',
-            title: 'QR Scanner →',
+            title: 'QR Ticket Scanner →',
             desc: 'Scan student tickets to mark attendance in real time.',
+          },
+          {
+            href: '/admin/email',
+            title: 'Email Center →',
+            desc: 'Send platform-wide emails and system notification blasts.',
+          },
+          {
+            href: '/admin/bugs',
+            title: 'Bug Reports →',
+            desc: 'Inspect, triage, and resolve user-submitted bug reports.',
+          },
+          {
+            href: '/admin/cert',
+            title: 'Certificates →',
+            desc: 'Generate and issue official digital participation certificates.',
+          },
+          {
+            href: '/clubs',
+            title: 'Clubs Directory →',
+            desc: 'Explore all registered campus clubs and organizations.',
           },
           {
             href: '/admin/backup',
             title: 'System Backup →',
             desc: 'Download a full ZIP snapshot of all platform data.',
           },
-
           {
             href: '/admin/security',
             title: 'Security Portal →',

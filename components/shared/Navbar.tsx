@@ -113,15 +113,37 @@ export function Navbar({ role, name }: { role?: Role; name?: string }) {
       <div className="border-b border-[#e0e0e0] dark:border-[#2a2a2a] bg-white dark:bg-[#0a0a0a] sticky top-0 z-50 transition-colors">
         <nav className="h-[60px] flex items-center justify-between px-4 md:px-8 w-full max-w-[1280px] mx-auto">
           {/* Left: Logo & BrandMark */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-shrink-0">
             <Link href="/" className="font-mono font-bold text-[#0a0a0a] dark:text-white">
               {'>'} Club-Eve
             </Link>
             <BrandMark role={role} />
           </div>
 
+          {/* Middle: Desktop Navigation Links */}
+          <div className="hidden md:flex items-center gap-1 overflow-x-auto max-w-[60%] scrollbar-none px-2">
+            {navLinks.map((link) => {
+              const Icon = link.icon
+              const isActive = pathname === link.href
+              return (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium font-sans whitespace-nowrap transition-colors ${
+                    isActive
+                      ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 font-semibold'
+                      : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60'
+                  }`}
+                >
+                  <Icon size={14} />
+                  <span>{link.label}</span>
+                </Link>
+              )
+            })}
+          </div>
+
           {/* Right Controls: Theme Toggle, Pattern Picker, Role Indicator, Logout */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
             <ThemeToggle />
             <PatternPicker />
 
