@@ -220,44 +220,56 @@ export default function AdminQRAnalyticsPage() {
       const targetElement = document.getElementById('admin-qr-reader')
       if (!targetElement) return
 
-      import('html5-qrcode').then(({ Html5Qrcode }) => {
+      import('html5-qrcode').then(async ({ Html5Qrcode }) => {
         if (!isSubscribed) return
 
         try {
           const html5QrCode = new Html5Qrcode('admin-qr-reader')
           scannerInstanceRef.current = html5QrCode
 
-          const config = { fps: 10, qrbox: { width: 250, height: 250 } }
+          const config = { fps: 10, qrbox: { width: 240, height: 240 } }
 
-          const startCamera = async () => {
+          const startWithCameras = async () => {
+            try {
+              // 1. Try fetching camera devices list (works great on Desktop & Mobile)
+              const devices = await Html5Qrcode.getCameras()
+              if (!isSubscribed) return
+
+              if (devices && devices.length > 0) {
+                // Select back camera if available, or first camera device
+                const backCamera = devices.find((d) =>
+                  d.label.toLowerCase().includes('back') || d.label.toLowerCase().includes('rear') || d.label.toLowerCase().includes('environment')
+                )
+                const selectedCameraId = backCamera ? backCamera.id : devices[0].id
+
+                await html5QrCode.start(
+                  selectedCameraId,
+                  config,
+                  (decodedText: string) => handleScanResult(decodedText),
+                  () => {}
+                )
+                return
+              }
+            } catch (cameraEnumErr: any) {
+              console.warn('[Camera Enumeration Warning]', cameraEnumErr)
+            }
+
+            // 2. Fallback to facingMode constraint if getCameras returned empty or failed
+            if (!isSubscribed) return
             try {
               await html5QrCode.start(
                 { facingMode: 'environment' },
                 config,
-                (decodedText: string) => {
-                  handleScanResult(decodedText)
-                },
+                (decodedText: string) => handleScanResult(decodedText),
                 () => {}
               )
             } catch (err: any) {
-              const isPermissionError =
-                err?.name === 'NotAllowedError' ||
-                (err?.toString && err.toString().includes('NotAllowedError')) ||
-                (err?.message && err.message.includes('Permission denied'))
-
-              if (isPermissionError) {
-                if (isSubscribed) setCameraPermissionDenied(true)
-                return
-              }
-
               if (!isSubscribed) return
               try {
                 await html5QrCode.start(
                   { facingMode: 'user' },
                   config,
-                  (decodedText: string) => {
-                    handleScanResult(decodedText)
-                  },
+                  (decodedText: string) => handleScanResult(decodedText),
                   () => {}
                 )
               } catch (err2: any) {
@@ -266,9 +278,10 @@ export default function AdminQRAnalyticsPage() {
             }
           }
 
-          startCamera()
+          startWithCameras()
         } catch (err) {
           console.error('[Scanner Init Exception]', err)
+          if (isSubscribed) setCameraPermissionDenied(true)
         }
       })
     }, 150)
@@ -279,10 +292,14 @@ export default function AdminQRAnalyticsPage() {
       if (scannerInstanceRef.current) {
         const scanner = scannerInstanceRef.current
         scannerInstanceRef.current = null
-        if (scanner.isScanning) {
-          scanner.stop().then(() => scanner.clear()).catch(() => {})
-        } else {
-          scanner.clear().catch(() => {})
+        try {
+          scanner.stop().then(() => {
+            try { scanner.clear() } catch (_) {}
+          }).catch(() => {
+            try { scanner.clear() } catch (_) {}
+          })
+        } catch (_) {
+          // Never throw during cleanup
         }
       }
     }
