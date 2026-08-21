@@ -111,3 +111,68 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseAnonKey
+
+    const supabaseAuth = createServerClient(supabaseUrl, supabaseAnonKey, {
+      cookies: {
+        getAll() { return request.cookies.getAll() },
+        setAll() {},
+      },
+    })
+
+    const { data: { user } } = await supabaseAuth.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey)
+    const { data: profile } = await supabaseAdmin
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (!profile || profile.role !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
+    const body = await request.json()
+    const { id, destination_url, title } = body
+
+    if (!id) {
+      return NextResponse.json({ error: 'Redirect ID is required' }, { status: 400 })
+    }
+
+    if (!destination_url || typeof destination_url !== 'string' || !destination_url.trim()) {
+      return NextResponse.json({ error: 'Destination URL cannot be empty' }, { status: 400 })
+    }
+
+    let urlToSave = destination_url.trim()
+    if (!urlToSave.startsWith('http://') && !urlToSave.startsWith('https://')) {
+      urlToSave = `https://${urlToSave}`
+    }
+
+    const { data: updated, error } = await supabaseAdmin
+      .from('qr_redirects')
+      .update({
+        destination_url: urlToSave,
+        title: title !== undefined ? title : null,
+      })
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) {
+      console.error('[Admin QR Stats PATCH Error]', error)
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    return NextResponse.json({ success: true, redirect: updated })
+  } catch (err: any) {
+    console.error('[Admin QR Stats PATCH Exception]', err)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}

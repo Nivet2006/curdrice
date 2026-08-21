@@ -37,7 +37,13 @@ export default function CustomQRCreatorPage() {
 
   // Logo settings
   const [includeLogo, setIncludeLogo] = useState(true)
+  const [selectedLogo, setSelectedLogo] = useState<string>('/logo.png')
   const [logoRatio, setLogoRatio] = useState(0.22)
+  const [showLogoBg, setShowLogoBg] = useState(false)
+  const [logoOpacity, setLogoOpacity] = useState(1.0)
+  const [logoGlow, setLogoGlow] = useState(false)
+  const [logoGlowColor, setLogoGlowColor] = useState('#3b82f6')
+  const [logoGlowBlur, setLogoGlowBlur] = useState(20)
 
   // Link redirect creation state
   const [shortUrl, setShortUrl] = useState('')
@@ -90,8 +96,13 @@ export default function CustomQRCreatorPage() {
         fgColor: themeMode === 'light' ? '#0a0a0a' : themeMode === 'dark' ? '#ffffff' : fgColor,
         bgColor: themeMode === 'light' ? '#ffffff' : themeMode === 'dark' ? '#141414' : bgColor,
         transparentBg: false,
-        logoSrc: includeLogo ? '/logo.png' : '',
+        logoSrc: includeLogo ? selectedLogo : '',
         logoRatio,
+        showLogoBg,
+        logoOpacity,
+        logoGlow,
+        logoGlowColor,
+        logoGlowBlur,
         size: 1000,
       })
     }
@@ -102,12 +113,17 @@ export default function CustomQRCreatorPage() {
         fgColor: themeMode === 'light' ? '#0a0a0a' : themeMode === 'dark' ? '#ffffff' : fgColor,
         bgColor: themeMode === 'light' ? '#ffffff' : themeMode === 'dark' ? '#141414' : bgColor,
         transparentBg: true,
-        logoSrc: includeLogo ? '/logo.png' : '',
+        logoSrc: includeLogo ? selectedLogo : '',
         logoRatio,
+        showLogoBg,
+        logoOpacity,
+        logoGlow,
+        logoGlowColor,
+        logoGlowBlur,
         size: 1000,
       })
     }
-  }, [qrTargetText, themeMode, fgColor, bgColor, includeLogo, logoRatio])
+  }, [qrTargetText, themeMode, fgColor, bgColor, includeLogo, selectedLogo, logoRatio, showLogoBg, logoOpacity, logoGlow, logoGlowColor, logoGlowBlur])
 
   // Create Short Redirect Link
   const handleCreateRedirect = async (e: React.FormEvent) => {
@@ -412,7 +428,7 @@ export default function CustomQRCreatorPage() {
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-semibold flex items-center gap-2">
                     <ImageIcon size={18} className="text-[var(--fg-muted)]" />
-                    ClubEve Branding Logo Overlay
+                    Branding Logo Overlay
                   </span>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
@@ -426,20 +442,164 @@ export default function CustomQRCreatorPage() {
                 </div>
 
                 {includeLogo && (
-                  <div className="p-4 rounded-xl bg-[var(--bg-subtle)] border border-[var(--border)] space-y-2">
-                    <div className="flex justify-between font-mono text-xs">
-                      <span className="text-[var(--fg-muted)]">Logo Scale Ratio</span>
-                      <span className="font-bold">{Math.round(logoRatio * 100)}%</span>
+                  <div className="p-4 rounded-xl bg-[var(--bg-subtle)] border border-[var(--border)] space-y-4">
+                    {/* Logo Choice */}
+                    <div>
+                      <label className="block font-mono text-xs uppercase tracking-wider text-[var(--fg-muted)] mb-2 font-semibold">
+                        Select Branding Logo
+                      </label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedLogo('/logo.png')}
+                          className={`p-3 rounded-xl border flex items-center gap-3 transition-all ${
+                            selectedLogo === '/logo.png'
+                              ? 'border-[var(--fg)] bg-[var(--bg-card)] font-bold shadow-sm'
+                              : 'border-[var(--border)] bg-transparent hover:border-[var(--fg-muted)]'
+                          }`}
+                        >
+                          <img src="/logo.png" alt="ClubEve Logo" className="w-7 h-7 object-contain rounded" />
+                          <div className="text-left">
+                            <p className="text-xs font-semibold">ClubEve Logo</p>
+                            <p className="font-mono text-[10px] text-[var(--fg-muted)]">/logo.png</p>
+                          </div>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setSelectedLogo('/onepercent.png')}
+                          className={`p-3 rounded-xl border flex items-center gap-3 transition-all ${
+                            selectedLogo === '/onepercent.png'
+                              ? 'border-[var(--fg)] bg-[var(--bg-card)] font-bold shadow-sm'
+                              : 'border-[var(--border)] bg-transparent hover:border-[var(--fg-muted)]'
+                          }`}
+                        >
+                          <img src="/onepercent.png" alt="One Percent Logo" className="w-7 h-7 object-contain rounded" />
+                          <div className="text-left">
+                            <p className="text-xs font-semibold">One Percent Logo</p>
+                            <p className="font-mono text-[10px] text-[var(--fg-muted)]">/onepercent.png</p>
+                          </div>
+                        </button>
+                      </div>
                     </div>
-                    <input
-                      type="range"
-                      min="0.15"
-                      max="0.30"
-                      step="0.01"
-                      value={logoRatio}
-                      onChange={(e) => setLogoRatio(parseFloat(e.target.value))}
-                      className="w-full accent-[var(--fg)]"
-                    />
+
+                    {/* Logo Scale Ratio & Opacity */}
+                    <div className="pt-3 border-t border-[var(--border)] grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <div className="flex justify-between font-mono text-xs">
+                          <span className="text-[var(--fg-muted)] font-semibold">Scale Size</span>
+                          <span className="font-bold">{Math.round(logoRatio * 100)}%</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="0.15"
+                          max="0.32"
+                          step="0.01"
+                          value={logoRatio}
+                          onChange={(e) => setLogoRatio(parseFloat(e.target.value))}
+                          className="w-full accent-[var(--fg)]"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <div className="flex justify-between font-mono text-xs">
+                          <span className="text-[var(--fg-muted)] font-semibold">Opacity</span>
+                          <span className="font-bold">{Math.round(logoOpacity * 100)}%</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="0.1"
+                          max="1.0"
+                          step="0.05"
+                          value={logoOpacity}
+                          onChange={(e) => setLogoOpacity(parseFloat(e.target.value))}
+                          className="w-full accent-[var(--fg)]"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Background Badge Toggle */}
+                    <div className="pt-3 border-t border-[var(--border)] flex items-center justify-between">
+                      <div>
+                        <p className="text-xs font-semibold">Solid Background Badge</p>
+                        <p className="font-mono text-[10px] text-[var(--fg-muted)]">
+                          {showLogoBg ? 'Enabled (Square backdrop behind logo)' : 'Disabled (Transparent logo backdrop)'}
+                        </p>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={showLogoBg}
+                          onChange={(e) => setShowLogoBg(e.target.checked)}
+                          className="sr-only peer"
+                        />
+                        <div className="w-9 h-5 bg-zinc-200 peer-focus:outline-none rounded-full peer dark:bg-zinc-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[var(--fg)]"></div>
+                      </label>
+                    </div>
+
+                    {/* Logo Glow Controls */}
+                    <div className="pt-3 border-t border-[var(--border)] space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-xs font-semibold flex items-center gap-1.5">
+                            <Sparkles size={14} className="text-amber-500" />
+                            Logo Outer Glow / Aura
+                          </p>
+                          <p className="font-mono text-[10px] text-[var(--fg-muted)]">
+                            Add a vibrant glowing outline shadow
+                          </p>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={logoGlow}
+                            onChange={(e) => setLogoGlow(e.target.checked)}
+                            className="sr-only peer"
+                          />
+                          <div className="w-9 h-5 bg-zinc-200 peer-focus:outline-none rounded-full peer dark:bg-zinc-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[var(--fg)]"></div>
+                        </label>
+                      </div>
+
+                      {logoGlow && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-lg bg-[var(--bg-card)] border border-[var(--border)]">
+                          <div>
+                            <label className="block font-mono text-[10px] uppercase tracking-wider text-[var(--fg-muted)] mb-1 font-semibold">
+                              Glow Color
+                            </label>
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="color"
+                                value={logoGlowColor}
+                                onChange={(e) => setLogoGlowColor(e.target.value)}
+                                className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
+                              />
+                              <input
+                                type="text"
+                                value={logoGlowColor}
+                                onChange={(e) => setLogoGlowColor(e.target.value)}
+                                className="w-full font-mono text-xs px-2 py-1 rounded border border-[var(--border)] bg-[var(--bg-subtle)]"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="space-y-1">
+                            <div className="flex justify-between font-mono text-[10px]">
+                              <span className="text-[var(--fg-muted)] font-semibold">Glow Blur Radius</span>
+                              <span className="font-bold">{logoGlowBlur}px</span>
+                            </div>
+                            <input
+                              type="range"
+                              min="5"
+                              max="50"
+                              step="1"
+                              value={logoGlowBlur}
+                              onChange={(e) => setLogoGlowBlur(parseInt(e.target.value))}
+                              className="w-full accent-[var(--fg)]"
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>

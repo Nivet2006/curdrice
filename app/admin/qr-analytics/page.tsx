@@ -13,7 +13,10 @@ import {
   RefreshCw,
   TrendingUp,
   Globe,
-  Calendar
+  Calendar,
+  Pencil,
+  X,
+  ScanLine
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Navbar } from '@/components/shared/Navbar'
@@ -49,6 +52,14 @@ export default function AdminQRAnalyticsPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+
+  const [editingItem, setEditingItem] = useState<RedirectItem | null>(null)
+  const [editUrl, setEditUrl] = useState('')
+  const [editTitle, setEditTitle] = useState('')
+  const [savingEdit, setSavingEdit] = useState(false)
+
+  const [showScanner, setShowScanner] = useState(false)
+  const scannerInstanceRef = React.useRef<any>(null)
 
   useEffect(() => {
     async function loadUser() {
@@ -111,6 +122,102 @@ export default function AdminQRAnalyticsPage() {
     }
   }
 
+  const handleStartEdit = (item: RedirectItem) => {
+    setEditingItem(item)
+    setEditUrl(item.destination_url)
+    setEditTitle(item.title || '')
+  }
+
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingItem) return
+    if (!editUrl.trim()) {
+      toast.error('Destination URL cannot be empty')
+      return
+    }
+
+    setSavingEdit(true)
+    try {
+      const res = await fetch('/api/admin/qr-stats', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: editingItem.id,
+          destination_url: editUrl,
+          title: editTitle || null,
+        }),
+      })
+
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to update destination URL')
+
+      toast.success('Destination URL updated successfully!')
+      setEditingItem(null)
+      fetchStats()
+    } catch (err: any) {
+      toast.error(err.message || 'Error updating link')
+    } finally {
+      setSavingEdit(false)
+    }
+  }
+
+  const handleScanResult = (decodedText: string) => {
+    let extractedCode = ''
+    const match = decodedText.match(/\/r\/([a-zA-Z0-9_-]+)/)
+    if (match) {
+      extractedCode = match[1].toLowerCase()
+    } else {
+      extractedCode = decodedText.trim().toLowerCase()
+    }
+
+    const matched = redirects.find(
+      (r) =>
+        r.code.toLowerCase() === extractedCode ||
+        r.destination_url.toLowerCase() === decodedText.toLowerCase()
+    )
+
+    if (matched) {
+      toast.success(`Identified QR Code: /r/${matched.code}`)
+      setShowScanner(false)
+      setSearchTerm(matched.code)
+      handleStartEdit(matched)
+    } else {
+      toast.error(`No matching redirect entry found for: "${decodedText}"`)
+    }
+  }
+
+  useEffect(() => {
+    if (!showScanner) return
+
+    let isSubscribed = true
+
+    import('html5-qrcode').then(({ Html5QrcodeScanner }) => {
+      if (!isSubscribed) return
+
+      const scanner = new Html5QrcodeScanner(
+        'admin-qr-reader',
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        false
+      )
+      scannerInstanceRef.current = scanner
+
+      scanner.render(
+        (decodedText: string) => {
+          handleScanResult(decodedText)
+        },
+        () => {}
+      )
+    })
+
+    return () => {
+      isSubscribed = false
+      if (scannerInstanceRef.current) {
+        scannerInstanceRef.current.clear().catch(() => {})
+        scannerInstanceRef.current = null
+      }
+    }
+  }, [showScanner, redirects])
+
   const copyShortLink = (code: string, id: string) => {
     const origin = typeof window !== 'undefined' ? window.location.origin : ''
     const shortUrl = `${origin}/r/${code}`
@@ -146,6 +253,12 @@ export default function AdminQRAnalyticsPage() {
           </div>
 
           <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowScanner(true)}
+              className="px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-mono font-bold uppercase tracking-wider flex items-center gap-2 transition-all shadow-sm"
+            >
+              <ScanLine size={16} /> Scan & Identify QR
+            </button>
             <a
               href="/qr"
               target="_blank"
@@ -297,14 +410,23 @@ export default function AdminQRAnalyticsPage() {
                       </td>
 
                       <td className="py-4 px-6 text-right">
-                        <button
-                          onClick={() => handleDelete(item.id)}
-                          disabled={deletingId === item.id}
-                          className="p-2 rounded-xl text-rose-500 hover:bg-rose-500/10 transition-colors"
-                          title="Delete redirect link"
-                        >
-                          <Trash2 size={16} />
-                        </button>
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            onClick={() => handleStartEdit(item)}
+                            className="p-2 rounded-xl text-[var(--fg-muted)] hover:text-[var(--fg)] hover:bg-[var(--bg-subtle)] transition-colors"
+                            title="Edit destination URL"
+                          >
+                            <Pencil size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(item.id)}
+                            disabled={deletingId === item.id}
+                            className="p-2 rounded-xl text-rose-500 hover:bg-rose-500/10 transition-colors"
+                            title="Delete redirect link"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -314,6 +436,133 @@ export default function AdminQRAnalyticsPage() {
           </div>
         </div>
       </main>
+
+      {/* Edit Redirect Destination Modal */}
+      {editingItem && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-[var(--bg-card)] border border-[var(--border)] rounded-[2rem] p-6 max-w-lg w-full shadow-2xl space-y-5"
+          >
+            <div className="flex items-center justify-between border-b border-[var(--border)] pb-4">
+              <div>
+                <h3 className="text-lg font-bold tracking-tight text-[var(--fg)] flex items-center gap-2">
+                  <Pencil size={18} />
+                  Edit Target Address
+                </h3>
+                <p className="font-mono text-xs text-[var(--fg-muted)] mt-0.5">
+                  /r/{editingItem.code}
+                </p>
+              </div>
+              <button
+                onClick={() => setEditingItem(null)}
+                className="p-2 rounded-xl text-[var(--fg-muted)] hover:text-[var(--fg)] hover:bg-[var(--bg-subtle)] transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEdit} className="space-y-4">
+              <div>
+                <label className="block font-mono text-xs uppercase tracking-wider text-[var(--fg-muted)] mb-1.5 font-semibold">
+                  Destination Target URL *
+                </label>
+                <input
+                  type="url"
+                  required
+                  value={editUrl}
+                  onChange={(e) => setEditUrl(e.target.value)}
+                  placeholder="https://example.com/new-page"
+                  className="w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] text-sm font-sans focus:outline-none focus:border-[var(--fg)] transition-all"
+                />
+                <p className="text-[11px] text-[var(--fg-muted)] mt-1">
+                  All scans of <span className="font-mono font-bold">/r/{editingItem.code}</span> will automatically redirect to this address.
+                </p>
+              </div>
+
+              <div>
+                <label className="block font-mono text-xs uppercase tracking-wider text-[var(--fg-muted)] mb-1.5 font-semibold">
+                  Label / Title (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  placeholder="e.g. Updated Hackathon Landing Page"
+                  className="w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] text-sm font-sans focus:outline-none focus:border-[var(--fg)] transition-all"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--border)]">
+                <button
+                  type="button"
+                  onClick={() => setEditingItem(null)}
+                  className="px-4 py-2.5 rounded-xl border border-[var(--border)] text-xs font-bold font-mono hover:bg-[var(--bg-subtle)] transition-all"
+                >
+                  CANCEL
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingEdit}
+                  className="px-5 py-2.5 rounded-xl bg-[var(--fg)] text-[var(--bg)] text-xs font-bold font-mono hover:opacity-90 transition-all flex items-center gap-2 shadow-sm"
+                >
+                  {savingEdit ? <RefreshCw className="animate-spin" size={14} /> : <Check size={14} />}
+                  SAVE TARGET URL
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      )}
+      {/* Camera Scanner Modal for QR Identification */}
+      {showScanner && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-[var(--bg-card)] border border-[var(--border)] rounded-[2rem] p-6 max-w-md w-full shadow-2xl space-y-5"
+          >
+            <div className="flex items-center justify-between border-b border-[var(--border)] pb-4">
+              <div>
+                <h3 className="text-lg font-bold tracking-tight text-[var(--fg)] flex items-center gap-2">
+                  <ScanLine size={20} className="text-emerald-500" />
+                  Scan & Identify QR Code
+                </h3>
+                <p className="font-mono text-xs text-[var(--fg-muted)] mt-0.5">
+                  Point camera at physical QR code to locate & edit target address
+                </p>
+              </div>
+              <button
+                onClick={() => setShowScanner(false)}
+                className="p-2 rounded-xl text-[var(--fg-muted)] hover:text-[var(--fg)] hover:bg-[var(--bg-subtle)] transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <div
+                id="admin-qr-reader"
+                className="w-full bg-[var(--bg-subtle)] rounded-2xl overflow-hidden border border-[var(--border)] min-h-[260px] flex items-center justify-center"
+              />
+              <p className="text-center font-mono text-[11px] text-[var(--fg-muted)]">
+                Hold your camera steady over the QR code image
+              </p>
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <button
+                type="button"
+                onClick={() => setShowScanner(false)}
+                className="w-full py-3 rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] text-xs font-bold font-mono hover:bg-[var(--bg-card)] transition-all"
+              >
+                CLOSE CAMERA
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   )
 }

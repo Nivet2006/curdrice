@@ -9,6 +9,11 @@ export interface QRCanvasOptions {
   logoRatio?: number // Ratio relative to QR width, e.g. 0.22
   logoPadding?: number
   size?: number
+  showLogoBg?: boolean
+  logoOpacity?: number
+  logoGlow?: boolean
+  logoGlowColor?: string
+  logoGlowBlur?: number
 }
 
 /**
@@ -16,6 +21,7 @@ export interface QRCanvasOptions {
   - Custom dark/light colors
   - Transparent backgrounds
   - Centered logo with clear contrast padding
+  - Optional logo glow & opacity
  */
 export async function renderQRToCanvas(
   canvas: HTMLCanvasElement,
@@ -30,6 +36,11 @@ export async function renderQRToCanvas(
     logoRatio = 0.22,
     logoPadding = 6,
     size = 1000,
+    showLogoBg = false,
+    logoOpacity = 1.0,
+    logoGlow = false,
+    logoGlowColor = '#3b82f6',
+    logoGlowBlur = 20,
   } = options
 
   canvas.width = size
@@ -77,23 +88,34 @@ export async function renderQRToCanvas(
         const logoY = (size - logoSize) / 2
         const totalPad = logoPadding * (size / 500)
 
-        // Draw background badge behind logo for high contrast & readability
-        ctx.fillStyle = transparentBg ? (bgColor !== 'transparent' ? bgColor : '#FFFFFF') : bgColor
-        ctx.beginPath()
-        const borderRadius = (logoSize + totalPad * 2) * 0.2
-        const padX = logoX - totalPad
-        const padY = logoY - totalPad
-        const padW = logoSize + totalPad * 2
-        const padH = logoSize + totalPad * 2
-
-        ctx.roundRect(padX, padY, padW, padH, borderRadius)
-        ctx.fill()
-
-        // Draw Logo Image inside rounded clip
         ctx.save()
-        ctx.beginPath()
-        ctx.roundRect(logoX, logoY, logoSize, logoSize, borderRadius * 0.75)
-        ctx.clip()
+
+        // 4a. Draw background badge behind logo if showLogoBg is true
+        if (showLogoBg) {
+          ctx.fillStyle = transparentBg ? (bgColor !== 'transparent' ? bgColor : '#FFFFFF') : bgColor
+          ctx.beginPath()
+          const borderRadius = (logoSize + totalPad * 2) * 0.2
+          const padX = logoX - totalPad
+          const padY = logoY - totalPad
+          const padW = logoSize + totalPad * 2
+          const padH = logoSize + totalPad * 2
+
+          ctx.roundRect(padX, padY, padW, padH, borderRadius)
+          ctx.fill()
+        }
+
+        // 4b. Set opacity
+        ctx.globalAlpha = Math.max(0, Math.min(1, logoOpacity))
+
+        // 4c. Set Glow effect if enabled
+        if (logoGlow) {
+          ctx.shadowColor = logoGlowColor || '#3b82f6'
+          ctx.shadowBlur = logoGlowBlur * (size / 500)
+          ctx.shadowOffsetX = 0
+          ctx.shadowOffsetY = 0
+        }
+
+        // 4d. Draw Logo Image
         ctx.drawImage(img, logoX, logoY, logoSize, logoSize)
         ctx.restore()
 
