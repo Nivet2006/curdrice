@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { UserTable } from '@/components/admin/UserTable'
 import { UserExportMenu } from '@/components/admin/UserExportMenu'
 import { CreateUserModal } from '@/components/admin/CreateUserModal'
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 
 export default async function AdminUsersPage({
   searchParams
@@ -24,17 +25,18 @@ export default async function AdminUsersPage({
     .limit(500)
 
   return (
-    <div className="w-full pb-16">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-6">
-        <div>
-          <h1 className="text-3xl font-black tracking-tight mb-2 text-[#0a0a0a]">Manage Users</h1>
-          <p className="font-mono text-sm text-[#555555]">Promote, demote, or suspend platform accounts</p>
-        </div>
-        <div className="flex flex-col items-start md:items-end gap-3 z-10 relative">
-          <CreateUserModal />
-          <UserExportMenu users={(profiles || []) as any[]} />
-        </div>
-      </div>
+    <div className="w-full pb-16 space-y-6">
+      <AdminPageHeader
+        breadcrumbs={[{ label: 'People' }, { label: 'Users' }]}
+        title="Manage Users"
+        subtitle={`Total ${profiles?.length || 0} user accounts. Promote, demote, or suspend platform accounts.`}
+        actions={
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <CreateUserModal />
+            <UserExportMenu users={(profiles || []) as any[]} />
+          </div>
+        }
+      />
 
       <UserTable users={(profiles || []) as any} />
     </div>

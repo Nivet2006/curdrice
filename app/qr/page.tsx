@@ -235,7 +235,7 @@ export default function CustomQRCreatorPage() {
                       setUrl(e.target.value)
                       setShortUrl('')
                     }}
-                    placeholder="https://clubeve.nivet2006.in/events/my-event"
+                    placeholder="https://cooking.nivet2006.in/events/my-event"
                     className="w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] text-sm font-sans focus:outline-none focus:border-[var(--fg)] transition-all"
                   />
                 </div>

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { Plus } from 'lucide-react'
 import { AdminEventList } from '@/components/admin/AdminEventList'
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 
 export default async function AdminEventsPage() {
   const supabase = await createClient()
@@ -18,18 +19,19 @@ export default async function AdminEventsPage() {
   const events = withDynamicEventStatus((allEvents as (Event & { registrations: { count: number }[] })[]) || [])
 
   return (
-    <div className="w-full">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
-        <div>
-          <h1 className="text-3xl font-black tracking-tight mb-2 text-[#0a0a0a]">All Events</h1>
-          <p className="font-mono text-sm text-[#555555]">System-wide event oversight</p>
-        </div>
-        <Link href="/manager/events/create">
-          <Button variant="primary" className="bg-[#0a0a0a] flex items-center gap-2">
-            <Plus size={16} /> Create Event
-          </Button>
-        </Link>
-      </div>
+    <div className="w-full space-y-6">
+      <AdminPageHeader
+        breadcrumbs={[{ label: 'Events' }, { label: 'All Events' }]}
+        title="All Events"
+        subtitle={`System-wide event oversight. Total ${events.length} campus events.`}
+        actions={
+          <Link href="/teacher/events/create">
+            <Button variant="primary" className="bg-[var(--fg)] text-[var(--bg)] flex items-center gap-2">
+              <Plus size={16} /> Create Event
+            </Button>
+          </Link>
+        }
+      />
 
       <AdminEventList events={events} />
     </div>

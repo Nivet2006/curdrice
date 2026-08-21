@@ -16,11 +16,13 @@ import {
   Calendar,
   Pencil,
   X,
-  ScanLine
+  ScanLine,
+  Download
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { Navbar } from '@/components/shared/Navbar'
 import { supabase } from '@/lib/supabase/client'
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
+import { renderQRToCanvas } from '@/lib/utils/qr-canvas'
 
 interface RedirectItem {
   id: string
@@ -219,12 +221,34 @@ export default function AdminQRAnalyticsPage() {
   }, [showScanner, redirects])
 
   const copyShortLink = (code: string, id: string) => {
-    const origin = typeof window !== 'undefined' ? window.location.origin : ''
-    const shortUrl = `${origin}/r/${code}`
+    const shortUrl = `https://cooking.nivet2006.in/r/${code}`
     navigator.clipboard.writeText(shortUrl)
     setCopiedId(id)
     toast.success('Copied short link to clipboard!')
     setTimeout(() => setCopiedId(null), 2000)
+  }
+
+  const handleDownloadQR = async (item: RedirectItem) => {
+    try {
+      const targetUrl = `https://cooking.nivet2006.in/r/${item.code}`
+
+      const canvas = document.createElement('canvas')
+      await renderQRToCanvas(canvas, {
+        text: targetUrl,
+        size: 1000,
+        logoSrc: '/logo.png',
+        showLogoBg: false,
+      })
+
+      const imageUri = canvas.toDataURL('image/png')
+      const link = document.createElement('a')
+      link.download = `QR_${item.code}.png`
+      link.href = imageUri
+      link.click()
+      toast.success(`Downloaded QR image for /r/${item.code}`)
+    } catch (err: any) {
+      toast.error('Failed to generate QR download: ' + err.message)
+    }
   }
 
   const filteredRedirects = redirects.filter((r) => {
@@ -237,21 +261,12 @@ export default function AdminQRAnalyticsPage() {
   })
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)] transition-colors duration-200">
-      <Navbar role={role} name={name} />
-
-      <main className="max-w-[1280px] mx-auto px-4 md:px-8 py-10 space-y-8">
-        {/* Page Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-[var(--border)] pb-6">
-          <div>
-            <h1 className="text-3xl font-black tracking-tight mb-2 text-[var(--fg)]">
-              QR & Redirect Analytics
-            </h1>
-            <p className="font-mono text-sm text-[var(--fg-muted)]">
-              Track generated ClubEve QR codes, scan frequencies, and short link performance
-            </p>
-          </div>
-
+    <div className="w-full space-y-8">
+      <AdminPageHeader
+        breadcrumbs={[{ label: 'Operations' }, { label: 'QR Analytics' }]}
+        title="QR & Redirect Analytics"
+        subtitle="Track generated ClubEve QR codes, scan frequencies, edit target URLs, and identify QR codes."
+        actions={
           <div className="flex items-center gap-3">
             <button
               onClick={() => setShowScanner(true)}
@@ -274,7 +289,8 @@ export default function AdminQRAnalyticsPage() {
               <RefreshCw className={loading ? 'animate-spin' : ''} size={18} />
             </button>
           </div>
-        </div>
+        }
+      />
 
         {/* KPI Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
@@ -412,6 +428,13 @@ export default function AdminQRAnalyticsPage() {
                       <td className="py-4 px-6 text-right">
                         <div className="flex items-center justify-end gap-1">
                           <button
+                            onClick={() => handleDownloadQR(item)}
+                            className="p-2 rounded-xl text-[var(--fg-muted)] hover:text-[var(--fg)] hover:bg-[var(--bg-subtle)] transition-colors"
+                            title="Download High-Res QR Code PNG"
+                          >
+                            <Download size={16} />
+                          </button>
+                          <button
                             onClick={() => handleStartEdit(item)}
                             className="p-2 rounded-xl text-[var(--fg-muted)] hover:text-[var(--fg)] hover:bg-[var(--bg-subtle)] transition-colors"
                             title="Edit destination URL"
@@ -435,7 +458,6 @@ export default function AdminQRAnalyticsPage() {
             </table>
           </div>
         </div>
-      </main>
 
       {/* Edit Redirect Destination Modal */}
       {editingItem && (

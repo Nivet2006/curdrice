@@ -5,6 +5,7 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { Download, Save, FileText, Camera, Printer, Trash2, Send, Smile, MessageSquare } from 'lucide-react'
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 
 type Report = {
   id: string
@@ -387,34 +388,31 @@ export default function AdminBugsPage() {
 
   return (
     <>
-      <div className="p-6 max-w-7xl mx-auto min-h-screen print:hidden" style={{ color: 'var(--fg)' }}>
-      <header className="mb-8 flex justify-between items-end">
-        <div>
-          <h1 className="text-3xl font-black tracking-tighter uppercase flex items-center gap-3" style={{ color: 'var(--fg)' }}>
-            <span>🐛</span> Bug Central
-          </h1>
-          <p className="font-mono text-[10px] mt-1 uppercase tracking-[0.2em]" style={{ color: 'var(--fg-faint)' }}>Administrative Debugging Suite</p>
-        </div>
-
-        {/* Global Toggle */}
-        <div className="mx-auto flex items-center gap-4 bg-[var(--bg-subtle)] border border-[var(--border)] px-4 py-2 rounded-2xl">
-           <div className="flex flex-col text-right">
-              <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: widgetActive ? '#22c55e' : '#ef4444' }}>
-                {widgetActive ? 'WIDGET LIVE' : 'WIDGET OFFLINE'}
-              </span>
-              <span className="text-[8px] font-medium opacity-40 uppercase">Global Visibility Control</span>
-           </div>
-           
-           <button 
-             onClick={toggleWidget}
-             disabled={settingLoading}
-             className={`relative w-12 h-6 rounded-full p-1 transition-all duration-300 ${widgetActive ? 'bg-green-500' : 'bg-red-500/20'}`}
-           >
-              <div className={`w-4 h-4 rounded-full bg-white transition-all duration-300 shadow-sm ${widgetActive ? 'translate-x-6' : 'translate-x-0'}`} />
-           </button>
-        </div>
+      <div className="w-full pb-16 print:hidden">
+        <AdminPageHeader
+          breadcrumbs={[{ label: 'System' }, { label: 'Bug Reports' }]}
+          title="Bug Central"
+          subtitle="Administrative Debugging Suite. Inspect, triage, and resolve user-submitted technical issues."
+          actions={
+            <div className="flex items-center gap-4 bg-[var(--bg-subtle)] border border-[var(--border)] px-4 py-2 rounded-2xl">
+              <div className="flex flex-col text-right">
+                <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: widgetActive ? '#22c55e' : '#ef4444' }}>
+                  {widgetActive ? 'WIDGET LIVE' : 'WIDGET OFFLINE'}
+                </span>
+                <span className="text-[8px] font-medium opacity-40 uppercase">Global Visibility Control</span>
+              </div>
+              <button 
+                onClick={toggleWidget}
+                disabled={settingLoading}
+                className={`relative w-12 h-6 rounded-full p-1 transition-all duration-300 ${widgetActive ? 'bg-green-500' : 'bg-red-500/20'}`}
+              >
+                <div className={`w-4 h-4 rounded-full bg-white transition-all duration-300 shadow-sm ${widgetActive ? 'translate-x-6' : 'translate-x-0'}`} />
+              </button>
+            </div>
+          }
+        />
         
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 mb-6">
           {activeTab === 'reports' && reports.length > 0 && (
             <button 
               onClick={() => exportToExcel(reports, 'All_Bug_Reports')}
@@ -448,7 +446,6 @@ export default function AdminBugsPage() {
             >ACCESS KEYS</button>
           </div>
         </div>
-      </header>
 
       {activeTab === 'reports' ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start animate-in fade-in slide-in-from-bottom-2 duration-500">

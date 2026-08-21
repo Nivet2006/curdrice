@@ -75,10 +75,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const qrDomain = process.env.NEXT_PUBLIC_BASE_URL || 'https://cooking.nivet2006.in'
+
     return NextResponse.json({
       success: true,
       redirect: data,
-      short_url: `${request.nextUrl.origin}/r/${code}`,
+      short_url: `https://cooking.nivet2006.in/r/${code}`,
     })
   } catch (err: any) {
     console.error('[QR Redirect API] Server Error:', err)

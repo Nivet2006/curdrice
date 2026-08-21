@@ -6,6 +6,7 @@ import CombinedSheetButton from '@/components/admin/CombinedSheetButton'
 import { withDynamicEventStatus } from '@/lib/event-utils'
 import { EventStatusBadge } from '@/components/ui/EventStatusBadge'
 import type { Event as EventType } from '@/lib/types'
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 
 export default async function AdminAttendanceDirectory() {
   const supabase = await createClient()
@@ -19,14 +20,13 @@ export default async function AdminAttendanceDirectory() {
   const processedEvents = withDynamicEventStatus((events || []) as EventType[])
 
   return (
-    <div className="w-full pb-32">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
-        <div>
-          <h1 className="text-3xl font-black tracking-tight text-[#0a0a0a] mb-2">Attendance Portal</h1>
-          <p className="font-mono text-sm text-[#555555]">Select an event to view attendee list, monitor real-time check-ins, or issue manual overrides.</p>
-        </div>
-        <CombinedSheetButton />
-      </div>
+    <div className="w-full pb-32 space-y-6">
+      <AdminPageHeader
+        breadcrumbs={[{ label: 'Operations' }, { label: 'Attendance Portal' }]}
+        title="Attendance Portal"
+        subtitle="Select an event to view attendee rosters, monitor real-time check-in counts, or issue manual overrides."
+        actions={<CombinedSheetButton />}
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         {processedEvents.map((event: any) => (
