@@ -20,6 +20,7 @@ import {
 import { renderQRToCanvas, downloadCanvasAsImage } from '@/lib/utils/qr-canvas'
 import { toast } from 'sonner'
 import { Navbar } from '@/components/shared/Navbar'
+import { AdminHeader } from '@/components/admin/AdminHeader'
 import { supabase } from '@/lib/supabase/client'
 
 export default function CustomQRCreatorPage() {
@@ -179,8 +180,12 @@ export default function CustomQRCreatorPage() {
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)] transition-colors duration-200">
-      {/* Platform Standard Navigation Bar */}
-      <Navbar role={role} name={name} />
+      {/* Role-Specific Navigation Bar */}
+      {role === 'admin' ? (
+        <AdminHeader role="admin" name={name || undefined} />
+      ) : (
+        <Navbar role={role || undefined} name={name || undefined} />
+      )}
 
       {/* Main Content Area */}
       <main className="max-w-[1280px] mx-auto px-4 md:px-8 py-10 space-y-8">
