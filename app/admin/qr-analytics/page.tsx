@@ -220,11 +220,16 @@ export default function AdminQRAnalyticsPage() {
         const scanner = new Html5QrcodeScanner(
           'admin-qr-reader',
           {
-            fps: 15,
+            fps: 20,
             qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
               const minEdge = Math.min(viewfinderWidth, viewfinderHeight)
-              const size = Math.floor(minEdge * 0.75)
-              return { width: Math.max(size, 150), height: Math.max(size, 150) }
+              const size = Math.floor(minEdge * 0.8)
+              return { width: Math.max(size, 180), height: Math.max(size, 180) }
+            },
+            videoConstraints: {
+              width: { ideal: 1280 },
+              height: { ideal: 720 },
+              facingMode: 'environment',
             },
             experimentalFeatures: {
               useBarCodeDetectorIfSupported: true,
@@ -610,7 +615,7 @@ export default function AdminQRAnalyticsPage() {
 
               <div
                 id="admin-qr-reader"
-                className="w-full bg-[var(--bg-subtle)] rounded-2xl overflow-hidden border border-[var(--border)] min-h-[260px] flex items-center justify-center block text-xs"
+                className="w-full bg-[var(--bg-subtle)] rounded-2xl overflow-hidden border border-[var(--border)] text-xs"
               />
 
               <div className="flex flex-col gap-2 pt-2 border-t border-[var(--border)]">

@@ -48,11 +48,16 @@ export function QRScanner() {
         const scanner = new Html5QrcodeScanner(
           'qr-reader',
           {
-            fps: 15,
+            fps: 20,
             qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
               const minEdge = Math.min(viewfinderWidth, viewfinderHeight)
-              const size = Math.floor(minEdge * 0.75)
-              return { width: Math.max(size, 150), height: Math.max(size, 150) }
+              const size = Math.floor(minEdge * 0.8)
+              return { width: Math.max(size, 180), height: Math.max(size, 180) }
+            },
+            videoConstraints: {
+              width: { ideal: 1280 },
+              height: { ideal: 720 },
+              facingMode: 'environment',
             },
             experimentalFeatures: {
               useBarCodeDetectorIfSupported: true,
