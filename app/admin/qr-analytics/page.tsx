@@ -62,6 +62,7 @@ export default function AdminQRAnalyticsPage() {
   const [savingEdit, setSavingEdit] = useState(false)
 
   const [showScanner, setShowScanner] = useState(false)
+  const [cameraPermissionDenied, setCameraPermissionDenied] = useState(false)
   const scannerInstanceRef = React.useRef<any>(null)
 
   useEffect(() => {
@@ -209,6 +210,7 @@ export default function AdminQRAnalyticsPage() {
 
   useEffect(() => {
     if (!showScanner) return
+    setCameraPermissionDenied(false)
 
     let isSubscribed = true
     let timeoutId: any = null
@@ -237,8 +239,17 @@ export default function AdminQRAnalyticsPage() {
                 },
                 () => {}
               )
-            } catch (err) {
-              console.warn('[Rear camera failed, trying user camera fallback]', err)
+            } catch (err: any) {
+              const isPermissionError =
+                err?.name === 'NotAllowedError' ||
+                (err?.toString && err.toString().includes('NotAllowedError')) ||
+                (err?.message && err.message.includes('Permission denied'))
+
+              if (isPermissionError) {
+                if (isSubscribed) setCameraPermissionDenied(true)
+                return
+              }
+
               if (!isSubscribed) return
               try {
                 await html5QrCode.start(
@@ -249,9 +260,8 @@ export default function AdminQRAnalyticsPage() {
                   },
                   () => {}
                 )
-              } catch (err2) {
-                console.error('[Camera initialization failed]', err2)
-                toast.error('Unable to start live camera. Please check camera permissions or upload a QR image.')
+              } catch (err2: any) {
+                if (isSubscribed) setCameraPermissionDenied(true)
               }
             }
           }
@@ -624,10 +634,32 @@ export default function AdminQRAnalyticsPage() {
             <div className="space-y-3">
               <div id="admin-qr-file-reader-hidden" className="hidden" />
 
-              <div
-                id="admin-qr-reader"
-                className="w-full bg-[var(--bg-subtle)] rounded-2xl overflow-hidden border border-[var(--border)] min-h-[260px] flex items-center justify-center"
-              />
+              {cameraPermissionDenied ? (
+                <div className="p-5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-center space-y-3">
+                  <p className="text-xs font-bold text-amber-600 dark:text-amber-400">
+                    Camera Access Blocked
+                  </p>
+                  <p className="font-mono text-[11px] text-[var(--fg-muted)] leading-relaxed">
+                    Camera permission was denied in browser settings. Click allow in site settings or upload a QR image file below.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCameraPermissionDenied(false)
+                      setShowScanner(false)
+                      setTimeout(() => setShowScanner(true), 100)
+                    }}
+                    className="px-4 py-2 rounded-xl bg-[var(--fg)] text-[var(--bg)] font-mono text-xs font-bold transition-all"
+                  >
+                    Retry Camera Request
+                  </button>
+                </div>
+              ) : (
+                <div
+                  id="admin-qr-reader"
+                  className="w-full bg-[var(--bg-subtle)] rounded-2xl overflow-hidden border border-[var(--border)] min-h-[260px] flex items-center justify-center"
+                />
+              )}
 
               <div className="flex flex-col gap-2 pt-2 border-t border-[var(--border)]">
                 <label className="w-full py-2.5 px-4 rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] hover:bg-[var(--bg-card)] cursor-pointer text-xs font-bold font-mono flex items-center justify-center gap-2 transition-all text-[var(--fg)]">
