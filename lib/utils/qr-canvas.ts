@@ -91,18 +91,17 @@ export async function renderQRToCanvas(
         ctx.save()
 
         // 4a. Draw background badge behind logo if showLogoBg is true
-        if (showLogoBg) {
-          ctx.fillStyle = transparentBg ? (bgColor !== 'transparent' ? bgColor : '#FFFFFF') : bgColor
-          ctx.beginPath()
-          const borderRadius = (logoSize + totalPad * 2) * 0.2
-          const padX = logoX - totalPad
-          const padY = logoY - totalPad
-          const padW = logoSize + totalPad * 2
-          const padH = logoSize + totalPad * 2
+        // 4a. Draw background badge behind logo to isolate logo from QR data modules
+        const padX = logoX - totalPad
+        const padY = logoY - totalPad
+        const padW = logoSize + totalPad * 2
+        const padH = logoSize + totalPad * 2
+        const borderRadius = padW * 0.2
 
-          ctx.roundRect(padX, padY, padW, padH, borderRadius)
-          ctx.fill()
-        }
+        ctx.fillStyle = bgColor === 'transparent' || transparentBg ? '#FFFFFF' : bgColor
+        ctx.beginPath()
+        ctx.roundRect(padX, padY, padW, padH, borderRadius)
+        ctx.fill()
 
         // 4b. Set opacity
         ctx.globalAlpha = Math.max(0, Math.min(1, logoOpacity))
