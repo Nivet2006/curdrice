@@ -283,23 +283,31 @@ function applySecurityHeaders(response: NextResponse, nonce: string, path: strin
 
 function buildCSP(nonce: string): string {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
-  const scriptSrc = process.env.NODE_ENV === 'development'
-    ? `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' 'unsafe-eval'`
-    : `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`
+  const isDev = process.env.NODE_ENV === 'development'
 
-  return [
+  const scriptSrc = isDev
+    ? `script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:`
+    : `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' 'unsafe-eval' blob:`
+
+  const cspDirectives = [
     `default-src 'self'`,
     scriptSrc,
     `style-src 'self' 'unsafe-inline'`,
     `img-src 'self' data: https: blob:`,
-    `font-src 'self' data:`,
+    `font-src 'self' data: https:`,
     `connect-src 'self' ${supabaseUrl} wss://${new URL(supabaseUrl).host}`,
+    `worker-src 'self' blob:`,
     `frame-ancestors 'none'`,
     `base-uri 'self'`,
     `form-action 'self'`,
     `object-src 'none'`,
-    `upgrade-insecure-requests`,
-  ].join('; ')
+  ]
+
+  if (!isDev) {
+    cspDirectives.push(`upgrade-insecure-requests`)
+  }
+
+  return cspDirectives.join('; ')
 }
 
 function getUnauthorizedResponse(ip: string) {

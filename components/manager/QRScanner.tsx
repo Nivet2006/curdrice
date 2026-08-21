@@ -39,16 +39,39 @@ export function QRScanner() {
 
   useEffect(() => {
     let isSubscribed = true
+    console.log('[TICKET SCANNER QR] scanner initialization started')
     const timer = setTimeout(async () => {
       try {
         const { Html5QrcodeScanner } = await import('html5-qrcode')
         if (!isSubscribed) return
-        scannerRef.current = new Html5QrcodeScanner(
-          "qr-reader",
-          { fps: 10, qrbox: { width: 250, height: 250 } },
+        console.log('[TICKET SCANNER QR] Html5QrcodeScanner loaded')
+        const scanner = new Html5QrcodeScanner(
+          'qr-reader',
+          {
+            fps: 15,
+            qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
+              const minEdge = Math.min(viewfinderWidth, viewfinderHeight)
+              const size = Math.floor(minEdge * 0.75)
+              return { width: Math.max(size, 150), height: Math.max(size, 150) }
+            },
+            experimentalFeatures: {
+              useBarCodeDetectorIfSupported: true,
+            },
+          },
           false
         )
-        scannerRef.current.render(onScanSuccess, () => {})
+        scannerRef.current = scanner
+        console.log('[TICKET SCANNER QR] scanner instance created:', scanner)
+        scanner.render(
+          (decodedText: string, decodedResult: any) => {
+            console.log('[TICKET SCANNER QR DETECTED]', decodedText, decodedResult)
+            onScanSuccess(decodedText)
+          },
+          (_scanError: string) => {
+            // Frame scan failure
+          }
+        )
+        console.log('[TICKET SCANNER QR] scanner started')
       } catch (err) {
         console.error('Failed to initialize Html5QrcodeScanner:', err)
       }
@@ -59,6 +82,7 @@ export function QRScanner() {
       clearTimeout(timer)
       if (scannerRef.current) {
         try {
+          console.log('[TICKET SCANNER QR] stopping scanner')
           scannerRef.current.clear().catch(console.error)
         } catch (_) {}
         scannerRef.current = null

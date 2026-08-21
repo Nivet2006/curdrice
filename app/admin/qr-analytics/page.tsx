@@ -211,22 +211,39 @@ export default function AdminQRAnalyticsPage() {
     if (!showScanner) return
 
     let isSubscribed = true
+    console.log('[QR] scanner initialization started')
     const timer = setTimeout(async () => {
       try {
         const { Html5QrcodeScanner } = await import('html5-qrcode')
         if (!isSubscribed) return
+        console.log('[QR] Html5QrcodeScanner loaded')
         const scanner = new Html5QrcodeScanner(
           'admin-qr-reader',
-          { fps: 10, qrbox: { width: 240, height: 240 } },
+          {
+            fps: 15,
+            qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
+              const minEdge = Math.min(viewfinderWidth, viewfinderHeight)
+              const size = Math.floor(minEdge * 0.75)
+              return { width: Math.max(size, 150), height: Math.max(size, 150) }
+            },
+            experimentalFeatures: {
+              useBarCodeDetectorIfSupported: true,
+            },
+          },
           false
         )
         scannerRef.current = scanner
+        console.log('[QR] scanner instance created:', scanner)
         scanner.render(
-          (decodedText: string) => {
+          (decodedText: string, decodedResult: any) => {
+            console.log('[QR DETECTED]', decodedText, decodedResult)
             handleScanResult(decodedText)
           },
-          () => {}
+          (_scanError: string) => {
+            // Frame scan failure (normal when no QR code is in frame)
+          }
         )
+        console.log('[QR] scanner started')
       } catch (err) {
         console.error('[QR ANALYTICS CAMERA] scanner init error:', err)
       }
@@ -237,6 +254,7 @@ export default function AdminQRAnalyticsPage() {
       clearTimeout(timer)
       if (scannerRef.current) {
         try {
+          console.log('[QR] stopping scanner')
           scannerRef.current.clear().catch(console.error)
         } catch (_) {}
         scannerRef.current = null
