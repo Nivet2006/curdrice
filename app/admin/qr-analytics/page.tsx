@@ -231,48 +231,56 @@ export default function AdminQRAnalyticsPage() {
   }
 
   const startLiveCameraStream = async () => {
+    console.log('[QR Scanner] isSecureContext:', typeof window !== 'undefined' ? window.isSecureContext : false)
+    console.log('[QR Scanner] protocol:', typeof window !== 'undefined' ? window.location.protocol : '')
+    console.log('[QR Scanner] hostname:', typeof window !== 'undefined' ? window.location.hostname : '')
+    console.log('[QR Scanner] mediaDevices:', typeof navigator !== 'undefined' ? navigator.mediaDevices : null)
+    console.log('[QR Scanner] getUserMedia:', typeof navigator !== 'undefined' ? navigator.mediaDevices?.getUserMedia : null)
+    console.log('[QR Scanner] Retry Camera Request clicked / starting camera stream...')
+
     setCameraError(null)
     await stopCurrentCamera()
 
     if (typeof window === 'undefined' || !navigator?.mediaDevices?.getUserMedia) {
+      console.warn('[QR Scanner] getUserMedia API unavailable or non-secure context')
       setCameraError('UNSUPPORTED')
       return
     }
 
     let tempStream: MediaStream | null = null
+    console.log('[QR Scanner] Calling getUserMedia...')
     try {
-      // Direct call to getUserMedia in response to user click
+      // Direct call to getUserMedia in response to user gesture
       tempStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' },
+        video: true,
         audio: false,
       })
+      console.log('[QR Scanner] getUserMedia succeeded:', tempStream)
     } catch (err: any) {
-      try {
-        tempStream = await navigator.mediaDevices.getUserMedia({
-          video: true,
-          audio: false,
-        })
-      } catch (fallbackErr: any) {
-        const e = fallbackErr || err
-        const errName = e?.name || ''
-        const errStr = e?.toString ? e.toString() : ''
+      console.error('[QR Scanner] getUserMedia failed:', {
+        name: err?.name,
+        message: err?.message,
+        error: err,
+      })
 
-        if (
-          errName === 'NotAllowedError' ||
-          errName === 'PermissionDeniedError' ||
-          errStr.includes('Permission denied') ||
-          errStr.includes('NotAllowedError')
-        ) {
-          setCameraError('PERMISSION_DENIED')
-        } else if (errName === 'NotFoundError' || errStr.includes('NotFoundError')) {
-          setCameraError('NOT_FOUND')
-        } else if (errName === 'NotReadableError' || errStr.includes('NotReadableError') || errStr.includes('Could not start video source')) {
-          setCameraError('BUSY')
-        } else {
-          setCameraError('UNSUPPORTED')
-        }
-        return
+      const errName = err?.name || ''
+      const errStr = err?.toString ? err.toString() : ''
+
+      if (
+        errName === 'NotAllowedError' ||
+        errName === 'PermissionDeniedError' ||
+        errStr.includes('Permission denied') ||
+        errStr.includes('NotAllowedError')
+      ) {
+        setCameraError('PERMISSION_DENIED')
+      } else if (errName === 'NotFoundError' || errStr.includes('NotFoundError')) {
+        setCameraError('NOT_FOUND')
+      } else if (errName === 'NotReadableError' || errStr.includes('NotReadableError') || errStr.includes('Could not start video source')) {
+        setCameraError('BUSY')
+      } else {
+        setCameraError('UNSUPPORTED')
       }
+      return
     }
 
     if (tempStream) {
@@ -713,9 +721,7 @@ export default function AdminQRAnalyticsPage() {
 
               <div
                 id="admin-qr-reader"
-                className={`w-full bg-[var(--bg-subtle)] rounded-2xl overflow-hidden border border-[var(--border)] min-h-[260px] flex items-center justify-center ${
-                  cameraError ? 'hidden' : 'block'
-                }`}
+                className="w-full bg-[var(--bg-subtle)] rounded-2xl overflow-hidden border border-[var(--border)] min-h-[260px] flex items-center justify-center block"
               />
 
               <div className="flex flex-col gap-2 pt-2 border-t border-[var(--border)]">
