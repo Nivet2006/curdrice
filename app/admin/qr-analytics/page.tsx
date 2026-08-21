@@ -62,8 +62,9 @@ export default function AdminQRAnalyticsPage() {
   const [savingEdit, setSavingEdit] = useState(false)
 
   const [showScanner, setShowScanner] = useState(false)
-  const [cameraPermissionDenied, setCameraPermissionDenied] = useState(false)
+  const [cameraError, setCameraError] = useState<'PERMISSION_DENIED' | 'NOT_FOUND' | 'BUSY' | 'UNSUPPORTED' | null>(null)
   const scannerInstanceRef = React.useRef<any>(null)
+  const activeStreamRef = React.useRef<MediaStream | null>(null)
 
   useEffect(() => {
     async function loadUser() {
@@ -208,100 +209,135 @@ export default function AdminQRAnalyticsPage() {
     }
   }
 
+  const stopCurrentCamera = async () => {
+    if (activeStreamRef.current) {
+      try {
+        activeStreamRef.current.getTracks().forEach((track) => track.stop())
+      } catch (_) {}
+      activeStreamRef.current = null
+    }
+    if (scannerInstanceRef.current) {
+      const scanner = scannerInstanceRef.current
+      scannerInstanceRef.current = null
+      try {
+        await scanner.stop()
+        scanner.clear()
+      } catch (_) {
+        try {
+          scanner.clear()
+        } catch (__) {}
+      }
+    }
+  }
+
+  const startLiveCameraStream = async () => {
+    setCameraError(null)
+    await stopCurrentCamera()
+
+    if (typeof window === 'undefined' || !navigator?.mediaDevices?.getUserMedia) {
+      setCameraError('UNSUPPORTED')
+      return
+    }
+
+    let tempStream: MediaStream | null = null
+    try {
+      // Direct call to getUserMedia in response to user click
+      tempStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' },
+        audio: false,
+      })
+    } catch (err: any) {
+      try {
+        tempStream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: false,
+        })
+      } catch (fallbackErr: any) {
+        const e = fallbackErr || err
+        const errName = e?.name || ''
+        const errStr = e?.toString ? e.toString() : ''
+
+        if (
+          errName === 'NotAllowedError' ||
+          errName === 'PermissionDeniedError' ||
+          errStr.includes('Permission denied') ||
+          errStr.includes('NotAllowedError')
+        ) {
+          setCameraError('PERMISSION_DENIED')
+        } else if (errName === 'NotFoundError' || errStr.includes('NotFoundError')) {
+          setCameraError('NOT_FOUND')
+        } else if (errName === 'NotReadableError' || errStr.includes('NotReadableError') || errStr.includes('Could not start video source')) {
+          setCameraError('BUSY')
+        } else {
+          setCameraError('UNSUPPORTED')
+        }
+        return
+      }
+    }
+
+    if (tempStream) {
+      tempStream.getTracks().forEach((t) => t.stop())
+    }
+
+    const targetElement = document.getElementById('admin-qr-reader')
+    if (!targetElement) return
+
+    try {
+      const { Html5Qrcode } = await import('html5-qrcode')
+      const html5QrCode = new Html5Qrcode('admin-qr-reader')
+      scannerInstanceRef.current = html5QrCode
+
+      const config = { fps: 10, qrbox: { width: 240, height: 240 } }
+
+      let devices: any[] = []
+      try {
+        devices = await Html5Qrcode.getCameras()
+      } catch (_) {}
+
+      if (devices && devices.length > 0) {
+        const backCam = devices.find(
+          (d) =>
+            d.label.toLowerCase().includes('back') ||
+            d.label.toLowerCase().includes('rear') ||
+            d.label.toLowerCase().includes('environment')
+        )
+        const selectedId = backCam ? backCam.id : devices[0].id
+        await html5QrCode.start(
+          selectedId,
+          config,
+          (text: string) => handleScanResult(text),
+          () => {}
+        )
+      } else {
+        await html5QrCode.start(
+          { facingMode: 'environment' },
+          config,
+          (text: string) => handleScanResult(text),
+          () => {}
+        )
+      }
+    } catch (startErr: any) {
+      console.warn('[Camera Start Exception]', startErr)
+    }
+  }
+
   useEffect(() => {
-    if (!showScanner) return
-    setCameraPermissionDenied(false)
+    if (!showScanner) {
+      stopCurrentCamera()
+      return
+    }
 
     let isSubscribed = true
-    let timeoutId: any = null
-
-    timeoutId = setTimeout(() => {
-      if (!isSubscribed) return
-      const targetElement = document.getElementById('admin-qr-reader')
-      if (!targetElement) return
-
-      import('html5-qrcode').then(async ({ Html5Qrcode }) => {
-        if (!isSubscribed) return
-
-        try {
-          const html5QrCode = new Html5Qrcode('admin-qr-reader')
-          scannerInstanceRef.current = html5QrCode
-
-          const config = { fps: 10, qrbox: { width: 240, height: 240 } }
-
-          const startWithCameras = async () => {
-            try {
-              // 1. Try fetching camera devices list (works great on Desktop & Mobile)
-              const devices = await Html5Qrcode.getCameras()
-              if (!isSubscribed) return
-
-              if (devices && devices.length > 0) {
-                // Select back camera if available, or first camera device
-                const backCamera = devices.find((d) =>
-                  d.label.toLowerCase().includes('back') || d.label.toLowerCase().includes('rear') || d.label.toLowerCase().includes('environment')
-                )
-                const selectedCameraId = backCamera ? backCamera.id : devices[0].id
-
-                await html5QrCode.start(
-                  selectedCameraId,
-                  config,
-                  (decodedText: string) => handleScanResult(decodedText),
-                  () => {}
-                )
-                return
-              }
-            } catch (cameraEnumErr: any) {
-              console.warn('[Camera Enumeration Warning]', cameraEnumErr)
-            }
-
-            // 2. Fallback to facingMode constraint if getCameras returned empty or failed
-            if (!isSubscribed) return
-            try {
-              await html5QrCode.start(
-                { facingMode: 'environment' },
-                config,
-                (decodedText: string) => handleScanResult(decodedText),
-                () => {}
-              )
-            } catch (err: any) {
-              if (!isSubscribed) return
-              try {
-                await html5QrCode.start(
-                  { facingMode: 'user' },
-                  config,
-                  (decodedText: string) => handleScanResult(decodedText),
-                  () => {}
-                )
-              } catch (err2: any) {
-                if (isSubscribed) setCameraPermissionDenied(true)
-              }
-            }
-          }
-
-          startWithCameras()
-        } catch (err) {
-          console.error('[Scanner Init Exception]', err)
-          if (isSubscribed) setCameraPermissionDenied(true)
-        }
-      })
+    const timeoutId = setTimeout(() => {
+      if (isSubscribed) {
+        startLiveCameraStream()
+      }
     }, 150)
 
     return () => {
       isSubscribed = false
-      if (timeoutId) clearTimeout(timeoutId)
-      if (scannerInstanceRef.current) {
-        const scanner = scannerInstanceRef.current
-        scannerInstanceRef.current = null
-        try {
-          scanner.stop().then(() => {
-            try { scanner.clear() } catch (_) {}
-          }).catch(() => {
-            try { scanner.clear() } catch (_) {}
-          })
-        } catch (_) {
-          // Never throw during cleanup
-        }
-      }
+      clearTimeout(timeoutId)
+      stopCurrentCamera()
     }
   }, [showScanner, redirects])
 
@@ -651,32 +687,36 @@ export default function AdminQRAnalyticsPage() {
             <div className="space-y-3">
               <div id="admin-qr-file-reader-hidden" className="hidden" />
 
-              {cameraPermissionDenied ? (
-                <div className="p-5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-center space-y-3">
+              {cameraError && (
+                <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-center space-y-2.5">
                   <p className="text-xs font-bold text-amber-600 dark:text-amber-400">
-                    Camera Access Blocked
+                    {cameraError === 'PERMISSION_DENIED' && 'Camera Permission Blocked'}
+                    {cameraError === 'NOT_FOUND' && 'No Camera Hardware Found'}
+                    {cameraError === 'BUSY' && 'Camera Currently In Use'}
+                    {cameraError === 'UNSUPPORTED' && 'Camera API Unavailable'}
                   </p>
                   <p className="font-mono text-[11px] text-[var(--fg-muted)] leading-relaxed">
-                    Camera permission was denied in browser settings. Click allow in site settings or upload a QR image file below.
+                    {cameraError === 'PERMISSION_DENIED' && 'Camera permission was denied in your browser site settings. Click Retry below to trigger the browser prompt, allow camera in site settings, or upload an image file.'}
+                    {cameraError === 'NOT_FOUND' && 'No camera hardware device was detected on your system. Please connect a webcam or upload a QR image file below.'}
+                    {cameraError === 'BUSY' && 'Camera is currently being used by another application or browser tab. Please close other camera apps and click retry.'}
+                    {cameraError === 'UNSUPPORTED' && 'Camera access is not supported by your current browser environment or context.'}
                   </p>
                   <button
                     type="button"
-                    onClick={() => {
-                      setCameraPermissionDenied(false)
-                      setShowScanner(false)
-                      setTimeout(() => setShowScanner(true), 100)
-                    }}
-                    className="px-4 py-2 rounded-xl bg-[var(--fg)] text-[var(--bg)] font-mono text-xs font-bold transition-all"
+                    onClick={startLiveCameraStream}
+                    className="px-4 py-2 rounded-xl bg-[var(--fg)] text-[var(--bg)] font-mono text-xs font-bold transition-all shadow-sm hover:opacity-90 active:scale-95"
                   >
                     Retry Camera Request
                   </button>
                 </div>
-              ) : (
-                <div
-                  id="admin-qr-reader"
-                  className="w-full bg-[var(--bg-subtle)] rounded-2xl overflow-hidden border border-[var(--border)] min-h-[260px] flex items-center justify-center"
-                />
               )}
+
+              <div
+                id="admin-qr-reader"
+                className={`w-full bg-[var(--bg-subtle)] rounded-2xl overflow-hidden border border-[var(--border)] min-h-[260px] flex items-center justify-center ${
+                  cameraError ? 'hidden' : 'block'
+                }`}
+              />
 
               <div className="flex flex-col gap-2 pt-2 border-t border-[var(--border)]">
                 <label className="w-full py-2.5 px-4 rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] hover:bg-[var(--bg-card)] cursor-pointer text-xs font-bold font-mono flex items-center justify-center gap-2 transition-all text-[var(--fg)]">
