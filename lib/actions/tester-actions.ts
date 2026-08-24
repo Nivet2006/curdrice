@@ -1,6 +1,6 @@
 'use server';
 
-import { runServiceTests } from '@/lib/services/service-tester';
+import { runServiceTests, getEnvironmentAudit, EnvVariableAudit } from '@/lib/services/service-tester';
 import { assertAdmin } from '@/lib/services/permission-service';
 
 /**
@@ -12,6 +12,20 @@ export async function runServiceTestsAction(servicesToTest: string[]) {
     await assertAdmin();
     const results = await runServiceTests(servicesToTest, 'admin');
     return { data: results };
+  } catch (error: any) {
+    return { error: error.message };
+  }
+}
+
+/**
+ * Server action to fetch environment variable configuration audit.
+ * Admin only. Secrets are NEVER exposed.
+ */
+export async function getEnvironmentAuditAction(): Promise<{ data?: EnvVariableAudit[]; error?: string }> {
+  try {
+    await assertAdmin();
+    const audit = getEnvironmentAudit();
+    return { data: audit };
   } catch (error: any) {
     return { error: error.message };
   }

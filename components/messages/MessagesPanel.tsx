@@ -17,6 +17,7 @@ import {
   respondToInvite,
   searchUsers,
 } from '@/lib/actions/messages'
+import { getActiveAnnouncements } from '@/lib/actions/announcements'
 import { supabase } from '@/lib/supabase/client'
 import { Notification } from '@/lib/types'
 import { QRDisplay } from '../student/QRDisplay'
@@ -64,18 +65,40 @@ export default function MessagesPanel({ open, onClose, userId }: MessagesPanelPr
   }, [chatMessages])
 
   const fetchProfile = async () => {
-    const { data } = await supabase.from('profiles').select('full_name, usn').eq('id', userId!).single()
+    const { data } = await supabase.from('profiles').select('full_name, usn, role').eq('id', userId!).single()
     if (data) setProfile(data)
   }
 
   const refreshBackground = async () => {
     if (!userId) return
     try {
-      const [notifs, convos] = await Promise.all([
+      const [notifs, convos, globalAnnouncements] = await Promise.all([
         getNotifications(userId),
-        getConversations(userId)
+        getConversations(userId),
+        getActiveAnnouncements(profile?.role, userId)
       ])
-      setNotifications(notifs || [])
+
+      // Map global in-app announcements to Notification format without row duplication
+      const inAppAnnouncements: Notification[] = globalAnnouncements
+        .filter(a => a.channels.includes('IN_APP_NOTIFICATION'))
+        .map(a => ({
+          id: `announcement_${a.id}`,
+          account_id: userId,
+          type: 'broadcast',
+          title: `[${a.severity}] ${a.title}`,
+          body: a.message,
+          metadata: { announcement_id: a.id, severity: a.severity, is_global: true },
+          is_read: false,
+          is_archived: false,
+          created_at: a.published_at || a.starts_at || a.created_at
+        }))
+
+      // Merge personal notifications + global in-app announcements
+      const merged = [...inAppAnnouncements, ...(notifs || [])].sort(
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      )
+
+      setNotifications(merged)
       setConversations(convos || [])
     } catch (e) {
       console.error(e)

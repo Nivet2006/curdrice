@@ -109,7 +109,7 @@ export function AdminEventList({ events }: AdminEventListProps) {
                   <EventCard
                     event={event}
                     isEligible={true}
-                    hrefOverride={`/manager/events/${event.id}`}
+                    hrefOverride={`/admin/events/${event.id}`}
                     registeredCount={count}
                     adminActions={
                       <DeleteEventButton

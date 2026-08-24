@@ -94,6 +94,7 @@ export function CommandPalette({ open, onClose, onOpenBroadcast }: CommandPalett
     { id: 'op-qr-studio', title: 'QR Studio Creator', subtitle: 'Design custom logo QR codes', section: 'Operations', icon: Sparkles, href: '/qr' },
 
     // System
+    { id: 'sys-comms', title: 'Global Communications Center', subtitle: 'Announcements, maintenance & banners', section: 'System', icon: Radio, href: '/admin/communications' },
     { id: 'sys-email', title: 'Email Center', subtitle: 'Notification blasts & emails', section: 'System', icon: Mail, href: '/admin/email' },
     { id: 'sys-bugs', title: 'Bug Reports', subtitle: 'Inspect user-submitted issues', section: 'System', icon: Bug, href: '/admin/bugs' },
     { id: 'sys-sec', title: 'Security Portal', subtitle: 'Manage 2FA & sessions', section: 'System', icon: ShieldCheck, href: '/admin/security' },

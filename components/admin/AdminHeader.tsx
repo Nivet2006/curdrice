@@ -23,7 +23,8 @@ import {
   X,
   Radio,
   Plus,
-  Wrench
+  Wrench,
+  Activity
 } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import { ThemeToggle } from '@/components/shared/ThemeToggle'
@@ -94,14 +95,16 @@ export function AdminHeader({ role = 'admin', name }: AdminHeaderProps) {
       id: 'communications',
       label: 'Communications',
       items: [
+        { href: '/admin/communications', label: 'Global Communications', desc: 'Announcements, maintenance & banners', icon: Radio },
         { href: '/admin/email', label: 'Email Center', desc: 'Send email broadcasts & blasts', icon: Mail },
-        { href: '#', label: 'System Broadcast', desc: 'Broadcast instant screen alert', icon: Radio, onClick: () => setBroadcastOpen(true) },
+        { href: '#', label: 'Quick Broadcast', desc: 'Broadcast instant screen alert', icon: Radio, onClick: () => setBroadcastOpen(true) },
       ]
     },
     {
       id: 'system',
       label: 'System',
       items: [
+        { href: '/admin/observability', label: 'Observability', icon: Activity, desc: 'DB & platform health monitor' },
         { href: '/admin/security', label: 'Security Portal', icon: ShieldCheck, desc: '2FA enforcement & account security' },
         { href: '/admin/logs', label: 'Audit Logs', icon: ClipboardList, desc: 'Admin action audit trail' },
         { href: '/admin/bugs', label: 'Bug Reports', icon: Bug, desc: 'Inspect & triage user issues' },
@@ -126,7 +129,7 @@ export function AdminHeader({ role = 'admin', name }: AdminHeaderProps) {
           {/* Desktop Navigation Section Dropdowns */}
           <div className="hidden lg:flex items-center gap-1 relative">
             {sections.map((section) => {
-              const isSectionActive = section.items.some(i => i.href === pathname)
+              const isSectionActive = section.items.some(i => i.href !== '#' && (pathname === i.href || (i.href !== '/admin/dashboard' && pathname.startsWith(i.href))))
               const isOpen = activeDropdown === section.id
 
               return (

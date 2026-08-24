@@ -66,6 +66,9 @@ export const metadata: Metadata = {
 
 import { BugReporterWidget } from '@/components/BugReporterWidget'
 import AuthListener from '@/components/shared/AuthListener'
+import { GlobalAnnouncementProvider } from '@/components/announcements/GlobalAnnouncementProvider'
+import { GlobalAnnouncementBanner } from '@/components/announcements/GlobalAnnouncementBanner'
+import { MaintenanceGuard } from '@/components/shared/MaintenanceGuard'
 
 export default function RootLayout({
   children,
@@ -91,9 +94,14 @@ export default function RootLayout({
       </head>
       <body className={`font-sans antialiased min-h-screen tracking-tight`}>
         <AuthListener />
-        <PatternProvider>{children}</PatternProvider>
-        <BugReporterWidget />
-        <Toaster richColors position="bottom-right" />
+        <MaintenanceGuard>
+          <GlobalAnnouncementProvider>
+            <GlobalAnnouncementBanner />
+            <PatternProvider>{children}</PatternProvider>
+            <BugReporterWidget />
+            <Toaster richColors position="bottom-right" />
+          </GlobalAnnouncementProvider>
+        </MaintenanceGuard>
       </body>
     </html>
   )

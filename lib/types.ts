@@ -210,3 +210,102 @@ export interface Broadcast {
   body: string
   sent_at: string
 }
+
+export type AnnouncementSeverity = 'INFO' | 'SUCCESS' | 'NOTICE' | 'WARNING' | 'CRITICAL'
+export type AnnouncementStatus = 'DRAFT' | 'SCHEDULED' | 'ACTIVE' | 'EXPIRED' | 'CANCELLED'
+export type AnnouncementChannel = 'GLOBAL_BANNER' | 'IN_APP_NOTIFICATION' | 'REALTIME_ALERT' | 'EMAIL' | 'OPTIONAL_BROWSER_PUSH'
+export type AnnouncementAudienceType =
+  | 'EVERYONE'
+  | 'STUDENTS'
+  | 'FACULTY'
+  | 'ADMINS'
+  | 'MANAGERS'
+  | 'CLUB_ADMINS'
+  | 'SPECIFIC_CLUB'
+  | 'SPECIFIC_EVENT'
+  | 'EVENT_PARTICIPANTS'
+  | 'HACKATHON_PARTICIPANTS'
+  | 'CUSTOM_USERS'
+
+export type AnnouncementType =
+  | 'SYSTEM_UPDATE'
+  | 'PLATFORM_UPGRADE'
+  | 'PERFORMANCE_NOTICE'
+  | 'SCHEDULED_MAINTENANCE'
+  | 'EMERGENCY_MAINTENANCE'
+  | 'DATABASE_MAINTENANCE'
+  | 'SERVICE_OUTAGE'
+  | 'SERVICE_RESTORED'
+  | 'SECURITY_NOTICE'
+  | 'NEW_FEATURE'
+  | 'EVENT_ANNOUNCEMENT'
+  | 'EVENT_UPDATE'
+  | 'EVENT_CANCELLED'
+  | 'REGISTRATION_REMINDER'
+  | 'DEADLINE_REMINDER'
+  | 'GENERAL_ANNOUNCEMENT'
+  | 'CUSTOM'
+
+export interface SystemAnnouncement {
+  id: string
+  title: string
+  message: string
+  announcement_type: AnnouncementType
+  severity: AnnouncementSeverity
+  status: AnnouncementStatus
+  audience_type: AnnouncementAudienceType
+  audience_filter: Record<string, any>
+  starts_at: string
+  expires_at: string | null
+  channels: AnnouncementChannel[]
+  created_by: string | null
+  created_at: string
+  updated_at: string
+  published_at: string | null
+  cancelled_at: string | null
+  recurrence_rule: Record<string, any> | null
+  timezone: string
+  metadata: Record<string, any>
+  creator?: { full_name: string; role: Role } | null
+}
+
+export interface SystemMaintenanceSettings {
+  id: number
+  enabled: boolean
+  message: string
+  starts_at: string | null
+  ends_at: string | null
+  allow_admin_bypass: boolean
+  allow_manager_bypass: boolean
+  show_public_status: boolean
+  updated_at: string
+  updated_by: string | null
+}
+
+export interface SystemAutomationSettings {
+  id: number
+  event_cancellation: boolean
+  event_venue_change: boolean
+  event_time_change: boolean
+  service_outage: boolean
+  service_restored: boolean
+  maintenance_started: boolean
+  maintenance_completed: boolean
+  email_processor_disabled: boolean
+  storage_outage: boolean
+  deployment_completed: boolean
+  updated_at: string
+  updated_by: string | null
+}
+
+export interface SystemAnnouncementAudit {
+  id: number
+  announcement_id: string | null
+  actor_id: string | null
+  action: string
+  reason: string | null
+  metadata: Record<string, any>
+  result: string | null
+  created_at: string
+  actor?: { full_name: string; role: Role } | null
+}
