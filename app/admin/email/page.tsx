@@ -6,6 +6,10 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import {
   getEmailAdminData,
+  setMasterProcessorEnabled,
+  updateProcessorSchedule,
+  runQueueNowAction,
+  repairProcessorAction,
   updateEmailSetting,
   retryQueuedEmail,
   cancelQueuedEmail,
@@ -16,7 +20,24 @@ import {
   syncSendersWithBrevo
 } from '@/lib/actions/email-admin-actions'
 import { toast } from 'sonner'
-import { RefreshCw, AlertTriangle, Play, Ban, Plus, Trash2, Save } from 'lucide-react'
+import {
+  RefreshCw,
+  AlertTriangle,
+  Play,
+  Ban,
+  Plus,
+  Trash2,
+  Save,
+  Power,
+  CheckCircle,
+  XCircle,
+  Activity,
+  Calendar,
+  Clock,
+  Globe,
+  Wrench,
+  ShieldAlert
+} from 'lucide-react'
 
 const SETTINGS_ORDER = [
   'registration_confirmation',
@@ -87,15 +108,62 @@ const SETTING_LABELS: Record<string, { label: string; desc: string }> = {
   }
 }
 
+const PRESET_MAP: Record<string, string> = {
+  '1_minute': '* * * * *',
+  '5_minutes': '*/5 * * * *',
+  '10_minutes': '*/10 * * * *',
+  '15_minutes': '*/15 * * * *',
+  '30_minutes': '*/30 * * * *',
+  '1_hour': '0 * * * *'
+}
+
+const PRESET_LABELS: Record<string, string> = {
+  '1_minute': 'Every 1 minute',
+  '5_minutes': 'Every 5 minutes',
+  '10_minutes': 'Every 10 minutes',
+  '15_minutes': 'Every 15 minutes',
+  '30_minutes': 'Every 30 minutes',
+  '1_hour': 'Every hour'
+}
+
+const DAYS_MAP = [
+  { id: 1, label: 'Mon' },
+  { id: 2, label: 'Tue' },
+  { id: 3, label: 'Wed' },
+  { id: 4, label: 'Thu' },
+  { id: 5, label: 'Fri' },
+  { id: 6, label: 'Sat' },
+  { id: 0, label: 'Sun' }
+]
+
 export default function EmailAdminPage() {
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
-  
-  // Local state for assignments configuration
-  const [assignmentConfigs, setAssignmentConfigs] = useState<Record<string, { sender_email: string; sender_name: string; reply_to_email: string }>>({})
 
-  // Local state for new sender
+  // Master Switch & Modal state
+  const [showTurnOffModal, setShowTurnOffModal] = useState(false)
+  const [showTurnOnModal, setShowTurnOnModal] = useState(false)
+  const [turnOffReason, setTurnOffReason] = useState('')
+
+  // Schedule Builder local state
+  const [scheduleMode, setScheduleMode] = useState<'preset' | 'custom'>('preset')
+  const [presetFrequency, setPresetFrequency] = useState<string>('5_minutes')
+  const [customCron, setCustomCron] = useState<string>('*/5 * * * *')
+  const [batchSizeInput, setBatchSizeInput] = useState<number>(10)
+  const [activeDays, setActiveDays] = useState<number[]>([0, 1, 2, 3, 4, 5, 6])
+  const [activeFrom, setActiveFrom] = useState<string>('00:00')
+  const [activeUntil, setActiveUntil] = useState<string>('23:59')
+  const [pauseOutsideHours, setPauseOutsideHours] = useState<boolean>(false)
+  const [selectedTimezone, setSelectedTimezone] = useState<string>('Asia/Kolkata')
+
+  // Save & Run Now Modals
+  const [showSaveScheduleModal, setShowSaveScheduleModal] = useState(false)
+  const [showRunNowOffModal, setShowRunNowOffModal] = useState(false)
+  const [scheduleReason, setScheduleReason] = useState('')
+
+  // Assignments & Senders
+  const [assignmentConfigs, setAssignmentConfigs] = useState<Record<string, { sender_email: string; sender_name: string; reply_to_email: string }>>({})
   const [newSenderPrefix, setNewSenderPrefix] = useState('')
   const [newSenderDomain, setNewSenderDomain] = useState('')
   const [newSenderName, setNewSenderName] = useState('')
@@ -112,9 +180,19 @@ export default function EmailAdminPage() {
       toast.error(res.error)
     } else {
       setData(res)
+      if (res.masterStatus) {
+        setScheduleMode(res.masterStatus.schedule_mode || 'preset')
+        setPresetFrequency(res.masterStatus.preset_frequency || '5_minutes')
+        setCustomCron(res.masterStatus.cron_expression || '*/5 * * * *')
+        setBatchSizeInput(res.masterStatus.batch_size || 10)
+        setActiveDays(res.masterStatus.active_days || [0, 1, 2, 3, 4, 5, 6])
+        setActiveFrom(res.masterStatus.active_from || '00:00')
+        setActiveUntil(res.masterStatus.active_until || '23:59')
+        setPauseOutsideHours(res.masterStatus.pause_outside_active_hours || false)
+        setSelectedTimezone(res.masterStatus.timezone || 'Asia/Kolkata')
+      }
       const settings = res.settings || []
       const assignments = res.assignments || []
-      // Initialize local configs
       const configs: Record<string, any> = {}
       settings.forEach((s: any) => {
         const assignment = assignments.find((a: any) => a.email_type === s.email_type)
@@ -138,6 +216,83 @@ export default function EmailAdminPage() {
     loadData()
   }, [])
 
+  const handleMasterToggleConfirm = async (targetEnabled: boolean) => {
+    setActionLoading('master_toggle')
+    const res = await setMasterProcessorEnabled(targetEnabled, targetEnabled ? undefined : turnOffReason)
+    if (res.error) {
+      toast.error(res.error)
+    } else {
+      toast.success(targetEnabled ? 'Email processing enabled.' : 'Email processing disabled.')
+      setShowTurnOffModal(false)
+      setShowTurnOnModal(false)
+      setTurnOffReason('')
+      loadData()
+    }
+    setActionLoading(null)
+  }
+
+  const handleSaveScheduleConfirm = async () => {
+    const cronExpr = scheduleMode === 'preset' ? PRESET_MAP[presetFrequency] || '*/5 * * * *' : customCron.trim()
+    const cronParts = cronExpr.split(/\s+/)
+    if (cronParts.length !== 5) {
+      toast.error('Invalid cron expression. Please enter a valid 5-field cron schedule.')
+      return
+    }
+
+    setActionLoading('save_schedule')
+    const res = await updateProcessorSchedule({
+      scheduleMode,
+      cronExpression: cronExpr,
+      presetFrequency,
+      batchSize: batchSizeInput,
+      activeDays,
+      activeFrom,
+      activeUntil,
+      pauseOutsideActiveHours: pauseOutsideHours,
+      timezone: selectedTimezone,
+      reason: scheduleReason || 'Updated via Admin Centre Scheduler'
+    })
+
+    if (res.error) {
+      toast.error(res.error)
+    } else {
+      toast.success('Email schedule updated.')
+      setShowSaveScheduleModal(false)
+      setScheduleReason('')
+      loadData()
+    }
+    setActionLoading(null)
+  }
+
+  const handleRunQueueNow = async (overrideWindow: boolean = false) => {
+    setActionLoading('run_now')
+    const res = await runQueueNowAction(overrideWindow)
+    if (res.error) {
+      if (res.isOff) {
+        setShowRunNowOffModal(true)
+      } else {
+        toast.error(res.error)
+      }
+    } else {
+      toast.success(`Email queue processing started. Processed ${res.processed} emails.`)
+      setShowRunNowOffModal(false)
+      loadData()
+    }
+    setActionLoading(null)
+  }
+
+  const handleRepairProcessor = async () => {
+    setActionLoading('repair')
+    const res = await repairProcessorAction()
+    if (res.error) {
+      toast.error(res.error)
+    } else {
+      toast.success('Email processor repaired.')
+      loadData()
+    }
+    setActionLoading(null)
+  }
+
   const handleToggle = async (emailType: string, currentVal: boolean) => {
     setActionLoading(emailType)
     const res = await updateEmailSetting(emailType, !currentVal)
@@ -145,12 +300,6 @@ export default function EmailAdminPage() {
       toast.error(res.error)
     } else {
       toast.success('Email setting updated')
-      if (currentVal) {
-        const queuedCount = data.queue.filter((q: any) => q.email_type === emailType && ['pending', 'retry_wait', 'blocked_configuration'].includes(q.status)).length
-        if (queuedCount > 0) {
-          toast.warning(`${queuedCount} queued ${SETTING_LABELS[emailType]?.label} emails remain in the queue. You can cancel them below.`, { duration: 6000 })
-        }
-      }
       loadData()
     }
     setActionLoading(null)
@@ -159,7 +308,6 @@ export default function EmailAdminPage() {
   const handleSaveAssignment = async (emailType: string) => {
     const config = assignmentConfigs[emailType]
     if (!config) return
-
     setActionLoading(`save_${emailType}`)
     const res = await updateSenderAssignment(
       emailType,
@@ -243,6 +391,15 @@ export default function EmailAdminPage() {
     }
   }
 
+  const toggleDay = (dayId: number) => {
+    if (activeDays.includes(dayId)) {
+      if (activeDays.length === 1) return // Keep at least one day
+      setActiveDays(activeDays.filter((d) => d !== dayId))
+    } else {
+      setActiveDays([...activeDays, dayId])
+    }
+  }
+
   if (loading && !data) {
     return (
       <div className="p-8 flex flex-col items-center justify-center min-h-[300px]">
@@ -257,15 +414,20 @@ export default function EmailAdminPage() {
   const queue = data?.queue || []
   const senders = data?.senders || []
   const assignments = data?.assignments || []
+  const auditLogs = data?.auditLogs || []
 
-  const remainingQuota = Math.max(0, 300 - stats.sentToday)
-  const isLowQuota = remainingQuota <= 50 && remainingQuota > 0
-  const isExhausted = remainingQuota === 0
+  const masterStatus = data?.masterStatus || {
+    enabled: false,
+    batch_size: 10,
+    cron_expression: '*/5 * * * *',
+    cron_active: false,
+    cron_exists: false,
+    health_status: 'DISABLED',
+    counts: { pending: 0, processing: 0, retry_wait: 0, failed: 0, sent_today: 0 }
+  }
 
-  // Filter active senders for dropdown selector
+  const isMasterOn = masterStatus.enabled
   const activeSenders = senders.filter((s: any) => s.status === 'Active')
-
-  // Find any blocked configuration items in queue
   const blockedJobs = queue.filter((q: any) => q.status === 'blocked_configuration')
 
   return (
@@ -273,96 +435,320 @@ export default function EmailAdminPage() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-black tracking-tight">Email Delivery</h1>
+          <h1 className="text-3xl font-black tracking-tight">Email Queue Processor</h1>
           <p className="text-sm text-[#555555] dark:text-[#999999] font-mono mt-1">
-            Global toggles, sender assignments, and Brevo delivery queue.
+            Master switch, pg_cron scheduler, active windows, sender profiles & queue activity.
           </p>
         </div>
-        <Button onClick={loadData} variant="ghost" className="flex items-center gap-2">
-          <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-          Refresh
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button
+            onClick={() => handleRunQueueNow(false)}
+            disabled={actionLoading === 'run_now'}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-4 py-2 rounded-xl flex items-center gap-2"
+          >
+            <Play size={14} />
+            Run Queue Now
+          </Button>
+          <Button onClick={loadData} variant="ghost" className="flex items-center gap-2">
+            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+            Refresh
+          </Button>
+        </div>
       </div>
 
-      {/* Blocked Configurations Notification */}
-      {blockedJobs.length > 0 && (
-        <div className="p-4 rounded-xl bg-[#ffeded] border border-[#eb4b4b] text-[#eb4b4b] flex gap-3 items-start">
-          <AlertTriangle className="mt-0.5 shrink-0" size={18} />
-          <div>
-            <h3 className="font-bold text-sm">DELIVERY BLOCKED ON RECENT EMAILS</h3>
-            <p className="text-xs mt-1 text-[#a32b2b]">
-              {blockedJobs.length} emails are currently blocked due to missing or inactive sender configurations. Correct the assignments below and click retry.
+      {/* MAIN MASTER CARD */}
+      <Card className={`p-6 border-2 transition-all ${isMasterOn ? 'border-green-500/40 bg-green-500/5' : 'border-amber-500/40 bg-amber-500/5'}`}>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <h2 className="text-xl font-black tracking-tight uppercase font-mono">Email Queue Processor</h2>
+              <span className={`px-3 py-1 rounded-full text-xs font-mono font-bold flex items-center gap-1.5 ${
+                isMasterOn ? 'bg-green-600 text-white' : 'bg-gray-200 dark:bg-[#333] text-gray-700 dark:text-gray-300'
+              }`}>
+                {isMasterOn ? <CheckCircle size={14} /> : <XCircle size={14} />}
+                {isMasterOn ? 'ENABLED' : 'DISABLED'}
+              </span>
+            </div>
+
+            <p className="text-xs text-[#555555] dark:text-[#999999]">
+              {isMasterOn ? (
+                <>● Email processing is active. Scheduled to run <code className="font-mono bg-black/10 dark:bg-white/10 px-1.5 py-0.5 rounded font-bold">{masterStatus.cron_expression}</code>.</>
+              ) : (
+                <>○ Email processing is completely paused. Queued emails are safely retained and will not be deleted or processed until turned ON.</>
+              )}
             </p>
+
+            {masterStatus.health_status === 'MISMATCH' && (
+              <div className="mt-2 text-xs font-mono font-bold text-amber-600 dark:text-amber-400 flex items-center gap-2">
+                <AlertTriangle size={14} /> Mismatch detected! Application setting ({isMasterOn ? 'ON' : 'OFF'}) does not match pg_cron job state ({masterStatus.cron_active ? 'ACTIVE' : 'INACTIVE'}).
+                <button onClick={handleRepairProcessor} className="underline hover:text-amber-700 font-bold ml-2">
+                  [Repair Processor]
+                </button>
+              </div>
+            )}
+
+            {masterStatus.health_status === 'MISSING' && (
+              <div className="mt-2 text-xs font-mono font-bold text-rose-600 dark:text-rose-400 flex items-center gap-2">
+                <AlertTriangle size={14} /> Missing job! Master switch is ON but process-email-queue-cron is missing from pg_cron.
+                <button onClick={handleRepairProcessor} className="underline hover:text-rose-700 font-bold ml-2">
+                  [Re-create Cron Job]
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center gap-4 shrink-0">
+            {isMasterOn ? (
+              <Button
+                onClick={() => setShowTurnOffModal(true)}
+                disabled={actionLoading === 'master_toggle'}
+                className="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs px-5 py-2.5 rounded-xl flex items-center gap-2"
+              >
+                <Power size={16} />
+                Turn Off
+              </Button>
+            ) : (
+              <Button
+                onClick={() => setShowTurnOnModal(true)}
+                disabled={actionLoading === 'master_toggle'}
+                className="bg-green-600 hover:bg-green-700 text-white font-bold text-xs px-5 py-2.5 rounded-xl flex items-center gap-2"
+              >
+                <Power size={16} />
+                Turn On
+              </Button>
+            )}
           </div>
         </div>
-      )}
+      </Card>
 
-      {/* Quota Alerts */}
-      {isExhausted && (
-        <div className="p-4 rounded-xl bg-[#ffeded] border border-[#eb4b4b] text-[#eb4b4b] flex gap-3 items-start">
-          <AlertTriangle className="mt-0.5 shrink-0" size={18} />
-          <div>
-            <h3 className="font-bold text-sm">EMAIL DELIVERY CAPACITY UNAVAILABLE</h3>
-            <p className="text-xs mt-1 text-[#a32b2b]">
-              New emails are being safely queued. Queued emails will be processed automatically when provider delivery capacity becomes available.
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Usage Stats Card */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="p-5 flex flex-col justify-between">
-          <div className="text-xs font-mono text-[#555555] dark:text-[#999999] uppercase">Sent Today</div>
-          <div className="text-3xl font-black mt-2">{stats.sentToday} <span className="text-lg font-normal text-[#999999]">/ 300</span></div>
-          <div className="text-[10px] text-[#999999] mt-1 font-mono">Limit reset daily</div>
+      {/* QUEUE & METRICS STATS */}
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <Card className="p-4 flex flex-col justify-between">
+          <div className="text-[10px] font-mono text-[#555] dark:text-[#999] uppercase">Pending</div>
+          <div className="text-2xl font-black mt-1 text-blue-600 dark:text-blue-400">{stats.queued}</div>
+          <div className="text-[9px] text-[#999] font-mono">Awaiting claim</div>
         </Card>
-
-        <Card className="p-5 flex flex-col justify-between">
-          <div className="text-xs font-mono text-[#555555] dark:text-[#999999] uppercase">Est. Remaining</div>
-          <div className="text-3xl font-black mt-2 text-green-600 dark:text-green-400">{remainingQuota}</div>
-          <div className="text-[10px] text-[#999999] mt-1 font-mono">Estimated Brevo capacity</div>
+        <Card className="p-4 flex flex-col justify-between">
+          <div className="text-[10px] font-mono text-[#555] dark:text-[#999] uppercase">Retry Waiting</div>
+          <div className="text-2xl font-black mt-1 text-amber-600 dark:text-amber-400">{stats.retrying}</div>
+          <div className="text-[9px] text-[#999] font-mono">Exponential backoff</div>
         </Card>
-
-        <Card className="p-5 flex flex-col justify-between">
-          <div className="text-xs font-mono text-[#555555] dark:text-[#999999] uppercase">Queue Status</div>
-          <div className="space-y-1 mt-2">
-            <div className="flex justify-between text-xs font-mono">
-              <span className="text-[#555555] dark:text-[#999999]">Queued:</span>
-              <span className="font-bold">{stats.queued}</span>
-            </div>
-            <div className="flex justify-between text-xs font-mono">
-              <span className="text-[#555555] dark:text-[#999999]">Blocked Config:</span>
-              <span className="font-bold text-red-500">{blockedJobs.length}</span>
-            </div>
-          </div>
+        <Card className="p-4 flex flex-col justify-between">
+          <div className="text-[10px] font-mono text-[#555] dark:text-[#999] uppercase">Failed</div>
+          <div className="text-2xl font-black mt-1 text-rose-600 dark:text-rose-400">{stats.failedTotal}</div>
+          <div className="text-[9px] text-[#999] font-mono">Permanent failures</div>
         </Card>
-
-        <Card className="p-5 flex flex-col justify-between">
-          <div className="text-xs font-mono text-[#555555] dark:text-[#999999] uppercase">Daily Operational</div>
-          <div className="space-y-1 mt-2">
-            <div className="flex justify-between text-xs font-mono">
-              <span className="text-[#555555] dark:text-[#999999]">Failed:</span>
-              <span className="font-bold text-red-500">{stats.failedTotal}</span>
-            </div>
-            <div className="flex justify-between text-xs font-mono">
-              <span className="text-[#555555] dark:text-[#999999]">Cancelled:</span>
-              <span className="font-bold text-gray-500">{stats.cancelled}</span>
-            </div>
-          </div>
+        <Card className="p-4 flex flex-col justify-between">
+          <div className="text-[10px] font-mono text-[#555] dark:text-[#999] uppercase">Sent Today</div>
+          <div className="text-2xl font-black mt-1 text-green-600 dark:text-green-400">{stats.sentToday}</div>
+          <div className="text-[9px] text-[#999] font-mono">Brevo deliveries</div>
+        </Card>
+        <Card className="p-4 flex flex-col justify-between">
+          <div className="text-[10px] font-mono text-[#555] dark:text-[#999] uppercase">Batch Size</div>
+          <div className="text-2xl font-black mt-1">{masterStatus.batch_size}</div>
+          <div className="text-[9px] text-[#999] font-mono">Emails per run</div>
         </Card>
       </div>
 
-      {/* Senders & Configurations */}
+      {/* SCHEDULE CONFIGURATION PANEL */}
+      <Card className="p-6">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h2 className="text-lg font-black tracking-tight">Email Processor Schedule & Rules</h2>
+            <p className="text-xs text-[#555] dark:text-[#999] font-mono mt-0.5">
+              Configure processing frequency, custom cron schedules, active days, and operating hours windows.
+            </p>
+          </div>
+          <Button
+            onClick={() => setShowSaveScheduleModal(true)}
+            disabled={actionLoading === 'save_schedule'}
+            className="bg-black dark:bg-white text-white dark:text-black font-bold text-xs px-4 py-2 rounded-xl flex items-center gap-2"
+          >
+            <Save size={14} />
+            Save Schedule
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Frequency & Cron */}
+          <div className="space-y-4">
+            <h3 className="text-xs font-mono font-bold uppercase text-[#555] dark:text-[#999] flex items-center gap-1.5">
+              <Clock size={14} /> Processing Frequency
+            </h3>
+
+            <div className="space-y-3">
+              <div>
+                <label className="text-[10px] font-mono uppercase text-[#555] dark:text-[#999] block mb-1">Preset Frequency</label>
+                <select
+                  value={scheduleMode === 'preset' ? presetFrequency : 'custom'}
+                  onChange={(e) => {
+                    if (e.target.value === 'custom') {
+                      setScheduleMode('custom')
+                    } else {
+                      setScheduleMode('preset')
+                      setPresetFrequency(e.target.value)
+                      setCustomCron(PRESET_MAP[e.target.value] || '*/5 * * * *')
+                    }
+                  }}
+                  className="w-full bg-white dark:bg-[#111] border border-[#e0e0e0] dark:border-[#333] rounded-lg px-3 py-2 text-xs font-mono"
+                >
+                  {Object.entries(PRESET_LABELS).map(([key, label]) => (
+                    <option key={key} value={key}>{label}</option>
+                  ))}
+                  <option value="custom">Custom Cron Expression</option>
+                </select>
+              </div>
+
+              {scheduleMode === 'custom' && (
+                <div className="space-y-1">
+                  <label className="text-[10px] font-mono uppercase text-[#555] dark:text-[#999] block">Custom Cron (5-field expression)</label>
+                  <input
+                    type="text"
+                    value={customCron}
+                    onChange={(e) => setCustomCron(e.target.value)}
+                    placeholder="*/5 * * * *"
+                    className="w-full bg-white dark:bg-[#111] border border-[#e0e0e0] dark:border-[#333] rounded-lg px-3 py-2 text-xs font-mono font-bold"
+                  />
+                  <div className="text-[9px] font-mono text-[#777] mt-1">
+                    Format: Minute | Hour | Day | Month | Weekday (e.g. <code>0 9 * * 1-5</code> for Weekdays 9 AM)
+                  </div>
+                </div>
+              )}
+
+              <div className="p-3 rounded-lg bg-gray-50 dark:bg-[#111] border border-[#e0e0e0] dark:border-[#333] text-xs font-mono space-y-1">
+                <div className="text-[10px] text-[#777] uppercase font-bold">Active Cron Schedule</div>
+                <div className="font-black text-sm text-green-600 dark:text-green-400">
+                  {scheduleMode === 'preset' ? PRESET_MAP[presetFrequency] : customCron}
+                </div>
+                <div className="text-[10px] text-[#555] dark:text-[#999]">
+                  {scheduleMode === 'preset' ? PRESET_LABELS[presetFrequency] : 'Custom Schedule'}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Active Days & Hours Window */}
+          <div className="space-y-4">
+            <h3 className="text-xs font-mono font-bold uppercase text-[#555] dark:text-[#999] flex items-center gap-1.5">
+              <Calendar size={14} /> Active Window & Rules
+            </h3>
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-[10px] font-mono uppercase text-[#555] dark:text-[#999] block mb-1">Active Days</label>
+                <div className="flex gap-1.5 flex-wrap">
+                  {DAYS_MAP.map((day) => {
+                    const active = activeDays.includes(day.id)
+                    return (
+                      <button
+                        key={day.id}
+                        type="button"
+                        onClick={() => toggleDay(day.id)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all ${
+                          active ? 'bg-black dark:bg-white text-white dark:text-black' : 'bg-gray-100 dark:bg-[#222] text-gray-500'
+                        }`}
+                      >
+                        {day.label}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[10px] font-mono uppercase text-[#555] dark:text-[#999] block mb-1">Active From</label>
+                  <input
+                    type="time"
+                    value={activeFrom}
+                    onChange={(e) => setActiveFrom(e.target.value)}
+                    className="w-full bg-white dark:bg-[#111] border border-[#e0e0e0] dark:border-[#333] rounded-lg px-3 py-1.5 text-xs font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-mono uppercase text-[#555] dark:text-[#999] block mb-1">Active Until</label>
+                  <input
+                    type="time"
+                    value={activeUntil}
+                    onChange={(e) => setActiveUntil(e.target.value)}
+                    className="w-full bg-white dark:bg-[#111] border border-[#e0e0e0] dark:border-[#333] rounded-lg px-3 py-1.5 text-xs font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  type="checkbox"
+                  id="pauseWindow"
+                  checked={pauseOutsideHours}
+                  onChange={(e) => setPauseOutsideHours(e.target.checked)}
+                  className="rounded border-gray-300 text-black focus:ring-0"
+                />
+                <label htmlFor="pauseWindow" className="text-xs font-mono font-bold cursor-pointer">
+                  Pause automatically outside active hours
+                </label>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-mono uppercase text-[#555] dark:text-[#999] block mb-1">Scheduler Timezone</label>
+                <select
+                  value={selectedTimezone}
+                  onChange={(e) => setSelectedTimezone(e.target.value)}
+                  className="w-full bg-white dark:bg-[#111] border border-[#e0e0e0] dark:border-[#333] rounded-lg px-3 py-1.5 text-xs font-mono"
+                >
+                  <option value="Asia/Kolkata">Asia/Kolkata (IST - UTC+05:30)</option>
+                  <option value="UTC">UTC (Coordinated Universal Time)</option>
+                  <option value="America/New_York">America/New_York (EST)</option>
+                  <option value="Europe/London">Europe/London (GMT)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {/* PROCESSOR HEALTH & SYNC SUMMARY CARD */}
+      <Card className="p-6">
+        <h2 className="text-lg font-black tracking-tight mb-4 flex items-center gap-2">
+          <Wrench size={18} /> Processor Health & Synchronization
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 text-xs font-mono">
+          <div>
+            <span className="text-[#555] dark:text-[#999] block text-[10px] uppercase">Application Switch</span>
+            <span className={`font-bold mt-1 block ${isMasterOn ? 'text-green-600' : 'text-gray-500'}`}>
+              {isMasterOn ? 'ENABLED' : 'DISABLED'}
+            </span>
+          </div>
+          <div>
+            <span className="text-[#555] dark:text-[#999] block text-[10px] uppercase">pg_cron Job</span>
+            <span className={`font-bold mt-1 block ${masterStatus.cron_active ? 'text-green-600' : 'text-gray-500'}`}>
+              {masterStatus.cron_active ? `ACTIVE (${masterStatus.cron_schedule})` : 'INACTIVE'}
+            </span>
+          </div>
+          <div>
+            <span className="text-[#555] dark:text-[#999] block text-[10px] uppercase">Health Status</span>
+            <span className={`font-bold mt-1 block ${
+              masterStatus.health_status === 'HEALTHY' ? 'text-green-600' :
+              masterStatus.health_status === 'DISABLED' ? 'text-gray-500' : 'text-amber-500'
+            }`}>
+              {masterStatus.health_status}
+            </span>
+          </div>
+          <div>
+            <span className="text-[#555] dark:text-[#999] block text-[10px] uppercase">Last Cron Execution</span>
+            <span className="font-bold mt-1 block">
+              {masterStatus.last_cron_run ? new Date(masterStatus.last_cron_run).toLocaleString() : 'No recent execution'}
+            </span>
+          </div>
+        </div>
+      </Card>
+
+      {/* EMAIL CATEGORY TOGGLES & SENDER ASSIGNMENTS */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        
-        {/* Email Notification Settings (2/3 Column) */}
         <div className="md:col-span-2 space-y-6">
-          
           <Card className="p-6">
-            <h2 className="text-lg font-black tracking-tight mb-6">Email Settings & Sender Configurations</h2>
+            <h2 className="text-lg font-black tracking-tight mb-6">Category Notification Settings & Brevo Assignments</h2>
             <div className="space-y-8 divide-y divide-[#e0e0e0] dark:divide-[#333333]">
-              
               {[...SETTINGS_ORDER, ...AUTH_SETTINGS_ORDER].map((type, idx) => {
                 const setting = settings.find((s: any) => s.email_type === type)
                 const enabled = setting?.enabled ?? false
@@ -394,7 +780,6 @@ export default function EmailAdminPage() {
                       </button>
                     </div>
 
-                    {/* Sender Configuration Sub-Panel */}
                     <div className="mt-4 p-4 rounded-lg bg-gray-50 dark:bg-[#111111] grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
                       <div>
                         <label className="text-[10px] font-mono uppercase text-[#555555] dark:text-[#999999] block mb-1">Brevo Sender</label>
@@ -456,15 +841,12 @@ export default function EmailAdminPage() {
                   </div>
                 )
               })}
-
             </div>
           </Card>
-
         </div>
 
-        {/* Brevo Senders Panel (1/3 Column) */}
+        {/* Brevo Verified Identities Sidebar */}
         <div className="space-y-6">
-          
           <Card className="p-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-black tracking-tight">Brevo Senders</h2>
@@ -473,7 +855,6 @@ export default function EmailAdminPage() {
               </button>
             </div>
             
-            {/* List Senders */}
             <div className="space-y-3 mb-6">
               {senders.map((s: any) => (
                 <div key={s.email} className="p-3 border border-[#e0e0e0] dark:border-[#333333] rounded-lg flex justify-between items-center text-xs">
@@ -496,10 +877,8 @@ export default function EmailAdminPage() {
               ))}
             </div>
 
-             {/* Add Verified Sender Form */}
             <form onSubmit={handleAddSender} className="space-y-3 pt-4 border-t border-[#e0e0e0] dark:border-[#333333]">
               <h3 className="text-xs font-bold font-mono uppercase text-[#555555] dark:text-[#999999]">Add Verified Sender</h3>
-              
               <div className="space-y-1">
                 <label className="text-[10px] font-bold font-mono text-[#555555] dark:text-[#999999] uppercase">Sender Email Address</label>
                 <div className="flex items-center gap-1">
@@ -509,22 +888,17 @@ export default function EmailAdminPage() {
                     placeholder="events"
                     value={newSenderPrefix}
                     onChange={e => setNewSenderPrefix(e.target.value)}
-                    className="flex-1 px-3 py-1.5 text-xs bg-white dark:bg-[#111111] border border-[#e0e0e0] dark:border-[#333333] rounded-lg focus:outline-none focus:border-black dark:focus:border-white transition-colors"
+                    className="flex-1 px-3 py-1.5 text-xs bg-white dark:bg-[#111111] border border-[#e0e0e0] dark:border-[#333333] rounded-lg focus:outline-none"
                   />
                   <span className="text-xs font-mono text-[#999999] px-0.5">@</span>
                   <select
                     value={newSenderDomain}
                     onChange={e => setNewSenderDomain(e.target.value)}
-                    className="w-[140px] px-2 py-1.5 text-xs bg-white dark:bg-[#111111] border border-[#e0e0e0] dark:border-[#333333] rounded-lg focus:outline-none focus:border-black dark:focus:border-white transition-colors font-mono"
+                    className="w-[140px] px-2 py-1.5 text-xs bg-white dark:bg-[#111111] border border-[#e0e0e0] dark:border-[#333333] rounded-lg font-mono"
                   >
                     {(data?.domains || []).map((d: string) => (
-                      <option key={d} value={d}>
-                        {d}
-                      </option>
+                      <option key={d} value={d}>{d}</option>
                     ))}
-                    {(!data?.domains || data.domains.length === 0) && (
-                      <option value="">No domains</option>
-                    )}
                   </select>
                 </div>
               </div>
@@ -542,7 +916,6 @@ export default function EmailAdminPage() {
                 Add Verified Sender
               </Button>
             </form>
-
           </Card>
 
           <Card className="p-6">
@@ -551,12 +924,10 @@ export default function EmailAdminPage() {
               Cancel All Queued Emails
             </Button>
           </Card>
-
         </div>
-
       </div>
 
-      {/* Queue Table */}
+      {/* QUEUE TABLE */}
       <Card className="p-6">
         <h2 className="text-lg font-black tracking-tight mb-4">Delivery Queue (Latest 100)</h2>
         {queue.length === 0 ? (
@@ -580,30 +951,13 @@ export default function EmailAdminPage() {
               <tbody>
                 {queue.map((item: any) => (
                   <tr key={item.id} className="border-b border-[#e0e0e0] dark:border-[#333333] hover:bg-gray-50 dark:hover:bg-[#1a1a1a]">
-                    <td className="py-3 font-semibold">
-                      {item.recipient_email}
-                      {item.status === 'blocked_configuration' && (
-                        <div className="text-[10px] text-red-500 font-bold mt-0.5">
-                          Email delivery blocked: No valid Brevo sender is configured.
-                        </div>
-                      )}
-                    </td>
+                    <td className="py-3 font-semibold">{item.recipient_email}</td>
                     <td className="py-3">{SETTING_LABELS[item.email_type]?.label || item.email_type}</td>
-                    <td className="py-3">
-                      {item.sender_email ? (
-                        <div>
-                          <div>{item.sender_email}</div>
-                          {item.sender_name && <div className="text-[10px] text-[#999999]">{item.sender_name}</div>}
-                        </div>
-                      ) : (
-                        <span className="text-[#999999] italic">Default (unconfigured)</span>
-                      )}
-                    </td>
+                    <td className="py-3">{item.sender_email || 'Default'}</td>
                     <td className="py-3">
                       <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                         item.status === 'sent' ? 'bg-green-100 text-green-800' :
                         item.status === 'failed' ? 'bg-red-100 text-red-800' :
-                        item.status === 'blocked_configuration' ? 'bg-red-200 text-red-900 border border-red-300' :
                         item.status === 'pending' ? 'bg-gray-100 text-gray-800' : 'bg-amber-100 text-amber-800'
                       }`}>
                         {item.status}
@@ -612,24 +966,10 @@ export default function EmailAdminPage() {
                     <td className="py-3">{item.attempt_count}</td>
                     <td className="py-3">{new Date(item.created_at).toLocaleString()}</td>
                     <td className="py-3 text-right">
-                      {['pending', 'retry_wait', 'failed', 'blocked_configuration'].includes(item.status) && (
+                      {['pending', 'retry_wait', 'failed'].includes(item.status) && (
                         <div className="flex gap-2 justify-end">
-                          <button
-                            onClick={() => handleRetry(item.id)}
-                            disabled={actionLoading === item.id}
-                            className="p-1 hover:bg-gray-200 dark:hover:bg-[#333333] rounded text-green-600"
-                            title="Retry Now"
-                          >
-                            <Play size={14} />
-                          </button>
-                          <button
-                            onClick={() => handleCancel(item.id)}
-                            disabled={actionLoading === item.id}
-                            className="p-1 hover:bg-gray-200 dark:hover:bg-[#333333] rounded text-red-600"
-                            title="Cancel Email"
-                          >
-                            <Ban size={14} />
-                          </button>
+                          <button onClick={() => handleRetry(item.id)} className="p-1 text-green-600"><Play size={14} /></button>
+                          <button onClick={() => handleCancel(item.id)} className="p-1 text-red-600"><Ban size={14} /></button>
                         </div>
                       )}
                     </td>
@@ -640,6 +980,145 @@ export default function EmailAdminPage() {
           </div>
         )}
       </Card>
+
+      {/* AUDIT LOG TABLE */}
+      <Card className="p-6">
+        <h2 className="text-lg font-black tracking-tight mb-4 flex items-center gap-2">
+          <Activity size={18} />
+          Processor Activity & Schedule Audit Log
+        </h2>
+        {auditLogs.length === 0 ? (
+          <p className="text-sm text-[#555555] dark:text-[#999999] font-mono text-center py-6">
+            No audit log entries recorded yet.
+          </p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse font-mono text-xs">
+              <thead>
+                <tr className="border-b border-[#e0e0e0] dark:border-[#333333] pb-2 text-[#555555] dark:text-[#999999]">
+                  <th className="py-2">Timestamp</th>
+                  <th className="py-2">Action</th>
+                  <th className="py-2">Schedule / Expression</th>
+                  <th className="py-2">Batch</th>
+                  <th className="py-2">Reason / Result</th>
+                </tr>
+              </thead>
+              <tbody>
+                {auditLogs.map((log: any) => (
+                  <tr key={log.id} className="border-b border-[#e0e0e0] dark:border-[#333333] hover:bg-gray-50 dark:hover:bg-[#1a1a1a]">
+                    <td className="py-3 font-semibold">{new Date(log.changed_at).toLocaleString()}</td>
+                    <td className="py-3">
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                        log.action === 'ENABLE' ? 'bg-green-100 text-green-800' :
+                        log.action === 'DISABLE' ? 'bg-rose-100 text-rose-800' :
+                        log.action === 'RUN_NOW' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {log.action}
+                      </span>
+                    </td>
+                    <td className="py-3 font-bold">{log.new_cron_expression || log.previous_cron_expression || '-'}</td>
+                    <td className="py-3">{log.new_batch_size || 10}</td>
+                    <td className="py-3 text-gray-500 italic">{log.reason || log.result || 'No reason specified'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Card>
+
+      {/* CONFIRMATION MODALS */}
+      {showTurnOffModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-6 space-y-4 shadow-2xl">
+            <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
+              <ShieldAlert size={24} />
+              <h3 className="text-lg font-black tracking-tight">Turn Off Email Processing?</h3>
+            </div>
+            <p className="text-xs text-[#555] dark:text-[#999] leading-relaxed">
+              Email delivery will be completely paused. Existing queued emails will remain safely stored and will not be deleted.
+            </p>
+            <Input
+              label="Reason for pausing (Optional)"
+              placeholder="e.g. Event period ended, maintenance"
+              value={turnOffReason}
+              onChange={(e) => setTurnOffReason(e.target.value)}
+            />
+            <div className="flex justify-end gap-3 pt-2">
+              <Button variant="ghost" onClick={() => setShowTurnOffModal(false)}>Cancel</Button>
+              <Button onClick={() => handleMasterToggleConfirm(false)} className="bg-rose-600 text-white font-bold text-xs px-4 py-2 rounded-xl">
+                Turn Off
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showTurnOnModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-6 space-y-4 shadow-2xl">
+            <div className="flex items-center gap-3 text-green-600 dark:text-green-400">
+              <CheckCircle size={24} />
+              <h3 className="text-lg font-black tracking-tight">Turn On Email Processing?</h3>
+            </div>
+            <p className="text-xs text-[#555] dark:text-[#999] leading-relaxed">
+              The email processor will start using the saved schedule <code className="font-mono bg-black/10 dark:bg-white/10 px-1 py-0.5 rounded font-bold">{masterStatus.cron_expression}</code>. Existing queued emails may begin processing immediately.
+            </p>
+            <div className="flex justify-end gap-3 pt-2">
+              <Button variant="ghost" onClick={() => setShowTurnOnModal(false)}>Cancel</Button>
+              <Button onClick={() => handleMasterToggleConfirm(true)} className="bg-green-600 text-white font-bold text-xs px-4 py-2 rounded-xl">
+                Turn On
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showSaveScheduleModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-6 space-y-4 shadow-2xl">
+            <div className="flex items-center gap-3 text-blue-600 dark:text-blue-400">
+              <Save size={24} />
+              <h3 className="text-lg font-black tracking-tight">Apply New Email Schedule?</h3>
+            </div>
+            <p className="text-xs text-[#555] dark:text-[#999] leading-relaxed">
+              New schedule: <code className="font-mono bg-black/10 dark:bg-white/10 px-1.5 py-0.5 rounded font-bold">{scheduleMode === 'preset' ? PRESET_MAP[presetFrequency] : customCron}</code>
+            </p>
+            <Input
+              label="Reason for schedule update (Optional)"
+              placeholder="e.g. Optimized for event week"
+              value={scheduleReason}
+              onChange={(e) => setScheduleReason(e.target.value)}
+            />
+            <div className="flex justify-end gap-3 pt-2">
+              <Button variant="ghost" onClick={() => setShowSaveScheduleModal(false)}>Cancel</Button>
+              <Button onClick={handleSaveScheduleConfirm} className="bg-black dark:bg-white text-white dark:text-black font-bold text-xs px-4 py-2 rounded-xl">
+                Apply Schedule
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showRunNowOffModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-6 space-y-4 shadow-2xl">
+            <div className="flex items-center gap-3 text-amber-600">
+              <AlertTriangle size={24} />
+              <h3 className="text-lg font-black tracking-tight">Email Processing is OFF</h3>
+            </div>
+            <p className="text-xs text-[#555] dark:text-[#999] leading-relaxed">
+              Email processing is currently OFF. Turn it ON before running the queue.
+            </p>
+            <div className="flex justify-end gap-3 pt-2">
+              <Button variant="ghost" onClick={() => setShowRunNowOffModal(false)}>Cancel</Button>
+              <Button onClick={() => handleMasterToggleConfirm(true)} className="bg-green-600 text-white font-bold text-xs px-4 py-2 rounded-xl">
+                Turn On
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

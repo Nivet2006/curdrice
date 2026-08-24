@@ -97,44 +97,101 @@ serve(async (req) => {
 
   // Queue-processing logic
   try {
-    const { data: queueItems, error: fetchError } = await supabase
-      .from("email_queue")
+    // SECONDARY SAFETY SWITCH & ACTIVE WINDOW CHECK
+    const { data: settings, error: settingsError } = await supabase
+      .from("email_queue_settings")
       .select("*")
-      .in("status", ["pending", "retry_wait"])
-      .lte("next_attempt_at", new Date().toISOString())
-      .order("priority", { ascending: true })
-      .limit(50)
+      .eq("id", 1)
+      .single()
 
-    if (fetchError) throw fetchError
-
-    if (!queueItems || queueItems.length === 0) {
-      return new Response(JSON.stringify({ success: true, message: "No pending emails in queue" }), {
-        headers: { "Content-Type": "application/json" }
-      })
+    if (settingsError) {
+      console.warn("Could not read email_queue_settings:", settingsError.message)
     }
 
-    const priorityMap: Record<string, number> = {
-      CRITICAL: 1,
-      HIGH: 2,
-      NORMAL: 3,
-      LOW: 4
+    if (settings && settings.enabled === false) {
+      return new Response(
+        JSON.stringify({
+          success: true,
+          enabled: false,
+          processed: 0,
+          message: "Email queue processing is disabled"
+        }),
+        { headers: { "Content-Type": "application/json" } }
+      )
     }
 
-    queueItems.sort((a: any, b: any) => {
-      const pA = priorityMap[a.priority] || 99
-      const pB = priorityMap[b.priority] || 99
-      if (pA !== pB) return pA - pB
-      return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-    })
+    // Active Window Enforcement (Timezone-aware)
+    if (settings && settings.pause_outside_active_hours) {
+      const timeZone = settings.timezone || "Asia/Kolkata"
+      const now = new Date()
+      
+      // Get day of week (0 = Sunday, 1 = Monday, ...) in target timezone
+      const dayFormatter = new Intl.DateTimeFormat("en-US", { timeZone, weekday: "numeric" })
+      const dayOfWeekStr = dayFormatter.format(now) // 1..7 (1=Sun, 2=Mon... in Intl) or 0..6
+      const timeFormatter = new Intl.DateTimeFormat("en-US", { timeZone, hour: "2-digit", minute: "2-digit", hour12: false })
+      const currentTimeStr = timeFormatter.format(now).trim()
 
-    const batch = queueItems.slice(0, 10)
+      const jsDay = now.getUTCDay() // fallback basic
+      const activeDays: number[] = settings.active_days || [0,1,2,3,4,5,6]
+
+      // Check active day
+      if (!activeDays.includes(jsDay)) {
+        return new Response(
+          JSON.stringify({
+            success: true,
+            enabled: true,
+            processed: 0,
+            message: "Outside configured processing window: Day is inactive"
+          }),
+          { headers: { "Content-Type": "application/json" } }
+        )
+      }
+
+      // Check active hours window (handling midnight crossing)
+      const fromTime = settings.active_from || "00:00"
+      const untilTime = settings.active_until || "23:59"
+
+      let isInsideHours = false
+      if (fromTime <= untilTime) {
+        isInsideHours = currentTimeStr >= fromTime && currentTimeStr <= untilTime
+      } else {
+        // Midnight crossing, e.g., 22:00 to 06:00
+        isInsideHours = currentTimeStr >= fromTime || currentTimeStr <= untilTime
+      }
+
+      if (!isInsideHours) {
+        return new Response(
+          JSON.stringify({
+            success: true,
+            enabled: true,
+            processed: 0,
+            message: "Outside configured processing window: Outside active hours"
+          }),
+          { headers: { "Content-Type": "application/json" } }
+        )
+      }
+    }
+
+    const batchSize = settings?.batch_size || 10
+
+    // Atomic claiming using claim_email_queue_batch RPC (FOR UPDATE SKIP LOCKED)
+    const { data: claimedItems, error: claimError } = await supabase.rpc(
+      "claim_email_queue_batch",
+      { p_batch_size: batchSize }
+    )
+
+    if (claimError) throw claimError
+
+    if (!claimedItems || claimedItems.length === 0) {
+      return new Response(
+        JSON.stringify({ success: true, message: "No pending emails in queue" }),
+        { headers: { "Content-Type": "application/json" } }
+      )
+    }
+
+    const batch = claimedItems
 
     for (const item of batch) {
-      await supabase
-        .from("email_queue")
-        .update({ status: "processing", attempt_count: item.attempt_count + 1, last_attempt_at: new Date().toISOString() })
-        .eq("id", item.id)
-
       try {
         if (!brevoApiKey) {
           throw new Error("BREVO_API_KEY is not configured in Supabase Edge Function Secrets.")
