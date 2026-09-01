@@ -156,8 +156,9 @@ export async function proxy(request: NextRequest) {
   const isRedirectPage = request.nextUrl.pathname.startsWith('/redirect/') || request.nextUrl.pathname.startsWith('/r/')
   const isPublicQrPage = request.nextUrl.pathname.startsWith('/qr') || request.nextUrl.pathname.startsWith('/api/qr')
   const isPublicClubShowcasePage = request.nextUrl.pathname.startsWith('/c/') || request.nextUrl.pathname === '/c' || request.nextUrl.pathname.startsWith('/clubs')
+  const isPublicCertificatePage = request.nextUrl.pathname.startsWith('/certificate/')
 
-  // Redirect unauthenticated users to login, but bypass public event details, public club showcase, QR creator, and redirect pages
+  // Redirect unauthenticated users to login, but bypass public event details, public club showcase, QR creator, certificate viewer, and redirect pages
   if (
     !user &&
     !isAuthPage &&
@@ -165,7 +166,8 @@ export async function proxy(request: NextRequest) {
     !isPublicEventPage &&
     !isRedirectPage &&
     !isPublicQrPage &&
-    !isPublicClubShowcasePage
+    !isPublicClubShowcasePage &&
+    !isPublicCertificatePage
   ) {
     supabaseResponse.cookies.delete('curdrice_user_role')
     supabaseResponse.cookies.delete('curdrice_user_name')
@@ -216,7 +218,7 @@ export async function proxy(request: NextRequest) {
     }
 
     // RBAC rules
-    if (path.startsWith('/admin') && role !== 'admin') {
+    if ((path.startsWith('/admin') || path.startsWith('/certificate-upload')) && role !== 'admin') {
       const url = request.nextUrl.clone()
       url.pathname = `/${role}/dashboard`
       return NextResponse.redirect(url)

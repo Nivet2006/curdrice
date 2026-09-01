@@ -1,7 +1,8 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, Suspense } from 'react'
 import { motion } from 'framer-motion'
+import { useSearchParams } from 'next/navigation'
 import {
   QrCode,
   Download,
@@ -15,13 +16,55 @@ import {
   ShieldCheck,
   RefreshCw,
   Image as ImageIcon,
-  Sparkles
+  Sparkles,
+  AlertTriangle,
+  RotateCcw,
+  Sliders,
+  ShieldAlert,
+  Layers,
+  CheckCircle2
 } from 'lucide-react'
-import { renderQRToCanvas, downloadCanvasAsImage } from '@/lib/utils/qr-canvas'
+import {
+  renderQRToCanvas,
+  downloadCanvasAsImage,
+  LogoBgStyle,
+  GradientDirection,
+  analyzeQRReadability,
+  getLuminance
+} from '@/lib/utils/qr-canvas'
 import { toast } from 'sonner'
 import { Navbar } from '@/components/shared/Navbar'
 import { AdminHeader } from '@/components/admin/AdminHeader'
 import { supabase } from '@/lib/supabase/client'
+
+function QROptionsQueryHandler({
+  setSelectedTedxSlug,
+  setUrl,
+  setIncludeLogo,
+  setLogoOption
+}: {
+  setSelectedTedxSlug: (slug: string) => void
+  setUrl: (url: string) => void
+  setIncludeLogo: (inc: boolean) => void
+  setLogoOption: (opt: 'clubeve' | 'onepercent' | 'tedx') => void
+}) {
+  const searchParams = useSearchParams()
+  const slug = searchParams.get('slug')
+  const logo = searchParams.get('logo')
+
+  useEffect(() => {
+    if (slug) {
+      setSelectedTedxSlug(slug)
+      setUrl(`https://clubeve.nivet2006.in/tedx/${slug}`)
+    }
+    if (logo === 'tedx' || slug) {
+      setIncludeLogo(true)
+      setLogoOption('tedx')
+    }
+  }, [slug, logo, setSelectedTedxSlug, setUrl, setIncludeLogo, setLogoOption])
+
+  return null
+}
 
 export default function CustomQRCreatorPage() {
   const [role, setRole] = useState<any>(null)
@@ -36,15 +79,34 @@ export default function CustomQRCreatorPage() {
   const [fgColor, setFgColor] = useState('#0a0a0a')
   const [bgColor, setBgColor] = useState('#ffffff')
 
-  // Logo settings
+  // Base Logo settings
   const [includeLogo, setIncludeLogo] = useState(true)
   const [selectedLogo, setSelectedLogo] = useState<string>('/logo.png')
-  const [logoRatio, setLogoRatio] = useState(0.22)
+  const [logoOption, setLogoOption] = useState<'clubeve' | 'onepercent' | 'tedx'>('clubeve')
+  const [logoRotation, setLogoRotation] = useState<number>(15)
+  const [logoRatio, setLogoRatio] = useState(0.16)
   const [showLogoBg, setShowLogoBg] = useState(false)
   const [logoOpacity, setLogoOpacity] = useState(1.0)
   const [logoGlow, setLogoGlow] = useState(false)
-  const [logoGlowColor, setLogoGlowColor] = useState('#3b82f6')
+  const [logoGlowColor, setLogoGlowColor] = useState('#eb0028')
   const [logoGlowBlur, setLogoGlowBlur] = useState(20)
+
+  // Advanced TEDx Branding state
+  const [logoBgStyle, setLogoBgStyle] = useState<LogoBgStyle>('adaptive')
+  const [logoPadding, setLogoPadding] = useState<number>(10)
+  const [logoRadius, setLogoRadius] = useState<number>(16)
+  const [borderWidth, setBorderWidth] = useState<number>(2)
+  const [bgColorMode, setBgColorMode] = useState<'auto' | 'white' | 'black' | 'custom'>('auto')
+  const [customBgColor, setCustomBgColor] = useState<string>('#ffffff')
+  const [borderColorMode, setBorderColorMode] = useState<'auto' | 'white' | 'black' | 'custom'>('auto')
+  const [customBorderColor, setCustomBorderColor] = useState<string>('#000000')
+  const [gradientStart, setGradientStart] = useState<string>('#eb0028')
+  const [gradientEnd, setGradientEnd] = useState<string>('#000000')
+  const [gradientDirection, setGradientDirection] = useState<GradientDirection>('diagonal')
+
+  // Dynamic TEDx Portfolio state
+  const [tedxPortfolios, setTedxPortfolios] = useState<any[]>([])
+  const [selectedTedxSlug, setSelectedTedxSlug] = useState<string>('')
 
   // Link redirect creation state
   const [shortUrl, setShortUrl] = useState('')
@@ -54,9 +116,9 @@ export default function CustomQRCreatorPage() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const transparentCanvasRef = useRef<HTMLCanvasElement | null>(null)
 
-  // Check user role on load for Navbar compatibility
+  // Check user role and load TEDx portfolios on load
   useEffect(() => {
-    async function loadUser() {
+    async function loadUserAndPortfolios() {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
         const { data: profile } = await supabase
@@ -70,8 +132,18 @@ export default function CustomQRCreatorPage() {
           setName(profile.full_name)
         }
       }
+
+      const { data: portfolios } = await supabase
+        .from('tedx_portfolios')
+        .select('*')
+        .eq('is_active', true)
+        .order('display_name', { ascending: true })
+
+      if (portfolios && portfolios.length > 0) {
+        setTedxPortfolios(portfolios)
+      }
     }
-    loadUser()
+    loadUserAndPortfolios()
   }, [])
 
   // Handle Preset Theme Changes
@@ -86,45 +158,174 @@ export default function CustomQRCreatorPage() {
     }
   }
 
+  // Determine effective canvas background luminance & active dark/light mode
+  const effectiveBgHex = themeMode === 'light' ? '#ffffff' : themeMode === 'dark' ? '#141414' : bgColor
+  const effectiveFgHex = themeMode === 'light' ? '#0a0a0a' : themeMode === 'dark' ? '#ffffff' : fgColor
+  const isCanvasDark = getLuminance(effectiveBgHex) < 0.5
+
+  // Determine actual effective logo asset path based on logoOption and actual canvas theme contrast
+  const getEffectiveLogoSrc = () => {
+    if (logoOption === 'clubeve') return '/logo.png'
+    if (logoOption === 'onepercent') return '/onepercent.png'
+    if (logoOption === 'tedx') {
+      // Dark QR / Light Canvas -> tedxlogo-black.png
+      // Light QR / Dark Canvas -> tedxlogo-white.png
+      return isCanvasDark ? '/tedxlogo-white.png' : '/tedxlogo-black.png'
+    }
+    return selectedLogo
+  }
+
+  const effectiveLogoSrc = getEffectiveLogoSrc()
+
+  // Apply TEDx Branding Presets
+  const applyTedxPreset = (presetKey: string) => {
+    setLogoOption('tedx')
+    setIncludeLogo(true)
+
+    switch (presetKey) {
+      case 'clean':
+        setLogoBgStyle('none')
+        setLogoRotation(0)
+        setLogoRatio(0.16)
+        setLogoPadding(4)
+        setLogoOpacity(1.0)
+        break
+      case 'classic':
+        setLogoBgStyle('square')
+        setLogoRotation(0)
+        setLogoRatio(0.16)
+        setLogoPadding(8)
+        setBgColorMode('auto')
+        setLogoOpacity(1.0)
+        break
+      case 'diagonal':
+        setLogoBgStyle('adaptive')
+        setLogoRotation(15)
+        setLogoRatio(0.16)
+        setLogoPadding(10)
+        setLogoRadius(14)
+        setBgColorMode('auto')
+        setLogoOpacity(1.0)
+        break
+      case 'minimal':
+        setLogoBgStyle('none')
+        setLogoRotation(0)
+        setLogoRatio(0.14)
+        setLogoPadding(2)
+        setLogoOpacity(1.0)
+        break
+      case 'premium':
+      case 'adaptive':
+      default:
+        setLogoBgStyle('adaptive')
+        setLogoRotation(15)
+        setLogoRatio(0.16)
+        setLogoPadding(10)
+        setLogoRadius(16)
+        setBgColorMode('auto')
+        setLogoOpacity(1.0)
+        break
+    }
+    toast.success(`Applied TEDx ${presetKey.toUpperCase()} Preset`)
+  }
+
+  // Reset TEDx branding settings to recommended defaults
+  const handleResetBranding = () => {
+    applyTedxPreset('adaptive')
+    toast.success('Reset TEDx branding settings to recommended defaults')
+  }
+
+  // Calculate readability safety score
+  const readability = analyzeQRReadability(logoRatio, logoPadding, logoRotation, logoBgStyle)
+
   // Active target for QR code rendering
   const qrTargetText = shortUrl || (url.trim() ? url.trim() : 'https://clubeve.nivet2006.in')
 
   // Re-render canvas whenever options change
   useEffect(() => {
+    const commonAdvanced = {
+      bgStyle: logoOption === 'tedx' ? logoBgStyle : (showLogoBg ? 'rounded' : 'none'),
+      bgColorMode,
+      customBgColor,
+      opacity: logoOpacity,
+      padding: logoPadding,
+      radius: logoRadius,
+      borderWidth,
+      borderColorMode,
+      customBorderColor,
+      gradientStart,
+      gradientEnd,
+      gradientDirection
+    }
+
     if (canvasRef.current) {
       renderQRToCanvas(canvasRef.current, {
         text: qrTargetText,
-        fgColor: themeMode === 'light' ? '#0a0a0a' : themeMode === 'dark' ? '#ffffff' : fgColor,
-        bgColor: themeMode === 'light' ? '#ffffff' : themeMode === 'dark' ? '#141414' : bgColor,
+        fgColor: effectiveFgHex,
+        bgColor: effectiveBgHex,
         transparentBg: false,
-        logoSrc: includeLogo ? selectedLogo : '',
+        logoSrc: includeLogo ? effectiveLogoSrc : '',
         logoRatio,
+        logoPadding,
+        logoRotation,
         showLogoBg,
         logoOpacity,
         logoGlow,
         logoGlowColor,
         logoGlowBlur,
         size: 1000,
+        advancedLogo: commonAdvanced
       })
     }
 
     if (transparentCanvasRef.current) {
       renderQRToCanvas(transparentCanvasRef.current, {
         text: qrTargetText,
-        fgColor: themeMode === 'light' ? '#0a0a0a' : themeMode === 'dark' ? '#ffffff' : fgColor,
-        bgColor: themeMode === 'light' ? '#ffffff' : themeMode === 'dark' ? '#141414' : bgColor,
+        fgColor: effectiveFgHex,
+        bgColor: effectiveBgHex,
         transparentBg: true,
-        logoSrc: includeLogo ? selectedLogo : '',
+        logoSrc: includeLogo ? effectiveLogoSrc : '',
         logoRatio,
+        logoPadding,
+        logoRotation,
         showLogoBg,
         logoOpacity,
         logoGlow,
         logoGlowColor,
         logoGlowBlur,
         size: 1000,
+        advancedLogo: commonAdvanced
       })
     }
-  }, [qrTargetText, themeMode, fgColor, bgColor, includeLogo, selectedLogo, logoRatio, showLogoBg, logoOpacity, logoGlow, logoGlowColor, logoGlowBlur])
+  }, [
+    qrTargetText,
+    themeMode,
+    fgColor,
+    bgColor,
+    effectiveFgHex,
+    effectiveBgHex,
+    includeLogo,
+    logoOption,
+    effectiveLogoSrc,
+    logoRatio,
+    logoRotation,
+    showLogoBg,
+    logoOpacity,
+    logoGlow,
+    logoGlowColor,
+    logoGlowBlur,
+    logoBgStyle,
+    logoPadding,
+    logoRadius,
+    borderWidth,
+    bgColorMode,
+    customBgColor,
+    borderColorMode,
+    customBorderColor,
+    gradientStart,
+    gradientEnd,
+    gradientDirection
+  ])
 
   // Create Short Redirect Link
   const handleCreateRedirect = async (e: React.FormEvent) => {
@@ -165,7 +366,8 @@ export default function CustomQRCreatorPage() {
     const targetCanvas = withBackground ? canvasRef.current : transparentCanvasRef.current
     if (!targetCanvas) return
     const modeSuffix = withBackground ? `${themeMode}-bg` : 'no-bg-transparent'
-    downloadCanvasAsImage(targetCanvas, `clubeve-qr-${modeSuffix}.png`)
+    const logoTag = logoOption === 'tedx' ? `tedx-${logoBgStyle}` : logoOption
+    downloadCanvasAsImage(targetCanvas, `clubeve-qr-${logoTag}-${modeSuffix}.png`)
     toast.success(withBackground ? 'Downloaded QR Code with background!' : 'Downloaded Transparent QR Code!')
   }
 
@@ -180,6 +382,16 @@ export default function CustomQRCreatorPage() {
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)] transition-colors duration-200">
+      {/* Search Params query parser wrapper */}
+      <Suspense fallback={null}>
+        <QROptionsQueryHandler
+          setSelectedTedxSlug={setSelectedTedxSlug}
+          setUrl={setUrl}
+          setIncludeLogo={setIncludeLogo}
+          setLogoOption={setLogoOption}
+        />
+      </Suspense>
+
       {/* Role-Specific Navigation Bar */}
       {role === 'admin' ? (
         <AdminHeader role="admin" name={name || undefined} />
@@ -193,9 +405,13 @@ export default function CustomQRCreatorPage() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-[var(--border)] pb-6">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-3xl font-black tracking-tight text-[var(--fg)]">
+              <h1 className="text-3xl font-black tracking-tight text-[var(--fg)] flex items-center gap-3">
+                <QrCode className="text-[var(--fg)]" size={32} />
                 QR Studio
               </h1>
+              <span className="font-mono text-xs font-bold px-3 py-1 rounded-full bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20 flex items-center gap-1.5">
+                <Sparkles size={14} /> TEDxGCEM Advanced Branding
+              </span>
             </div>
           </div>
 
@@ -240,7 +456,7 @@ export default function CustomQRCreatorPage() {
                       setUrl(e.target.value)
                       setShortUrl('')
                     }}
-                    placeholder="https://cooking.nivet2006.in/events/my-event"
+                    placeholder="https://clubeve.nivet2006.in/tedx/nived-shaji"
                     className="w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] text-sm font-sans focus:outline-none focus:border-[var(--fg)] transition-all"
                   />
                 </div>
@@ -258,7 +474,7 @@ export default function CustomQRCreatorPage() {
                         type="text"
                         value={customCode}
                         onChange={(e) => setCustomCode(e.target.value.replace(/\s+/g, '-'))}
-                        placeholder="fest-2026"
+                        placeholder="tedx-2026"
                         className="w-full px-3 py-3 rounded-r-xl border border-[var(--border)] bg-[var(--bg-subtle)] text-sm focus:outline-none focus:border-[var(--fg)]"
                       />
                     </div>
@@ -272,7 +488,7 @@ export default function CustomQRCreatorPage() {
                       type="text"
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
-                      placeholder="e.g. Hackathon Poster QR"
+                      placeholder="e.g. TEDxGCEM Speaker Badge"
                       className="w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] text-sm focus:outline-none focus:border-[var(--fg)]"
                     />
                   </div>
@@ -318,12 +534,12 @@ export default function CustomQRCreatorPage() {
               )}
             </section>
 
-            {/* Card 2: Theme Presets & Custom Palette */}
+            {/* Card 2: Theme Presets & Styling */}
             <section className="bg-[var(--bg-card)] border border-[var(--border)] rounded-[2rem] p-6 shadow-sm space-y-6">
               <div className="border-b border-[var(--border)] pb-4">
                 <h2 className="text-lg font-bold tracking-tight flex items-center gap-2">
                   <Palette size={20} className="text-[var(--fg)]" />
-                  2. Theme Presets & Styling
+                  2. Theme Presets & Canvas Styling
                 </h2>
               </div>
 
@@ -428,7 +644,7 @@ export default function CustomQRCreatorPage() {
                 </motion.div>
               )}
 
-              {/* Logo Overlay Toggle & Scaling */}
+              {/* Logo Overlay Toggle */}
               <div className="space-y-4 pt-2 border-t border-[var(--border)]">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-semibold flex items-center gap-2">
@@ -447,18 +663,22 @@ export default function CustomQRCreatorPage() {
                 </div>
 
                 {includeLogo && (
-                  <div className="p-4 rounded-xl bg-[var(--bg-subtle)] border border-[var(--border)] space-y-4">
-                    {/* Logo Choice */}
+                  <div className="p-4 rounded-xl bg-[var(--bg-subtle)] border border-[var(--border)] space-y-5">
+                    {/* Logo Selection */}
                     <div>
                       <label className="block font-mono text-xs uppercase tracking-wider text-[var(--fg-muted)] mb-2 font-semibold">
                         Select Branding Logo
                       </label>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        {/* ClubEve Logo */}
                         <button
                           type="button"
-                          onClick={() => setSelectedLogo('/logo.png')}
-                          className={`p-3 rounded-xl border flex items-center gap-3 transition-all ${
-                            selectedLogo === '/logo.png'
+                          onClick={() => {
+                            setLogoOption('clubeve')
+                            setSelectedLogo('/logo.png')
+                          }}
+                          className={`p-3 rounded-xl border flex flex-col sm:flex-row items-center gap-3 transition-all ${
+                            logoOption === 'clubeve'
                               ? 'border-[var(--fg)] bg-[var(--bg-card)] font-bold shadow-sm'
                               : 'border-[var(--border)] bg-transparent hover:border-[var(--fg-muted)]'
                           }`}
@@ -470,11 +690,15 @@ export default function CustomQRCreatorPage() {
                           </div>
                         </button>
 
+                        {/* One Percent Logo */}
                         <button
                           type="button"
-                          onClick={() => setSelectedLogo('/onepercent.png')}
-                          className={`p-3 rounded-xl border flex items-center gap-3 transition-all ${
-                            selectedLogo === '/onepercent.png'
+                          onClick={() => {
+                            setLogoOption('onepercent')
+                            setSelectedLogo('/onepercent.png')
+                          }}
+                          className={`p-3 rounded-xl border flex flex-col sm:flex-row items-center gap-3 transition-all ${
+                            logoOption === 'onepercent'
                               ? 'border-[var(--fg)] bg-[var(--bg-card)] font-bold shadow-sm'
                               : 'border-[var(--border)] bg-transparent hover:border-[var(--fg-muted)]'
                           }`}
@@ -485,126 +709,436 @@ export default function CustomQRCreatorPage() {
                             <p className="font-mono text-[10px] text-[var(--fg-muted)]">/onepercent.png</p>
                           </div>
                         </button>
-                      </div>
-                    </div>
 
-                    {/* Logo Scale Ratio & Opacity */}
-                    <div className="pt-3 border-t border-[var(--border)] grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-1.5">
-                        <div className="flex justify-between font-mono text-xs">
-                          <span className="text-[var(--fg-muted)] font-semibold">Scale Size</span>
-                          <span className="font-bold">{Math.round(logoRatio * 100)}%</span>
-                        </div>
-                        <input
-                          type="range"
-                          min="0.15"
-                          max="0.32"
-                          step="0.01"
-                          value={logoRatio}
-                          onChange={(e) => setLogoRatio(parseFloat(e.target.value))}
-                          className="w-full accent-[var(--fg)]"
-                        />
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <div className="flex justify-between font-mono text-xs">
-                          <span className="text-[var(--fg-muted)] font-semibold">Opacity</span>
-                          <span className="font-bold">{Math.round(logoOpacity * 100)}%</span>
-                        </div>
-                        <input
-                          type="range"
-                          min="0.1"
-                          max="1.0"
-                          step="0.05"
-                          value={logoOpacity}
-                          onChange={(e) => setLogoOpacity(parseFloat(e.target.value))}
-                          className="w-full accent-[var(--fg)]"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Background Badge Toggle */}
-                    <div className="pt-3 border-t border-[var(--border)] flex items-center justify-between">
-                      <div>
-                        <p className="text-xs font-semibold">Solid Background Badge</p>
-                        <p className="font-mono text-[10px] text-[var(--fg-muted)]">
-                          {showLogoBg ? 'Enabled (Square backdrop behind logo)' : 'Disabled (Transparent logo backdrop)'}
-                        </p>
-                      </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={showLogoBg}
-                          onChange={(e) => setShowLogoBg(e.target.checked)}
-                          className="sr-only peer"
-                        />
-                        <div className="w-9 h-5 bg-zinc-200 peer-focus:outline-none rounded-full peer dark:bg-zinc-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[var(--fg)]"></div>
-                      </label>
-                    </div>
-
-                    {/* Logo Glow Controls */}
-                    <div className="pt-3 border-t border-[var(--border)] space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-xs font-semibold flex items-center gap-1.5">
-                            <Sparkles size={14} className="text-amber-500" />
-                            Logo Outer Glow / Aura
-                          </p>
-                          <p className="font-mono text-[10px] text-[var(--fg-muted)]">
-                            Add a vibrant glowing outline shadow
-                          </p>
-                        </div>
-                        <label className="relative inline-flex items-center cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={logoGlow}
-                            onChange={(e) => setLogoGlow(e.target.checked)}
-                            className="sr-only peer"
+                        {/* TEDxGCEM Branding */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setLogoOption('tedx')
+                          }}
+                          className={`p-3 rounded-xl border flex flex-col sm:flex-row items-center gap-3 transition-all ${
+                            logoOption === 'tedx'
+                              ? 'border-red-500 bg-red-500/10 font-bold shadow-sm'
+                              : 'border-[var(--border)] bg-transparent hover:border-red-500/50'
+                          }`}
+                        >
+                          <img
+                            src={isCanvasDark ? '/tedxlogo-white.png' : '/tedxlogo-black.png'}
+                            alt="TEDxGCEM Logo"
+                            className="w-10 h-7 object-contain rounded"
                           />
-                          <div className="w-9 h-5 bg-zinc-200 peer-focus:outline-none rounded-full peer dark:bg-zinc-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[var(--fg)]"></div>
-                        </label>
-                      </div>
-
-                      {logoGlow && (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-lg bg-[var(--bg-card)] border border-[var(--border)]">
-                          <div>
-                            <label className="block font-mono text-[10px] uppercase tracking-wider text-[var(--fg-muted)] mb-1 font-semibold">
-                              Glow Color
-                            </label>
-                            <div className="flex items-center gap-2">
-                              <input
-                                type="color"
-                                value={logoGlowColor}
-                                onChange={(e) => setLogoGlowColor(e.target.value)}
-                                className="w-7 h-7 rounded cursor-pointer border-0 bg-transparent"
-                              />
-                              <input
-                                type="text"
-                                value={logoGlowColor}
-                                onChange={(e) => setLogoGlowColor(e.target.value)}
-                                className="w-full font-mono text-xs px-2 py-1 rounded border border-[var(--border)] bg-[var(--bg-subtle)]"
-                              />
-                            </div>
+                          <div className="text-left">
+                            <p className="text-xs font-bold text-red-600 dark:text-red-400">TEDxGCEM</p>
+                            <p className="font-mono text-[9px] text-[var(--fg-muted)]">
+                              Auto: {isCanvasDark ? 'White Logo' : 'Black Logo'}
+                            </p>
                           </div>
+                        </button>
+                      </div>
+                    </div>
 
-                          <div className="space-y-1">
-                            <div className="flex justify-between font-mono text-[10px]">
-                              <span className="text-[var(--fg-muted)] font-semibold">Glow Blur Radius</span>
-                              <span className="font-bold">{logoGlowBlur}px</span>
-                            </div>
+                    {/* Dynamic TEDx Portfolio Route Selector */}
+                    {tedxPortfolios.length > 0 && (
+                      <div className="pt-3 border-t border-[var(--border)]">
+                        <label className="block font-mono text-xs uppercase tracking-wider text-[var(--fg-muted)] mb-1.5 font-semibold flex items-center gap-2">
+                          <Sparkles size={14} className="text-red-500" />
+                          Load Dynamic TEDx Crew Target (/tedx/[slug])
+                        </label>
+                        <select
+                          value={selectedTedxSlug}
+                          onChange={(e) => {
+                            const slug = e.target.value
+                            setSelectedTedxSlug(slug)
+                            if (slug) {
+                              setUrl(`https://clubeve.nivet2006.in/tedx/${slug}`)
+                              setLogoOption('tedx')
+                              toast.success(`Target URL set to /tedx/${slug}`)
+                            }
+                          }}
+                          className="w-full px-3 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] text-xs font-sans focus:outline-none"
+                        >
+                          <option value="">-- Custom Target / Enter URL manually above --</option>
+                          {tedxPortfolios.map((p) => (
+                            <option key={p.id} value={p.slug}>
+                              {p.display_name} ({p.role} - {p.team_name || 'Crew'})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    {/* TEDx ADVANCED BRANDING PANEL */}
+                    {logoOption === 'tedx' && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="space-y-5 pt-3 border-t border-red-500/20"
+                      >
+                        {/* Presets */}
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-mono text-xs uppercase tracking-wider text-[var(--fg-muted)] font-semibold flex items-center gap-1.5">
+                              <Sparkles size={14} className="text-red-500" />
+                              TEDx Style Presets
+                            </span>
+                            <button
+                              type="button"
+                              onClick={handleResetBranding}
+                              className="text-[10px] font-mono font-bold text-[var(--fg-muted)] hover:text-[var(--fg)] flex items-center gap-1"
+                            >
+                              <RotateCcw size={12} /> Reset Branding
+                            </button>
+                          </div>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                            {[
+                              { id: 'premium', label: 'TEDx PREMIUM (Default)' },
+                              { id: 'clean', label: 'TEDx CLEAN' },
+                              { id: 'classic', label: 'TEDx CLASSIC' },
+                              { id: 'diagonal', label: 'TEDx DIAGONAL' },
+                              { id: 'minimal', label: 'TEDx MINIMAL' },
+                            ].map((p) => (
+                              <button
+                                key={p.id}
+                                type="button"
+                                onClick={() => applyTedxPreset(p.id)}
+                                className={`px-2.5 py-1.5 rounded-lg border text-left text-xs font-mono font-semibold transition-all ${
+                                  logoBgStyle === p.id || (p.id === 'premium' && logoBgStyle === 'adaptive')
+                                    ? 'bg-red-500/10 border-red-500 text-red-600 dark:text-red-400 font-bold'
+                                    : 'border-[var(--border)] bg-[var(--bg-card)] hover:border-[var(--fg-muted)]'
+                                }`}
+                              >
+                                {p.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Logo Size Control */}
+                        <div className="space-y-1.5">
+                          <div className="flex justify-between font-mono text-xs">
+                            <span className="text-[var(--fg-muted)] font-semibold">Logo Size</span>
+                            <span className="font-bold">{Math.round(logoRatio * 100)}%</span>
+                          </div>
+                          <input
+                            type="range"
+                            min="0.10"
+                            max="0.30"
+                            step="0.01"
+                            value={logoRatio}
+                            onChange={(e) => setLogoRatio(parseFloat(e.target.value))}
+                            className="w-full accent-red-600"
+                          />
+                          <p className="font-mono text-[10px] text-[var(--fg-muted)]">
+                            Safe range: 10% → 30% relative to QR matrix. Aspect ratio is preserved.
+                          </p>
+                        </div>
+
+                        {/* Logo Rotation Control */}
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center font-mono text-xs">
+                            <span className="text-[var(--fg-muted)] font-semibold">Logo & Badge Group Rotation</span>
+                            <span className="font-bold">{logoRotation}°</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {[0, 15, 30, 45].map((deg) => (
+                              <button
+                                key={deg}
+                                type="button"
+                                onClick={() => setLogoRotation(deg)}
+                                className={`px-3 py-1 rounded-lg border text-xs font-mono font-bold transition-all ${
+                                  logoRotation === deg
+                                    ? 'bg-[var(--fg)] text-[var(--bg)] border-[var(--fg)]'
+                                    : 'border-[var(--border)] bg-[var(--bg-card)] hover:border-[var(--fg-muted)]'
+                                }`}
+                              >
+                                {deg}°
+                              </button>
+                            ))}
                             <input
                               type="range"
-                              min="5"
-                              max="50"
-                              step="1"
-                              value={logoGlowBlur}
-                              onChange={(e) => setLogoGlowBlur(parseInt(e.target.value))}
-                              className="w-full accent-[var(--fg)]"
+                              min="-45"
+                              max="45"
+                              step="5"
+                              value={logoRotation}
+                              onChange={(e) => setLogoRotation(parseInt(e.target.value))}
+                              className="w-full ml-2 accent-red-600"
                             />
                           </div>
                         </div>
-                      )}
-                    </div>
+
+                        {/* Logo Background Style Selector */}
+                        <div>
+                          <label className="block font-mono text-xs uppercase tracking-wider text-[var(--fg-muted)] mb-1.5 font-semibold">
+                            Logo Background Style
+                          </label>
+                          <select
+                            value={logoBgStyle}
+                            onChange={(e) => setLogoBgStyle(e.target.value as LogoBgStyle)}
+                            className="w-full px-3 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] text-xs font-mono font-bold focus:outline-none"
+                          >
+                            <option value="adaptive">Adaptive (Auto Readability)</option>
+                            <option value="none">None / Transparent</option>
+                            <option value="square">Solid Square</option>
+                            <option value="rounded">Rounded Badge</option>
+                            <option value="circle">Circle Badge</option>
+                            <option value="pill">Pill Badge</option>
+                            <option value="outline">Outline Badge</option>
+                            <option value="soft">Soft Contrast</option>
+                            <option value="frosted">Translucent / Frosted</option>
+                            <option value="inverted">Inverted Badge</option>
+                            <option value="gradient">Gradient Badge</option>
+                          </select>
+                        </div>
+
+                        {/* Contextual Style Controls (Progressive Disclosure) */}
+                        {logoBgStyle !== 'none' && (
+                          <div className="p-4 rounded-xl bg-[var(--bg-card)] border border-[var(--border)] space-y-4">
+                            {/* Logo Padding */}
+                            <div className="space-y-1.5">
+                              <div className="flex justify-between font-mono text-xs">
+                                <span className="text-[var(--fg-muted)] font-semibold">Logo Padding</span>
+                                <span className="font-bold">{logoPadding} px</span>
+                              </div>
+                              <input
+                                type="range"
+                                min="0"
+                                max="40"
+                                step="2"
+                                value={logoPadding}
+                                onChange={(e) => setLogoPadding(parseInt(e.target.value))}
+                                className="w-full accent-red-600"
+                              />
+                            </div>
+
+                            {/* Corner Radius (for Rounded, Outline, Soft, Frosted, Inverted, Gradient, Adaptive) */}
+                            {['rounded', 'outline', 'soft', 'frosted', 'inverted', 'gradient', 'adaptive'].includes(logoBgStyle) && (
+                              <div className="space-y-1.5">
+                                <div className="flex justify-between font-mono text-xs">
+                                  <span className="text-[var(--fg-muted)] font-semibold">Corner Radius</span>
+                                  <span className="font-bold">{logoRadius} px</span>
+                                </div>
+                                <input
+                                  type="range"
+                                  min="0"
+                                  max="30"
+                                  step="2"
+                                  value={logoRadius}
+                                  onChange={(e) => setLogoRadius(parseInt(e.target.value))}
+                                  className="w-full accent-red-600"
+                                />
+                              </div>
+                            )}
+
+                            {/* Border Width (for Outline Badge) */}
+                            {logoBgStyle === 'outline' && (
+                              <div className="space-y-1.5">
+                                <div className="flex justify-between font-mono text-xs">
+                                  <span className="text-[var(--fg-muted)] font-semibold">Border Width</span>
+                                  <span className="font-bold">{borderWidth} px</span>
+                                </div>
+                                <input
+                                  type="range"
+                                  min="1"
+                                  max="8"
+                                  step="1"
+                                  value={borderWidth}
+                                  onChange={(e) => setBorderWidth(parseInt(e.target.value))}
+                                  className="w-full accent-red-600"
+                                />
+                              </div>
+                            )}
+
+                            {/* Background Color Mode */}
+                            {['square', 'rounded', 'circle', 'pill', 'soft', 'frosted', 'adaptive'].includes(logoBgStyle) && (
+                              <div>
+                                <label className="block font-mono text-xs uppercase tracking-wider text-[var(--fg-muted)] mb-1.5 font-semibold">
+                                  Background Color
+                                </label>
+                                <div className="flex items-center gap-2">
+                                  <select
+                                    value={bgColorMode}
+                                    onChange={(e) => setBgColorMode(e.target.value as any)}
+                                    className="px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--bg-subtle)] text-xs font-mono"
+                                  >
+                                    <option value="auto">Auto (Theme Contrast)</option>
+                                    <option value="white">White</option>
+                                    <option value="black">Black</option>
+                                    <option value="custom">Custom Color</option>
+                                  </select>
+                                  {bgColorMode === 'custom' && (
+                                    <input
+                                      type="color"
+                                      value={customBgColor}
+                                      onChange={(e) => setCustomBgColor(e.target.value)}
+                                      className="w-8 h-8 rounded border-0 bg-transparent cursor-pointer"
+                                    />
+                                  )}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Opacity Control */}
+                            {['square', 'rounded', 'circle', 'pill', 'soft', 'frosted', 'inverted', 'gradient', 'adaptive'].includes(logoBgStyle) && (
+                              <div className="space-y-1.5">
+                                <div className="flex justify-between font-mono text-xs">
+                                  <span className="text-[var(--fg-muted)] font-semibold">Badge Opacity</span>
+                                  <span className="font-bold">{Math.round(logoOpacity * 100)}%</span>
+                                </div>
+                                <input
+                                  type="range"
+                                  min="0.10"
+                                  max="1.0"
+                                  step="0.05"
+                                  value={logoOpacity}
+                                  onChange={(e) => setLogoOpacity(parseFloat(e.target.value))}
+                                  className="w-full accent-red-600"
+                                />
+                              </div>
+                            )}
+
+                            {/* Gradient Controls */}
+                            {logoBgStyle === 'gradient' && (
+                              <div className="space-y-3 pt-2 border-t border-[var(--border)]">
+                                <div className="grid grid-cols-2 gap-3">
+                                  <div>
+                                    <label className="block font-mono text-[10px] uppercase font-bold text-[var(--fg-muted)] mb-1">
+                                      Gradient Start
+                                    </label>
+                                    <div className="flex items-center gap-2">
+                                      <input
+                                        type="color"
+                                        value={gradientStart}
+                                        onChange={(e) => setGradientStart(e.target.value)}
+                                        className="w-7 h-7 rounded border-0 cursor-pointer"
+                                      />
+                                      <input
+                                        type="text"
+                                        value={gradientStart}
+                                        onChange={(e) => setGradientStart(e.target.value)}
+                                        className="w-full font-mono text-xs px-2 py-1 rounded border border-[var(--border)] bg-[var(--bg-subtle)]"
+                                      />
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <label className="block font-mono text-[10px] uppercase font-bold text-[var(--fg-muted)] mb-1">
+                                      Gradient End
+                                    </label>
+                                    <div className="flex items-center gap-2">
+                                      <input
+                                        type="color"
+                                        value={gradientEnd}
+                                        onChange={(e) => setGradientEnd(e.target.value)}
+                                        className="w-7 h-7 rounded border-0 cursor-pointer"
+                                      />
+                                      <input
+                                        type="text"
+                                        value={gradientEnd}
+                                        onChange={(e) => setGradientEnd(e.target.value)}
+                                        className="w-full font-mono text-xs px-2 py-1 rounded border border-[var(--border)] bg-[var(--bg-subtle)]"
+                                      />
+                                    </div>
+                                  </div>
+                                </div>
+                                <div>
+                                  <label className="block font-mono text-[10px] uppercase font-bold text-[var(--fg-muted)] mb-1">
+                                    Direction
+                                  </label>
+                                  <div className="grid grid-cols-3 gap-2">
+                                    {(['horizontal', 'vertical', 'diagonal'] as GradientDirection[]).map((d) => (
+                                      <button
+                                        key={d}
+                                        type="button"
+                                        onClick={() => setGradientDirection(d)}
+                                        className={`py-1 text-xs font-mono uppercase font-bold rounded-lg border ${
+                                          gradientDirection === d
+                                            ? 'bg-red-500/10 border-red-500 text-red-500'
+                                            : 'border-[var(--border)] bg-[var(--bg-subtle)]'
+                                        }`}
+                                      >
+                                        {d}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Readability & Scannability Safety Indicator */}
+                        <div
+                          className={`p-4 rounded-xl border flex items-start gap-3 ${
+                            readability.status === 'SAFE'
+                              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400'
+                              : readability.status === 'WARNING'
+                              ? 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400'
+                              : 'bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-400'
+                          }`}
+                        >
+                          {readability.status === 'SAFE' ? (
+                            <CheckCircle2 size={20} className="mt-0.5 flex-shrink-0" />
+                          ) : readability.status === 'WARNING' ? (
+                            <AlertTriangle size={20} className="mt-0.5 flex-shrink-0" />
+                          ) : (
+                            <ShieldAlert size={20} className="mt-0.5 flex-shrink-0" />
+                          )}
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono text-xs font-black uppercase tracking-wider">
+                                Readability Status: {readability.status}
+                              </span>
+                              <span className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-current/10 font-bold">
+                                {readability.coveragePercent}% Area Covered
+                              </span>
+                            </div>
+                            <p className="text-xs font-sans mt-0.5 opacity-90 leading-snug">
+                              {readability.message}
+                            </p>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {/* Legacy controls for ClubEve and One Percent logos */}
+                    {logoOption !== 'tedx' && (
+                      <div className="space-y-4 pt-3 border-t border-[var(--border)]">
+                        {/* Scale Size */}
+                        <div className="space-y-1.5">
+                          <div className="flex justify-between font-mono text-xs">
+                            <span className="text-[var(--fg-muted)] font-semibold">Scale Size</span>
+                            <span className="font-bold">{Math.round(logoRatio * 100)}%</span>
+                          </div>
+                          <input
+                            type="range"
+                            min="0.10"
+                            max="0.40"
+                            step="0.01"
+                            value={logoRatio}
+                            onChange={(e) => setLogoRatio(parseFloat(e.target.value))}
+                            className="w-full accent-[var(--fg)]"
+                          />
+                        </div>
+
+                        {/* Background Badge Toggle */}
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-xs font-semibold">Solid Background Badge</p>
+                            <p className="font-mono text-[10px] text-[var(--fg-muted)]">
+                              {showLogoBg ? 'Enabled' : 'Disabled'}
+                            </p>
+                          </div>
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={showLogoBg}
+                              onChange={(e) => setShowLogoBg(e.target.checked)}
+                              className="sr-only peer"
+                            />
+                            <div className="w-9 h-5 bg-zinc-200 peer-focus:outline-none rounded-full peer dark:bg-zinc-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[var(--fg)]"></div>
+                          </label>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -627,7 +1161,7 @@ export default function CustomQRCreatorPage() {
               {/* Visible Render Canvas */}
               <div
                 className={`p-6 rounded-2xl border border-[var(--border)] shadow-sm flex items-center justify-center ${
-                  themeMode === 'dark' ? 'bg-[#141414]' : 'bg-white'
+                  isCanvasDark ? 'bg-[#141414]' : 'bg-white'
                 }`}
               >
                 <canvas
@@ -661,7 +1195,7 @@ export default function CustomQRCreatorPage() {
                   className="w-full py-3 px-4 rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] hover:border-[var(--fg)] text-[var(--fg)] text-xs font-mono uppercase tracking-wider font-bold transition-all flex items-center justify-center gap-2"
                 >
                   <Download size={16} />
-                  Download Without Background (Transparent)
+                  Download Transparent PNG
                 </button>
               </div>
             </section>
@@ -671,3 +1205,4 @@ export default function CustomQRCreatorPage() {
     </div>
   )
 }
+

@@ -24,7 +24,8 @@ import {
   Radio,
   Plus,
   Wrench,
-  Activity
+  Activity,
+  Sparkles
 } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import { ThemeToggle } from '@/components/shared/ThemeToggle'
@@ -85,6 +86,7 @@ export function AdminHeader({ role = 'admin', name }: AdminHeaderProps) {
       label: 'Operations',
       items: [
         { href: '/admin/attendance', label: 'Attendance Portal', icon: ClipboardList, desc: 'Check-in roster & manual overrides' },
+        { href: '/certificate-upload', label: 'Certificate Upload Centre', icon: Award, desc: 'Bulk CSV & PDF certificate uploader' },
         { href: '/admin/scanner', label: 'Ticket Scanner', icon: ScanLine, desc: 'Live ticket scanning camera app' },
         { href: '/admin/qr-analytics', label: 'QR Analytics', icon: QrCode, desc: 'Track scans & edit redirect URLs' },
         { href: '/qr', label: 'QR Studio', icon: QrCode, desc: 'Custom logo QR generator' },
@@ -96,6 +98,7 @@ export function AdminHeader({ role = 'admin', name }: AdminHeaderProps) {
       label: 'Communications',
       items: [
         { href: '/admin/communications', label: 'Global Communications', desc: 'Announcements, maintenance & banners', icon: Radio },
+        { href: '/admin/tedx', label: 'TEDx Portfolios', desc: 'Manage dynamic crew profiles & QR links', icon: Sparkles },
         { href: '/admin/email', label: 'Email Center', desc: 'Send email broadcasts & blasts', icon: Mail },
         { href: '#', label: 'Quick Broadcast', desc: 'Broadcast instant screen alert', icon: Radio, onClick: () => setBroadcastOpen(true) },
       ]

@@ -39,6 +39,7 @@ export default function AdminToolsPage() {
       category: 'Operations',
       tools: [
         { href: '/admin/attendance', name: 'Attendance Portal', description: 'View attendee rosters and issue manual check-in overrides.', icon: ClipboardList },
+        { href: '/certificate-upload', name: 'Certificate Upload Centre', description: 'Bulk CSV import and standalone one-by-one PDF certificate uploader.', icon: Award },
         { href: '/admin/scanner', name: 'Ticket Scanner', description: 'Scan student registration QR tickets using device camera.', icon: ScanLine },
         { href: '/admin/qr-analytics', name: 'QR Analytics & Redirects', description: 'Track scan metrics, edit destination URLs, and identify QRs.', icon: QrCode },
         { href: '/qr', name: 'QR Studio', description: 'Design custom branded QR codes with logo overlays and glow.', icon: Sparkles },

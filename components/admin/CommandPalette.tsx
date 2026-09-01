@@ -83,6 +83,7 @@ export function CommandPalette({ open, onClose, onOpenBroadcast }: CommandPalett
     { id: 'nav-clubs', title: 'Clubs Directory', subtitle: 'Campus student organizations', section: 'Navigation', icon: Building2, href: '/clubs' },
 
     // Quick Actions
+    { id: 'act-cert-upload', title: 'Certificate Upload Centre', subtitle: 'Bulk CSV import & PDF certificate uploader', section: 'Quick Actions', icon: Award, href: '/certificate-upload' },
     { id: 'act-create', title: 'Create New Event', subtitle: 'Publish a new campus event', section: 'Quick Actions', icon: Plus, href: '/teacher/events/create' },
     { id: 'act-scan', title: 'Scan Ticket Attendance', subtitle: 'Live event ticket check-in', section: 'Quick Actions', icon: ScanLine, href: '/admin/scanner' },
     { id: 'act-bcast', title: 'Send System Broadcast', subtitle: 'Broadcast alert to all users', section: 'Quick Actions', icon: Radio, action: () => { onClose(); onOpenBroadcast?.() } },
