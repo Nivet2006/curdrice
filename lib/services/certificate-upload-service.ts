@@ -25,9 +25,103 @@ export function sanitizePathSegment(segment: string): string {
     .replace(/^-|-$/g, '') || 'default'
 }
 
+export interface StorageFileItem {
+  name: string
+  path: string
+  publicUrl: string
+}
+
 /**
-  * Uploads a PDF file to Supabase Storage bucket 'certificates'.
-  * Target path: certificates/{event_slug}/{certificate_id}.pdf
+ * Lists all existing PDF files from the single target Supabase Storage bucket 'certificate'.
+ */
+export async function listExistingStorageCertificates(): Promise<StorageFileItem[]> {
+  try {
+    const results: StorageFileItem[] = []
+
+    // 1. List root directory of 'certificate' bucket
+    const { data: rootFiles, error: rootErr } = await supabase.storage
+      .from('certificate')
+      .list('', { limit: 1000 })
+
+    if (rootErr) {
+      console.warn('[Storage Warning] Error listing root of certificate bucket:', rootErr.message)
+    }
+
+    if (rootFiles) {
+      for (const item of rootFiles) {
+        if (item.name.toLowerCase().endsWith('.pdf')) {
+          const { data: urlData } = supabase.storage.from('certificate').getPublicUrl(item.name)
+          results.push({
+            name: item.name,
+            path: item.name,
+            publicUrl: urlData.publicUrl,
+          })
+        } else if (!item.name.includes('.')) {
+          // Folder: search inside subfolder
+          const { data: subFiles } = await supabase.storage
+            .from('certificate')
+            .list(item.name, { limit: 1000 })
+
+          if (subFiles) {
+            for (const subItem of subFiles) {
+              if (subItem.name.toLowerCase().endsWith('.pdf')) {
+                const subPath = `${item.name}/${subItem.name}`
+                const { data: urlData } = supabase.storage.from('certificate').getPublicUrl(subPath)
+                results.push({
+                  name: subItem.name,
+                  path: subPath,
+                  publicUrl: urlData.publicUrl,
+                })
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return results
+  } catch (err) {
+    console.warn('[Storage Notice] listExistingStorageCertificates error:', err)
+    return []
+  }
+}
+
+/**
+ * Clears/Deletes ALL PDF certificate files stored inside the 'certificate' bucket.
+ * Can be triggered on-demand whenever required by admin.
+ */
+export async function clearAllStorageCertificates(): Promise<{ deletedCount: number; errors: string[] }> {
+  const errors: string[] = []
+  let deletedCount = 0
+
+  try {
+    const existing = await listExistingStorageCertificates()
+    if (!existing || existing.length === 0) {
+      return { deletedCount: 0, errors: [] }
+    }
+
+    const pathsToDelete = existing.map((file) => file.path)
+    
+    // Delete files in batches of 100
+    for (let i = 0; i < pathsToDelete.length; i += 100) {
+      const chunk = pathsToDelete.slice(i, i + 100)
+      const { data, error } = await supabase.storage.from('certificate').remove(chunk)
+      if (error) {
+        errors.push(error.message)
+      } else {
+        deletedCount += (data || []).length
+      }
+    }
+
+    return { deletedCount, errors }
+  } catch (err: any) {
+    return { deletedCount, errors: [err.message || 'Unknown storage wipe error'] }
+  }
+}
+
+/**
+  * Uploads a PDF file to existing Supabase Storage bucket 'certificate'.
+  * Target path: certificate/{event_slug}/{certificate_id}.pdf
   */
 export async function uploadCertificatePDF(
   file: File | Blob,
@@ -44,7 +138,7 @@ export async function uploadCertificatePDF(
 
   try {
     const { data, error } = await supabase.storage
-      .from('certificates')
+      .from('certificate')
       .upload(filePath, file, {
         contentType: 'application/pdf',
         upsert: options.overwrite ?? true,
@@ -61,7 +155,7 @@ export async function uploadCertificatePDF(
   }
 
   const { data: urlData } = supabase.storage
-    .from('certificates')
+    .from('certificate')
     .getPublicUrl(uploadedPath)
 
   publicUrl = urlData?.publicUrl || ''

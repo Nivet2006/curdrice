@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const recipients = (body.recipients || []) as RecipientItem[]
     const defaultEvent = body.event || 'One Percent Club'
-    const customSenderEmail = body.senderEmail || 'certificates@onepercentclub.nivet2006.in'
+    const customSenderEmail = body.senderEmail || 'help@clubeve.nivet2006.in'
     const customSenderName = body.senderName || defaultEvent
     const customTemplate = body.templateHtml || body.customTemplate || null
 
@@ -22,8 +22,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Recipients array is required and must not be empty.' }, { status: 400 })
     }
 
-    const apiKey = process.env.BREVO_API_KEY || process.env.RESEND_API_KEY
-    const isMock = !apiKey
+    const apiKey = process.env.BREVO_API_KEY || ''
+    const isMock = body.isMock === true
 
     const results = []
 

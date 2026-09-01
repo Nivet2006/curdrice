@@ -24,6 +24,7 @@ import {
   HelpCircle,
   Mail,
   Radio,
+  Trash2,
 } from 'lucide-react'
 
 import {
@@ -33,9 +34,12 @@ import {
   fetchAllCertificates,
   saveCertificateEmailTemplate,
   fetchCertificateEmailTemplate,
+  listExistingStorageCertificates,
+  clearAllStorageCertificates,
   CertificateRecord,
   sanitizePathSegment,
 } from '@/lib/services/certificate-upload-service'
+import JobMonitorModal from '@/components/cert/JobMonitorModal'
 import {
   generatePlainTextEmail,
   generateBrevoHtmlEmail,
@@ -103,8 +107,32 @@ export default function CertificateUploadCentre() {
   const [isSendingBatch, setIsSendingBatch] = useState<boolean>(false)
   const [dispatchLogs, setDispatchLogs] = useState<string[]>([])
 
-  // Brevo Sender Configuration State
-  const [senderEmail, setSenderEmail] = useState<string>('certificates@onepercentclub.nivet2006.in')
+  // Storage Cleanup State
+  const [isClearingStorage, setIsClearingStorage] = useState<boolean>(false)
+
+  const handleClearAllBucketCertificates = async () => {
+    if (!confirm('Are you sure you want to delete ALL certificate PDF files from Supabase Storage bucket ("certificate")? This cannot be undone.')) {
+      return
+    }
+
+    setIsClearingStorage(true)
+    try {
+      const { deletedCount, errors } = await clearAllStorageCertificates()
+      if (errors.length > 0) {
+        toast.error(`Deleted ${deletedCount} files with errors: ${errors.join(', ')}`)
+      } else {
+        toast.success(`Successfully cleared ${deletedCount} certificate files from storage.`)
+      }
+    } finally {
+      setIsClearingStorage(false)
+    }
+  }
+
+  // GitHub Actions Job Monitor Modal State
+  const [activeJobId, setActiveJobId] = useState<string | null>(null)
+  const [isDryRunJob, setIsDryRunJob] = useState<boolean>(true)
+
+  const [senderEmail, setSenderEmail] = useState<string>('help@clubeve.nivet2006.in')
   const [senderName, setSenderName] = useState<string>('One Percent Club')
   const [isCustomSender, setIsCustomSender] = useState<boolean>(false)
 
@@ -296,18 +324,39 @@ export default function CertificateUploadCentre() {
   }, [])
 
   const loadExistingCertificates = async () => {
-    setLoading(true)
     try {
       const data = await fetchAllCertificates()
+      const existingStorageFiles = await listExistingStorageCertificates()
+      const origin = typeof window !== 'undefined' ? window.location.origin : ''
+
       if (data && data.length > 0) {
-        setRecords(data)
-        setStep(2) // Jump to upload dashboard if data exists
+        const merged = data.map((rec) => {
+          if (rec.status === 'uploaded') return rec
+          const match = existingStorageFiles.find((file) => {
+            const rawName = file.name.replace(/\.pdf$/i, '').trim()
+            const normFile = normalizeText(rawName)
+            return (
+              normFile === normalizeText(rec.certificate_id) ||
+              normFile === normalizeText(rec.email) ||
+              normFile === normalizeText(rec.name)
+            )
+          })
+          if (match) {
+            return {
+              ...rec,
+              status: 'uploaded' as const,
+              file_path: match.path,
+              public_url: `${origin}/certificate/${encodeURIComponent(rec.certificate_id)}`,
+            }
+          }
+          return rec
+        })
+
+        setRecords(merged)
+        setStep(2)
       }
     } catch (err: any) {
-      console.error('Failed loading certificates:', err)
-      toast.error('Failed to connect to database')
-    } finally {
-      setLoading(false)
+      console.warn('[Storage Notice] Certificate load warning:', err)
     }
   }
 
@@ -467,9 +516,48 @@ export default function CertificateUploadCentre() {
       }))
 
       const synced = await syncCsvRecordsToDatabase(payload)
-      setRecords(synced)
+
+      // Query single Storage bucket 'certificate' for pre-existing uploaded PDFs
+      const existingStorageFiles = await listExistingStorageCertificates()
+      const origin = typeof window !== 'undefined' ? window.location.origin : ''
+
+      const updatedWithStorage = synced.map((rec) => {
+        const match = existingStorageFiles.find((file) => {
+          const rawName = file.name.replace(/\.pdf$/i, '').trim()
+          const normFile = normalizeText(rawName)
+          const normCertId = normalizeText(rec.certificate_id)
+          const normEmail = normalizeText(rec.email)
+          const normName = normalizeText(rec.name)
+
+          // Order: 1. USN / Roll Number, 2. Email, 3. Normalized Name
+          if (normFile === normCertId || rawName.toLowerCase() === rec.certificate_id.toLowerCase()) return true
+          if (normFile === normEmail || rawName.toLowerCase() === rec.email.toLowerCase()) return true
+          if (normFile === normName || normFile.replace(/[-_]/g, '') === normName.replace(/[-_]/g, '')) return true
+
+          return false
+        })
+
+        if (match) {
+          return {
+            ...rec,
+            status: 'uploaded' as const,
+            file_path: match.path,
+            public_url: `${origin}/certificate/${encodeURIComponent(rec.certificate_id)}`,
+            uploaded_at: rec.uploaded_at || new Date().toISOString(),
+          }
+        }
+        return rec
+      })
+
+      setRecords(updatedWithStorage)
       setStep(2)
-      toast.success(`Successfully imported ${synced.length} participants into batch!`)
+
+      const autoDetectedCount = updatedWithStorage.filter((r) => r.status === 'uploaded').length
+      if (autoDetectedCount > 0) {
+        toast.success(`✓ Imported ${updatedWithStorage.length} participants & auto-detected ${autoDetectedCount} existing certificates in 'certificate' bucket!`)
+      } else {
+        toast.success(`Successfully imported ${updatedWithStorage.length} participants into batch!`)
+      }
     } catch (err: any) {
       toast.error(err.message || 'Failed saving participants to database')
     } finally {
@@ -740,6 +828,15 @@ export default function CertificateUploadCentre() {
           </div>
 
           <div className="flex items-center gap-3">
+            <button
+              onClick={handleClearAllBucketCertificates}
+              disabled={isClearingStorage}
+              className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-mono font-semibold bg-red-950/40 border border-red-900/60 text-red-400 hover:bg-red-900/60 hover:text-red-200 transition-all disabled:opacity-50"
+              title="Delete all PDF certificate files from Supabase Storage bucket whenever required"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>{isClearingStorage ? 'Clearing Storage...' : 'Clear Storage Bucket'}</span>
+            </button>
             {step === 2 && (
               <button
                 onClick={handleResetBatch}
@@ -2054,6 +2151,14 @@ export default function CertificateUploadCentre() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* GitHub Actions Email Job Monitor Modal */}
+      {activeJobId && (
+        <JobMonitorModal
+          jobId={activeJobId}
+          onClose={() => setActiveJobId(null)}
+        />
       )}
     </div>
   )
