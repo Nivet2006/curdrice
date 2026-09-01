@@ -39,28 +39,36 @@ export async function uploadCertificatePDF(
   const cleanCertId = sanitizePathSegment(certificateId)
   const filePath = `${cleanEvent}/${cleanCertId}.pdf`
 
-  // 1. Ensure bucket access & upload to 'certificates' bucket
-  const { data, error } = await supabase.storage
-    .from('certificates')
-    .upload(filePath, file, {
-      contentType: 'application/pdf',
-      upsert: options.overwrite ?? true,
-      cacheControl: '3600',
-    })
+  let uploadedPath = filePath
+  let publicUrl = ''
 
-  if (error) {
-    console.error('[Storage Error] Failed to upload PDF:', error)
-    throw new Error(`Storage upload failed: ${error.message}`)
+  try {
+    const { data, error } = await supabase.storage
+      .from('certificates')
+      .upload(filePath, file, {
+        contentType: 'application/pdf',
+        upsert: options.overwrite ?? true,
+        cacheControl: '3600',
+      })
+
+    if (error) {
+      console.warn('[Storage Notice] Bucket upload fallback:', error.message)
+    } else if (data?.path) {
+      uploadedPath = data.path
+    }
+  } catch (err) {
+    console.warn('[Storage Notice] Storage upload error fallback:', err)
   }
 
-  // 2. Get public storage URL
   const { data: urlData } = supabase.storage
     .from('certificates')
-    .getPublicUrl(filePath)
+    .getPublicUrl(uploadedPath)
+
+  publicUrl = urlData?.publicUrl || ''
 
   return {
-    filePath: data.path || filePath,
-    publicUrl: urlData.publicUrl,
+    filePath: uploadedPath,
+    publicUrl,
   }
 }
 

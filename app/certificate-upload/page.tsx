@@ -54,7 +54,7 @@ function normalizeText(text: string): string {
 export default function CertificateUploadCentre() {
   // Application State
   const [step, setStep] = useState<1 | 2>(1)
-  const [loading, setLoading] = useState<boolean>(true)
+  const [loading, setLoading] = useState<boolean>(false)
   const [eventTitle, setEventTitle] = useState<string>('One Percent Club')
 
   // CSV & Data State
@@ -619,7 +619,9 @@ export default function CertificateUploadCentre() {
 
       if (autoSendEmail) {
         appendLog(`⚡ Auto-dispatching Brevo email for ${updated.name} (${updated.certificate_id})...`)
-        await dispatchCertificatesBatch([updated])
+        dispatchCertificatesBatch([updated]).catch((err) =>
+          appendLog(`❌ Auto-send error: ${err.message}`)
+        )
       }
     } catch (err: any) {
       console.error('Upload execution error:', err)

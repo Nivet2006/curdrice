@@ -96,12 +96,19 @@ export async function POST(request: NextRequest) {
               timestamp: new Date().toISOString(),
             })
           } else {
+            let errMsg = data.message || 'Brevo API error'
+            if (errMsg.includes('unrecognised IP address')) {
+              const ipMatch = errMsg.match(/IP address\s+([a-f0-9:.]+)/i)
+              const clientIp = ipMatch ? ipMatch[1] : ''
+              errMsg = `Brevo IP Block: Add IP (${clientIp}) to https://app.brevo.com/security/authorised_ips or disable IP Whitelisting in Brevo settings.`
+            }
+
             results.push({
               certificate_id: item.certificate_id,
               name: item.name,
               email: item.email,
               status: 'failed',
-              error: data.message || 'Brevo API error',
+              error: errMsg,
               timestamp: new Date().toISOString(),
             })
           }
